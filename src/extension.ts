@@ -17,23 +17,22 @@ export function activate(context: vscode.ExtensionContext) {
 
       // 读取文件内容
       const fileContent = await vscode.workspace.openTextDocument(uri);
-      // console.log(fileContent.getText(), "data");
 
-      // 将文件内容解析成ast结构
-      const ast = acorn.parse(fileContent.getText(), {
-        ecmaVersion: 2020,
-      });
+      // 获取文件中的module.exports对象
+      const module = {exports: {}}
+      const func = new Function('module', fileContent.getText())
+      func(module)
 
-			let inputUrl = ''
-      // 搜索配置文件，获取配置文件中的input属性
-			walk.simple(ast, {
-				Property(node: any) {
-					if(node.key.name === 'input') {
-						inputUrl = node.value.value
-					}
-				}
-			})
-			console.log(inputUrl, 'inputUrl');
+      // 查找对应的input属性值
+      let inputUrl = ''
+      const exportObj: any = module.exports
+      for(let childObj of exportObj.generator) {
+        if('input' in  childObj) {
+          inputUrl = childObj.input
+        }
+      }
+
+      // 临时显示inputUrl地址 
 			vscode.window.showInformationMessage("input: " + inputUrl);
     })
   );
