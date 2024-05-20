@@ -1,6 +1,4 @@
 import * as vscode from "vscode";
-import acorn from "acorn";
-import walk from 'acorn-walk'
 
 let myStatusBarItem: vscode.StatusBarItem;
 
