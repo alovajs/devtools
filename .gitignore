@@ -3,7 +3,8 @@
 .spago
 bower_components
 node_modules
+pnpm-lock.yaml
 
 # Generated files
 .psci
-output
+out
