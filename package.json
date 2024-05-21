@@ -1,16 +1,17 @@
 {
-  "name": "helloworld",
-  "displayName": "HelloWorld",
+  "name": "@alova/vscode-extension",
+  "displayName": "alova",
   "description": "",
   "version": "0.0.1",
   "engines": {
-    "vscode": "^1.89.0"
+    "vscode": "^1.89.0",
+    "node": ">=18.19.0",
+    "pnpm": ">=8.6.12"
   },
   "categories": [
     "Other"
   ],
-  "activationEvents": [
-  ],
+  "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
@@ -52,10 +53,29 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "pnpm run compile && pnpm run lint",
-    "lint": "eslint src --ext ts",
-    "test": "vscode-test"
+    "lint": "eslint . --ext .js,.ts",
+    "lint:fix": "npm run lint -- --fix",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "test": "vscode-test",
+    "commit": "git-cz && git push",
+    "prepare": "husky"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alovajs/devtools.git"
+  },
+  "bugs": {
+    "url": "https://github.com/alovajs/devtools/issues"
+  },
+  "lint-staged": {
+    "*": "npm run format:fix",
+    "*.js,*.ts": "npm run lint:fix"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.3.0",
+    "@commitlint/config-conventional": "^19.2.2",
     "@types/mocha": "^10.0.6",
     "@types/node": "18.x",
     "@types/vscode": "^1.89.0",
@@ -63,7 +83,21 @@
     "@typescript-eslint/parser": "^7.7.1",
     "@vscode/test-cli": "^0.0.9",
     "@vscode/test-electron": "^2.3.9",
+    "commitizen": "^4.3.0",
+    "cz-conventional-changelog": "^3.3.0",
     "eslint": "^8.57.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-airbnb-typescript": "^18.0.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.2",
+    "prettier": "^3.2.5",
     "typescript": "^5.4.5"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   }
 }
