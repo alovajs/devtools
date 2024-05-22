@@ -1,7 +1,9 @@
+import fetch from 'node-fetch';
 import { createRequire } from 'node:module';
 import * as vscode from 'vscode';
 
 let myStatusBarItem: vscode.StatusBarItem;
+let apiJson: any;
 
 export function activate(context: vscode.ExtensionContext) {
   const myCommandId = 'alova.start';
@@ -11,29 +13,25 @@ export function activate(context: vscode.ExtensionContext) {
 
       // 获取到当前工作区的alova配置文件路径
       const workspacedRequire = createRequire(vscode.workspace.workspaceFolders?.[0].uri.fsPath + '/');
+
+      // 读取文件内容
       const configuration = workspacedRequire('./alova.config.cjs');
-      console.log(configuration, configuration.fn());
 
-      // // 读取文件内容
-      // const fileContent = await vscode.workspace.openTextDocument(uri);
-      // console.log(fileContent.fileName, fileContent.getText());
+      // 查找对应的input属性值
+      let inputUrl = '';
+      if (configuration.generator && configuration.generator.length) {
+        for (let childObj of configuration.generator) {
+          if ('input' in childObj) {
+            inputUrl = childObj.input;
+          }
+        }
+      }
 
-      // // 获取文件中的module.exports对象
-      // const module = { exports: {} };
-      // const func = new Function('module', fileContent.getText());
-      // func(module);
+      // 临时显示inputUrl地址
+      vscode.window.showInformationMessage('input: ' + inputUrl);
 
-      // // 查找对应的input属性值
-      // let inputUrl = '';
-      // const exportObj: any = module.exports;
-      // for (let childObj of exportObj.generator) {
-      //   if ('input' in childObj) {
-      //     inputUrl = childObj.input;
-      //   }
-      // }
-
-      // // 临时显示inputUrl地址
-      // vscode.window.showInformationMessage('input: ' + inputUrl);
+      // 发起请求
+      fetchData('https://generator3.swagger.io/openapi.json');
     })
   );
 
@@ -56,10 +54,17 @@ function updateStatusBarItem(): void {
   myStatusBarItem.show();
 }
 
-// function getNumberOfSelectedLines(editor: vscode.TextEditor | undefined): number {
-//   let lines = 0;
-//   if (editor) {
-//     lines = editor.selections.reduce((prev, curr) => prev + (curr.end.line - curr.start.line), 0);
-//   }
-//   return lines;
-// }
+async function fetchData(url: string) {
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    apiJson = data;
+    console.log(data, 'data');
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
