@@ -211,3 +211,6 @@ declare global {
 
   var Apis: APIS;
 }
+
+// 这行代码确保 TypeScript 将其视为模块
+export {};

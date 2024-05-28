@@ -10,10 +10,10 @@ const method = Apis.user.userLogin(
       b: 2
     },
     cache: 'force-cache',
-    credentials: 'same-origin'
-    // transformData(data, headers) {
-    //   return !!data.success;
-    // }
+    credentials: 'same-origin',
+    transformData: (data, headers) => {
+      return !!data.success;
+    }
   }
 );
 
@@ -22,4 +22,4 @@ const { data, loading, send } = useRequest(method, {
   immediate: false
 });
 
-Apis.pet.getPetById({ petId: 1 });
+const res = await Apis.pet.getPetById({ petId: 1 });

@@ -12,15 +12,10 @@
  * https://github.com/alovajs/devtools.git
  * Do not edit the file manually.
  */
-import { Alova, Method, MethodType } from 'alova';
-import type { alovaInstance } from '.';
+import { Method } from 'alova';
 import apiDefinitions from './apiDefinitions';
 
-const createFunctionalProxy = (
-  array: (string | symbol)[],
-  alovaInstance: Alova<any, any, any, any, any>,
-  configMap: any
-) => {
+const createFunctionalProxy = (array, alovaInstance, configMap) => {
   // create a new proxy instance
   return new Proxy(function () {}, {
     get(_, property) {
@@ -30,7 +25,7 @@ const createFunctionalProxy = (
       return createFunctionalProxy(array, alovaInstance, configMap);
     },
     apply(_, __, [data, config]) {
-      const apiItem = apiDefinitions[array.join('.')] as string[] | undefined;
+      const apiItem = apiDefinitions[array.join('.')];
       if (!apiItem) {
         throw new Error(`the api path of \`${apiItem}\` is not found`);
       }
@@ -45,12 +40,12 @@ const createFunctionalProxy = (
         config.params = data;
         data = undefined;
       }
-      return new Method(method.toUpperCase() as MethodType, alovaInstance, urlReplaced, config, data);
+      return new Method(method.toUpperCase(), alovaInstance, urlReplaced, config, data);
     }
   });
 };
 
-export const createApis = (alovaInstance: Alova<any, any, any, any, any>, configMap: any) =>
+export const createApis = (alovaInstance, configMap) =>
   new Proxy(
     {},
     {
@@ -60,7 +55,15 @@ export const createApis = (alovaInstance: Alova<any, any, any, any, any>, config
     }
   );
 
-type MethodsConfigMap = {
-  [apiPath in keyof typeof apiDefinitions]?: Parameters<(typeof alovaInstance)['Get']>['1'];
-};
-export const withConfigType = <Config extends MethodsConfigMap>(config: Config) => config;
+/**
+ * @typedef {Parameters<typeof import('./index')['alovaInstance']['Get']>[1]} GetConfig
+ */
+/**
+ * @typedef {Object<string, NonNullable<GetConfig>>} MethodsConfigMap
+ */
+/**
+ * @template {MethodsConfigMap} Config
+ * @param {Config} config
+ * @returns {Config}
+ */
+export const withConfigType = config => config;

@@ -1,3 +1,4 @@
+/// <reference path="./globals.d.ts" />
 /* tslint:disable */
 /* eslint-disable */
 /**

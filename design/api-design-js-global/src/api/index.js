@@ -17,7 +17,7 @@ export const $$userConfigMap = withConfigType({
   'user.userLogin': {
     cache: 'force-cache',
     transformData: data => {
-      return data as string;
+      return 'abc';
     }
   }
 });
@@ -25,7 +25,7 @@ export const $$userConfigMap = withConfigType({
 const Apis = createApis(alovaInstance, $$userConfigMap);
 
 // 如果是全局定义
-(window as any).Apis = Apis;
+window.Apis = Apis;
 
 // 如果不是则直接导出
 // export Apis;
