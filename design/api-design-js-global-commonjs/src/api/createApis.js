@@ -15,8 +15,8 @@
  *
  * **Do not edit the file manually.**
  */
-import { Method } from 'alova';
-import apiDefinitions from './apiDefinitions';
+const { Method } = require('alova');
+const apiDefinitions = require('./apiDefinitions');
 
 const createFunctionalProxy = (array, alovaInstance, configMap) => {
   // create a new proxy instance
@@ -48,7 +48,7 @@ const createFunctionalProxy = (array, alovaInstance, configMap) => {
   });
 };
 
-export const createApis = (alovaInstance, configMap) =>
+const createApis = (alovaInstance, configMap) =>
   new Proxy(
     {},
     {
@@ -69,4 +69,9 @@ export const createApis = (alovaInstance, configMap) =>
  * @param {Config} config
  * @returns {Config}
  */
-export const withConfigType = config => config;
+const withConfigType = config => config;
+
+module.exports = {
+  createApis,
+  withConfigType
+};

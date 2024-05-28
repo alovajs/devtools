@@ -1,3 +1,4 @@
+/// <reference path="./globals.d.ts" />
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -15,7 +16,7 @@
  *
  * **Do not edit the file manually.**
  */
-export default {
+module.exports = {
   'user.userLogin': ['POST', '/user/login'],
   'pet.getPetById': ['GET', '/pet/{petId}']
 };

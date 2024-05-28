@@ -7,6 +7,10 @@ info:
     `special-key` to test the authorization filters.
   version: 1.0.0
   title: OpenAPI Petstore
+  contact:
+    name: OpenAPI-Generator Contributors
+    url: 'https://github.com/OpenAPITools/openapi-generator'
+    email: 'openapitools@googlegroups.com'
   license:
     name: Apache-2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0.html'
