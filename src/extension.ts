@@ -1,9 +1,10 @@
 import fetch from 'node-fetch';
 import { createRequire } from 'node:module';
+import path from 'path';
 import * as vscode from 'vscode';
+import { generateFile, readAndRenderTemplate } from './utils/index';
 
 let myStatusBarItem: vscode.StatusBarItem;
-let apiJson: any;
 
 export function activate(context: vscode.ExtensionContext) {
   const myCommandId = 'alova.start';
@@ -19,11 +20,18 @@ export function activate(context: vscode.ExtensionContext) {
 
       // 查找对应的input属性值
       let inputUrl = '';
+      // platform = '';
       if (configuration.generator && configuration.generator.length) {
         for (let childObj of configuration.generator) {
+          // 接口文档api url
           if ('input' in childObj) {
             inputUrl = childObj.input;
           }
+          // 接口文档平台名称，首字母大写
+          // else if ('platform' in childObj) {
+          //   const temp = childObj.platform;
+          //   platform = temp.slice(0, 1).toUpperCase() + temp.slice(1);
+          // }
         }
       }
 
@@ -31,7 +39,92 @@ export function activate(context: vscode.ExtensionContext) {
       vscode.window.showInformationMessage('input: ' + inputUrl);
 
       // 发起请求
-      fetchData('https://generator3.swagger.io/openapi.json');
+      const data = await fetchData('https://generator3.swagger.io/openapi.json');
+      console.log('🚀 ~ vscode.commands.registerCommand ~ data:', data);
+      const packageJson = workspacedRequire('./package.json');
+      // 框架技术栈标签  vue | react
+      let frameTag = '';
+      const { vue, react } = packageJson.dependencies;
+      if (vue != undefined) frameTag = 'vueTag';
+      else if (react != undefined) frameTag = 'reactTag';
+
+      // 目标文件夹路径
+      const distDir = path.join(__dirname, '../design');
+
+      // mustache语法生成
+      // 渲染生成index.js
+      const renderdIndex = (await readAndRenderTemplate(path.resolve(__dirname, '../src/templates/index.mustache'), {
+        ...data,
+        [frameTag]: true
+      })) as string;
+
+      generateFile(distDir, 'index.js', renderdIndex);
+
+      // 渲染生成apiDefinitions.js
+      // 将接口数据对象转为数组结构
+      const paths = data.paths;
+      const pathInfoArr = [];
+      for (const [path, pathInfo] of Object.entries(paths)) {
+        for (const [method, methodInfo] of Object.entries(pathInfo as Object)) {
+          console.log('🚀 ~ vscode.commands.registerCommand ~ methodInfo:', method);
+          const methodFormat = method.toUpperCase();
+          pathInfoArr.push({
+            key: `${methodInfo.tags[0]}.${methodInfo.operationId}`,
+            method: methodFormat,
+            path
+          });
+        }
+      }
+      const renderApiDefinitions = (await readAndRenderTemplate(
+        path.resolve(__dirname, '../src/templates/apiDefinitions.mustache'),
+        { ...data, paths: pathInfoArr }
+      )) as string;
+      generateFile(distDir, 'apiDefinitions.js', renderApiDefinitions);
+
+      // 渲染生成createApis.js
+      const renderCreateApis = (await readAndRenderTemplate(
+        path.resolve(__dirname, '../src/templates/createApis.mustache'),
+        {
+          ...data
+        }
+      )) as string;
+
+      generateFile(distDir, 'createApis.js', renderCreateApis);
+
+      // 渲染生成globals.d.ts
+      // 准备interface需要的数据
+      // 将接口数据对象转为数组结构
+      const schemas = data.components.schemas;
+      const schemasInfoArr = [];
+      for (const [schema, schemaInfo] of Object.entries(schemas)) {
+        const propertiesInfo = [];
+        for (const [key, value] of Object.entries((schemaInfo as any).properties)) {
+          console.log('🚀 ~ vscode.commands.registerCommand ~ value:', key, value);
+          propertiesInfo.push({
+            key,
+            type: (value as any).type,
+            example: (value as any).example,
+            enum: (value as any).enum ? (value as any).enum.join('" | "') : undefined,
+            deprecated: (value as any).deprecated,
+            description: (value as any).description
+          });
+        }
+        schemasInfoArr.push({
+          title: (schemaInfo as any).title,
+          description: (schemaInfo as any).description,
+          name: schema,
+          propertiesInfo
+        });
+      }
+      const renderGlobals = (await readAndRenderTemplate(
+        path.resolve(__dirname, '../src/templates/globals.d.mustache'),
+        {
+          ...data,
+          schemasInfo: schemasInfoArr
+        }
+      )) as string;
+      console.log(schemasInfoArr, 'schemasInfoArr');
+      // generateFile(distDir, 'globals.d.ts', renderGlobals);
     })
   );
 
@@ -62,8 +155,7 @@ async function fetchData(url: string) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    apiJson = data;
-    console.log(data, 'data');
+    return data;
   } catch (error) {
     console.error('Error:', error);
   }

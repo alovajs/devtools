@@ -1,0 +1,38 @@
+import { createAlova } from 'alova';
+import GlobalFetch from 'alova/GlobalFetch';
+{{#vueTag}}
+import vueHook from 'alova/vue';
+{{/vueTag}}
+{{#reactTag}}
+import reactHook from 'alova/react';
+{{/reactTag}}
+import { createApis, withConfigType } from './createApis';
+
+export const alovaInstance = createAlova({
+  {{#servers}}
+    {{#url}}
+  baseURL: "{{{ url }}}",
+    {{/url}}
+  {{/servers}}
+  {{#vueTag}}
+  statesHook: vueHook,
+  {{/vueTag}}
+  {{#reactTag}}
+  statesHook: reactHook,
+  {{/reactTag}}
+  requestAdapter: GlobalFetch(),
+  beforeRequest: method => { },
+  responded: res => {
+    return res.json();
+  }
+});
+
+export const $$userConfigMap = withConfigType({});
+
+const Apis = createApis(alovaInstance, $$userConfigMap);
+
+// 如果是全局定义
+window.Apis = Apis;
+
+// 如果不是则直接导出
+// export Apis;
