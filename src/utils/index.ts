@@ -1,7 +1,6 @@
+import mustache from 'mustache';
+import fs from 'node:fs';
 import path from 'node:path';
-
-const fs = require('fs');
-const mustache = require('mustache');
 
 /**
  * 读取并渲染 Mustache 文件
@@ -11,7 +10,7 @@ const mustache = require('mustache');
  */
 export async function readAndRenderTemplate(templatePath: any, view: any) {
   return new Promise((resolve, reject) => {
-    fs.readFile(templatePath, 'utf-8', (err: Error, data: any) => {
+    fs.readFile(templatePath, 'utf-8', (err: NodeJS.ErrnoException | null, data: string) => {
       if (err) {
         return reject(err);
       }
@@ -32,7 +31,7 @@ export function generateFile(distDir: string, fileName: string, content: any) {
     fs.mkdirSync(distDir);
   }
   const filePath = path.join(distDir, fileName);
-  fs.writeFile(filePath, content, (err: Error) => {
+  fs.writeFile(filePath, content, (err: NodeJS.ErrnoException | null) => {
     if (err) {
       return console.error('Error writing file:', err);
     }
