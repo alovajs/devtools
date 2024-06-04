@@ -8,16 +8,14 @@ import path from 'node:path';
  * @param {object} view - 渲染模板所需的数据对象
  * @returns {Promise<string>} - 渲染后的内容
  */
-export async function readAndRenderTemplate(templatePath: any, view: any) {
-  return new Promise((resolve, reject) => {
-    fs.readFile(templatePath, 'utf-8', (err: NodeJS.ErrnoException | null, data: string) => {
-      if (err) {
-        return reject(err);
-      }
-      const output = mustache.render(data, view);
-      resolve(output);
-    });
-  });
+export async function readAndRenderTemplate(templatePath: any, view: any): Promise<string> {
+  try {
+    const data = await fs.readFileSync(templatePath, 'utf-8');
+    const output = mustache.render(data, view);
+    return output;
+  } catch (err) {
+    throw err;
+  }
 }
 
 /**

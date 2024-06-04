@@ -54,15 +54,15 @@ export function activate(context: vscode.ExtensionContext) {
       // mustache语法生成
 
       // 渲染头部注释部分
-      const commentText = (await readAndRenderTemplate(path.resolve(__dirname, '../src/templates/comment.mustache'), {
+      const commentText = await readAndRenderTemplate(path.resolve(__dirname, '../src/templates/comment.mustache'), {
         ...data
-      })) as string;
+      });
 
       // 渲染生成index.js
-      const renderdIndex = (await readAndRenderTemplate(path.resolve(__dirname, '../src/templates/index.mustache'), {
+      const renderdIndex = await readAndRenderTemplate(path.resolve(__dirname, '../src/templates/index.mustache'), {
         ...data,
         [frameTag]: true
-      })) as string;
+      });
 
       generateFile(distDir, 'index.js', renderdIndex);
 
@@ -81,20 +81,20 @@ export function activate(context: vscode.ExtensionContext) {
           });
         }
       }
-      const renderApiDefinitions = (await readAndRenderTemplate(
+      const renderApiDefinitions = await readAndRenderTemplate(
         path.resolve(__dirname, '../src/templates/apiDefinitions.mustache'),
         { ...data, paths: pathInfoArr, commentText }
-      )) as string;
+      );
       generateFile(distDir, 'apiDefinitions.js', renderApiDefinitions);
 
       // 渲染生成createApis.js
-      const renderCreateApis = (await readAndRenderTemplate(
+      const renderCreateApis = await readAndRenderTemplate(
         path.resolve(__dirname, '../src/templates/createApis.mustache'),
         {
           commentText,
           ...data
         }
-      )) as string;
+      );
 
       generateFile(distDir, 'createApis.js', renderCreateApis);
 
@@ -123,14 +123,14 @@ export function activate(context: vscode.ExtensionContext) {
           propertiesInfo
         });
       }
-      const renderGlobals = (await readAndRenderTemplate(
+      const renderGlobals = await readAndRenderTemplate(
         path.resolve(__dirname, '../src/templates/globals.d.mustache'),
         {
           ...data,
           schemasInfo: schemasInfoArr,
           commentText
         }
-      )) as string;
+      );
       console.log('🚀 ~ vscode.commands.registerCommand ~ renderGlobals:', renderGlobals);
       console.log(schemasInfoArr, 'schemasInfoArr');
       // generateFile(distDir, 'globals.d.ts', renderGlobals);
