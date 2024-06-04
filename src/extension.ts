@@ -2,6 +2,7 @@ import fetch from 'node-fetch';
 import { createRequire } from 'node:module';
 import path from 'path';
 import * as vscode from 'vscode';
+import { frameworkName } from './config/index';
 import { generateFile, readAndRenderTemplate } from './utils/index';
 
 let myStatusBarItem: vscode.StatusBarItem;
@@ -41,12 +42,11 @@ export function activate(context: vscode.ExtensionContext) {
       // 发起请求
       const data = await fetchData('https://generator3.swagger.io/openapi.json');
       console.log('🚀 ~ vscode.commands.registerCommand ~ data:', data);
+
       const packageJson = workspacedRequire('./package.json');
       // 框架技术栈标签  vue | react
-      let frameTag = '';
-      const { vue, react } = packageJson.dependencies;
-      if (vue != undefined) frameTag = 'vueTag';
-      else if (react != undefined) frameTag = 'reactTag';
+      const frameTag = frameworkName.find(framework => packageJson.dependencies[framework]) || 'vue';
+      console.log('🚀 ~ vscode.commands.registerCommand ~ frameTag:', frameTag);
 
       // 目标文件夹路径
       const distDir = path.join(__dirname, '../design');

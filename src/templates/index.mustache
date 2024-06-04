@@ -1,11 +1,11 @@
 import { createAlova } from 'alova';
 import GlobalFetch from 'alova/GlobalFetch';
-{{#vueTag}}
+{{#vue}}
 import vueHook from 'alova/vue';
-{{/vueTag}}
-{{#reactTag}}
+{{/vue}}
+{{#react}}
 import reactHook from 'alova/react';
-{{/reactTag}}
+{{/react}}
 import { createApis, withConfigType } from './createApis';
 
 export const alovaInstance = createAlova({
@@ -14,12 +14,12 @@ export const alovaInstance = createAlova({
   baseURL: "{{{ url }}}",
     {{/url}}
   {{/servers}}
-  {{#vueTag}}
+  {{#vue}}
   statesHook: vueHook,
-  {{/vueTag}}
-  {{#reactTag}}
+  {{/vue}}
+  {{#react}}
   statesHook: reactHook,
-  {{/reactTag}}
+  {{/react}}
   requestAdapter: GlobalFetch(),
   beforeRequest: method => { },
   responded: res => {
