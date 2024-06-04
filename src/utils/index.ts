@@ -1,4 +1,5 @@
 import mustache from 'mustache';
+import fetch from 'node-fetch';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -35,4 +36,18 @@ export function generateFile(distDir: string, fileName: string, content: string)
     }
     console.log('File written successfully at', filePath);
   });
+}
+
+export async function fetchData(url: string) {
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error:', error);
+  }
 }

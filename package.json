@@ -104,6 +104,7 @@
   },
   "dependencies": {
     "mustache": "^4.2.0",
-    "node-fetch": "^2.7.0"
+    "node-fetch": "^2.7.0",
+    "openapi-types": "^12.1.3"
   }
 }
