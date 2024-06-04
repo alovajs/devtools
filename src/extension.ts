@@ -69,7 +69,12 @@ export function activate(context: vscode.ExtensionContext) {
       // 渲染生成apiDefinitions.js
       // 将接口数据对象转为数组结构
       const paths = data.paths;
-      const pathInfoArr = [];
+      interface PathInfo {
+        key: string;
+        method: string;
+        path: string;
+      }
+      const pathInfoArr: PathInfo[] = [];
       for (const [path, pathInfo] of Object.entries(paths)) {
         for (const [method, methodInfo] of Object.entries(pathInfo as Object)) {
           console.log('🚀 ~ vscode.commands.registerCommand ~ methodInfo:', method);

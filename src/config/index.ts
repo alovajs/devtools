@@ -1,1 +1,1 @@
-export const frameworkName = ['vue', 'react'];
+export const frameworkName: string[] = ['vue', 'react'];
