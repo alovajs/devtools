@@ -52,6 +52,12 @@ export function activate(context: vscode.ExtensionContext) {
       const distDir = path.join(__dirname, '../design');
 
       // mustache语法生成
+
+      // 渲染头部注释部分
+      const commentText = (await readAndRenderTemplate(path.resolve(__dirname, '../src/templates/comment.mustache'), {
+        ...data
+      })) as string;
+
       // 渲染生成index.js
       const renderdIndex = (await readAndRenderTemplate(path.resolve(__dirname, '../src/templates/index.mustache'), {
         ...data,
@@ -77,7 +83,7 @@ export function activate(context: vscode.ExtensionContext) {
       }
       const renderApiDefinitions = (await readAndRenderTemplate(
         path.resolve(__dirname, '../src/templates/apiDefinitions.mustache'),
-        { ...data, paths: pathInfoArr }
+        { ...data, paths: pathInfoArr, commentText }
       )) as string;
       generateFile(distDir, 'apiDefinitions.js', renderApiDefinitions);
 
@@ -85,6 +91,7 @@ export function activate(context: vscode.ExtensionContext) {
       const renderCreateApis = (await readAndRenderTemplate(
         path.resolve(__dirname, '../src/templates/createApis.mustache'),
         {
+          commentText,
           ...data
         }
       )) as string;
@@ -120,9 +127,11 @@ export function activate(context: vscode.ExtensionContext) {
         path.resolve(__dirname, '../src/templates/globals.d.mustache'),
         {
           ...data,
-          schemasInfo: schemasInfoArr
+          schemasInfo: schemasInfoArr,
+          commentText
         }
       )) as string;
+      console.log('🚀 ~ vscode.commands.registerCommand ~ renderGlobals:', renderGlobals);
       console.log(schemasInfoArr, 'schemasInfoArr');
       // generateFile(distDir, 'globals.d.ts', renderGlobals);
     })
