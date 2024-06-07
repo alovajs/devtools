@@ -1,6 +1,6 @@
 import mustache from 'mustache';
 import fetch from 'node-fetch';
-import fs from 'node:fs';
+import fs, { promises } from 'node:fs';
 import path from 'node:path';
 
 /**
@@ -11,7 +11,7 @@ import path from 'node:path';
  */
 export async function readAndRenderTemplate(templatePath: string, view: any): Promise<string> {
   try {
-    const data = await fs.readFileSync(templatePath, 'utf-8');
+    const data = await promises.readFile(templatePath, 'utf-8');
     const output = mustache.render(data, view);
     return output;
   } catch (err) {
