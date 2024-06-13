@@ -1,5 +1,5 @@
 import { useRequest } from 'alova';
-
+import './api';
 // test
 const method = Apis.user.userLogin(
   { username: '', password: '' },
