@@ -1,31 +1,38 @@
 import { createAlova } from 'alova';
 import GlobalFetch from 'alova/GlobalFetch';
+{{#vue}}
 import vueHook from 'alova/vue';
+{{/vue}}
+{{#react}}
+import reactHook from 'alova/react';
+{{/react}}
 import { createApis, withConfigType } from './createApis';
 
 export const alovaInstance = createAlova({
-  baseURL: 'openapi文件中的server地址',
+  {{#servers}}
+    {{#url}}
+  baseURL: "{{{ url }}}",
+    {{/url}}
+  {{/servers}}
+  {{#vue}}
   statesHook: vueHook,
+  {{/vue}}
+  {{#react}}
+  statesHook: reactHook,
+  {{/react}}
   requestAdapter: GlobalFetch(),
-  beforeRequest: method => {},
+  beforeRequest: method => { },
   responded: res => {
     return res.json();
   }
 });
 
-export const $$userConfigMap = withConfigType({
-  'user.userLogin': {
-    cache: 'force-cache',
-    transformData: data => {
-      return data as string;
-    }
-  }
-});
+export const $$userConfigMap = withConfigType({});
 
 const Apis = createApis(alovaInstance, $$userConfigMap);
 
 // 如果是全局定义
-(globalThis as any).Apis = Apis;
+globalThis.Apis = Apis;
 
 // 如果不是则直接导出
 export default Apis;

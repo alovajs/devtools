@@ -17,7 +17,11 @@
     "noFallthroughCasesInSwitch": false,
     "skipLibCheck": true,
     "skipDefaultLibCheck": false,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "paths": {
+      "~/*": ["./typeing/*"]
+    }
   },
-  "exclude": ["design/**"]
+  "exclude": ["design/**"],
+  "include": ["src/**/*.ts", "typeing/**/*.d.ts"]
 }

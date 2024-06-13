@@ -1,11 +1,12 @@
 import { createRequire } from 'node:module';
 import { OpenAPIV3 } from 'openapi-types';
 import path from 'path';
+import type { PackageJson } from 'type-fest';
 import * as vscode from 'vscode';
 import { frameworkName, jsonUrl } from '../globalConfig';
 import { TemplateFile } from '../modules/TemplateFile';
 import { fetchData, readAndRenderTemplate } from '../utils/index';
-
+import { srcPath } from '../utils/path';
 export default {
   commandId: 'alova.start',
   handler: async () => {
@@ -14,34 +15,54 @@ export default {
     const workspacedRequire = createRequire(workspaceRootPath);
 
     // 读取文件内容
-    const configuration = workspacedRequire('./alova.config.cjs');
+    const configuration: AlovaConfig = workspacedRequire('./alova.config.cjs');
     console.log('🚀 ~ returnvscode.commands.registerCommand ~ configuration:', configuration);
 
-    // 查找对应的input属性值
-    type configType = 'auto' | 'ts' | 'typescript' | 'module' | 'commonjs';
     let inputUrl = '',
       outputPath = '',
-      type: configType = 'auto';
+      type: 'typescript' | 'module' | 'commonjs' = 'module';
     // platform = '';
     if (configuration.generator && configuration.generator.length) {
-      inputUrl = configuration.generator.find((item: { input: string }) => 'input' in item)?.name || '';
+      inputUrl = configuration.generator.find(item => item.inpput)?.inpput || '';
       // platform = configuration.generator.find((item: {platform: string}) => 'platform' in item)?.platform || null
-      outputPath = configuration.generator.find((item: { output: string }) => 'output' in item)?.output || null;
-      type = configuration.generator.find((item: { type: configType }) => 'type' in item)?.type || null;
-
+      outputPath = configuration.generator.find(item => item.output)?.output || '';
+      // type = configuration.generator.find(item => item.type)?.type || 'commonjs';
+      const configType = configuration.generator.find(item => item.type)?.type || 'commonjs';
+      switch (configType) {
+        case 'ts':
+        case 'typescript':
+          type = 'typescript';
+          break;
+        case 'module':
+          type = 'module';
+          break;
+        case 'auto':
+          type = 'typescript';
+          break;
+        default:
+          type = 'commonjs';
+          break;
+      }
       // 临时显示inputUrl地址
       vscode.window.showInformationMessage('input: ' + inputUrl);
 
       // 发起请求
       const data: OpenAPIV3.Document = await fetchData(jsonUrl);
-      if (!data) return;
+      if (!data) {
+        return;
+      }
       console.log('🚀 ~ vscode.commands.registerCommand ~ data:', data);
 
-      const packageJson = workspacedRequire('./package.json');
+      const packageJson: PackageJson = workspacedRequire('./package.json');
+      if (!packageJson) {
+        return;
+      }
       // 框架技术栈标签  vue | react
-      const frameTag = frameworkName.find(framework => packageJson.dependencies[framework]) ?? 'defaultKey';
+      const frameTag = frameworkName.find(framework => packageJson.dependencies?.[framework]) ?? 'defaultKey';
 
-      if (!data.paths) return;
+      if (!data.paths) {
+        return;
+      }
       const paths = data.paths;
       interface PathInfo {
         key: string;
@@ -101,12 +122,9 @@ export default {
       }
 
       // 头部注释部分
-      const commentText = await readAndRenderTemplate(
-        path.resolve(__dirname, `../../src/templates/${type}/comment.mustache`),
-        {
-          ...data
-        }
-      );
+      const commentText = await readAndRenderTemplate(path.resolve(srcPath, `templates/${type}/comment.mustache`), {
+        ...data
+      });
 
       // 目标文件夹路径
       const distDir = path.join(workspaceRootPath, outputPath);
@@ -125,20 +143,21 @@ export default {
         {
           fileName: 'apiDefinitions',
           injections: () => ({ ...data, paths: pathInfoArr, commentText })
+        },
+        {
+          fileName: 'globals.d',
+          injections: () => ({
+            ...data,
+            schemasInfo: schemasInfoArr,
+            commentText
+          }),
+          ext: '.ts'
         }
-        // {
-        //   fileName: 'globals.d',
-        //   injections: () => ({
-        //     ...data,
-        //     schemasInfo: schemasInfoArr,
-        //     commentText
-        //   })
-        // }
       ];
 
-      templateFiles.forEach(async ({ fileName, injections }) => {
+      templateFiles.forEach(async ({ fileName, injections, ext }) => {
         const templateFile = new TemplateFile(fileName, type);
-        templateFile.outputFile(injections(), distDir);
+        templateFile.outputFile(injections(), distDir, ext);
       });
     }
   }

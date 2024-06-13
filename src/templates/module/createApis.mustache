@@ -1,6 +1,6 @@
 {{{commentText}}}
-const { Method } = require('alova');
-const apiDefinitions = require('./apiDefinitions');
+import { Method } from 'alova';
+import apiDefinitions from './apiDefinitions';
 
 const createFunctionalProxy = (array, alovaInstance, configMap) => {
   // create a new proxy instance
@@ -53,9 +53,4 @@ export const createApis = (alovaInstance, configMap) =>
  * @param {Config} config
  * @returns {Config}
  */
-const withConfigType = config => config;
-
-module.exports = {
-  createApis,
-  withConfigType
-};
+export const withConfigType = config => config;
