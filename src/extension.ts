@@ -1,15 +1,15 @@
 import * as vscode from 'vscode';
 import generateApiCommand from './commands/generateApi';
-
+import showStatusBarIcon from './commands/showStatusBarIcon';
 // let myStatusBarItem: vscode.StatusBarItem;
-const commands = [generateApiCommand];
+const commands = [generateApiCommand, showStatusBarIcon];
 
 export function activate(context: vscode.ExtensionContext) {
   // 插件注册
   commands.forEach(({ commandId, handler }) => {
-    context.subscriptions.push(vscode.commands.registerCommand(commandId, handler));
+    context.subscriptions.push(vscode.commands.registerCommand(commandId, handler(context)));
   });
-
+  vscode.commands.executeCommand(showStatusBarIcon.commandId);
   // create a new status bar item that we can now manage
   // const myCommandId = 'alova.start';
   // myStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);

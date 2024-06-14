@@ -11,7 +11,6 @@ export default async function (
   if (!data) {
     return;
   }
-  console.log(data, 14);
 
   // 框架技术栈标签  vue | react
   const frameTag = getFrameworkTag(workspaceRootDir);
@@ -39,12 +38,11 @@ export default async function (
       });
     }
   }
-  console.log(paths, 39);
-
   // 准备interface需要的数据
   // 将接口数据对象转为数组结构
   if (!data.components || !data.components.schemas) return;
   const schemas = data.components.schemas;
+  (data as any).baseUrl = data.servers?.[0].url || '';
   interface propertiesInfoItem {
     key: string;
     type: string;

@@ -9,11 +9,7 @@ const reactHook = require('alova/react');
 iconst { createApis, withConfigType } = require('./createApis');
 
 const alovaInstance = createAlova({
-  {{#servers}}
-    {{#url}}
-  baseURL: "{{{ url }}}",
-    {{/url}}
-  {{/servers}}
+  baseURL: "{{{ baseUrl }}}",
   {{#vue}}
   statesHook: vueHook,
   {{/vue}}

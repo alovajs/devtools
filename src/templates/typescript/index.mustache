@@ -9,11 +9,7 @@ import reactHook from 'alova/react';
 import { createApis, withConfigType } from './createApis';
 
 export const alovaInstance = createAlova({
-  {{#servers}}
-    {{#url}}
-  baseURL: "{{{ url }}}",
-    {{/url}}
-  {{/servers}}
+  baseURL: "{{{ baseUrl }}}",
   {{#vue}}
   statesHook: vueHook,
   {{/vue}}

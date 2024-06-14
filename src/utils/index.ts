@@ -39,15 +39,10 @@ export function generateFile(distDir: string, fileName: string, content: string)
 }
 
 export async function fetchData(url: string) {
-  try {
-    const response = await fetch(url);
-
+  return fetch(url).then(response => {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const data = await response.text();
-    return data;
-  } catch (error) {
-    console.error('Error:', error);
-  }
+    return response.text();
+  });
 }
