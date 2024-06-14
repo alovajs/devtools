@@ -1,10 +1,8 @@
 import { createRequire } from 'node:module';
 import { PackageJson } from 'type-fest';
-import * as vscode from 'vscode';
 import { frameworkName } from '../globalConfig';
-export default function () {
-  const workspaceRootPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath + '/';
-  const workspacedRequire = createRequire(workspaceRootPath);
+export default function (workspaceRootDir: string) {
+  const workspacedRequire = createRequire(workspaceRootDir);
   const packageJson: PackageJson = workspacedRequire('./package.json');
   if (!packageJson) {
     return 'defaultKey';

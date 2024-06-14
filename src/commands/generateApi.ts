@@ -1,56 +1,38 @@
 import { createRequire } from 'node:module';
-import { OpenAPIV3 } from 'openapi-types';
-import path from 'path';
 import * as vscode from 'vscode';
 import generateApi from '../functions/generateApi';
-import { jsonUrl } from '../globalConfig';
-import { fetchData } from '../utils/index';
+import { Configuration } from '../modules/Configuration';
 export default {
   commandId: 'alova.start',
   handler: async () => {
-    // 获取到当前工作区的alova配置文件路径
-    const workspaceRootPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath + '/';
-    const workspacedRequire = createRequire(workspaceRootPath);
-
-    // 读取文件内容
-    const configuration: AlovaConfig = workspacedRequire('./alova.config.cjs');
-    console.log('🚀 ~ returnvscode.commands.registerCommand ~ configuration:', configuration);
-
-    let inputUrl = '',
-      outputPath = '',
-      type: TemplateType = 'module';
-    // platform = '';
-    if (configuration.generator && configuration.generator.length) {
-      inputUrl = configuration.generator.find(item => item.inpput)?.inpput || '';
-      // platform = configuration.generator.find((item: {platform: string}) => 'platform' in item)?.platform || null
-      outputPath = configuration.generator.find(item => item.output)?.output || '';
-      // type = configuration.generator.find(item => item.type)?.type || 'commonjs';
-      const configType = configuration.generator.find(item => item.type)?.type || 'commonjs';
-      switch (configType) {
-        case 'ts':
-        case 'typescript':
-          type = 'typescript';
-          break;
-        case 'module':
-          type = 'module';
-          break;
-        case 'auto':
-          type = 'typescript';
-          break;
-        default:
-          type = 'commonjs';
-          break;
-      }
-      // 发起请求
-      const data: OpenAPIV3.Document = await fetchData(jsonUrl);
-      if (!data) {
+    // 获取当前工作区
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    workspaceFolders?.forEach(async workspaceFolder => {
+      const workspaceRootPath = workspaceFolder.uri.fsPath + '/';
+      const workspacedRequire = createRequire(workspaceRootPath);
+      let alovaConfig: AlovaConfig | null = null;
+      const outputChannel = vscode.window.createOutputChannel('alova');
+      try {
+        // 读取文件内容
+        alovaConfig = workspacedRequire('./alova.config.cjs');
+      } catch (error) {
+        // 如果文件不存在，则提示用户
+        // vscode.window.showErrorMessage(`${workspaceRootPath}alova.config.cjs文件不存在`);
+        outputChannel.appendLine(`${workspaceRootPath}alova.config.cjs文件不存在`);
+        outputChannel.show();
         return;
       }
-
-      // 目标文件夹路径
-      const distDir = path.join(workspaceRootPath, outputPath);
-      // 生成api文件
-      generateApi(distDir, data, type);
-    }
+      if (!alovaConfig) {
+        return;
+      }
+      const configuration = new Configuration(alovaConfig, workspaceRootPath);
+      const outputPathArr = configuration.getAllOutputPath();
+      const templateTypeArr = configuration.getAllTemplateType();
+      const openApiData = await configuration.getAllOpenApiData();
+      outputPathArr.forEach(async (outputPath, idx) => {
+        // 生成api文件
+        generateApi(workspaceRootPath, outputPath, openApiData[idx], templateTypeArr[idx]);
+      });
+    });
   }
 };

@@ -1,13 +1,21 @@
+import path from 'node:path';
 import { OpenAPIV3 } from 'openapi-types';
 import { TemplateFile } from '../modules/TemplateFile';
 import getFrameworkTag from './getFrameworkTag';
-export default async function (outputDir: string, data: OpenAPIV3.Document, type: TemplateType) {
+export default async function (
+  workspaceRootDir: string,
+  outputPath: string,
+  data: OpenAPIV3.Document,
+  type: TemplateType
+) {
   if (!data) {
     return;
   }
-  // 框架技术栈标签  vue | react
-  const frameTag = getFrameworkTag();
+  console.log(data, 14);
 
+  // 框架技术栈标签  vue | react
+  const frameTag = getFrameworkTag(workspaceRootDir);
+  const outputDir = path.join(workspaceRootDir, outputPath);
   if (!data.paths) {
     return;
   }
@@ -20,6 +28,9 @@ export default async function (outputDir: string, data: OpenAPIV3.Document, type
   const pathInfoArr: PathInfo[] = [];
   for (const [path, pathInfo] of Object.entries(paths)) {
     for (const [method, methodInfo] of Object.entries(pathInfo as Object)) {
+      if (['parameters'].includes(method)) {
+        continue;
+      }
       const methodFormat = method.toUpperCase();
       pathInfoArr.push({
         key: `${methodInfo.tags[0]}.${methodInfo.operationId}`,
@@ -28,6 +39,7 @@ export default async function (outputDir: string, data: OpenAPIV3.Document, type
       });
     }
   }
+  console.log(paths, 39);
 
   // 准备interface需要的数据
   // 将接口数据对象转为数组结构
@@ -50,6 +62,9 @@ export default async function (outputDir: string, data: OpenAPIV3.Document, type
   const schemasInfoArr: schemasInfoItem[] = [];
   for (const [schema, schemaInfo] of Object.entries(schemas)) {
     const propertiesInfo = [];
+    if (!(schemaInfo as any).properties) {
+      continue;
+    }
     for (const [key, value] of Object.entries((schemaInfo as any).properties)) {
       console.log('🚀 ~ vscode.commands.registerCommand ~ value:', key, value);
       propertiesInfo.push({
@@ -70,9 +85,7 @@ export default async function (outputDir: string, data: OpenAPIV3.Document, type
   }
   const templateFile = new TemplateFile(type);
   // 头部注释部分
-  const commentText = await templateFile.readAndRenderTemplate('comment', {
-    ...data
-  });
+  const commentText = await templateFile.readAndRenderTemplate('comment', data, { root: true });
 
   // mustache语法生成
   // 定义模版配置对象

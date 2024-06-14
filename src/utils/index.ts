@@ -45,7 +45,7 @@ export async function fetchData(url: string) {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const data = await response.json();
+    const data = await response.text();
     return data;
   } catch (error) {
     console.error('Error:', error);
