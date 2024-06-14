@@ -1,5 +1,9 @@
 // 查找对应的input属性值
 declare type ConfigType = 'auto' | 'ts' | 'typescript' | 'module' | 'commonjs';
+// 模板类型
+declare type TemplateType = 'typescript' | 'module' | 'commonjs';
+// 平台类型
+declare type PlatformType = 'swagger' | 'knife4j' | 'yapi';
 declare type ApiDescriptor = {};
 declare type GeneratorConfig = {
   // openapi的json文件url地址
@@ -11,7 +15,7 @@ declare type GeneratorConfig = {
   // 支持openapi的平台，目前先支持swagger、knife4j、yapi，默认为空
   // 当指定了此参数后，input字段只需要指定文档的地址而不需要指定到openapi文件，减小使用门槛
   // 不同平台，它的openapi文件地址不一样，根据平台标识去对应地址下读取文件即可。
-  platform: 'swagger' | 'knife4j' | 'yapi';
+  platform: PlatformType;
 
   // 接口文件和类型文件的输出路径，多个generator不能重复的地址，否则生成的代码会相互覆盖，无意义
   output: string;
