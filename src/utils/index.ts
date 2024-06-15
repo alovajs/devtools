@@ -46,3 +46,39 @@ export async function fetchData(url: string) {
     return response.text();
   });
 }
+
+export function highPrecisionInterval(callback: () => void, intervalInMilliseconds: number, immediate = false) {
+  let isRunning = true;
+
+  const run = () => {
+    if (!isRunning) return;
+
+    const start = Date.now();
+    callback();
+    const duration = Date.now() - start;
+    const nextInterval = intervalInMilliseconds - duration;
+
+    if (nextInterval > 0) {
+      setTimeout(run, nextInterval);
+    } else {
+      setImmediate(run);
+    }
+  };
+
+  if (immediate) {
+    setImmediate(run);
+  } else {
+    setTimeout(run, intervalInMilliseconds);
+  }
+
+  return {
+    isRunning() {
+      return isRunning;
+    },
+    clear() {
+      isRunning = false;
+    },
+    time: intervalInMilliseconds,
+    immediate
+  };
+}

@@ -1,7 +1,12 @@
+import * as vscode from 'vscode';
+import generateApi from '../commands/generateApi';
 import getOpenApiData from '../functions/getOpenApiData';
+import { highPrecisionInterval } from '../utils';
+export const CONFIG_POOL: Array<Configuration> = [];
 export class Configuration {
   config: AlovaConfig;
   workspaceRootDir: string;
+  autoUpdateControl: ReturnType<typeof highPrecisionInterval>;
   constructor(config: AlovaConfig, workspaceRootDir: string) {
     //配置文件
     this.config = config;
@@ -44,5 +49,48 @@ export class Configuration {
   // 获取所有openapi数据
   getAllOpenApiData() {
     return Promise.all(this.config.generator.map(generator => this.getOpenApiData(generator)));
+  }
+  private getAutoUpdateConfig() {
+    const autoUpdateConfig = this.config.autoUpdate;
+    let time = 1000 * 60 * 5;
+    let immediate = false;
+    if (typeof autoUpdateConfig === 'object') {
+      time = autoUpdateConfig.interval;
+      immediate = !!autoUpdateConfig.launchEditor;
+    }
+    return {
+      time,
+      immediate
+    };
+  }
+  autoUpdate() {
+    const autoUpdateConfig = this.config.autoUpdate;
+    if (!autoUpdateConfig) {
+      return;
+    }
+    const { time, immediate } = this.getAutoUpdateConfig();
+    this.autoUpdateControl = highPrecisionInterval(
+      () => vscode.commands.executeCommand(generateApi.commandId),
+      time,
+      immediate
+    );
+    return this.autoUpdateControl;
+  }
+  closeAutoUpdate() {
+    this.autoUpdateControl?.clear?.();
+  }
+  refreshAutoUpdate() {
+    const autoUpdateConfig = this.config.autoUpdate;
+    if (!autoUpdateConfig) {
+      this.closeAutoUpdate();
+      return;
+    }
+    const { time, immediate } = this.getAutoUpdateConfig();
+    const { time: oldTime, immediate: oldImmediate, isRunning } = this.autoUpdateControl;
+    if (time === oldTime && oldImmediate === immediate && isRunning()) {
+      return;
+    }
+    this.closeAutoUpdate();
+    this.autoUpdate();
   }
 }
