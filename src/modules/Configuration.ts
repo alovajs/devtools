@@ -39,7 +39,7 @@ export class Configuration {
   }
   // 获取openapi数据
   getOpenApiData(generator: GeneratorConfig) {
-    return getOpenApiData(this.workspaceRootDir, generator.inpput, generator.platform);
+    return getOpenApiData(this.workspaceRootDir, generator.input, generator.platform);
   }
   // 获取所有openapi数据
   getAllOpenApiData() {

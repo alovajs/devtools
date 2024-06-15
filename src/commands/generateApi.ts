@@ -32,7 +32,7 @@ export default {
         const openApiData = await configuration.getAllOpenApiData();
         outputPathArr.forEach(async (outputPath, idx) => {
           // 生成api文件
-          generateApi(workspaceRootPath, outputPath, openApiData[idx], templateTypeArr[idx]);
+          generateApi(workspaceRootPath, outputPath, openApiData[idx], templateTypeArr[idx] ?? 'commonjs');
         });
         vscode.window.showInformationMessage('生成api文件成功!');
       });

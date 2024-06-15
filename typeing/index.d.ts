@@ -7,7 +7,7 @@ declare type PlatformType = 'swagger' | 'knife4j' | 'yapi';
 declare type ApiDescriptor = {};
 declare type GeneratorConfig = {
   // openapi的json文件url地址
-  inpput: string;
+  input: string;
   // input: 'http://localhost:3000/openapi.json',
   // input: 'openapi/api.json' // 以当前项目为相对目录的本地地址
   // input: 'http://192.168.5.123:8080' // 没有指向openapi文件时，必须配合platform参数使用
