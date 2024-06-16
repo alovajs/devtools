@@ -19,6 +19,8 @@ export function readConfig(workspaceRootPath: string, createWatch = true) {
       const config = readConfig(workspaceRootPath, false);
       // 替换配置
       const configItem = CONFIG_POOL.find(config => config.workspaceRootDir === workspaceRootPath);
+      console.log(configItem, config, 22);
+
       if (configItem && config) {
         configItem.config = config;
         // 刷新定时器

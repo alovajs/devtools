@@ -86,7 +86,9 @@ export class Configuration {
       return;
     }
     const { time, immediate } = this.getAutoUpdateConfig();
-    const { time: oldTime, immediate: oldImmediate, isRunning } = this.autoUpdateControl;
+    const { time: oldTime, immediate: oldImmediate, isRunning } = this.autoUpdateControl || {};
+    console.log(time, oldTime, immediate, oldImmediate, isRunning(), 90);
+
     if (time === oldTime && oldImmediate === immediate && isRunning()) {
       return;
     }

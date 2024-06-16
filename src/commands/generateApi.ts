@@ -1,10 +1,12 @@
 import * as vscode from 'vscode';
+import { loading, reset } from '../components/statusBar';
 import generateApi from '../functions/generateApi';
 import { CONFIG_POOL } from '../modules/Configuration';
 // 用于自动生成
 export default {
   commandId: 'alova.generateApi',
   handler: (context: vscode.ExtensionContext) => async () => {
+    loading();
     // 获取当前工作区
     try {
       // 生成api文件
@@ -28,5 +30,6 @@ export default {
     } catch (error: any) {
       vscode.window.showErrorMessage(error.message);
     }
+    reset();
   }
 };

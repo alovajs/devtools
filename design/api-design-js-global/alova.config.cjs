@@ -5,8 +5,8 @@ module.exports = {
   generator: [
     {
       // openapi的json文件url地址
-      input: 'https://petstore.swagger.io',
-      // input: 'https://generator3.swagger.io',
+      // input: 'https://petstore.swagger.io',
+      input: 'https://generator3.swagger.io',
       // input: './openapi.yaml',
       // input: 'http://localhost:3000/openapi.json',
       // input: 'openapi/api.json' // 以当前项目为相对目录的本地地址
@@ -18,7 +18,7 @@ module.exports = {
       platform: 'swagger',
 
       // 接口文件和类型文件的输出路径，多个generator不能重复的地址，否则生成的代码会相互覆盖，无意义
-      output: 'src/api',
+      output: 'src/api/xxxx2',
 
       // （具体看下面）指定生成的响应数据的mediaType，指定后以此数据类型来生成200状态码的响应ts格式，默认application/json
       responseMediaType: 'application/json',
@@ -30,7 +30,7 @@ module.exports = {
       // ts/typescript：意思相同，表示生成ts类型文件
       // module：生成esModule规范文件
       // commonjs：表示生成commonjs规范文件
-      type: 'ts',
+      type: 'commonjs',
 
       // （具体看下面）过滤或转换生成的api接口函数，返回一个新的apiDescriptor来生成api调用函数
       // 未指定此函数时则不转换apiDescripor对象
@@ -53,11 +53,11 @@ module.exports = {
   ],
 
   // 是否自动更新接口，默认开启，每5分钟检查一次，false时关闭
-  autoUpdate: false
-  // autoUpdate: {
-  //   // 编辑器开启时更新，默认false
-  //   launchEditor: true,
-  //   // 自动更新间隔，单位毫秒
-  //   interval: 60 * 1000
-  // }
+  // autoUpdate: true
+  autoUpdate: {
+    // 编辑器开启时更新，默认false
+    // launchEditor: true,
+    // 自动更新间隔，单位毫秒
+    interval: 60 * 1000
+  }
 };

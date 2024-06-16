@@ -43,6 +43,34 @@ function getType(type: string) {
   }
   return type;
 }
+/**
+ *
+ * @param path $ref查找路径
+ * @param openApi openApi文档对象
+ * @param refMap 缓存查找数据
+ * @returns 查找到的SchemaObject
+ */
+const findBy$ref = (
+  path: string,
+  openApi: OpenAPIV3_1.Document,
+  refMap: Record<string, OpenAPIV3_1.SchemaObject> = {}
+) => {
+  if (refMap[path]) {
+    return refMap[path];
+  }
+  const pathArr = path.split('/');
+  let find: any = {
+    '#': openApi
+  };
+  pathArr.forEach(key => {
+    if (find) {
+      find = find[key];
+    }
+  });
+  refMap[path] = find;
+
+  return find as OpenAPIV3_1.SchemaObject;
+};
 export default async function openApi2Data(openApi: OpenAPIV3_1.Document): Promise<TemplateData> {
   // 处理openApi中的数据
   // ...
@@ -55,23 +83,6 @@ export default async function openApi2Data(openApi: OpenAPIV3_1.Document): Promi
   };
   const schemas = openApi.components?.schemas || [];
   const refMap: Record<string, OpenAPIV3_1.SchemaObject> = {};
-  const findBy$ref = (path: string) => {
-    if (refMap[path]) {
-      return refMap[path];
-    }
-    const pathArr = path.split('/');
-    let find: any = {
-      '#': openApi
-    };
-    pathArr.forEach(key => {
-      if (find) {
-        find = find[key];
-      }
-    });
-    refMap[path] = find;
-
-    return find as OpenAPIV3_1.SchemaObject;
-  };
   for (const [schema, schemaInfo] of Object.entries(schemas)) {
     const propertiesInfo = [];
     refMap[`#/components/schemas/${schemas}`] = schemaInfo;
@@ -79,7 +90,7 @@ export default async function openApi2Data(openApi: OpenAPIV3_1.Document): Promi
       continue;
     }
     for (const [key, value] of Object.entries(schemaInfo.properties)) {
-      const infoValue = isReferenceObject(value) ? findBy$ref(value.$ref) : value;
+      const infoValue = isReferenceObject(value) ? findBy$ref(value.$ref, openApi, refMap) : value;
       propertiesInfo.push({
         key,
         type: getType(infoValue?.type as string),

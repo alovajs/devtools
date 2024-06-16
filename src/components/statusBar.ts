@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 
 export const loading = () => {
   statusBarItem.text = '$(sync~spin) Loading...';
+  statusBarItem.tooltip = 'loading';
   statusBarItem.command = '';
 };
 export const reset = () => {
