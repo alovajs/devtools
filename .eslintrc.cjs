@@ -4,7 +4,7 @@ module.exports = {
     es2021: true,
     node: true
   },
-  ignorePatterns: ['out'],
+  ignorePatterns: ['out', '**/*.handlebars'],
   extends: ['airbnb', 'airbnb-typescript', 'prettier'],
   parser: '@typescript-eslint/parser',
   parserOptions: {

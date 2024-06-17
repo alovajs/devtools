@@ -29,7 +29,7 @@ export class TemplateFile {
   }
   readAndRenderTemplate(fileName: string, data: any, config?: { root?: boolean }) {
     const filePath = config?.root ? fileName : `${this.type}/${fileName}`;
-    const templatePath = path.resolve(srcPath, `templates/${filePath}.mustache`);
+    const templatePath = path.resolve(srcPath, `templates/${filePath}.handlebars`);
     return readAndRenderTemplate(templatePath, data);
   }
 }

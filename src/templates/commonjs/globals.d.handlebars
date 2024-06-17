@@ -56,12 +56,13 @@ declare global {
        *
        * **path:** {{{path}}}
        *
-       {{#pathParameters}}
+      {{#if pathParameters}}
        * ---
        *
        * **Path Parameters**
        * ```ts
        * interface PathParameters {
+      {{#pathParameters}}
        *   // {{{description}}}
        {{#required}}
        *   // required: true
@@ -70,16 +71,18 @@ declare global {
        *  // [deprecated]
        {{/deprecated}}
        *   {{{key}}}: {{{type}}};
+      {{/pathParameters}}
        * }
        * ```
        *
-       {{/pathParameters}}
+       {{/if}}
+       {{#if queryParameters}}
+       * ---
+       *
+       * **Query Parameters**
+       * ```ts
+       * interface QueryParameters {
        {{#queryParameters}}
-       * ---
-       *
-       * **Path Parameters**
-       * ```ts
-       * interface PathParameters {
        *   // {{{description}}}
        {{#required}}
        *   // required: true
@@ -88,25 +91,33 @@ declare global {
        *  // [deprecated]
        {{/deprecated}}
        *   {{{key}}}: {{{type}}};
+       {{/queryParameters}}
        * }
        * ```
        *
-       {{/queryParameters}}
-       {{#response}}
+       {{/if}}
+       {{#if response}}
        * ---
        *
        * **Response**
        * ```ts
+       {{#isType response "array"}}
        * interface Response {
+       {{#response}}
        *   // {{{description}}}
        {{#deprecated}}
        *  // [deprecated]
        {{/deprecated}}
        *   {{{key}}}: {{{type}}};
+       {{/response}}
        * }
+       {{/isType}}
+       {{#isType response "object"}}
+       * type Response = {{{response.type}}}
+       {{/isType}}
        * ```
        *
-       {{/response}}
+       {{/if}}
        * ---
        */
       {{{name}}}<Config extends Alova2MethodConfig<{{{responseName}}}>>(

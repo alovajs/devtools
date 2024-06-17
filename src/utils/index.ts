@@ -1,10 +1,17 @@
-import mustache from 'mustache';
+import handlebars, { HelperOptions } from 'handlebars';
 import fetch from 'node-fetch';
 import fs, { promises } from 'node:fs';
 import path from 'node:path';
-
+export const getType = (obj: any) => Object.prototype.toString.call(obj).slice(8, -1).toLowerCase();
+handlebars.registerHelper('isType', function (this: any, value, type: string, options: HelperOptions) {
+  if (getType(value) === type) {
+    return options.fn(this);
+  } else {
+    return options.inverse(this);
+  }
+});
 /**
- * 读取并渲染 Mustache 文件
+ * 读取并渲染 handlebars 文件
  * @param templatePath 模板文件路径
  * @param view - 渲染模板所需的数据对象
  * @returns 渲染后的内容
@@ -12,8 +19,7 @@ import path from 'node:path';
 export async function readAndRenderTemplate(templatePath: string, view: any): Promise<string> {
   try {
     const data = await promises.readFile(templatePath, 'utf-8');
-    const output = mustache.render(data, view);
-    return output;
+    return handlebars.compile(data)(view);
   } catch (err) {
     throw err;
   }

@@ -5,8 +5,8 @@
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.suggestSelection": "recentlyUsedByPrefix",
   "editor.codeActionsOnSave": {
-    "source.organizeImports": "explicit",
-    "source.fixAll.eslint": "explicit"
+    // "source.organizeImports": "explicit",
+    // "source.fixAll.eslint": "explicit"
   },
   "typescript.tsdk": "node_modules/typescript/lib",
   "files.exclude": {
@@ -17,7 +17,7 @@
   },
   // Turn off tsc task auto detection since we have the necessary tasks as npm scripts
   "typescript.tsc.autoDetect": "off",
-  "[mustache]": {
+  "[handlebars]": {
     "editor.defaultFormatter": "monosans.djlint"
   }
 }

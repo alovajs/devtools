@@ -7,10 +7,10 @@ type Path = {
   path: string;
 };
 type renderItem = {
-  description: string;
-  required: boolean;
-  deprecated: boolean;
-  key: string;
+  description?: string;
+  required?: boolean;
+  deprecated?: boolean;
+  key?: string;
   type: string;
 };
 interface Api {
@@ -19,7 +19,7 @@ interface Api {
   path: string;
   pathParameters: renderItem[];
   queryParameters: renderItem[];
-  response: renderItem[];
+  response: renderItem[] | renderItem;
   name: string;
   responseName: string;
   pathKey: string;
@@ -118,7 +118,7 @@ function convertToType(schema: JSONSchema): string {
     }
 
     lines.push(`}`);
-    return lines.join(' ');
+    return lines.length > 2 ? lines.join('\n') : 'object';
   }
 
   function parseArray(schema: JSONSchema): string {
@@ -228,7 +228,7 @@ export default async function openApi2Data(
           const [parameter, type] = remove$ref<OpenAPIV3.ParameterObject>(refParameter, openApi, templateData.schemas);
           if (parameter.in === 'path') {
             pathParameters.push({
-              key: parameter.name,
+              key: parameter.name + (!parameter.required ? '?' : ''),
               description: parameter.description || '',
               type,
               required: !!parameter.required,
@@ -237,7 +237,7 @@ export default async function openApi2Data(
           }
           if (parameter.in === 'query') {
             queryParameters.push({
-              key: parameter.name,
+              key: parameter.name + (!parameter.required ? '?' : ''),
               description: parameter.description || '',
               type,
               required: !!parameter.required,
@@ -251,12 +251,22 @@ export default async function openApi2Data(
           : responseInfo;
         const key = config.responseMediaType ?? Object.keys(responseObject.content ?? {})[0] ?? 'application/json';
         const responseSchema = responseObject?.content?.[key]?.schema ?? {};
-        const [response, responseName] = remove$ref<OpenAPIV3_1.SchemaObject>(
+        const [responseSchemaObj, responseName] = remove$ref<OpenAPIV3_1.SchemaObject>(
           responseSchema,
           openApi,
           templateData.schemas
         );
-
+        const response = responseSchemaObj.properties
+          ? Object.entries(responseSchemaObj.properties as OpenAPIV3_1.SchemaObject).map(([key, value]) => {
+              return {
+                key,
+                description: value.description || '',
+                type: value?.type,
+                required: !!value.required,
+                deprecated: !!value.deprecated
+              };
+            })
+          : { type: responseName };
         const api: Api = {
           method: methodFormat,
           summary: methodInfo.summary ?? '',
@@ -266,15 +276,7 @@ export default async function openApi2Data(
           pathKey,
           pathParameters,
           queryParameters,
-          response: Object.entries((response.properties ?? {}) as OpenAPIV3_1.SchemaObject).map(([key, value]) => {
-            return {
-              key,
-              description: value.description || '',
-              type: value?.type,
-              required: !!value.required,
-              deprecated: !!value.deprecated
-            };
-          })
+          response
         };
         templateData.pathsArr.push({
           key: pathKey,

@@ -1,7 +1,8 @@
-/// <reference path="./globals.d.ts" />
+///
+<reference path='./globals.d.ts' />
 {{{commentText}}}
 export default {
-  {{#paths}}
+{{#pathsArr}}
   "{{{key}}}": ["{{method}}", "{{{path}}}"],
-  {{/paths}}
+{{/pathsArr}}
 };
