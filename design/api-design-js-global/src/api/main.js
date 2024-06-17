@@ -1,1 +1,0 @@
-Apis.documentation.generateFromURL();

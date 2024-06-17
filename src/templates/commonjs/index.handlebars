@@ -1,18 +1,38 @@
-const { createAlova } = require('alova'); const GlobalFetch = require('alova/GlobalFetch');
+const { createAlova } = require('alova');
+const GlobalFetch = require('alova/GlobalFetch');
 {{#vue}}
-  const vueHook = require('alova/vue');
+const vueHook = require('alova/vue');
 {{/vue}}
 {{#react}}
-  const reactHook = require('alova/react');
+const reactHook = require('alova/react');
 {{/react}}
-const { createApis, withConfigType } = require('./createApis'); const alovaInstance = createAlova({ baseURL: "{{{baseUrl}}}",
+const { createApis, withConfigType } = require('./createApis'); 
+const alovaInstance = createAlova({ 
+  baseURL: "{{{baseUrl}}}",
 {{#vue}}
   statesHook: vueHook,
 {{/vue}}
 {{#react}}
   statesHook: reactHook,
 {{/react}}
-requestAdapter: GlobalFetch(), beforeRequest: method => { }, responded: res => { return res.json(); } }); const
-$$userConfigMap = withConfigType({}); /** * @type{APIS} */ const Apis = createApis(alovaInstance, $$userConfigMap); //
-如果是全局定义 globalThis.Apis = Apis; // 如果不是则直接导出 // export Apis; module.exports = { Apis, alovaInstance,
-$$userConfigMap };
+  requestAdapter: GlobalFetch(),
+  beforeRequest: method => {},
+  responded: res => {
+    return res.json();
+  }
+});
+const $$userConfigMap = withConfigType({});
+/**
+ * @type{APIS}
+ */
+const Apis = createApis(alovaInstance, $$userConfigMap);
+
+// 如果是全局定义
+globalThis.Apis = Apis;
+
+// 如果不是则直接导出
+module.exports = {
+  Apis,
+  alovaInstance,
+  $$userConfigMap
+};

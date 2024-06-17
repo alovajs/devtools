@@ -23,7 +23,7 @@ type ExtractUserDefinedTransformed<
 type Alova2Method<
   Responded,
   DefinitionKey extends keyof typeof apiDefinitions,
-  CurrentConfig extends Alova2MethodConfig<any> = undefined
+  CurrentConfig extends Alova2MethodConfig<any>
 > =
   CollapsedAlova extends Alova<infer State, infer Export, infer RequestConfig, infer Response, infer ResponseHeader>
     ? Method<
