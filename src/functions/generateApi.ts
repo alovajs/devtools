@@ -7,6 +7,7 @@ export default async function (
   workspaceRootDir: string,
   outputPath: string,
   data: OpenAPIV3_1.Document,
+  config: GeneratorConfig,
   type: TemplateType
 ) {
   if (!data) {
@@ -15,7 +16,7 @@ export default async function (
   const outputDir = path.join(workspaceRootDir, outputPath);
   const templateFile = new TemplateFile(type);
   // 将openApi对象转成template对象
-  const templateData = await openApi2Data(data);
+  const templateData = await openApi2Data(data, config);
   // 框架技术栈标签  vue | react
   templateData[getFrameworkTag(workspaceRootDir)] = true;
   // 头部注释部分

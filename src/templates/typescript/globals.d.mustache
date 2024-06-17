@@ -41,37 +41,89 @@ type Alova2Method<
       >
     : never;
 
-{{#schemasInfo}}
-/**
- * @title {{title}}
- * @description {{description}}
- */
+{{#schemas}} 
+{{{.}}} 
+{{/schemas}}
+declare global {
+  interface APIS {
+    {{#pathApis}}
+    {{{tag}}}: {
+     {{#apis}}
+      /**
+       * ---
+       *
+       * [{{{method}}}]{{{summary}}}
+       *
+       * **path:** {{{path}}}
+       *
+       {{#pathParameters}}
+       * ---
+       *
+       * **Path Parameters**
+       * ```ts
+       * interface PathParameters {
+       *   // {{{description}}}
+       {{#required}}
+       *   // required: true
+       {{/required}}
+       {{#deprecated}}
+       *  // [deprecated]
+       {{/deprecated}}
+       *   {{{key}}}: {{{type}}};
+       * }
+       * ```
+       *
+       {{/pathParameters}}
+       {{#queryParameters}}
+       * ---
+       *
+       * **Path Parameters**
+       * ```ts
+       * interface PathParameters {
+       *   // {{{description}}}
+       {{#required}}
+       *   // required: true
+       {{/required}}
+       {{#deprecated}}
+       *  // [deprecated]
+       {{/deprecated}}
+       *   {{{key}}}: {{{type}}};
+       * }
+       * ```
+       *
+       {{/queryParameters}}
+       {{#response}}
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * interface Response {
+       *   // {{{description}}}
+       {{#deprecated}}
+       *  // [deprecated]
+       {{/deprecated}}
+       *   {{{key}}}: {{{type}}};
+       * }
+       * ```
+       *
+       {{/response}}
+       * ---
+       */
+      {{{name}}}<Config extends Alova2MethodConfig<{{{responseName}}}>>(
+        params: {
+          {{#pathParameters}}
+          {{{key}}}: {{{type}}}; // {{{description}}} 
+          {{/pathParameters}}
+          {{#queryParameters}}
+          {{{key}}}: {{{type}}}; // {{{description}}} 
+          {{/queryParameters}}
+        },
+        config?: Alova2MethodConfig<{{{responseName}}}>
+      ): Alova2Method<{{{responseName}}}, '{{{pathKey}}}', Config>;
+     {{/apis}}
+    };
+    {{/pathApis}}
+  }
 
-export interface {{name}} {
-  {{#propertiesInfo}}
-    {{#description}}
-  /**
-    * {{{description}}}
-    * {{#example}}@example {{example}}{{/example}}
-    {{#deprecated}}
-   * @deprecated
-    {{/deprecated}}
-  */
-    {{/description}}
-    {{^description}}
-  /**
-    * {{#example}}@example {{example}}{{/example}}
-    {{#deprecated}}
-   * @deprecated
-    {{/deprecated}}
-  */
-    {{/description}}
-    {{#enum}}
-    {{key}}: "{{{enum}}}";
-    {{/enum}}
-    {{^enum}}
-    {{key}}: {{{type}}};
-    {{/enum}}
-  {{/propertiesInfo}}
+  var Apis: APIS;
 }
-{{/schemasInfo}}

@@ -80,6 +80,7 @@
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
     "@types/js-yaml": "^4.0.9",
+    "@types/lodash": "^4.17.5",
     "@types/mocha": "^10.0.6",
     "@types/mustache": "^4.2.5",
     "@types/node": "18.x",
@@ -110,6 +111,8 @@
     }
   },
   "dependencies": {
+    "json-schema-to-typescript": "^14.0.5",
+    "lodash": "^4.17.21",
     "mustache": "^4.2.0",
     "node-fetch": "^2.7.0",
     "openapi-types": "^12.1.3",

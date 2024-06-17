@@ -14,6 +14,7 @@ export default {
         const outputPathArr = configuration.getAllOutputPath();
         const templateTypeArr = configuration.getAllTemplateType();
         const openApiData = await configuration.getAllOpenApiData();
+        const generatorConfigArr = configuration.config.generator;
         await Promise.all(
           outputPathArr.map((outputPath, idx) => {
             // 生成api文件
@@ -21,6 +22,7 @@ export default {
               configuration.workspaceRootDir,
               outputPath,
               openApiData[idx],
+              generatorConfigArr[idx],
               templateTypeArr[idx] ?? 'commonjs'
             );
           })
