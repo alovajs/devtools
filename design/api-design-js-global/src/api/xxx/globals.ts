@@ -385,172 +385,6 @@ export interface RenderResponse {
   value: string;
 }
 
-export interface GenerationRequest {
-  /**
-   * language to generate (required)
-   */
-  lang: string;
-  /**
-   * spec in json format. . Alternative to `specURL`
-   */
-  spec?: {};
-  /**
-   * URL of the spec in json format. Alternative to `spec`
-   */
-  specURL?: string;
-  type?: 'any';
-  /**
-   * codegen version to use
-   */
-  codegenVersion?: 'V2' | 'V3';
-  options?: {
-    /**
-     * adds authorization headers when fetching the open api definitions remotely. Pass in a URL-encoded string of name:header with a comma separating multiple values
-     */
-    auth?: string;
-    /**
-     * adds authorization headers when fetching the open api definitions remotely. Pass in an authorizationValue object
-     */
-    authorizationValue?: {
-      /**
-       * Authorization value
-       */
-      value?: string;
-      /**
-       * Authorization key
-       */
-      keyName?: string;
-      type?: 'any';
-      required?: [];
-      additionalProperties?: never;
-      minItems?: 0;
-    };
-    /**
-     * package for generated api classes
-     */
-    apiPackage?: string;
-    /**
-     * template version for generation
-     */
-    templateVersion?: string;
-    /**
-     * package for generated models
-     */
-    modelPackage?: string;
-    /**
-     * Prefix that will be prepended to all model names. Default is the empty string.
-     */
-    modelNamePrefix?: string;
-    /**
-     * PrefixSuffix that will be appended to all model names. Default is the empty string.
-     */
-    modelNameSuffix?: string;
-    /**
-     * sets specified system properties in key/value format
-     */
-    systemProperties?: {
-      [k: string]: string;
-    };
-    /**
-     * sets instantiation type mappings in key/value format. For example (in Java): array=ArrayList,map=HashMap. In other words array types will get instantiated as ArrayList in generated code.
-     */
-    instantiationTypes?: {
-      [k: string]: string;
-    };
-    /**
-     * sets mappings between swagger spec types and generated code types in key/value format. For example: array=List,map=Map,string=String.
-     */
-    typeMappings?: {
-      [k: string]: string;
-    };
-    /**
-     * sets additional properties that can be referenced by the mustache templates in key/value format.
-     */
-    additionalProperties?: {
-      [k: string]: {};
-    };
-    /**
-     * specifies additional language specific primitive types in the format of type1,type2,type3,type3. For example: String,boolean,Boolean,Double. You can also have multiple occurrences of this option.
-     */
-    languageSpecificPrimitives?: {
-      [k: string]: unknown;
-    };
-    /**
-     * specifies mappings between a given class and the import that should be used for that class in key/value format.
-     */
-    importMappings?: {
-      [k: string]: string;
-    };
-    /**
-     * root package for generated code
-     */
-    invokerPackage?: string;
-    /**
-     * groupId in generated pom.xml
-     */
-    groupId?: string;
-    /**
-     * artifactId in generated pom.xml
-     */
-    artifactId?: string;
-    /**
-     * artifact version generated in pom.xml
-     */
-    artifactVersion?: string;
-    /**
-     * library template (sub-template)
-     */
-    library?: string;
-    /**
-     * Git user ID, e.g. swagger-api.
-     */
-    gitUserId?: string;
-    /**
-     * Git repo ID, e.g. swagger-codegen.
-     */
-    gitRepoId?: string;
-    /**
-     * Release note, default to 'Minor update'.
-     */
-    releaseNote?: string;
-    /**
-     * HTTP user agent, e.g. codegen_csharp_api_client, default to 'Swagger-Codegen/{packageVersion}}/{language}'
-     */
-    httpUserAgent?: string;
-    /**
-     * pecifies how a reserved name should be escaped to. Otherwise, the default _<name> is used. For example id=identifier.
-     */
-    reservedWordsMappings?: {
-      [k: string]: string;
-    };
-    /**
-     * Specifies an override location for the .swagger-codegen-ignore file. Most useful on initial generation.
-     */
-    ignoreFileOverride?: string;
-    /**
-     * Remove prefix of operationId, e.g. config_getId => getId
-     */
-    removeOperationIdPrefix?: boolean;
-    skipOverride?: boolean;
-    type?: 'any';
-    required?: [];
-    minItems?: 0;
-  };
-  required?: [];
-  additionalProperties?: never;
-  minItems?: 0;
-}
-
-export type Version = 'V2' | 'V3';
-
-export type Type = 'client' | 'server' | 'documentation' | 'config';
-
-export type Types = ('client' | 'server' | 'documentation' | 'config')[];
-
-export interface Types {
-  [k: string]: unknown;
-}
-
 declare global {
   interface APIS {
     clients: {
@@ -619,10 +453,10 @@ declare global {
        * **Query Parameters**
        * ```ts
        * interface QueryParameters {
-       *   // generator version used by codegen engine
-       *   version?: Version;
        *   // flag to only return languages of type `client`
        *   clientOnly?: boolean;
+       *   // generator version used by codegen engine
+       *   version?: Version;
        * }
        * ```
        *
@@ -637,8 +471,8 @@ declare global {
        */
       clientLanguages<Config extends Alova2MethodConfig<string[]>>(
         params: {
-          version?: Version; // generator version used by codegen engine
           clientOnly?: boolean; // flag to only return languages of type `client`
+          version?: Version; // generator version used by codegen engine
         },
         config?: Alova2MethodConfig<string[]>
       ): Alova2Method<string[], 'clients.clientLanguages', Config>;
@@ -654,12 +488,12 @@ declare global {
        * **Path Parameters**
        * ```ts
        * interface PathParameters {
-       *   // generator type
-       *   // required: true
-       *   type: Type;
        *   // generator version used by codegen engine
        *   // required: true
        *   version: string;
+       *   // generator type
+       *   // required: true
+       *   type: Type;
        * }
        * ```
        *
@@ -674,8 +508,8 @@ declare global {
        */
       languages<Config extends Alova2MethodConfig<string[]>>(
         params: {
-          type: Type; // generator type
           version: string; // generator version used by codegen engine
+          type: Type; // generator type
         },
         config?: Alova2MethodConfig<string[]>
       ): Alova2Method<string[], 'clients.languages', Config>;
@@ -768,8 +602,8 @@ declare global {
        *   spec: object;
        *   // URL of the spec in json format. Alternative to `spec`
        *   specURL: string;
-       *   //
-       *   type: ;
+       *   // type of the spec
+       *   type: string;
        *   // codegen version to use
        *   codegenVersion: string;
        *   //
@@ -882,12 +716,12 @@ declare global {
        * **Path Parameters**
        * ```ts
        * interface PathParameters {
-       *   // generator type
-       *   // required: true
-       *   type: Type;
        *   // generator version used by codegen engine
        *   // required: true
        *   version: string;
+       *   // generator type
+       *   // required: true
+       *   type: Type;
        * }
        * ```
        *
@@ -902,8 +736,8 @@ declare global {
        */
       languages<Config extends Alova2MethodConfig<string[]>>(
         params: {
-          type: Type; // generator type
           version: string; // generator version used by codegen engine
+          type: Type; // generator type
         },
         config?: Alova2MethodConfig<string[]>
       ): Alova2Method<string[], 'servers.languages', Config>;
@@ -996,8 +830,8 @@ declare global {
        *   spec: object;
        *   // URL of the spec in json format. Alternative to `spec`
        *   specURL: string;
-       *   //
-       *   type: ;
+       *   // type of the spec
+       *   type: string;
        *   // codegen version to use
        *   codegenVersion: string;
        *   //
@@ -1078,10 +912,10 @@ declare global {
        * **Query Parameters**
        * ```ts
        * interface QueryParameters {
-       *   // generator version used by codegen engine
-       *   version?: Version;
        *   // flag to only return languages of type `client`
        *   clientOnly?: boolean;
+       *   // generator version used by codegen engine
+       *   version?: Version;
        * }
        * ```
        *
@@ -1096,8 +930,8 @@ declare global {
        */
       clientLanguages<Config extends Alova2MethodConfig<string[]>>(
         params: {
-          version?: Version; // generator version used by codegen engine
           clientOnly?: boolean; // flag to only return languages of type `client`
+          version?: Version; // generator version used by codegen engine
         },
         config?: Alova2MethodConfig<string[]>
       ): Alova2Method<string[], 'documentation.clientLanguages', Config>;
@@ -1145,12 +979,12 @@ declare global {
        * **Path Parameters**
        * ```ts
        * interface PathParameters {
-       *   // generator type
-       *   // required: true
-       *   type: Type;
        *   // generator version used by codegen engine
        *   // required: true
        *   version: string;
+       *   // generator type
+       *   // required: true
+       *   type: Type;
        * }
        * ```
        *
@@ -1165,8 +999,8 @@ declare global {
        */
       languages<Config extends Alova2MethodConfig<string[]>>(
         params: {
-          type: Type; // generator type
           version: string; // generator version used by codegen engine
+          type: Type; // generator type
         },
         config?: Alova2MethodConfig<string[]>
       ): Alova2Method<string[], 'documentation.languages', Config>;
@@ -1244,39 +1078,6 @@ declare global {
       /**
        * ---
        *
-       * [POST]Generates the intermediate model ("bundle") and returns it as a JSON. body.
-       *
-       * **path:** /model
-       *
-       * ---
-       *
-       * **Response**
-       * ```ts
-       * interface Response {
-       *   // language to generate (required)
-       *   lang: string;
-       *   // spec in json format. . Alternative to `specURL`
-       *   spec: object;
-       *   // URL of the spec in json format. Alternative to `spec`
-       *   specURL: string;
-       *   //
-       *   type: ;
-       *   // codegen version to use
-       *   codegenVersion: string;
-       *   //
-       *   options: Options;
-       * }
-       * ```
-       *
-       * ---
-       */
-      generateBundle<Config extends Alova2MethodConfig<GenerationRequest>>(
-        params: {},
-        config?: Alova2MethodConfig<GenerationRequest>
-      ): Alova2Method<GenerationRequest, 'documentation.generateBundle', Config>;
-      /**
-       * ---
-       *
        * [POST]render a template using the provided data
        *
        * **path:** /render
@@ -1294,6 +1095,39 @@ declare global {
         params: {},
         config?: Alova2MethodConfig<any>
       ): Alova2Method<any, 'documentation.renderTemplate', Config>;
+      /**
+       * ---
+       *
+       * [POST]Generates the intermediate model ("bundle") and returns it as a JSON. body.
+       *
+       * **path:** /model
+       *
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * interface Response {
+       *   // language to generate (required)
+       *   lang: string;
+       *   // spec in json format. . Alternative to `specURL`
+       *   spec: object;
+       *   // URL of the spec in json format. Alternative to `spec`
+       *   specURL: string;
+       *   // type of the spec
+       *   type: string;
+       *   // codegen version to use
+       *   codegenVersion: string;
+       *   //
+       *   options: Options;
+       * }
+       * ```
+       *
+       * ---
+       */
+      generateBundle<Config extends Alova2MethodConfig<GenerationRequest>>(
+        params: {},
+        config?: Alova2MethodConfig<GenerationRequest>
+      ): Alova2Method<GenerationRequest, 'documentation.generateBundle', Config>;
     };
     config: {
       /**
@@ -1361,12 +1195,12 @@ declare global {
        * **Path Parameters**
        * ```ts
        * interface PathParameters {
-       *   // generator type
-       *   // required: true
-       *   type: Type;
        *   // generator version used by codegen engine
        *   // required: true
        *   version: string;
+       *   // generator type
+       *   // required: true
+       *   type: Type;
        * }
        * ```
        *
@@ -1381,8 +1215,8 @@ declare global {
        */
       languages<Config extends Alova2MethodConfig<string[]>>(
         params: {
-          type: Type; // generator type
           version: string; // generator version used by codegen engine
+          type: Type; // generator type
         },
         config?: Alova2MethodConfig<string[]>
       ): Alova2Method<string[], 'config.languages', Config>;
@@ -1475,8 +1309,8 @@ declare global {
        *   spec: object;
        *   // URL of the spec in json format. Alternative to `spec`
        *   specURL: string;
-       *   //
-       *   type: ;
+       *   // type of the spec
+       *   type: string;
        *   // codegen version to use
        *   codegenVersion: string;
        *   //

@@ -96,6 +96,31 @@ declare global {
        * ```
        *
        {{/if}}
+       {{#if requestBody.type}}
+       * ---
+       *
+       * **RequestBody**
+       * ```ts
+       {{#isType requestBody "array"}}
+       * interface RequestBody {
+       {{#requestBody}}
+       *   // {{{description}}}
+       {{#required}}
+       *   // required: true
+       {{/required}}
+       {{#deprecated}}
+       *  // [deprecated]
+       {{/deprecated}}
+       *   {{{key}}}: {{{type}}};
+       {{/requestBody}}
+       {{/isType}}
+       {{#isType response "object"}}
+       * type Response = {{{response.type}}}
+       {{/isType}}
+       * }
+       * ```
+       *
+       {{/if}}
        {{#if response}}
        * ---
        *
@@ -120,7 +145,7 @@ declare global {
        {{/if}}
        * ---
        */
-      {{{name}}}<Config extends Alova2MethodConfig<{{{responseName}}}>>(
+      {{{name}}}<Config extends Alova2MethodConfig<{{{responseName}}}{{#if requestBody.type}},{{{requestName}}}{{/if}}>>(
         params: {
           {{#pathParameters}}
           {{{key}}}: {{{type}}}; // {{{description}}} 
@@ -129,7 +154,7 @@ declare global {
           {{{key}}}: {{{type}}}; // {{{description}}} 
           {{/queryParameters}}
         },
-        config?: Alova2MethodConfig<{{{responseName}}}>
+        config?: Alova2MethodConfig<{{{responseName}}}{{#if requestBody.type}},{{{requestName}}}{{/if}}>
       ): Alova2Method<{{{responseName}}}, '{{{pathKey}}}', Config>;
      {{/apis}}
     };
