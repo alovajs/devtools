@@ -63,6 +63,16 @@
         "tags": ["clients", "servers", "documentation", "config"],
         "summary": "Generates and download code. GenerationRequest input provided as request body.",
         "operationId": "generate",
+        "parameters": [
+          {
+            "name": "codegenOptionsURL",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {

@@ -6,9 +6,11 @@ import type apiDefinitions from './apiDefinitions';
 type CollapsedAlova = typeof alovaInstance;
 type UserMethodConfigMap = typeof $$userConfigMap;
 
-type Alova2MethodConfig<Responded> =
+type Alova2MethodConfig<Responded,Parameters=Record<string, any>> =
   CollapsedAlova extends Alova<any, any, infer RequestConfig, any, infer ResponseHeader>
-    ? AlovaMethodCreateConfig<any, Responded, RequestConfig, ResponseHeader>
+    ? AlovaMethodCreateConfig<any, Responded, RequestConfig, ResponseHeader>&{
+      params:Parameters
+    }
     : never;
 
 // Extract the return type of transformData function that define in $$userConfigMap, if it not exists, use the default type.
@@ -96,6 +98,31 @@ declare global {
        * ```
        *
        {{/if}}
+       {{#if requestName}}
+       * ---
+       *
+       * **RequestBody**
+       * ```ts
+       {{#isType requestBody "array"}}
+       * interface RequestBody {
+       {{#requestBody}}
+       *   // {{{description}}}
+       {{#required}}
+       *   // required: true
+       {{/required}}
+       {{#deprecated}}
+       *  // [deprecated]
+       {{/deprecated}}
+       *   {{{key}}}: {{{type}}};
+       {{/requestBody}}
+       {{/isType}}
+       {{#isType requestBody "object"}}
+       * type RequestBody = {{{requestBody.type}}}
+       {{/isType}}
+       * }
+       * ```
+       *
+       {{/if}}
        {{#if response}}
        * ---
        *
@@ -120,6 +147,27 @@ declare global {
        {{/if}}
        * ---
        */
+
+      {{#if requestName}}
+      {{{name}}}<Config extends Alova2MethodConfig<{{{responseName}}}{{#or pathParameters queryParameters}},{
+          {{#pathParameters}}
+          {{{key}}}: {{{type}}}; // {{{description}}} 
+          {{/pathParameters}}
+          {{#queryParameters}}
+          {{{key}}}: {{{type}}}; // {{{description}}} 
+          {{/queryParameters}}
+      }>>({{else}}>>({{/or}}
+        data: {{{requestName}}},
+        config?: Alova2MethodConfig<{{{responseName}}}{{#or pathParameters queryParameters}},{
+          {{#pathParameters}}
+          {{{key}}}: {{{type}}}; // {{{description}}} 
+          {{/pathParameters}}
+          {{#queryParameters}}
+          {{{key}}}: {{{type}}}; // {{{description}}} 
+          {{/queryParameters}}
+      }>){{else}}>
+      ){{/or}}: Alova2Method<{{{responseName}}}, '{{{pathKey}}}', Config>;
+      {{else}}
       {{{name}}}<Config extends Alova2MethodConfig<{{{responseName}}}>>(
         params: {
           {{#pathParameters}}
@@ -131,6 +179,7 @@ declare global {
         },
         config?: Alova2MethodConfig<{{{responseName}}}>
       ): Alova2Method<{{{responseName}}}, '{{{pathKey}}}', Config>;
+      {{/if}}
      {{/apis}}
     };
     {{/pathApis}}

@@ -10,6 +10,32 @@ handlebars.registerHelper('isType', function (this: any, value, type: string, op
     return options.inverse(this);
   }
 });
+handlebars.registerHelper('and', function (this: any) {
+  const args = Array.prototype.slice.call(arguments, 0, -1);
+  const options = arguments[arguments.length - 1];
+  const result = args.every(arg => {
+    if (Array.isArray(arg)) {
+      return arg.length === 0;
+    }
+    return Boolean(arg);
+  });
+  return result ? options.fn(this) : options.inverse(this);
+});
+handlebars.registerHelper('or', function (this: any) {
+  const args = Array.prototype.slice.call(arguments, 0, -1);
+  const options = arguments[arguments.length - 1];
+
+  const result = args.some(arg => {
+    if (Array.isArray(arg)) {
+      return arg.length !== 0;
+    } else if (typeof arg === 'string') {
+      return arg !== 'any';
+    }
+    return Boolean(arg);
+  });
+
+  return result ? options.fn(this) : options.inverse(this);
+});
 /**
  * 读取并渲染 handlebars 文件
  * @param templatePath 模板文件路径

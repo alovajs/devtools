@@ -18,7 +18,7 @@ module.exports = {
       platform: 'swagger',
 
       // 接口文件和类型文件的输出路径，多个generator不能重复的地址，否则生成的代码会相互覆盖，无意义
-      output: 'src/api/xxx',
+      output: 'src/api',
 
       // （具体看下面）指定生成的响应数据的mediaType，指定后以此数据类型来生成200状态码的响应ts格式，默认application/json
       responseMediaType: 'application/json',

@@ -20,8 +20,10 @@ interface Api {
   pathParameters: renderItem[];
   queryParameters: renderItem[];
   response: renderItem[] | renderItem;
+  requestBody?: renderItem[] | renderItem;
   name: string;
   responseName: string;
+  requestName?: string;
   pathKey: string;
 }
 interface PathApis {
@@ -50,6 +52,7 @@ const removeTitle = (obj: any) => {
   }
   for (const key in obj) {
     if (key === 'title') {
+      obj.description = obj[key] ? `${obj[key]}\n---\n${obj.description}` : obj.description;
       delete obj[key];
     }
     if (typeof obj[key] === 'object') {
@@ -166,19 +169,20 @@ const get$refName = (path: string) => {
   return (nameArr?.[0]?.toUpperCase?.() ?? '') + nameArr.slice(1).join('');
 };
 const remove$ref = async <T = any>(
-  obj: any,
+  originObj: any,
   openApi: OpenAPIV3_1.Document,
   schemasMap: Map<string, string> = new Map()
 ): Promise<[T, string]> => {
+  const obj = cloneDeep(originObj);
   if (isReferenceObject(obj)) {
     const data = findBy$ref<T>(obj.$ref, openApi);
     const jsonschema: JSONSchema = (data as any)?.schema ?? data;
     const type = get$refName(obj.$ref);
-    await jsonSchema2TsStr(jsonschema, type, openApi, { export: true }).then(schema => {
-      if (!schemasMap.has(type)) {
+    if (!schemasMap.has(type)) {
+      await jsonSchema2TsStr(jsonschema, type, openApi, { export: true }).then(schema => {
         schemasMap.set(type, schema);
-      }
-    });
+      });
+    }
     const [result] = await remove$ref(data, openApi, schemasMap);
     return [result, type];
   }
@@ -198,6 +202,76 @@ const remove$ref = async <T = any>(
   }
   delete obj.$ref;
   return [obj, convertToType(obj?.schema || obj)];
+};
+const parseResponse = async (
+  responses: OpenAPIV3_1.ResponsesObject,
+  openApi: OpenAPIV3_1.Document,
+  config: GeneratorConfig,
+  schemasMap: Map<string, string>
+) => {
+  const responseInfo = responses?.['200'];
+  const responseObject: OpenAPIV3_1.ResponseObject = isReferenceObject(responseInfo)
+    ? findBy$ref(responseInfo.$ref, openApi)
+    : responseInfo;
+  let key = Object.keys(responseObject.content ?? {})[0];
+  if (config.responseMediaType && responseObject.content?.[config.responseMediaType]) {
+    key = config.responseMediaType;
+  }
+  key = key ?? 'application/json';
+  const responseSchema = responseObject?.content?.[key]?.schema ?? {};
+  const [responseSchemaObj, responseName] = await remove$ref<OpenAPIV3_1.SchemaObject>(
+    responseSchema,
+    openApi,
+    schemasMap
+  );
+  const response = responseSchemaObj.properties
+    ? Object.entries(responseSchemaObj.properties as OpenAPIV3_1.SchemaObject).map(([key, value]) => {
+        return {
+          key: key + (!value.required ? '?' : ''),
+          description: value.description || '',
+          type: value?.type,
+          required: !!value.required,
+          deprecated: !!value.deprecated
+        };
+      })
+    : { type: responseName };
+  return [response, responseName] as [typeof response, string];
+};
+const parseRequestBody = async (
+  requestBody: OpenAPIV3_1.RequestBodyObject | OpenAPIV3_1.ReferenceObject | undefined,
+  openApi: OpenAPIV3_1.Document,
+  config: GeneratorConfig,
+  schemasMap: Map<string, string>
+) => {
+  if (!requestBody) {
+    return [{ type: '' }, ''] as [renderItem, string];
+  }
+  const requestBodyObject: OpenAPIV3_1.RequestBodyObject = isReferenceObject(requestBody)
+    ? findBy$ref(requestBody.$ref, openApi)
+    : requestBody;
+  let key = Object.keys(requestBodyObject.content ?? {})[0];
+  if (config.bodyMediaType && requestBodyObject.content?.[config.bodyMediaType]) {
+    key = config.bodyMediaType;
+  }
+  key = key ?? 'application/json';
+  const requestBodySchema = requestBodyObject?.content?.[key]?.schema ?? {};
+  const [requestBodySchemaObj, requestName] = await remove$ref<OpenAPIV3_1.SchemaObject>(
+    requestBodySchema,
+    openApi,
+    schemasMap
+  );
+  const requestBodyInfo = requestBodySchemaObj.properties
+    ? Object.entries(requestBodySchemaObj.properties as OpenAPIV3_1.SchemaObject).map(([key, value]) => {
+        return {
+          key: key + (!value.required ? '?' : ''),
+          description: value.description || '',
+          type: value?.type,
+          required: !!value.required,
+          deprecated: !!value.deprecated
+        };
+      })
+    : { type: requestName };
+  return [requestBodyInfo, requestName] as [typeof requestBodyInfo, string];
 };
 export default async function openApi2Data(
   openApi: OpenAPIV3_1.Document,
@@ -232,11 +306,11 @@ export default async function openApi2Data(
         continue;
       }
       const methodFormat = method.toUpperCase();
-      methodInfo.tags?.forEach(async tag => {
+      const allPromise = methodInfo.tags?.map(async tag => {
         const pathKey = `${tag}.${methodInfo.operationId}`;
         const pathParameters: renderItem[] = [];
         const queryParameters: renderItem[] = [];
-        methodInfo.parameters?.forEach(async refParameter => {
+        for (const refParameter of methodInfo.parameters || []) {
           const [parameter, type] = await remove$ref<OpenAPIV3.ParameterObject>(refParameter, openApi, schemasMap);
           if (parameter.in === 'path') {
             pathParameters.push({
@@ -256,43 +330,21 @@ export default async function openApi2Data(
               deprecated: !!parameter.deprecated
             });
           }
-        });
-        const responseInfo = methodInfo.responses?.['200'];
-        const responseObject: OpenAPIV3_1.ResponseObject = isReferenceObject(responseInfo)
-          ? findBy$ref(responseInfo.$ref, openApi)
-          : responseInfo;
-        let key = Object.keys(responseObject.content ?? {})[0];
-        if (config.responseMediaType && responseObject.content?.[config.responseMediaType]) {
-          key = config.responseMediaType;
         }
-        key = key ?? 'application/json';
-        const responseSchema = responseObject?.content?.[key]?.schema ?? {};
-        const [responseSchemaObj, responseName] = await remove$ref<OpenAPIV3_1.SchemaObject>(
-          responseSchema,
-          openApi,
-          schemasMap
-        );
-        const response = responseSchemaObj.properties
-          ? Object.entries(responseSchemaObj.properties as OpenAPIV3_1.SchemaObject).map(([key, value]) => {
-              return {
-                key,
-                description: value.description || '',
-                type: value?.type,
-                required: !!value.required,
-                deprecated: !!value.deprecated
-              };
-            })
-          : { type: responseName };
+        const [response, responseName] = await parseResponse(methodInfo.responses, openApi, config, schemasMap);
+        const [requestBody, requestName] = await parseRequestBody(methodInfo.requestBody, openApi, config, schemasMap);
         const api: Api = {
           method: methodFormat,
           summary: methodInfo.summary ?? '',
           path,
           name: methodInfo.operationId || '',
           responseName,
+          requestName,
           pathKey,
           pathParameters,
           queryParameters,
-          response
+          response,
+          requestBody
         };
         templateData.pathsArr.push({
           key: pathKey,
@@ -310,6 +362,9 @@ export default async function openApi2Data(
         }
         tagApis.apis.push(api);
       });
+      if (allPromise) {
+        await Promise.all(allPromise);
+      }
     }
   }
   templateData.baseUrl = openApi.servers?.[0]?.url || '';

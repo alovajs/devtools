@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import swagger2openapi from 'swagger2openapi';
 import { fetchData } from '../utils';
+import path from 'node:path';
 // 解析本地openapi文件
 function parseLocalFile(workspaceRootDir: string, filePath: string) {
   const [, extname] = /\.([^.]+)$/.exec(filePath) ?? [];
@@ -16,6 +17,7 @@ function parseLocalFile(workspaceRootDir: string, filePath: string) {
     default: {
       const workspacedRequire = createRequire(workspaceRootDir);
       const data = workspacedRequire(filePath);
+      delete workspacedRequire.cache[path.resolve(workspaceRootDir, filePath)];
       return data;
     }
   }

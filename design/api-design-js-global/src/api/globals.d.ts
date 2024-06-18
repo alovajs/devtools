@@ -21,9 +21,11 @@ import type apiDefinitions from './apiDefinitions';
 type CollapsedAlova = typeof alovaInstance;
 type UserMethodConfigMap = typeof $$userConfigMap;
 
-type Alova2MethodConfig<Responded> =
+type Alova2MethodConfig<Responded, Parameters = Record<string, any>> =
   CollapsedAlova extends Alova<any, any, infer RequestConfig, any, infer ResponseHeader>
-    ? AlovaMethodCreateConfig<any, Responded, RequestConfig, ResponseHeader>
+    ? AlovaMethodCreateConfig<any, Responded, RequestConfig, ResponseHeader> & {
+        params: Parameters;
+      }
     : never;
 
 // Extract the return type of transformData function that define in $$userConfigMap, if it not exists, use the default type.
@@ -58,6 +60,8 @@ type Alova2Method<
 
 export interface GenerationRequest {
   /**
+   * language
+   * ---
    * language to generate (required)
    */
   lang: string;
@@ -81,117 +85,167 @@ export interface GenerationRequest {
 }
 export interface Options {
   /**
+   * authorization
+   * ---
    * adds authorization headers when fetching the open api definitions remotely. Pass in a URL-encoded string of name:header with a comma separating multiple values
    */
   auth?: string;
   authorizationValue?: AuthorizationValue;
   /**
+   * api package
+   * ---
    * package for generated api classes
    */
   apiPackage?: string;
   /**
+   * Template Version
+   * ---
    * template version for generation
    */
   templateVersion?: string;
   /**
+   * model package
+   * ---
    * package for generated models
    */
   modelPackage?: string;
   /**
+   * model name prefix
+   * ---
    * Prefix that will be prepended to all model names. Default is the empty string.
    */
   modelNamePrefix?: string;
   /**
+   * model name suffix
+   * ---
    * PrefixSuffix that will be appended to all model names. Default is the empty string.
    */
   modelNameSuffix?: string;
   /**
+   * System Properties
+   * ---
    * sets specified system properties in key/value format
    */
   systemProperties?: {
     [k: string]: string;
   };
   /**
+   * instantiation types
+   * ---
    * sets instantiation type mappings in key/value format. For example (in Java): array=ArrayList,map=HashMap. In other words array types will get instantiated as ArrayList in generated code.
    */
   instantiationTypes?: {
     [k: string]: string;
   };
   /**
+   * type mappings
+   * ---
    * sets mappings between swagger spec types and generated code types in key/value format. For example: array=List,map=Map,string=String.
    */
   typeMappings?: {
     [k: string]: string;
   };
   /**
+   * additional properties
+   * ---
    * sets additional properties that can be referenced by the mustache templates in key/value format.
    */
   additionalProperties?: {
     [k: string]: {};
   };
   /**
+   * language specific primitives
+   * ---
    * specifies additional language specific primitive types in the format of type1,type2,type3,type3. For example: String,boolean,Boolean,Double. You can also have multiple occurrences of this option.
    */
   languageSpecificPrimitives?: string[];
   /**
+   * import mappings
+   * ---
    * specifies mappings between a given class and the import that should be used for that class in key/value format.
    */
   importMappings?: {
     [k: string]: string;
   };
   /**
+   * invoker package
+   * ---
    * root package for generated code
    */
   invokerPackage?: string;
   /**
+   * group id
+   * ---
    * groupId in generated pom.xml
    */
   groupId?: string;
   /**
+   * artifact id
+   * ---
    * artifactId in generated pom.xml
    */
   artifactId?: string;
   /**
+   * artifact version
+   * ---
    * artifact version generated in pom.xml
    */
   artifactVersion?: string;
   /**
+   * library
+   * ---
    * library template (sub-template)
    */
   library?: string;
   /**
+   * git user id
+   * ---
    * Git user ID, e.g. swagger-api.
    */
   gitUserId?: string;
   /**
+   * git repo id
+   * ---
    * Git repo ID, e.g. swagger-codegen.
    */
   gitRepoId?: string;
   /**
+   * release note
+   * ---
    * Release note, default to 'Minor update'.
    */
   releaseNote?: string;
   /**
+   * http user agent
+   * ---
    * HTTP user agent, e.g. codegen_csharp_api_client, default to 'Swagger-Codegen/{packageVersion}}/{language}'
    */
   httpUserAgent?: string;
   /**
+   * reserved words mappings
+   * ---
    * pecifies how a reserved name should be escaped to. Otherwise, the default _<name> is used. For example id=identifier.
    */
   reservedWordsMappings?: {
     [k: string]: string;
   };
   /**
+   * ignore file override location
+   * ---
    * Specifies an override location for the .swagger-codegen-ignore file. Most useful on initial generation.
    */
   ignoreFileOverride?: string;
   /**
+   * remove prefix of the operationId
+   * ---
    * Remove prefix of operationId, e.g. config_getId => getId
    */
   removeOperationIdPrefix?: boolean;
   skipOverride?: boolean;
 }
 /**
+ * authorization
+ * ---
  * adds authorization headers when fetching the open api definitions remotely. Pass in an authorizationValue object
  */
 export interface AuthorizationValue {
@@ -210,6 +264,8 @@ export interface AuthorizationValue {
 }
 
 /**
+ * authorization
+ * ---
  * adds authorization headers when fetching the open api definitions remotely. Pass in an authorizationValue object
  */
 export interface AuthorizationValue {
@@ -229,117 +285,167 @@ export interface AuthorizationValue {
 
 export interface Options {
   /**
+   * authorization
+   * ---
    * adds authorization headers when fetching the open api definitions remotely. Pass in a URL-encoded string of name:header with a comma separating multiple values
    */
   auth?: string;
   authorizationValue?: AuthorizationValue;
   /**
+   * api package
+   * ---
    * package for generated api classes
    */
   apiPackage?: string;
   /**
+   * Template Version
+   * ---
    * template version for generation
    */
   templateVersion?: string;
   /**
+   * model package
+   * ---
    * package for generated models
    */
   modelPackage?: string;
   /**
+   * model name prefix
+   * ---
    * Prefix that will be prepended to all model names. Default is the empty string.
    */
   modelNamePrefix?: string;
   /**
+   * model name suffix
+   * ---
    * PrefixSuffix that will be appended to all model names. Default is the empty string.
    */
   modelNameSuffix?: string;
   /**
+   * System Properties
+   * ---
    * sets specified system properties in key/value format
    */
   systemProperties?: {
     [k: string]: string;
   };
   /**
+   * instantiation types
+   * ---
    * sets instantiation type mappings in key/value format. For example (in Java): array=ArrayList,map=HashMap. In other words array types will get instantiated as ArrayList in generated code.
    */
   instantiationTypes?: {
     [k: string]: string;
   };
   /**
+   * type mappings
+   * ---
    * sets mappings between swagger spec types and generated code types in key/value format. For example: array=List,map=Map,string=String.
    */
   typeMappings?: {
     [k: string]: string;
   };
   /**
+   * additional properties
+   * ---
    * sets additional properties that can be referenced by the mustache templates in key/value format.
    */
   additionalProperties?: {
     [k: string]: {};
   };
   /**
+   * language specific primitives
+   * ---
    * specifies additional language specific primitive types in the format of type1,type2,type3,type3. For example: String,boolean,Boolean,Double. You can also have multiple occurrences of this option.
    */
   languageSpecificPrimitives?: string[];
   /**
+   * import mappings
+   * ---
    * specifies mappings between a given class and the import that should be used for that class in key/value format.
    */
   importMappings?: {
     [k: string]: string;
   };
   /**
+   * invoker package
+   * ---
    * root package for generated code
    */
   invokerPackage?: string;
   /**
+   * group id
+   * ---
    * groupId in generated pom.xml
    */
   groupId?: string;
   /**
+   * artifact id
+   * ---
    * artifactId in generated pom.xml
    */
   artifactId?: string;
   /**
+   * artifact version
+   * ---
    * artifact version generated in pom.xml
    */
   artifactVersion?: string;
   /**
+   * library
+   * ---
    * library template (sub-template)
    */
   library?: string;
   /**
+   * git user id
+   * ---
    * Git user ID, e.g. swagger-api.
    */
   gitUserId?: string;
   /**
+   * git repo id
+   * ---
    * Git repo ID, e.g. swagger-codegen.
    */
   gitRepoId?: string;
   /**
+   * release note
+   * ---
    * Release note, default to 'Minor update'.
    */
   releaseNote?: string;
   /**
+   * http user agent
+   * ---
    * HTTP user agent, e.g. codegen_csharp_api_client, default to 'Swagger-Codegen/{packageVersion}}/{language}'
    */
   httpUserAgent?: string;
   /**
+   * reserved words mappings
+   * ---
    * pecifies how a reserved name should be escaped to. Otherwise, the default _<name> is used. For example id=identifier.
    */
   reservedWordsMappings?: {
     [k: string]: string;
   };
   /**
+   * ignore file override location
+   * ---
    * Specifies an override location for the .swagger-codegen-ignore file. Most useful on initial generation.
    */
   ignoreFileOverride?: string;
   /**
+   * remove prefix of the operationId
+   * ---
    * Remove prefix of operationId, e.g. config_getId => getId
    */
   removeOperationIdPrefix?: boolean;
   skipOverride?: boolean;
 }
 /**
+ * authorization
+ * ---
  * adds authorization headers when fetching the open api definitions remotely. Pass in an authorizationValue object
  */
 export interface AuthorizationValue {
@@ -372,10 +478,14 @@ export interface CliOption {
 
 export interface RenderRequest {
   /**
+   * template
+   * ---
    * template as string
    */
   template: string;
   /**
+   * context
+   * ---
    * context as string
    */
   context: string;
@@ -385,171 +495,11 @@ export interface RenderResponse {
   value: string;
 }
 
-export interface GenerationRequest {
-  /**
-   * language to generate (required)
-   */
-  lang: string;
-  /**
-   * spec in json format. . Alternative to `specURL`
-   */
-  spec?: {};
-  /**
-   * URL of the spec in json format. Alternative to `spec`
-   */
-  specURL?: string;
-  type?: 'any';
-  /**
-   * codegen version to use
-   */
-  codegenVersion?: 'V2' | 'V3';
-  options?: {
-    /**
-     * adds authorization headers when fetching the open api definitions remotely. Pass in a URL-encoded string of name:header with a comma separating multiple values
-     */
-    auth?: string;
-    /**
-     * adds authorization headers when fetching the open api definitions remotely. Pass in an authorizationValue object
-     */
-    authorizationValue?: {
-      /**
-       * Authorization value
-       */
-      value?: string;
-      /**
-       * Authorization key
-       */
-      keyName?: string;
-      type?: 'any';
-      required?: [];
-      additionalProperties?: never;
-      minItems?: 0;
-    };
-    /**
-     * package for generated api classes
-     */
-    apiPackage?: string;
-    /**
-     * template version for generation
-     */
-    templateVersion?: string;
-    /**
-     * package for generated models
-     */
-    modelPackage?: string;
-    /**
-     * Prefix that will be prepended to all model names. Default is the empty string.
-     */
-    modelNamePrefix?: string;
-    /**
-     * PrefixSuffix that will be appended to all model names. Default is the empty string.
-     */
-    modelNameSuffix?: string;
-    /**
-     * sets specified system properties in key/value format
-     */
-    systemProperties?: {
-      [k: string]: string;
-    };
-    /**
-     * sets instantiation type mappings in key/value format. For example (in Java): array=ArrayList,map=HashMap. In other words array types will get instantiated as ArrayList in generated code.
-     */
-    instantiationTypes?: {
-      [k: string]: string;
-    };
-    /**
-     * sets mappings between swagger spec types and generated code types in key/value format. For example: array=List,map=Map,string=String.
-     */
-    typeMappings?: {
-      [k: string]: string;
-    };
-    /**
-     * sets additional properties that can be referenced by the mustache templates in key/value format.
-     */
-    additionalProperties?: {
-      [k: string]: {};
-    };
-    /**
-     * specifies additional language specific primitive types in the format of type1,type2,type3,type3. For example: String,boolean,Boolean,Double. You can also have multiple occurrences of this option.
-     */
-    languageSpecificPrimitives?: {
-      [k: string]: unknown;
-    };
-    /**
-     * specifies mappings between a given class and the import that should be used for that class in key/value format.
-     */
-    importMappings?: {
-      [k: string]: string;
-    };
-    /**
-     * root package for generated code
-     */
-    invokerPackage?: string;
-    /**
-     * groupId in generated pom.xml
-     */
-    groupId?: string;
-    /**
-     * artifactId in generated pom.xml
-     */
-    artifactId?: string;
-    /**
-     * artifact version generated in pom.xml
-     */
-    artifactVersion?: string;
-    /**
-     * library template (sub-template)
-     */
-    library?: string;
-    /**
-     * Git user ID, e.g. swagger-api.
-     */
-    gitUserId?: string;
-    /**
-     * Git repo ID, e.g. swagger-codegen.
-     */
-    gitRepoId?: string;
-    /**
-     * Release note, default to 'Minor update'.
-     */
-    releaseNote?: string;
-    /**
-     * HTTP user agent, e.g. codegen_csharp_api_client, default to 'Swagger-Codegen/{packageVersion}}/{language}'
-     */
-    httpUserAgent?: string;
-    /**
-     * pecifies how a reserved name should be escaped to. Otherwise, the default _<name> is used. For example id=identifier.
-     */
-    reservedWordsMappings?: {
-      [k: string]: string;
-    };
-    /**
-     * Specifies an override location for the .swagger-codegen-ignore file. Most useful on initial generation.
-     */
-    ignoreFileOverride?: string;
-    /**
-     * Remove prefix of operationId, e.g. config_getId => getId
-     */
-    removeOperationIdPrefix?: boolean;
-    skipOverride?: boolean;
-    type?: 'any';
-    required?: [];
-    minItems?: 0;
-  };
-  required?: [];
-  additionalProperties?: never;
-  minItems?: 0;
-}
-
 export type Version = 'V2' | 'V3';
 
 export type Type = 'client' | 'server' | 'documentation' | 'config';
 
 export type Types = ('client' | 'server' | 'documentation' | 'config')[];
-
-export interface Types {
-  [k: string]: unknown;
-}
 
 declare global {
   interface APIS {
@@ -581,6 +531,7 @@ declare global {
        *
        * ---
        */
+
       generateFromURL<Config extends Alova2MethodConfig<string>>(
         params: {
           codegenOptionsURL: string; //
@@ -596,6 +547,37 @@ declare global {
        *
        * ---
        *
+       * **Query Parameters**
+       * ```ts
+       * interface QueryParameters {
+       *   //
+       *   // required: true
+       *   codegenOptionsURL: string;
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **RequestBody**
+       * ```ts
+       * interface RequestBody {
+       *   // language to generate (required)
+       *   lang?: string;
+       *   // spec in json format. . Alternative to `specURL`
+       *   spec?: object;
+       *   // URL of the spec in json format. Alternative to `spec`
+       *   specURL?: string;
+       *   // type of the spec
+       *   type?: string;
+       *   // codegen version to use
+       *   codegenVersion?: string;
+       *   //
+       *   options?: Options;
+       * }
+       * ```
+       *
+       * ---
+       *
        * **Response**
        * ```ts
        * type Response = string
@@ -603,9 +585,22 @@ declare global {
        *
        * ---
        */
-      generate<Config extends Alova2MethodConfig<string>>(
-        params: {},
-        config?: Alova2MethodConfig<string>
+
+      generate<
+        Config extends Alova2MethodConfig<
+          string,
+          {
+            codegenOptionsURL: string; //
+          }
+        >
+      >(
+        data: GenerationRequest,
+        config?: Alova2MethodConfig<
+          string,
+          {
+            codegenOptionsURL: string; //
+          }
+        >
       ): Alova2Method<string, 'clients.generate', Config>;
       /**
        * ---
@@ -635,6 +630,7 @@ declare global {
        *
        * ---
        */
+
       clientLanguages<Config extends Alova2MethodConfig<string[]>>(
         params: {
           version?: Version; // generator version used by codegen engine
@@ -672,6 +668,7 @@ declare global {
        *
        * ---
        */
+
       languages<Config extends Alova2MethodConfig<string[]>>(
         params: {
           type: Type; // generator type
@@ -708,6 +705,7 @@ declare global {
        *
        * ---
        */
+
       languagesMulti<Config extends Alova2MethodConfig<string[]>>(
         params: {
           types: Types; // comma-separated list of generator types
@@ -743,6 +741,7 @@ declare global {
        *
        * ---
        */
+
       listOptions<Config extends Alova2MethodConfig<object>>(
         params: {
           language?: string; // language
@@ -759,28 +758,49 @@ declare global {
        *
        * ---
        *
+       * **RequestBody**
+       * ```ts
+       * interface RequestBody {
+       *   // language to generate (required)
+       *   lang?: string;
+       *   // spec in json format. . Alternative to `specURL`
+       *   spec?: object;
+       *   // URL of the spec in json format. Alternative to `spec`
+       *   specURL?: string;
+       *   // type of the spec
+       *   type?: string;
+       *   // codegen version to use
+       *   codegenVersion?: string;
+       *   //
+       *   options?: Options;
+       * }
+       * ```
+       *
+       * ---
+       *
        * **Response**
        * ```ts
        * interface Response {
        *   // language to generate (required)
-       *   lang: string;
+       *   lang?: string;
        *   // spec in json format. . Alternative to `specURL`
-       *   spec: object;
+       *   spec?: object;
        *   // URL of the spec in json format. Alternative to `spec`
-       *   specURL: string;
-       *   //
-       *   type: ;
+       *   specURL?: string;
+       *   // type of the spec
+       *   type?: string;
        *   // codegen version to use
-       *   codegenVersion: string;
+       *   codegenVersion?: string;
        *   //
-       *   options: Options;
+       *   options?: Options;
        * }
        * ```
        *
        * ---
        */
+
       generateBundle<Config extends Alova2MethodConfig<GenerationRequest>>(
-        params: {},
+        data: GenerationRequest,
         config?: Alova2MethodConfig<GenerationRequest>
       ): Alova2Method<GenerationRequest, 'clients.generateBundle', Config>;
     };
@@ -812,6 +832,7 @@ declare global {
        *
        * ---
        */
+
       generateFromURL<Config extends Alova2MethodConfig<string>>(
         params: {
           codegenOptionsURL: string; //
@@ -827,6 +848,37 @@ declare global {
        *
        * ---
        *
+       * **Query Parameters**
+       * ```ts
+       * interface QueryParameters {
+       *   //
+       *   // required: true
+       *   codegenOptionsURL: string;
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **RequestBody**
+       * ```ts
+       * interface RequestBody {
+       *   // language to generate (required)
+       *   lang?: string;
+       *   // spec in json format. . Alternative to `specURL`
+       *   spec?: object;
+       *   // URL of the spec in json format. Alternative to `spec`
+       *   specURL?: string;
+       *   // type of the spec
+       *   type?: string;
+       *   // codegen version to use
+       *   codegenVersion?: string;
+       *   //
+       *   options?: Options;
+       * }
+       * ```
+       *
+       * ---
+       *
        * **Response**
        * ```ts
        * type Response = string
@@ -834,9 +886,22 @@ declare global {
        *
        * ---
        */
-      generate<Config extends Alova2MethodConfig<string>>(
-        params: {},
-        config?: Alova2MethodConfig<string>
+
+      generate<
+        Config extends Alova2MethodConfig<
+          string,
+          {
+            codegenOptionsURL: string; //
+          }
+        >
+      >(
+        data: GenerationRequest,
+        config?: Alova2MethodConfig<
+          string,
+          {
+            codegenOptionsURL: string; //
+          }
+        >
       ): Alova2Method<string, 'servers.generate', Config>;
       /**
        * ---
@@ -864,6 +929,7 @@ declare global {
        *
        * ---
        */
+
       serverLanguages<Config extends Alova2MethodConfig<string[]>>(
         params: {
           version?: Version; // generator version used by codegen engine
@@ -900,6 +966,7 @@ declare global {
        *
        * ---
        */
+
       languages<Config extends Alova2MethodConfig<string[]>>(
         params: {
           type: Type; // generator type
@@ -936,6 +1003,7 @@ declare global {
        *
        * ---
        */
+
       languagesMulti<Config extends Alova2MethodConfig<string[]>>(
         params: {
           types: Types; // comma-separated list of generator types
@@ -971,6 +1039,7 @@ declare global {
        *
        * ---
        */
+
       listOptions<Config extends Alova2MethodConfig<object>>(
         params: {
           language?: string; // language
@@ -987,28 +1056,49 @@ declare global {
        *
        * ---
        *
+       * **RequestBody**
+       * ```ts
+       * interface RequestBody {
+       *   // language to generate (required)
+       *   lang?: string;
+       *   // spec in json format. . Alternative to `specURL`
+       *   spec?: object;
+       *   // URL of the spec in json format. Alternative to `spec`
+       *   specURL?: string;
+       *   // type of the spec
+       *   type?: string;
+       *   // codegen version to use
+       *   codegenVersion?: string;
+       *   //
+       *   options?: Options;
+       * }
+       * ```
+       *
+       * ---
+       *
        * **Response**
        * ```ts
        * interface Response {
        *   // language to generate (required)
-       *   lang: string;
+       *   lang?: string;
        *   // spec in json format. . Alternative to `specURL`
-       *   spec: object;
+       *   spec?: object;
        *   // URL of the spec in json format. Alternative to `spec`
-       *   specURL: string;
-       *   //
-       *   type: ;
+       *   specURL?: string;
+       *   // type of the spec
+       *   type?: string;
        *   // codegen version to use
-       *   codegenVersion: string;
+       *   codegenVersion?: string;
        *   //
-       *   options: Options;
+       *   options?: Options;
        * }
        * ```
        *
        * ---
        */
+
       generateBundle<Config extends Alova2MethodConfig<GenerationRequest>>(
-        params: {},
+        data: GenerationRequest,
         config?: Alova2MethodConfig<GenerationRequest>
       ): Alova2Method<GenerationRequest, 'servers.generateBundle', Config>;
     };
@@ -1040,6 +1130,7 @@ declare global {
        *
        * ---
        */
+
       generateFromURL<Config extends Alova2MethodConfig<string>>(
         params: {
           codegenOptionsURL: string; //
@@ -1055,6 +1146,37 @@ declare global {
        *
        * ---
        *
+       * **Query Parameters**
+       * ```ts
+       * interface QueryParameters {
+       *   //
+       *   // required: true
+       *   codegenOptionsURL: string;
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **RequestBody**
+       * ```ts
+       * interface RequestBody {
+       *   // language to generate (required)
+       *   lang?: string;
+       *   // spec in json format. . Alternative to `specURL`
+       *   spec?: object;
+       *   // URL of the spec in json format. Alternative to `spec`
+       *   specURL?: string;
+       *   // type of the spec
+       *   type?: string;
+       *   // codegen version to use
+       *   codegenVersion?: string;
+       *   //
+       *   options?: Options;
+       * }
+       * ```
+       *
+       * ---
+       *
        * **Response**
        * ```ts
        * type Response = string
@@ -1062,9 +1184,22 @@ declare global {
        *
        * ---
        */
-      generate<Config extends Alova2MethodConfig<string>>(
-        params: {},
-        config?: Alova2MethodConfig<string>
+
+      generate<
+        Config extends Alova2MethodConfig<
+          string,
+          {
+            codegenOptionsURL: string; //
+          }
+        >
+      >(
+        data: GenerationRequest,
+        config?: Alova2MethodConfig<
+          string,
+          {
+            codegenOptionsURL: string; //
+          }
+        >
       ): Alova2Method<string, 'documentation.generate', Config>;
       /**
        * ---
@@ -1094,6 +1229,7 @@ declare global {
        *
        * ---
        */
+
       clientLanguages<Config extends Alova2MethodConfig<string[]>>(
         params: {
           version?: Version; // generator version used by codegen engine
@@ -1127,6 +1263,7 @@ declare global {
        *
        * ---
        */
+
       documentationLanguages<Config extends Alova2MethodConfig<string[]>>(
         params: {
           version?: Version; // generator version used by codegen engine
@@ -1163,6 +1300,7 @@ declare global {
        *
        * ---
        */
+
       languages<Config extends Alova2MethodConfig<string[]>>(
         params: {
           type: Type; // generator type
@@ -1199,6 +1337,7 @@ declare global {
        *
        * ---
        */
+
       languagesMulti<Config extends Alova2MethodConfig<string[]>>(
         params: {
           types: Types; // comma-separated list of generator types
@@ -1234,6 +1373,7 @@ declare global {
        *
        * ---
        */
+
       listOptions<Config extends Alova2MethodConfig<object>>(
         params: {
           language?: string; // language
@@ -1250,28 +1390,49 @@ declare global {
        *
        * ---
        *
+       * **RequestBody**
+       * ```ts
+       * interface RequestBody {
+       *   // language to generate (required)
+       *   lang?: string;
+       *   // spec in json format. . Alternative to `specURL`
+       *   spec?: object;
+       *   // URL of the spec in json format. Alternative to `spec`
+       *   specURL?: string;
+       *   // type of the spec
+       *   type?: string;
+       *   // codegen version to use
+       *   codegenVersion?: string;
+       *   //
+       *   options?: Options;
+       * }
+       * ```
+       *
+       * ---
+       *
        * **Response**
        * ```ts
        * interface Response {
        *   // language to generate (required)
-       *   lang: string;
+       *   lang?: string;
        *   // spec in json format. . Alternative to `specURL`
-       *   spec: object;
+       *   spec?: object;
        *   // URL of the spec in json format. Alternative to `spec`
-       *   specURL: string;
-       *   //
-       *   type: ;
+       *   specURL?: string;
+       *   // type of the spec
+       *   type?: string;
        *   // codegen version to use
-       *   codegenVersion: string;
+       *   codegenVersion?: string;
        *   //
-       *   options: Options;
+       *   options?: Options;
        * }
        * ```
        *
        * ---
        */
+
       generateBundle<Config extends Alova2MethodConfig<GenerationRequest>>(
-        params: {},
+        data: GenerationRequest,
         config?: Alova2MethodConfig<GenerationRequest>
       ): Alova2Method<GenerationRequest, 'documentation.generateBundle', Config>;
       /**
@@ -1283,6 +1444,18 @@ declare global {
        *
        * ---
        *
+       * **RequestBody**
+       * ```ts
+       * interface RequestBody {
+       *   // template as string
+       *   template?: string;
+       *   // context as string
+       *   context?: string;
+       * }
+       * ```
+       *
+       * ---
+       *
        * **Response**
        * ```ts
        * type Response = any
@@ -1290,8 +1463,9 @@ declare global {
        *
        * ---
        */
+
       renderTemplate<Config extends Alova2MethodConfig<any>>(
-        params: {},
+        data: RenderRequest,
         config?: Alova2MethodConfig<any>
       ): Alova2Method<any, 'documentation.renderTemplate', Config>;
     };
@@ -1323,6 +1497,7 @@ declare global {
        *
        * ---
        */
+
       generateFromURL<Config extends Alova2MethodConfig<string>>(
         params: {
           codegenOptionsURL: string; //
@@ -1338,6 +1513,37 @@ declare global {
        *
        * ---
        *
+       * **Query Parameters**
+       * ```ts
+       * interface QueryParameters {
+       *   //
+       *   // required: true
+       *   codegenOptionsURL: string;
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **RequestBody**
+       * ```ts
+       * interface RequestBody {
+       *   // language to generate (required)
+       *   lang?: string;
+       *   // spec in json format. . Alternative to `specURL`
+       *   spec?: object;
+       *   // URL of the spec in json format. Alternative to `spec`
+       *   specURL?: string;
+       *   // type of the spec
+       *   type?: string;
+       *   // codegen version to use
+       *   codegenVersion?: string;
+       *   //
+       *   options?: Options;
+       * }
+       * ```
+       *
+       * ---
+       *
        * **Response**
        * ```ts
        * type Response = string
@@ -1345,9 +1551,22 @@ declare global {
        *
        * ---
        */
-      generate<Config extends Alova2MethodConfig<string>>(
-        params: {},
-        config?: Alova2MethodConfig<string>
+
+      generate<
+        Config extends Alova2MethodConfig<
+          string,
+          {
+            codegenOptionsURL: string; //
+          }
+        >
+      >(
+        data: GenerationRequest,
+        config?: Alova2MethodConfig<
+          string,
+          {
+            codegenOptionsURL: string; //
+          }
+        >
       ): Alova2Method<string, 'config.generate', Config>;
       /**
        * ---
@@ -1379,6 +1598,7 @@ declare global {
        *
        * ---
        */
+
       languages<Config extends Alova2MethodConfig<string[]>>(
         params: {
           type: Type; // generator type
@@ -1415,6 +1635,7 @@ declare global {
        *
        * ---
        */
+
       languagesMulti<Config extends Alova2MethodConfig<string[]>>(
         params: {
           types: Types; // comma-separated list of generator types
@@ -1450,6 +1671,7 @@ declare global {
        *
        * ---
        */
+
       listOptions<Config extends Alova2MethodConfig<object>>(
         params: {
           language?: string; // language
@@ -1466,28 +1688,49 @@ declare global {
        *
        * ---
        *
+       * **RequestBody**
+       * ```ts
+       * interface RequestBody {
+       *   // language to generate (required)
+       *   lang?: string;
+       *   // spec in json format. . Alternative to `specURL`
+       *   spec?: object;
+       *   // URL of the spec in json format. Alternative to `spec`
+       *   specURL?: string;
+       *   // type of the spec
+       *   type?: string;
+       *   // codegen version to use
+       *   codegenVersion?: string;
+       *   //
+       *   options?: Options;
+       * }
+       * ```
+       *
+       * ---
+       *
        * **Response**
        * ```ts
        * interface Response {
        *   // language to generate (required)
-       *   lang: string;
+       *   lang?: string;
        *   // spec in json format. . Alternative to `specURL`
-       *   spec: object;
+       *   spec?: object;
        *   // URL of the spec in json format. Alternative to `spec`
-       *   specURL: string;
-       *   //
-       *   type: ;
+       *   specURL?: string;
+       *   // type of the spec
+       *   type?: string;
        *   // codegen version to use
-       *   codegenVersion: string;
+       *   codegenVersion?: string;
        *   //
-       *   options: Options;
+       *   options?: Options;
        * }
        * ```
        *
        * ---
        */
+
       generateBundle<Config extends Alova2MethodConfig<GenerationRequest>>(
-        params: {},
+        data: GenerationRequest,
         config?: Alova2MethodConfig<GenerationRequest>
       ): Alova2Method<GenerationRequest, 'config.generateBundle', Config>;
     };
