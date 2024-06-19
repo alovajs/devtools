@@ -171,14 +171,14 @@ const get$refName = (path: string) => {
 const remove$ref = async <T = any>(
   originObj: any,
   openApi: OpenAPIV3_1.Document,
-  schemasMap: Map<string, string> = new Map()
+  schemasMap?: Map<string, string>
 ): Promise<[T, string]> => {
   const obj = cloneDeep(originObj);
   if (isReferenceObject(obj)) {
     const data = findBy$ref<T>(obj.$ref, openApi);
     const jsonschema: JSONSchema = (data as any)?.schema ?? data;
     const type = get$refName(obj.$ref);
-    if (!schemasMap.has(type)) {
+    if (schemasMap && !schemasMap.has(type)) {
       await jsonSchema2TsStr(jsonschema, type, openApi, { export: true }).then(schema => {
         schemasMap.set(type, schema);
       });
@@ -188,6 +188,11 @@ const remove$ref = async <T = any>(
   }
   if (typeof obj === 'object' && obj) {
     for (const key in obj) {
+      if (key === 'schema' && obj) {
+        const [result, type] = await remove$ref(obj[key], openApi, schemasMap);
+        obj[key] = result;
+        obj[key].type = ['any', 'object', 'null', undefined].includes(type) ? obj[key].type : type;
+      }
       if (typeof obj[key] === 'object' && ['items', 'properties'].includes(key)) {
         for (const [k, value] of Object.entries(obj[key])) {
           if (typeof value !== 'object' || !value) {
@@ -216,11 +221,7 @@ const parseResponse = async (
   const responseObject: OpenAPIV3_1.ResponseObject = isReferenceObject(responseInfo)
     ? findBy$ref(responseInfo.$ref, openApi)
     : responseInfo;
-  let key = Object.keys(responseObject.content ?? {})[0];
-  if (config.responseMediaType && responseObject.content?.[config.responseMediaType]) {
-    key = config.responseMediaType;
-  }
-  key = key ?? 'application/json';
+  const key = getContentKey(responseObject.content ?? {}, config.responseMediaType);
   const responseSchema = responseObject?.content?.[key]?.schema ?? {};
   const [responseSchemaObj, responseName] = await remove$ref<OpenAPIV3_1.SchemaObject>(
     responseSchema,
@@ -252,11 +253,7 @@ const parseRequestBody = async (
   const requestBodyObject: OpenAPIV3_1.RequestBodyObject = isReferenceObject(requestBody)
     ? findBy$ref(requestBody.$ref, openApi)
     : requestBody;
-  let key = Object.keys(requestBodyObject.content ?? {})[0];
-  if (config.bodyMediaType && requestBodyObject.content?.[config.bodyMediaType]) {
-    key = config.bodyMediaType;
-  }
-  key = key ?? 'application/json';
+  const key = getContentKey(requestBodyObject.content, config.bodyMediaType);
   const requestBodySchema = requestBodyObject?.content?.[key]?.schema ?? {};
   const [requestBodySchemaObj, requestName] = await remove$ref<OpenAPIV3_1.SchemaObject>(
     requestBodySchema,
@@ -275,6 +272,95 @@ const parseRequestBody = async (
       })
     : { type: requestName };
   return [requestBodyInfo, requestName] as [typeof requestBodyInfo, string];
+};
+const getContentKey = (content: Record<string, any>, requireKey: string, defaultKey = 'application/json') => {
+  let key = Object.keys(content ?? {})[0];
+  if (requireKey && content?.[requireKey]) {
+    key = requireKey;
+  }
+  key = key ?? defaultKey;
+  return key;
+};
+export const transformPathObj = async (
+  url: string,
+  method: string,
+  pathObj: OpenAPIV3_1.OperationObject,
+  openApi: OpenAPIV3_1.Document,
+  config: GeneratorConfig
+) => {
+  const handleApi = config.handleApi;
+  if (!handleApi || typeof handleApi !== 'function') {
+    return { ...pathObj, url, method };
+  }
+  const { requestBody, responses } = pathObj;
+  const apiDescriptor: ApiDescriptor = {
+    ...pathObj,
+    url,
+    method
+  };
+  const response200 = responses?.['200'];
+  let requestBodyObject = requestBody as OpenAPIV3_1.RequestBodyObject;
+  let responseObject = response200 as OpenAPIV3_1.ResponseObject;
+  let requestKey = '';
+  let responseKey = '';
+  if (apiDescriptor.parameters) {
+    const apiParameters = apiDescriptor.parameters;
+    apiDescriptor.parameters = [];
+    const parameters = isReferenceObject(apiParameters)
+      ? findBy$ref<typeof apiParameters>(apiParameters.$ref, openApi)
+      : apiParameters;
+    for (const parameter of parameters) {
+      const [parameterObject] = await remove$ref<OpenAPIV3.ParameterObject>(parameter, openApi);
+      apiDescriptor.parameters.push(parameterObject);
+    }
+  }
+  if (requestBody) {
+    requestBodyObject = isReferenceObject(requestBody) ? findBy$ref(requestBody.$ref, openApi) : requestBody;
+    requestKey = getContentKey(requestBodyObject.content || {}, config.bodyMediaType);
+    const requestBodySchema = requestBodyObject.content?.[requestKey].schema ?? {};
+    const [requestBodySchemaObj] = await remove$ref<OpenAPIV3_1.SchemaObject>(requestBodySchema, openApi);
+    apiDescriptor.requestData = requestBodySchemaObj;
+  }
+  if (response200) {
+    responseObject = isReferenceObject(response200) ? findBy$ref(response200.$ref, openApi) : response200;
+    responseKey = getContentKey(responseObject.content || {}, config.responseMediaType);
+    const responseSchema = responseObject.content?.[responseKey].schema ?? {};
+    const [responseSchemaObj] = await remove$ref<OpenAPIV3_1.SchemaObject>(responseSchema, openApi);
+    apiDescriptor.response = responseSchemaObj;
+  }
+  let newApiDescriptor = apiDescriptor;
+  let handleApiDone = false;
+  console.log(apiDescriptor, 333);
+  try {
+    newApiDescriptor = handleApi(apiDescriptor);
+    handleApiDone = true;
+  } catch (error) {
+    handleApiDone = false;
+    console.log(error);
+  }
+  if (!handleApiDone) {
+    return { ...pathObj, url, method };
+  }
+  if (!newApiDescriptor) {
+    return null;
+  }
+  Object.assign(apiDescriptor, newApiDescriptor);
+  if (apiDescriptor.requestData && requestBody) {
+    pathObj.requestBody = requestBodyObject;
+    pathObj.requestBody.content[requestKey].schema = apiDescriptor.requestData;
+  }
+  if (apiDescriptor.response && pathObj.responses?.['200'] && responseObject.content) {
+    pathObj.responses['200'] = responseObject;
+    responseObject.content[responseKey].schema = apiDescriptor.response;
+  }
+  delete apiDescriptor.requestData;
+  delete apiDescriptor.response;
+  Object.assign(pathObj, apiDescriptor);
+  return {
+    ...pathObj,
+    url: apiDescriptor.url,
+    method: apiDescriptor.method
+  };
 };
 export default async function openApi2Data(
   openApi: OpenAPIV3_1.Document,
@@ -297,7 +383,7 @@ export default async function openApi2Data(
     schemasMap.set(schema, tsStr);
   }
   const paths = openApi.paths || [];
-  for (const [path, pathInfo] of Object.entries(paths)) {
+  for (const [url, pathInfo] of Object.entries(paths)) {
     if (!pathInfo) {
       continue;
     }
@@ -308,7 +394,13 @@ export default async function openApi2Data(
       if (typeof methodInfo === 'string' || Array.isArray(methodInfo)) {
         continue;
       }
-      const methodFormat = method.toUpperCase();
+      const newMethodInfo = await transformPathObj(url, method, methodInfo, openApi, config);
+      if (!newMethodInfo) {
+        continue;
+      }
+      const { url: path, method: newMethod } = newMethodInfo;
+      Object.assign(methodInfo, newMethodInfo);
+      const methodFormat = newMethod.toUpperCase();
       const allPromise = methodInfo.tags?.map(async tag => {
         const pathKey = `${tag}.${methodInfo.operationId}`;
         const pathParameters: renderItem[] = [];

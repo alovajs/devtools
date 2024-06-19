@@ -3,6 +3,8 @@ import { OpenAPIV3_1 } from 'openapi-types';
 import openApi2Data from '../functions/openApi2Data';
 import { TemplateFile } from '../modules/TemplateFile';
 import getFrameworkTag from './getFrameworkTag';
+import fs from 'node:fs';
+
 export default async function (
   workspaceRootDir: string,
   outputPath: string,
@@ -21,10 +23,12 @@ export default async function (
   templateData[getFrameworkTag(workspaceRootDir)] = true;
   // 头部注释部分
   templateData.commentText = await templateFile.readAndRenderTemplate('comment', data, { root: true });
+  // 获取是否存在index.ts|index.js
+  const indexIsExists = fs.existsSync(path.join(outputDir, `index${templateFile.getExt()}`));
   // mustache语法生成
   // 定义模版配置对象
   [
-    {
+    !indexIsExists && {
       fileName: 'index'
     },
     {
@@ -37,7 +41,11 @@ export default async function (
       fileName: 'globals.d',
       ext: '.ts'
     }
-  ].forEach(({ fileName, ext }) => {
+  ].forEach(item => {
+    if (!item) {
+      return;
+    }
+    const { fileName, ext } = item;
     templateFile.outputFile(templateData, fileName, outputDir, { ext });
   });
 }

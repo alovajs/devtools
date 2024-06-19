@@ -4,7 +4,14 @@ declare type ConfigType = 'auto' | 'ts' | 'typescript' | 'module' | 'commonjs';
 declare type TemplateType = 'typescript' | 'module' | 'commonjs';
 // 平台类型
 declare type PlatformType = 'swagger' | 'knife4j' | 'yapi';
-declare type ApiDescriptor = {};
+declare namespace OpenAPIV3_1 {}
+declare type SchemaObject = import('openapi-types').OpenAPIV3_1.SchemaObject;
+declare type ApiDescriptor = import('openapi-types').OpenAPIV3_1.OperationObject & {
+  url: string;
+  method: string;
+  requestData?: SchemaObject;
+  response?: SchemaObject;
+};
 declare type GeneratorConfig = {
   // openapi的json文件url地址
   input: string;

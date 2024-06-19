@@ -35,18 +35,20 @@ module.exports = {
       // （具体看下面）过滤或转换生成的api接口函数，返回一个新的apiDescriptor来生成api调用函数
       // 未指定此函数时则不转换apiDescripor对象
       // apiDescriptor的格式与openapi文件的接口对象格式相同
-      // 对类型生成也同样适用
+      // 对类型生成也同样适用123
       handleApi: apiDescriptor => {
         // 返回空表示过滤掉此api
-        if (!apiDescriptor.path.startWith('/user')) {
+        if (!apiDescriptor.url.startsWith('/generate')) {
           return;
         }
 
-        apiDescriptor.parameter = apiDescriptor.parameter.filter(
+        apiDescriptor.parameters = apiDescriptor.parameters.filter(
           param => param.in === 'header' && param.name === 'token'
         );
-        delete apiDescriptor.requestBody.id;
-        apiDescriptor.url = apiDescriptor.url.replace('/user', '');
+        if (apiDescriptor?.requestData?.properties) {
+          delete apiDescriptor.requestData.properties.type;
+        }
+        apiDescriptor.url = apiDescriptor.url.replace('/generate', 'xxx1');
         return apiDescriptor;
       }
     }
