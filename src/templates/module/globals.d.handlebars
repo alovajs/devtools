@@ -147,39 +147,51 @@ declare global {
        {{/if}}
        * ---
        */
-
-      {{#if requestName}}
-      {{{name}}}<Config extends Alova2MethodConfig<{{{responseName}}}{{#or pathParameters queryParameters}},{
-          {{#pathParameters}}
-          {{{key}}}: {{{type}}}; // {{{description}}} 
-          {{/pathParameters}}
-          {{#queryParameters}}
-          {{{key}}}: {{{type}}}; // {{{description}}} 
-          {{/queryParameters}}
-      }>>({{else}}>>({{/or}}
-        data: {{{requestName}}},
-        config?: Alova2MethodConfig<{{{responseName}}}{{#or pathParameters queryParameters}},{
-          {{#pathParameters}}
-          {{{key}}}: {{{type}}}; // {{{description}}} 
-          {{/pathParameters}}
-          {{#queryParameters}}
-          {{{key}}}: {{{type}}}; // {{{description}}} 
-          {{/queryParameters}}
-      }>){{else}}>
-      ){{/or}}: Alova2Method<{{{responseName}}}, '{{{pathKey}}}', Config>;
-      {{else}}
       {{{name}}}<Config extends Alova2MethodConfig<{{{responseName}}}>>(
-        params: {
-          {{#pathParameters}}
-          {{{key}}}: {{{type}}}; // {{{description}}} 
-          {{/pathParameters}}
-          {{#queryParameters}}
-          {{{key}}}: {{{type}}}; // {{{description}}} 
-          {{/queryParameters}}
-        },
-        config?: Alova2MethodConfig<{{{responseName}}}>
+        config?: Alova2MethodConfig<{{{responseName}}}> & {
+          {{#if pathParameters}}
+          pathParams: {
+            {{#pathParameters}}
+            {{#if description}}
+           /**
+            *{{{description}}} 
+            */
+            {{/if}}
+            {{{key}}}: {{{type}}}; 
+            {{/pathParameters}}
+          };
+          {{/if}}
+          {{#if queryParameters}}
+          params: {
+            {{#queryParameters}}
+            {{#if description}}
+           /**
+            *{{{description}}} 
+            */
+             {{/if}}
+            {{{key}}}: {{{type}}};
+            {{/queryParameters}}
+          };
+          {{/if}}
+          {{#if requestName}}
+          {{#isType requestBody "array"}}
+          data: {
+            {{#requestBody}}
+            {{#if description}}
+           /**
+            *{{{description}}} 
+            */
+            {{/if}}
+            {{{key}}}: {{{type}}};
+            {{/requestBody}}
+          };
+          {{/isType}}
+          {{#isType requestBody "object"}}
+          data: {{{requestBody.type}}};
+          {{/isType}}
+          {{/if}}
+        }
       ): Alova2Method<{{{responseName}}}, '{{{pathKey}}}', Config>;
-      {{/if}}
      {{/apis}}
     };
     {{/pathApis}}

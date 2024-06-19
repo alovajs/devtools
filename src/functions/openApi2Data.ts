@@ -210,6 +210,9 @@ const parseResponse = async (
   schemasMap: Map<string, string>
 ) => {
   const responseInfo = responses?.['200'];
+  if (!responseInfo) {
+    return [{ type: 'unknown' }, 'unknown'] as [renderItem, string];
+  }
   const responseObject: OpenAPIV3_1.ResponseObject = isReferenceObject(responseInfo)
     ? findBy$ref(responseInfo.$ref, openApi)
     : responseInfo;

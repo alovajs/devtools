@@ -531,12 +531,12 @@ declare global {
        *
        * ---
        */
-
       generateFromURL<Config extends Alova2MethodConfig<string>>(
-        params: {
-          codegenOptionsURL: string; //
-        },
-        config?: Alova2MethodConfig<string>
+        config?: Alova2MethodConfig<string> & {
+          params: {
+            codegenOptionsURL: string;
+          };
+        }
       ): Alova2Method<string, 'clients.generateFromURL', Config>;
       /**
        * ---
@@ -585,22 +585,35 @@ declare global {
        *
        * ---
        */
-
-      generate<
-        Config extends Alova2MethodConfig<
-          string,
-          {
-            codegenOptionsURL: string; //
-          }
-        >
-      >(
-        data: GenerationRequest,
-        config?: Alova2MethodConfig<
-          string,
-          {
-            codegenOptionsURL: string; //
-          }
-        >
+      generate<Config extends Alova2MethodConfig<string>>(
+        config?: Alova2MethodConfig<string> & {
+          params: {
+            codegenOptionsURL: string;
+          };
+          data: {
+            /**
+             *language to generate (required)
+             */
+            lang?: string;
+            /**
+             *spec in json format. . Alternative to `specURL`
+             */
+            spec?: object;
+            /**
+             *URL of the spec in json format. Alternative to `spec`
+             */
+            specURL?: string;
+            /**
+             *type of the spec
+             */
+            type?: string;
+            /**
+             *codegen version to use
+             */
+            codegenVersion?: string;
+            options?: Options;
+          };
+        }
       ): Alova2Method<string, 'clients.generate', Config>;
       /**
        * ---
@@ -630,13 +643,19 @@ declare global {
        *
        * ---
        */
-
       clientLanguages<Config extends Alova2MethodConfig<string[]>>(
-        params: {
-          version?: Version; // generator version used by codegen engine
-          clientOnly?: boolean; // flag to only return languages of type `client`
-        },
-        config?: Alova2MethodConfig<string[]>
+        config?: Alova2MethodConfig<string[]> & {
+          params: {
+            /**
+             *generator version used by codegen engine
+             */
+            version?: Version;
+            /**
+             *flag to only return languages of type `client`
+             */
+            clientOnly?: boolean;
+          };
+        }
       ): Alova2Method<string[], 'clients.clientLanguages', Config>;
       /**
        * ---
@@ -668,13 +687,19 @@ declare global {
        *
        * ---
        */
-
       languages<Config extends Alova2MethodConfig<string[]>>(
-        params: {
-          type: Type; // generator type
-          version: string; // generator version used by codegen engine
-        },
-        config?: Alova2MethodConfig<string[]>
+        config?: Alova2MethodConfig<string[]> & {
+          pathParams: {
+            /**
+             *generator type
+             */
+            type: Type;
+            /**
+             *generator version used by codegen engine
+             */
+            version: string;
+          };
+        }
       ): Alova2Method<string[], 'clients.languages', Config>;
       /**
        * ---
@@ -705,13 +730,19 @@ declare global {
        *
        * ---
        */
-
       languagesMulti<Config extends Alova2MethodConfig<string[]>>(
-        params: {
-          types: Types; // comma-separated list of generator types
-          version?: Version; // generator version used by codegen engine
-        },
-        config?: Alova2MethodConfig<string[]>
+        config?: Alova2MethodConfig<string[]> & {
+          params: {
+            /**
+             *comma-separated list of generator types
+             */
+            types: Types;
+            /**
+             *generator version used by codegen engine
+             */
+            version?: Version;
+          };
+        }
       ): Alova2Method<string[], 'clients.languagesMulti', Config>;
       /**
        * ---
@@ -741,13 +772,19 @@ declare global {
        *
        * ---
        */
-
       listOptions<Config extends Alova2MethodConfig<object>>(
-        params: {
-          language?: string; // language
-          version?: Version; // generator version used by codegen engine
-        },
-        config?: Alova2MethodConfig<object>
+        config?: Alova2MethodConfig<object> & {
+          params: {
+            /**
+             *language
+             */
+            language?: string;
+            /**
+             *generator version used by codegen engine
+             */
+            version?: Version;
+          };
+        }
       ): Alova2Method<object, 'clients.listOptions', Config>;
       /**
        * ---
@@ -798,10 +835,32 @@ declare global {
        *
        * ---
        */
-
       generateBundle<Config extends Alova2MethodConfig<GenerationRequest>>(
-        data: GenerationRequest,
-        config?: Alova2MethodConfig<GenerationRequest>
+        config?: Alova2MethodConfig<GenerationRequest> & {
+          data: {
+            /**
+             *language to generate (required)
+             */
+            lang?: string;
+            /**
+             *spec in json format. . Alternative to `specURL`
+             */
+            spec?: object;
+            /**
+             *URL of the spec in json format. Alternative to `spec`
+             */
+            specURL?: string;
+            /**
+             *type of the spec
+             */
+            type?: string;
+            /**
+             *codegen version to use
+             */
+            codegenVersion?: string;
+            options?: Options;
+          };
+        }
       ): Alova2Method<GenerationRequest, 'clients.generateBundle', Config>;
     };
     servers: {
@@ -832,12 +891,12 @@ declare global {
        *
        * ---
        */
-
       generateFromURL<Config extends Alova2MethodConfig<string>>(
-        params: {
-          codegenOptionsURL: string; //
-        },
-        config?: Alova2MethodConfig<string>
+        config?: Alova2MethodConfig<string> & {
+          params: {
+            codegenOptionsURL: string;
+          };
+        }
       ): Alova2Method<string, 'servers.generateFromURL', Config>;
       /**
        * ---
@@ -886,22 +945,35 @@ declare global {
        *
        * ---
        */
-
-      generate<
-        Config extends Alova2MethodConfig<
-          string,
-          {
-            codegenOptionsURL: string; //
-          }
-        >
-      >(
-        data: GenerationRequest,
-        config?: Alova2MethodConfig<
-          string,
-          {
-            codegenOptionsURL: string; //
-          }
-        >
+      generate<Config extends Alova2MethodConfig<string>>(
+        config?: Alova2MethodConfig<string> & {
+          params: {
+            codegenOptionsURL: string;
+          };
+          data: {
+            /**
+             *language to generate (required)
+             */
+            lang?: string;
+            /**
+             *spec in json format. . Alternative to `specURL`
+             */
+            spec?: object;
+            /**
+             *URL of the spec in json format. Alternative to `spec`
+             */
+            specURL?: string;
+            /**
+             *type of the spec
+             */
+            type?: string;
+            /**
+             *codegen version to use
+             */
+            codegenVersion?: string;
+            options?: Options;
+          };
+        }
       ): Alova2Method<string, 'servers.generate', Config>;
       /**
        * ---
@@ -929,12 +1001,15 @@ declare global {
        *
        * ---
        */
-
       serverLanguages<Config extends Alova2MethodConfig<string[]>>(
-        params: {
-          version?: Version; // generator version used by codegen engine
-        },
-        config?: Alova2MethodConfig<string[]>
+        config?: Alova2MethodConfig<string[]> & {
+          params: {
+            /**
+             *generator version used by codegen engine
+             */
+            version?: Version;
+          };
+        }
       ): Alova2Method<string[], 'servers.serverLanguages', Config>;
       /**
        * ---
@@ -966,13 +1041,19 @@ declare global {
        *
        * ---
        */
-
       languages<Config extends Alova2MethodConfig<string[]>>(
-        params: {
-          type: Type; // generator type
-          version: string; // generator version used by codegen engine
-        },
-        config?: Alova2MethodConfig<string[]>
+        config?: Alova2MethodConfig<string[]> & {
+          pathParams: {
+            /**
+             *generator type
+             */
+            type: Type;
+            /**
+             *generator version used by codegen engine
+             */
+            version: string;
+          };
+        }
       ): Alova2Method<string[], 'servers.languages', Config>;
       /**
        * ---
@@ -1003,13 +1084,19 @@ declare global {
        *
        * ---
        */
-
       languagesMulti<Config extends Alova2MethodConfig<string[]>>(
-        params: {
-          types: Types; // comma-separated list of generator types
-          version?: Version; // generator version used by codegen engine
-        },
-        config?: Alova2MethodConfig<string[]>
+        config?: Alova2MethodConfig<string[]> & {
+          params: {
+            /**
+             *comma-separated list of generator types
+             */
+            types: Types;
+            /**
+             *generator version used by codegen engine
+             */
+            version?: Version;
+          };
+        }
       ): Alova2Method<string[], 'servers.languagesMulti', Config>;
       /**
        * ---
@@ -1039,13 +1126,19 @@ declare global {
        *
        * ---
        */
-
       listOptions<Config extends Alova2MethodConfig<object>>(
-        params: {
-          language?: string; // language
-          version?: Version; // generator version used by codegen engine
-        },
-        config?: Alova2MethodConfig<object>
+        config?: Alova2MethodConfig<object> & {
+          params: {
+            /**
+             *language
+             */
+            language?: string;
+            /**
+             *generator version used by codegen engine
+             */
+            version?: Version;
+          };
+        }
       ): Alova2Method<object, 'servers.listOptions', Config>;
       /**
        * ---
@@ -1096,10 +1189,32 @@ declare global {
        *
        * ---
        */
-
       generateBundle<Config extends Alova2MethodConfig<GenerationRequest>>(
-        data: GenerationRequest,
-        config?: Alova2MethodConfig<GenerationRequest>
+        config?: Alova2MethodConfig<GenerationRequest> & {
+          data: {
+            /**
+             *language to generate (required)
+             */
+            lang?: string;
+            /**
+             *spec in json format. . Alternative to `specURL`
+             */
+            spec?: object;
+            /**
+             *URL of the spec in json format. Alternative to `spec`
+             */
+            specURL?: string;
+            /**
+             *type of the spec
+             */
+            type?: string;
+            /**
+             *codegen version to use
+             */
+            codegenVersion?: string;
+            options?: Options;
+          };
+        }
       ): Alova2Method<GenerationRequest, 'servers.generateBundle', Config>;
     };
     documentation: {
@@ -1130,12 +1245,12 @@ declare global {
        *
        * ---
        */
-
       generateFromURL<Config extends Alova2MethodConfig<string>>(
-        params: {
-          codegenOptionsURL: string; //
-        },
-        config?: Alova2MethodConfig<string>
+        config?: Alova2MethodConfig<string> & {
+          params: {
+            codegenOptionsURL: string;
+          };
+        }
       ): Alova2Method<string, 'documentation.generateFromURL', Config>;
       /**
        * ---
@@ -1184,22 +1299,35 @@ declare global {
        *
        * ---
        */
-
-      generate<
-        Config extends Alova2MethodConfig<
-          string,
-          {
-            codegenOptionsURL: string; //
-          }
-        >
-      >(
-        data: GenerationRequest,
-        config?: Alova2MethodConfig<
-          string,
-          {
-            codegenOptionsURL: string; //
-          }
-        >
+      generate<Config extends Alova2MethodConfig<string>>(
+        config?: Alova2MethodConfig<string> & {
+          params: {
+            codegenOptionsURL: string;
+          };
+          data: {
+            /**
+             *language to generate (required)
+             */
+            lang?: string;
+            /**
+             *spec in json format. . Alternative to `specURL`
+             */
+            spec?: object;
+            /**
+             *URL of the spec in json format. Alternative to `spec`
+             */
+            specURL?: string;
+            /**
+             *type of the spec
+             */
+            type?: string;
+            /**
+             *codegen version to use
+             */
+            codegenVersion?: string;
+            options?: Options;
+          };
+        }
       ): Alova2Method<string, 'documentation.generate', Config>;
       /**
        * ---
@@ -1229,13 +1357,19 @@ declare global {
        *
        * ---
        */
-
       clientLanguages<Config extends Alova2MethodConfig<string[]>>(
-        params: {
-          version?: Version; // generator version used by codegen engine
-          clientOnly?: boolean; // flag to only return languages of type `client`
-        },
-        config?: Alova2MethodConfig<string[]>
+        config?: Alova2MethodConfig<string[]> & {
+          params: {
+            /**
+             *generator version used by codegen engine
+             */
+            version?: Version;
+            /**
+             *flag to only return languages of type `client`
+             */
+            clientOnly?: boolean;
+          };
+        }
       ): Alova2Method<string[], 'documentation.clientLanguages', Config>;
       /**
        * ---
@@ -1263,12 +1397,15 @@ declare global {
        *
        * ---
        */
-
       documentationLanguages<Config extends Alova2MethodConfig<string[]>>(
-        params: {
-          version?: Version; // generator version used by codegen engine
-        },
-        config?: Alova2MethodConfig<string[]>
+        config?: Alova2MethodConfig<string[]> & {
+          params: {
+            /**
+             *generator version used by codegen engine
+             */
+            version?: Version;
+          };
+        }
       ): Alova2Method<string[], 'documentation.documentationLanguages', Config>;
       /**
        * ---
@@ -1300,13 +1437,19 @@ declare global {
        *
        * ---
        */
-
       languages<Config extends Alova2MethodConfig<string[]>>(
-        params: {
-          type: Type; // generator type
-          version: string; // generator version used by codegen engine
-        },
-        config?: Alova2MethodConfig<string[]>
+        config?: Alova2MethodConfig<string[]> & {
+          pathParams: {
+            /**
+             *generator type
+             */
+            type: Type;
+            /**
+             *generator version used by codegen engine
+             */
+            version: string;
+          };
+        }
       ): Alova2Method<string[], 'documentation.languages', Config>;
       /**
        * ---
@@ -1337,13 +1480,19 @@ declare global {
        *
        * ---
        */
-
       languagesMulti<Config extends Alova2MethodConfig<string[]>>(
-        params: {
-          types: Types; // comma-separated list of generator types
-          version?: Version; // generator version used by codegen engine
-        },
-        config?: Alova2MethodConfig<string[]>
+        config?: Alova2MethodConfig<string[]> & {
+          params: {
+            /**
+             *comma-separated list of generator types
+             */
+            types: Types;
+            /**
+             *generator version used by codegen engine
+             */
+            version?: Version;
+          };
+        }
       ): Alova2Method<string[], 'documentation.languagesMulti', Config>;
       /**
        * ---
@@ -1373,13 +1522,19 @@ declare global {
        *
        * ---
        */
-
       listOptions<Config extends Alova2MethodConfig<object>>(
-        params: {
-          language?: string; // language
-          version?: Version; // generator version used by codegen engine
-        },
-        config?: Alova2MethodConfig<object>
+        config?: Alova2MethodConfig<object> & {
+          params: {
+            /**
+             *language
+             */
+            language?: string;
+            /**
+             *generator version used by codegen engine
+             */
+            version?: Version;
+          };
+        }
       ): Alova2Method<object, 'documentation.listOptions', Config>;
       /**
        * ---
@@ -1430,10 +1585,32 @@ declare global {
        *
        * ---
        */
-
       generateBundle<Config extends Alova2MethodConfig<GenerationRequest>>(
-        data: GenerationRequest,
-        config?: Alova2MethodConfig<GenerationRequest>
+        config?: Alova2MethodConfig<GenerationRequest> & {
+          data: {
+            /**
+             *language to generate (required)
+             */
+            lang?: string;
+            /**
+             *spec in json format. . Alternative to `specURL`
+             */
+            spec?: object;
+            /**
+             *URL of the spec in json format. Alternative to `spec`
+             */
+            specURL?: string;
+            /**
+             *type of the spec
+             */
+            type?: string;
+            /**
+             *codegen version to use
+             */
+            codegenVersion?: string;
+            options?: Options;
+          };
+        }
       ): Alova2Method<GenerationRequest, 'documentation.generateBundle', Config>;
       /**
        * ---
@@ -1463,10 +1640,19 @@ declare global {
        *
        * ---
        */
-
       renderTemplate<Config extends Alova2MethodConfig<any>>(
-        data: RenderRequest,
-        config?: Alova2MethodConfig<any>
+        config?: Alova2MethodConfig<any> & {
+          data: {
+            /**
+             *template as string
+             */
+            template?: string;
+            /**
+             *context as string
+             */
+            context?: string;
+          };
+        }
       ): Alova2Method<any, 'documentation.renderTemplate', Config>;
     };
     config: {
@@ -1497,12 +1683,12 @@ declare global {
        *
        * ---
        */
-
       generateFromURL<Config extends Alova2MethodConfig<string>>(
-        params: {
-          codegenOptionsURL: string; //
-        },
-        config?: Alova2MethodConfig<string>
+        config?: Alova2MethodConfig<string> & {
+          params: {
+            codegenOptionsURL: string;
+          };
+        }
       ): Alova2Method<string, 'config.generateFromURL', Config>;
       /**
        * ---
@@ -1551,22 +1737,35 @@ declare global {
        *
        * ---
        */
-
-      generate<
-        Config extends Alova2MethodConfig<
-          string,
-          {
-            codegenOptionsURL: string; //
-          }
-        >
-      >(
-        data: GenerationRequest,
-        config?: Alova2MethodConfig<
-          string,
-          {
-            codegenOptionsURL: string; //
-          }
-        >
+      generate<Config extends Alova2MethodConfig<string>>(
+        config?: Alova2MethodConfig<string> & {
+          params: {
+            codegenOptionsURL: string;
+          };
+          data: {
+            /**
+             *language to generate (required)
+             */
+            lang?: string;
+            /**
+             *spec in json format. . Alternative to `specURL`
+             */
+            spec?: object;
+            /**
+             *URL of the spec in json format. Alternative to `spec`
+             */
+            specURL?: string;
+            /**
+             *type of the spec
+             */
+            type?: string;
+            /**
+             *codegen version to use
+             */
+            codegenVersion?: string;
+            options?: Options;
+          };
+        }
       ): Alova2Method<string, 'config.generate', Config>;
       /**
        * ---
@@ -1598,13 +1797,19 @@ declare global {
        *
        * ---
        */
-
       languages<Config extends Alova2MethodConfig<string[]>>(
-        params: {
-          type: Type; // generator type
-          version: string; // generator version used by codegen engine
-        },
-        config?: Alova2MethodConfig<string[]>
+        config?: Alova2MethodConfig<string[]> & {
+          pathParams: {
+            /**
+             *generator type
+             */
+            type: Type;
+            /**
+             *generator version used by codegen engine
+             */
+            version: string;
+          };
+        }
       ): Alova2Method<string[], 'config.languages', Config>;
       /**
        * ---
@@ -1635,13 +1840,19 @@ declare global {
        *
        * ---
        */
-
       languagesMulti<Config extends Alova2MethodConfig<string[]>>(
-        params: {
-          types: Types; // comma-separated list of generator types
-          version?: Version; // generator version used by codegen engine
-        },
-        config?: Alova2MethodConfig<string[]>
+        config?: Alova2MethodConfig<string[]> & {
+          params: {
+            /**
+             *comma-separated list of generator types
+             */
+            types: Types;
+            /**
+             *generator version used by codegen engine
+             */
+            version?: Version;
+          };
+        }
       ): Alova2Method<string[], 'config.languagesMulti', Config>;
       /**
        * ---
@@ -1671,13 +1882,19 @@ declare global {
        *
        * ---
        */
-
       listOptions<Config extends Alova2MethodConfig<object>>(
-        params: {
-          language?: string; // language
-          version?: Version; // generator version used by codegen engine
-        },
-        config?: Alova2MethodConfig<object>
+        config?: Alova2MethodConfig<object> & {
+          params: {
+            /**
+             *language
+             */
+            language?: string;
+            /**
+             *generator version used by codegen engine
+             */
+            version?: Version;
+          };
+        }
       ): Alova2Method<object, 'config.listOptions', Config>;
       /**
        * ---
@@ -1728,10 +1945,32 @@ declare global {
        *
        * ---
        */
-
       generateBundle<Config extends Alova2MethodConfig<GenerationRequest>>(
-        data: GenerationRequest,
-        config?: Alova2MethodConfig<GenerationRequest>
+        config?: Alova2MethodConfig<GenerationRequest> & {
+          data: {
+            /**
+             *language to generate (required)
+             */
+            lang?: string;
+            /**
+             *spec in json format. . Alternative to `specURL`
+             */
+            spec?: object;
+            /**
+             *URL of the spec in json format. Alternative to `spec`
+             */
+            specURL?: string;
+            /**
+             *type of the spec
+             */
+            type?: string;
+            /**
+             *codegen version to use
+             */
+            codegenVersion?: string;
+            options?: Options;
+          };
+        }
       ): Alova2Method<GenerationRequest, 'config.generateBundle', Config>;
     };
   }
