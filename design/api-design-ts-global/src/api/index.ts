@@ -4,7 +4,7 @@ import vueHook from 'alova/vue';
 import { createApis, withConfigType } from './createApis';
 
 export const alovaInstance = createAlova({
-  baseURL: 'openapi文件中的server地址',
+  baseURL: '/api',
   statesHook: vueHook,
   requestAdapter: GlobalFetch(),
   beforeRequest: method => {},
@@ -13,14 +13,7 @@ export const alovaInstance = createAlova({
   }
 });
 
-export const $$userConfigMap = withConfigType({
-  'user.userLogin': {
-    cache: 'force-cache',
-    transformData: data => {
-      return data as string;
-    }
-  }
-});
+export const $$userConfigMap = withConfigType({});
 
 const Apis = createApis(alovaInstance, $$userConfigMap);
 

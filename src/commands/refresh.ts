@@ -11,7 +11,7 @@ export default {
     // 获取当前工作区
     try {
       // 读取配置文件
-      readConfig();
+      await readConfig();
       // 生成api文件
       for (const configuration of CONFIG_POOL) {
         const outputPathArr = configuration.getAllOutputPath();
@@ -26,11 +26,12 @@ export default {
               outputPath,
               openApiData[idx],
               generatorConfigArr[idx],
-              templateTypeArr[idx] ?? 'commonjs'
+              templateTypeArr[idx] ?? 'commonjs',
+              true
             );
           })
         );
-        vscode.window.showInformationMessage('生成api文件成功!');
+        vscode.window.showInformationMessage('刷新api文件成功!');
       }
     } catch (error: any) {
       vscode.window.showErrorMessage(error.message);

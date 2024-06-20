@@ -11,7 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "alova": "^2.20.5",
+    "alova": "^2.21.3",
     "vue": "^3.4.27"
   }
 }

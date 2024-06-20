@@ -18,7 +18,7 @@ export const $$userConfigMap = withConfigType({});
 /** * @type{APIS} */
 const Apis = createApis(alovaInstance, $$userConfigMap);
 
-//如果是全局定义 bbbb
+//如果是全局定义
 globalThis.Apis = Apis;
 
 // 如果不是则直接导出

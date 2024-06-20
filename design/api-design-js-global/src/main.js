@@ -35,4 +35,12 @@ const b = await Apis.clients.generate(
     }
   }
 );
-Apis.clients.generate;
+Apis.clients
+  .languagesMulti({
+    params: {
+      types: ['config', 'documentation', 'config']
+    }
+  })
+  .then(res => {
+    console.log(res);
+  });

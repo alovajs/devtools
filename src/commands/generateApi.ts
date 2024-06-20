@@ -15,7 +15,8 @@ export default {
         const templateTypeArr = configuration.getAllTemplateType();
         const openApiData = await configuration.getAllOpenApiData();
         const generatorConfigArr = configuration.config.generator;
-        await Promise.all(
+
+        const result = await Promise.all(
           outputPathArr.map((outputPath, idx) => {
             // 生成api文件
             return generateApi(
@@ -27,7 +28,9 @@ export default {
             );
           })
         );
-        vscode.window.showInformationMessage('生成api文件成功!');
+        if (result.some(item => !!item)) {
+          vscode.window.showInformationMessage('生成api文件成功!');
+        }
       }
     } catch (error: any) {
       vscode.window.showErrorMessage(error.message);

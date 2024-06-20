@@ -1,6 +1,9 @@
-import path from 'path';
+import path from 'node:path';
+import fs from 'node:fs';
 import { generateFile, readAndRenderTemplate } from '../utils';
 import { srcPath } from '../utils/path';
+import { TemplateData } from '../functions/openApi2Data';
+export const TEMPLATE_DATA: Record<string, TemplateData> = {};
 export class TemplateFile {
   fileName: string;
   type: TemplateType;
@@ -36,3 +39,34 @@ export class TemplateFile {
     return readAndRenderTemplate(templatePath, data);
   }
 }
+
+export const writeAlovaJson = (data: TemplateData, originPath: string) => {
+  // 将数据转换为 JSON 字符串
+  const jsonData = JSON.stringify(data, null, 2);
+
+  // 定义 JSON 文件的路径和名称
+  const filePath = path.join(originPath, './alova.json');
+
+  // 使用 fs.writeFile 将 JSON 数据写入文件
+  fs.writeFile(filePath, jsonData, err => {
+    if (err) {
+      console.error('Error writing file:', err);
+    } else {
+      console.log('JSON file has been saved.');
+    }
+  });
+};
+export const readAlovaJson = (originPath: string) => {
+  // 定义 JSON 文件的路径和名称
+  const filePath = path.join(originPath, './alova.json');
+  return new Promise<TemplateData>((resolve, reject) => {
+    // 使用 fs.readFile 读取 JSON 文件
+    fs.readFile(filePath, 'utf8', (err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(JSON.parse(data));
+      }
+    });
+  });
+};

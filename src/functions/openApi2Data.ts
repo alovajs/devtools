@@ -30,7 +30,7 @@ interface PathApis {
   tag: string;
   apis: Api[];
 }
-interface TemplateData extends Omit<OpenAPIV3_1.Document, ''> {
+export interface TemplateData extends Omit<OpenAPIV3_1.Document, ''> {
   // 定义模板数据类型
   // ...
   vue?: boolean;

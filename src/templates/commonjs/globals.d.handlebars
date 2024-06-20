@@ -6,11 +6,9 @@ import type apiDefinitions from './apiDefinitions';
 type CollapsedAlova = typeof alovaInstance;
 type UserMethodConfigMap = typeof $$userConfigMap;
 
-type Alova2MethodConfig<Responded,Parameters=Record<string, any>> =
+type Alova2MethodConfig<Responded> =
   CollapsedAlova extends Alova<any, any, infer RequestConfig, any, infer ResponseHeader>
-    ? AlovaMethodCreateConfig<any, Responded, RequestConfig, ResponseHeader>&{
-      params:Parameters
-    }
+    ? AlovaMethodCreateConfig<any, Responded, RequestConfig, ResponseHeader>
     : never;
 
 // Extract the return type of transformData function that define in $$userConfigMap, if it not exists, use the default type.
@@ -147,8 +145,7 @@ declare global {
        {{/if}}
        * ---
        */
-      {{{name}}}<Config extends Alova2MethodConfig<{{{responseName}}}>>(
-        config?: Alova2MethodConfig<{{{responseName}}}> & {
+      {{{name}}}<Config extends Alova2MethodConfig<{{{responseName}}}> & {
           {{#if pathParameters}}
           pathParams: {
             {{#pathParameters}}
@@ -190,7 +187,8 @@ declare global {
           data: {{{requestBody.type}}};
           {{/isType}}
           {{/if}}
-        }
+        }>(
+        config?: Config
       ): Alova2Method<{{{responseName}}}, '{{{pathKey}}}', Config>;
      {{/apis}}
     };

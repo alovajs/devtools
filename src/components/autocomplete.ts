@@ -8,14 +8,14 @@ export const AUTO_COMPLETE = {
 export default vscode.languages.registerCompletionItemProvider(
   ['javascript', 'typescript'],
   {
-    async provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
+    provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
       // 支持换行 代码从起始位置到输入位置
       const text = document.lineAt(position).text.slice(0, position.character);
       // const linePrefix = ;
       if (/a->.*/.test(text)) {
         const [, value] = /a->(\w*).*/.exec(text) || [];
         AUTO_COMPLETE.path = document.uri.fsPath;
-        return (await autocomplete(value)).map(item => {
+        return autocomplete(value).map(item => {
           let completionItem = new vscode.CompletionItem(item, vscode.CompletionItemKind.Function);
           completionItem.detail = item;
           completionItem.documentation = item;

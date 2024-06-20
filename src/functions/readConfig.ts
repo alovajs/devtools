@@ -36,7 +36,7 @@ export function readConfig(workspaceRootPath: string, createWatch = true) {
   }
   return alovaConfig;
 }
-export default () => {
+export default async () => {
   // 关闭自动更新
   CONFIG_POOL.forEach(config => config.closeAutoUpdate());
   // 清空
@@ -55,5 +55,7 @@ export default () => {
     configuration.autoUpdate();
     // 加入配置池子
     CONFIG_POOL.push(configuration);
+    // 读取alova.son实现自动补全
+    await configuration.readAlovaJson();
   }
 };

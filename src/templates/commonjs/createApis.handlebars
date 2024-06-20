@@ -1,7 +1,13 @@
 {{{commentText}}}
 const { Method } = require('alova');
 const apiDefinitions = require('./apiDefinitions');
-
+/**
+ *
+ * @param {(string|symbol)[]} array
+ * @param {Alova<any, any, any, any, any>} alovaInstance
+ * @param {any} configMap
+ * @returns {()=>void}
+ */
 const createFunctionalProxy = (array, alovaInstance, configMap) => {
   // create a new proxy instance
   return new Proxy(function () {}, {
@@ -27,8 +33,13 @@ const createFunctionalProxy = (array, alovaInstance, configMap) => {
     }
   });
 };
-
-export const createApis = (alovaInstance, configMap) =>
+/**
+ *
+ * @param {Alova<any, any, any, any, any>} alovaInstance
+ * @param {any} configMap
+ * @returns
+ */
+const createApis = (alovaInstance, configMap) =>
   new Proxy(
     {},
     {
@@ -42,7 +53,10 @@ export const createApis = (alovaInstance, configMap) =>
  * @typedef {Parameters<typeof import('./index')['alovaInstance']['Get']>[1]} GetConfig
  */
 /**
- * @typedef {Object<string, NonNullable<GetConfig>>} MethodsConfigMap
+ * @typedef {keyof apiDefinitions} ApiEndpointKey
+ */
+/**
+ * @typedef {Record<ApiEndpointKey, NonNullable<GetConfig>>} MethodsConfigMap
  */
 /**
  * @template {MethodsConfigMap} Config
@@ -55,3 +69,4 @@ module.exports = {
   createApis,
   withConfigType
 };
+

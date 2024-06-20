@@ -3,6 +3,8 @@ import generateApi from '../commands/generateApi';
 import getOpenApiData from '../functions/getOpenApiData';
 import getAutoTemplateType from '../functions/getAutoTemplateType';
 import { highPrecisionInterval } from '../utils';
+import { readAlovaJson, TEMPLATE_DATA } from '../modules/TemplateFile';
+import path from 'node:path';
 export const CONFIG_POOL: Array<Configuration> = [];
 export class Configuration {
   config: AlovaConfig;
@@ -95,5 +97,19 @@ export class Configuration {
     }
     this.closeAutoUpdate();
     this.autoUpdate();
+  }
+  readAlovaJson() {
+    const allAlovaJSon = this.config.generator.map(generator => {
+      const alovaJsonPath = path.join(this.workspaceRootDir, generator.output);
+      return readAlovaJson(alovaJsonPath)
+        .then(alovaJson => {
+          TEMPLATE_DATA[alovaJsonPath] = alovaJson;
+          return alovaJson;
+        })
+        .catch(() => {
+          return {};
+        });
+    });
+    return Promise.all(allAlovaJSon);
   }
 }

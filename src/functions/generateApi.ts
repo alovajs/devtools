@@ -1,16 +1,17 @@
 import path from 'node:path';
 import { OpenAPIV3_1 } from 'openapi-types';
 import openApi2Data from '../functions/openApi2Data';
-import { TemplateFile } from '../modules/TemplateFile';
+import { TemplateFile, TEMPLATE_DATA, writeAlovaJson } from '../modules/TemplateFile';
 import getFrameworkTag from './getFrameworkTag';
 import fs from 'node:fs';
-
+import { isEqual } from 'lodash';
 export default async function (
   workspaceRootDir: string,
   outputPath: string,
   data: OpenAPIV3_1.Document,
   config: GeneratorConfig,
-  type: TemplateType
+  type: TemplateType,
+  force = false
 ) {
   if (!data) {
     return;
@@ -23,6 +24,14 @@ export default async function (
   templateData[getFrameworkTag(workspaceRootDir)] = true;
   // 头部注释部分
   templateData.commentText = await templateFile.readAndRenderTemplate('comment', data, { root: true });
+  // 判断是否需要生成api文件
+  if (!force && isEqual(templateData, TEMPLATE_DATA[outputDir])) {
+    return false;
+  }
+  // 保存templateData
+  TEMPLATE_DATA[outputDir] = templateData;
+  // 生成alova.json文件
+  writeAlovaJson(templateData, outputDir);
   // 获取是否存在index.ts|index.js
   const indexIsExists = fs.existsSync(path.join(outputDir, `index${templateFile.getExt()}`));
   // mustache语法生成
@@ -48,4 +57,5 @@ export default async function (
     const { fileName, ext } = item;
     templateFile.outputFile(templateData, fileName, outputDir, { ext });
   });
+  return true;
 }

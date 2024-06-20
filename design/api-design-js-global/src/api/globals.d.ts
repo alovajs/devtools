@@ -21,11 +21,9 @@ import type apiDefinitions from './apiDefinitions';
 type CollapsedAlova = typeof alovaInstance;
 type UserMethodConfigMap = typeof $$userConfigMap;
 
-type Alova2MethodConfig<Responded, Parameters = Record<string, any>> =
+type Alova2MethodConfig<Responded> =
   CollapsedAlova extends Alova<any, any, infer RequestConfig, any, infer ResponseHeader>
-    ? AlovaMethodCreateConfig<any, Responded, RequestConfig, ResponseHeader> & {
-        params: Parameters;
-      }
+    ? AlovaMethodCreateConfig<any, Responded, RequestConfig, ResponseHeader>
     : never;
 
 // Extract the return type of transformData function that define in $$userConfigMap, if it not exists, use the default type.
@@ -495,6 +493,12 @@ export interface RenderResponse {
   value: string;
 }
 
+export type Version = 'V2' | 'V3';
+
+export type Type = 'client' | 'server' | 'documentation' | 'config';
+
+export type Types = ('client' | 'server' | 'documentation' | 'config')[];
+
 declare global {
   interface APIS {
     clients: {
@@ -503,7 +507,18 @@ declare global {
        *
        * [GET]Generates and download code. GenerationRequest input provided as JSON available at URL specified in parameter codegenOptionsURL.
        *
-       * **path:** xxx1
+       * **path:** /generate
+       *
+       * ---
+       *
+       * **Query Parameters**
+       * ```ts
+       * interface QueryParameters {
+       *   //
+       *   // required: true
+       *   codegenOptionsURL: string;
+       * }
+       * ```
        *
        * ---
        *
@@ -514,15 +529,32 @@ declare global {
        *
        * ---
        */
-      generateFromURL<Config extends Alova2MethodConfig<string>>(
-        config?: Alova2MethodConfig<string> & {}
+      generateFromURL<
+        Config extends Alova2MethodConfig<string> & {
+          params: {
+            codegenOptionsURL: string;
+          };
+        }
+      >(
+        config?: Config
       ): Alova2Method<string, 'clients.generateFromURL', Config>;
       /**
        * ---
        *
        * [POST]Generates and download code. GenerationRequest input provided as request body.
        *
-       * **path:** xxx1
+       * **path:** /generate
+       *
+       * ---
+       *
+       * **Query Parameters**
+       * ```ts
+       * interface QueryParameters {
+       *   //
+       *   // required: true
+       *   codegenOptionsURL: string;
+       * }
+       * ```
        *
        * ---
        *
@@ -535,6 +567,8 @@ declare global {
        *   spec?: object;
        *   // URL of the spec in json format. Alternative to `spec`
        *   specURL?: string;
+       *   // type of the spec
+       *   type?: string;
        *   // codegen version to use
        *   codegenVersion?: string;
        *   //
@@ -551,8 +585,11 @@ declare global {
        *
        * ---
        */
-      generate<Config extends Alova2MethodConfig<string>>(
-        config?: Alova2MethodConfig<string> & {
+      generate<
+        Config extends Alova2MethodConfig<string> & {
+          params: {
+            codegenOptionsURL: string;
+          };
           data: {
             /**
              *language to generate (required)
@@ -567,13 +604,276 @@ declare global {
              */
             specURL?: string;
             /**
+             *type of the spec
+             */
+            type?: string;
+            /**
              *codegen version to use
              */
             codegenVersion?: string;
             options?: Options;
           };
         }
+      >(
+        config?: Config
       ): Alova2Method<string, 'clients.generate', Config>;
+      /**
+       * ---
+       *
+       * [GET]Deprecated, use '/{type}/{version}' instead. List generator languages of type 'client' or 'documentation' for given codegen version (defaults to V3)
+       *
+       * **path:** /clients
+       *
+       * ---
+       *
+       * **Query Parameters**
+       * ```ts
+       * interface QueryParameters {
+       *   // generator version used by codegen engine
+       *   version?: Version;
+       *   // flag to only return languages of type `client`
+       *   clientOnly?: boolean;
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * type Response = string[]
+       * ```
+       *
+       * ---
+       */
+      clientLanguages<
+        Config extends Alova2MethodConfig<string[]> & {
+          params: {
+            /**
+             *generator version used by codegen engine
+             */
+            version?: Version;
+            /**
+             *flag to only return languages of type `client`
+             */
+            clientOnly?: boolean;
+          };
+        }
+      >(
+        config?: Config
+      ): Alova2Method<string[], 'clients.clientLanguages', Config>;
+      /**
+       * ---
+       *
+       * [GET]List generator languages of the given type and version
+       *
+       * **path:** /{type}/{version}
+       *
+       * ---
+       *
+       * **Path Parameters**
+       * ```ts
+       * interface PathParameters {
+       *   // generator type
+       *   // required: true
+       *   type: Type;
+       *   // generator version used by codegen engine
+       *   // required: true
+       *   version: string;
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * type Response = string[]
+       * ```
+       *
+       * ---
+       */
+      languages<
+        Config extends Alova2MethodConfig<string[]> & {
+          pathParams: {
+            /**
+             *generator type
+             */
+            type: Type;
+            /**
+             *generator version used by codegen engine
+             */
+            version: string;
+          };
+        }
+      >(
+        config?: Config
+      ): Alova2Method<string[], 'clients.languages', Config>;
+      /**
+       * ---
+       *
+       * [GET]List generator languages of version defined in 'version parameter (defaults to V3) and type included in 'types' parameter; all languages
+       *
+       * **path:** /types
+       *
+       * ---
+       *
+       * **Query Parameters**
+       * ```ts
+       * interface QueryParameters {
+       *   // comma-separated list of generator types
+       *   // required: true
+       *   types: Types;
+       *   // generator version used by codegen engine
+       *   version?: Version;
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * type Response = string[]
+       * ```
+       *
+       * ---
+       */
+      languagesMulti<
+        Config extends Alova2MethodConfig<string[]> & {
+          params: {
+            /**
+             *comma-separated list of generator types
+             */
+            types: Types;
+            /**
+             *generator version used by codegen engine
+             */
+            version?: Version;
+          };
+        }
+      >(
+        config?: Config
+      ): Alova2Method<string[], 'clients.languagesMulti', Config>;
+      /**
+       * ---
+       *
+       * [GET]Returns options for a given language and version (defaults to V3)
+       *
+       * **path:** /options
+       *
+       * ---
+       *
+       * **Query Parameters**
+       * ```ts
+       * interface QueryParameters {
+       *   // language
+       *   language?: string;
+       *   // generator version used by codegen engine
+       *   version?: Version;
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * type Response = object
+       * ```
+       *
+       * ---
+       */
+      listOptions<
+        Config extends Alova2MethodConfig<object> & {
+          params: {
+            /**
+             *language
+             */
+            language?: string;
+            /**
+             *generator version used by codegen engine
+             */
+            version?: Version;
+          };
+        }
+      >(
+        config?: Config
+      ): Alova2Method<object, 'clients.listOptions', Config>;
+      /**
+       * ---
+       *
+       * [POST]Generates the intermediate model ("bundle") and returns it as a JSON. body.
+       *
+       * **path:** /model
+       *
+       * ---
+       *
+       * **RequestBody**
+       * ```ts
+       * interface RequestBody {
+       *   // language to generate (required)
+       *   lang?: string;
+       *   // spec in json format. . Alternative to `specURL`
+       *   spec?: object;
+       *   // URL of the spec in json format. Alternative to `spec`
+       *   specURL?: string;
+       *   // type of the spec
+       *   type?: string;
+       *   // codegen version to use
+       *   codegenVersion?: string;
+       *   //
+       *   options?: Options;
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * interface Response {
+       *   // language to generate (required)
+       *   lang?: string;
+       *   // spec in json format. . Alternative to `specURL`
+       *   spec?: object;
+       *   // URL of the spec in json format. Alternative to `spec`
+       *   specURL?: string;
+       *   // type of the spec
+       *   type?: string;
+       *   // codegen version to use
+       *   codegenVersion?: string;
+       *   //
+       *   options?: Options;
+       * }
+       * ```
+       *
+       * ---
+       */
+      generateBundle<
+        Config extends Alova2MethodConfig<GenerationRequest> & {
+          data: {
+            /**
+             *language to generate (required)
+             */
+            lang?: string;
+            /**
+             *spec in json format. . Alternative to `specURL`
+             */
+            spec?: object;
+            /**
+             *URL of the spec in json format. Alternative to `spec`
+             */
+            specURL?: string;
+            /**
+             *type of the spec
+             */
+            type?: string;
+            /**
+             *codegen version to use
+             */
+            codegenVersion?: string;
+            options?: Options;
+          };
+        }
+      >(
+        config?: Config
+      ): Alova2Method<GenerationRequest, 'clients.generateBundle', Config>;
     };
     servers: {
       /**
@@ -581,7 +881,18 @@ declare global {
        *
        * [GET]Generates and download code. GenerationRequest input provided as JSON available at URL specified in parameter codegenOptionsURL.
        *
-       * **path:** xxx1
+       * **path:** /generate
+       *
+       * ---
+       *
+       * **Query Parameters**
+       * ```ts
+       * interface QueryParameters {
+       *   //
+       *   // required: true
+       *   codegenOptionsURL: string;
+       * }
+       * ```
        *
        * ---
        *
@@ -592,15 +903,32 @@ declare global {
        *
        * ---
        */
-      generateFromURL<Config extends Alova2MethodConfig<string>>(
-        config?: Alova2MethodConfig<string> & {}
+      generateFromURL<
+        Config extends Alova2MethodConfig<string> & {
+          params: {
+            codegenOptionsURL: string;
+          };
+        }
+      >(
+        config?: Config
       ): Alova2Method<string, 'servers.generateFromURL', Config>;
       /**
        * ---
        *
        * [POST]Generates and download code. GenerationRequest input provided as request body.
        *
-       * **path:** xxx1
+       * **path:** /generate
+       *
+       * ---
+       *
+       * **Query Parameters**
+       * ```ts
+       * interface QueryParameters {
+       *   //
+       *   // required: true
+       *   codegenOptionsURL: string;
+       * }
+       * ```
        *
        * ---
        *
@@ -613,6 +941,8 @@ declare global {
        *   spec?: object;
        *   // URL of the spec in json format. Alternative to `spec`
        *   specURL?: string;
+       *   // type of the spec
+       *   type?: string;
        *   // codegen version to use
        *   codegenVersion?: string;
        *   //
@@ -629,8 +959,11 @@ declare global {
        *
        * ---
        */
-      generate<Config extends Alova2MethodConfig<string>>(
-        config?: Alova2MethodConfig<string> & {
+      generate<
+        Config extends Alova2MethodConfig<string> & {
+          params: {
+            codegenOptionsURL: string;
+          };
           data: {
             /**
              *language to generate (required)
@@ -645,13 +978,270 @@ declare global {
              */
             specURL?: string;
             /**
+             *type of the spec
+             */
+            type?: string;
+            /**
              *codegen version to use
              */
             codegenVersion?: string;
             options?: Options;
           };
         }
+      >(
+        config?: Config
       ): Alova2Method<string, 'servers.generate', Config>;
+      /**
+       * ---
+       *
+       * [GET]Deprecated, use '/{type}/{version}' instead. List generator languages of type 'server' for given codegen version (defaults to V3)
+       *
+       * **path:** /servers
+       *
+       * ---
+       *
+       * **Query Parameters**
+       * ```ts
+       * interface QueryParameters {
+       *   // generator version used by codegen engine
+       *   version?: Version;
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * type Response = string[]
+       * ```
+       *
+       * ---
+       */
+      serverLanguages<
+        Config extends Alova2MethodConfig<string[]> & {
+          params: {
+            /**
+             *generator version used by codegen engine
+             */
+            version?: Version;
+          };
+        }
+      >(
+        config?: Config
+      ): Alova2Method<string[], 'servers.serverLanguages', Config>;
+      /**
+       * ---
+       *
+       * [GET]List generator languages of the given type and version
+       *
+       * **path:** /{type}/{version}
+       *
+       * ---
+       *
+       * **Path Parameters**
+       * ```ts
+       * interface PathParameters {
+       *   // generator type
+       *   // required: true
+       *   type: Type;
+       *   // generator version used by codegen engine
+       *   // required: true
+       *   version: string;
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * type Response = string[]
+       * ```
+       *
+       * ---
+       */
+      languages<
+        Config extends Alova2MethodConfig<string[]> & {
+          pathParams: {
+            /**
+             *generator type
+             */
+            type: Type;
+            /**
+             *generator version used by codegen engine
+             */
+            version: string;
+          };
+        }
+      >(
+        config?: Config
+      ): Alova2Method<string[], 'servers.languages', Config>;
+      /**
+       * ---
+       *
+       * [GET]List generator languages of version defined in 'version parameter (defaults to V3) and type included in 'types' parameter; all languages
+       *
+       * **path:** /types
+       *
+       * ---
+       *
+       * **Query Parameters**
+       * ```ts
+       * interface QueryParameters {
+       *   // comma-separated list of generator types
+       *   // required: true
+       *   types: Types;
+       *   // generator version used by codegen engine
+       *   version?: Version;
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * type Response = string[]
+       * ```
+       *
+       * ---
+       */
+      languagesMulti<
+        Config extends Alova2MethodConfig<string[]> & {
+          params: {
+            /**
+             *comma-separated list of generator types
+             */
+            types: Types;
+            /**
+             *generator version used by codegen engine
+             */
+            version?: Version;
+          };
+        }
+      >(
+        config?: Config
+      ): Alova2Method<string[], 'servers.languagesMulti', Config>;
+      /**
+       * ---
+       *
+       * [GET]Returns options for a given language and version (defaults to V3)
+       *
+       * **path:** /options
+       *
+       * ---
+       *
+       * **Query Parameters**
+       * ```ts
+       * interface QueryParameters {
+       *   // language
+       *   language?: string;
+       *   // generator version used by codegen engine
+       *   version?: Version;
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * type Response = object
+       * ```
+       *
+       * ---
+       */
+      listOptions<
+        Config extends Alova2MethodConfig<object> & {
+          params: {
+            /**
+             *language
+             */
+            language?: string;
+            /**
+             *generator version used by codegen engine
+             */
+            version?: Version;
+          };
+        }
+      >(
+        config?: Config
+      ): Alova2Method<object, 'servers.listOptions', Config>;
+      /**
+       * ---
+       *
+       * [POST]Generates the intermediate model ("bundle") and returns it as a JSON. body.
+       *
+       * **path:** /model
+       *
+       * ---
+       *
+       * **RequestBody**
+       * ```ts
+       * interface RequestBody {
+       *   // language to generate (required)
+       *   lang?: string;
+       *   // spec in json format. . Alternative to `specURL`
+       *   spec?: object;
+       *   // URL of the spec in json format. Alternative to `spec`
+       *   specURL?: string;
+       *   // type of the spec
+       *   type?: string;
+       *   // codegen version to use
+       *   codegenVersion?: string;
+       *   //
+       *   options?: Options;
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * interface Response {
+       *   // language to generate (required)
+       *   lang?: string;
+       *   // spec in json format. . Alternative to `specURL`
+       *   spec?: object;
+       *   // URL of the spec in json format. Alternative to `spec`
+       *   specURL?: string;
+       *   // type of the spec
+       *   type?: string;
+       *   // codegen version to use
+       *   codegenVersion?: string;
+       *   //
+       *   options?: Options;
+       * }
+       * ```
+       *
+       * ---
+       */
+      generateBundle<
+        Config extends Alova2MethodConfig<GenerationRequest> & {
+          data: {
+            /**
+             *language to generate (required)
+             */
+            lang?: string;
+            /**
+             *spec in json format. . Alternative to `specURL`
+             */
+            spec?: object;
+            /**
+             *URL of the spec in json format. Alternative to `spec`
+             */
+            specURL?: string;
+            /**
+             *type of the spec
+             */
+            type?: string;
+            /**
+             *codegen version to use
+             */
+            codegenVersion?: string;
+            options?: Options;
+          };
+        }
+      >(
+        config?: Config
+      ): Alova2Method<GenerationRequest, 'servers.generateBundle', Config>;
     };
     documentation: {
       /**
@@ -659,7 +1249,18 @@ declare global {
        *
        * [GET]Generates and download code. GenerationRequest input provided as JSON available at URL specified in parameter codegenOptionsURL.
        *
-       * **path:** xxx1
+       * **path:** /generate
+       *
+       * ---
+       *
+       * **Query Parameters**
+       * ```ts
+       * interface QueryParameters {
+       *   //
+       *   // required: true
+       *   codegenOptionsURL: string;
+       * }
+       * ```
        *
        * ---
        *
@@ -670,15 +1271,32 @@ declare global {
        *
        * ---
        */
-      generateFromURL<Config extends Alova2MethodConfig<string>>(
-        config?: Alova2MethodConfig<string> & {}
+      generateFromURL<
+        Config extends Alova2MethodConfig<string> & {
+          params: {
+            codegenOptionsURL: string;
+          };
+        }
+      >(
+        config?: Config
       ): Alova2Method<string, 'documentation.generateFromURL', Config>;
       /**
        * ---
        *
        * [POST]Generates and download code. GenerationRequest input provided as request body.
        *
-       * **path:** xxx1
+       * **path:** /generate
+       *
+       * ---
+       *
+       * **Query Parameters**
+       * ```ts
+       * interface QueryParameters {
+       *   //
+       *   // required: true
+       *   codegenOptionsURL: string;
+       * }
+       * ```
        *
        * ---
        *
@@ -691,6 +1309,8 @@ declare global {
        *   spec?: object;
        *   // URL of the spec in json format. Alternative to `spec`
        *   specURL?: string;
+       *   // type of the spec
+       *   type?: string;
        *   // codegen version to use
        *   codegenVersion?: string;
        *   //
@@ -707,8 +1327,11 @@ declare global {
        *
        * ---
        */
-      generate<Config extends Alova2MethodConfig<string>>(
-        config?: Alova2MethodConfig<string> & {
+      generate<
+        Config extends Alova2MethodConfig<string> & {
+          params: {
+            codegenOptionsURL: string;
+          };
           data: {
             /**
              *language to generate (required)
@@ -723,13 +1346,358 @@ declare global {
              */
             specURL?: string;
             /**
+             *type of the spec
+             */
+            type?: string;
+            /**
              *codegen version to use
              */
             codegenVersion?: string;
             options?: Options;
           };
         }
+      >(
+        config?: Config
       ): Alova2Method<string, 'documentation.generate', Config>;
+      /**
+       * ---
+       *
+       * [GET]Deprecated, use '/{type}/{version}' instead. List generator languages of type 'client' or 'documentation' for given codegen version (defaults to V3)
+       *
+       * **path:** /clients
+       *
+       * ---
+       *
+       * **Query Parameters**
+       * ```ts
+       * interface QueryParameters {
+       *   // generator version used by codegen engine
+       *   version?: Version;
+       *   // flag to only return languages of type `client`
+       *   clientOnly?: boolean;
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * type Response = string[]
+       * ```
+       *
+       * ---
+       */
+      clientLanguages<
+        Config extends Alova2MethodConfig<string[]> & {
+          params: {
+            /**
+             *generator version used by codegen engine
+             */
+            version?: Version;
+            /**
+             *flag to only return languages of type `client`
+             */
+            clientOnly?: boolean;
+          };
+        }
+      >(
+        config?: Config
+      ): Alova2Method<string[], 'documentation.clientLanguages', Config>;
+      /**
+       * ---
+       *
+       * [GET]Deprecated, use '/{type}/{version}' instead. List generator languages of type 'documentation' for given codegen version (defaults to V3)
+       *
+       * **path:** /documentation
+       *
+       * ---
+       *
+       * **Query Parameters**
+       * ```ts
+       * interface QueryParameters {
+       *   // generator version used by codegen engine
+       *   version?: Version;
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * type Response = string[]
+       * ```
+       *
+       * ---
+       */
+      documentationLanguages<
+        Config extends Alova2MethodConfig<string[]> & {
+          params: {
+            /**
+             *generator version used by codegen engine
+             */
+            version?: Version;
+          };
+        }
+      >(
+        config?: Config
+      ): Alova2Method<string[], 'documentation.documentationLanguages', Config>;
+      /**
+       * ---
+       *
+       * [GET]List generator languages of the given type and version
+       *
+       * **path:** /{type}/{version}
+       *
+       * ---
+       *
+       * **Path Parameters**
+       * ```ts
+       * interface PathParameters {
+       *   // generator type
+       *   // required: true
+       *   type: Type;
+       *   // generator version used by codegen engine
+       *   // required: true
+       *   version: string;
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * type Response = string[]
+       * ```
+       *
+       * ---
+       */
+      languages<
+        Config extends Alova2MethodConfig<string[]> & {
+          pathParams: {
+            /**
+             *generator type
+             */
+            type: Type;
+            /**
+             *generator version used by codegen engine
+             */
+            version: string;
+          };
+        }
+      >(
+        config?: Config
+      ): Alova2Method<string[], 'documentation.languages', Config>;
+      /**
+       * ---
+       *
+       * [GET]List generator languages of version defined in 'version parameter (defaults to V3) and type included in 'types' parameter; all languages
+       *
+       * **path:** /types
+       *
+       * ---
+       *
+       * **Query Parameters**
+       * ```ts
+       * interface QueryParameters {
+       *   // comma-separated list of generator types
+       *   // required: true
+       *   types: Types;
+       *   // generator version used by codegen engine
+       *   version?: Version;
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * type Response = string[]
+       * ```
+       *
+       * ---
+       */
+      languagesMulti<
+        Config extends Alova2MethodConfig<string[]> & {
+          params: {
+            /**
+             *comma-separated list of generator types
+             */
+            types: Types;
+            /**
+             *generator version used by codegen engine
+             */
+            version?: Version;
+          };
+        }
+      >(
+        config?: Config
+      ): Alova2Method<string[], 'documentation.languagesMulti', Config>;
+      /**
+       * ---
+       *
+       * [GET]Returns options for a given language and version (defaults to V3)
+       *
+       * **path:** /options
+       *
+       * ---
+       *
+       * **Query Parameters**
+       * ```ts
+       * interface QueryParameters {
+       *   // language
+       *   language?: string;
+       *   // generator version used by codegen engine
+       *   version?: Version;
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * type Response = object
+       * ```
+       *
+       * ---
+       */
+      listOptions<
+        Config extends Alova2MethodConfig<object> & {
+          params: {
+            /**
+             *language
+             */
+            language?: string;
+            /**
+             *generator version used by codegen engine
+             */
+            version?: Version;
+          };
+        }
+      >(
+        config?: Config
+      ): Alova2Method<object, 'documentation.listOptions', Config>;
+      /**
+       * ---
+       *
+       * [POST]Generates the intermediate model ("bundle") and returns it as a JSON. body.
+       *
+       * **path:** /model
+       *
+       * ---
+       *
+       * **RequestBody**
+       * ```ts
+       * interface RequestBody {
+       *   // language to generate (required)
+       *   lang?: string;
+       *   // spec in json format. . Alternative to `specURL`
+       *   spec?: object;
+       *   // URL of the spec in json format. Alternative to `spec`
+       *   specURL?: string;
+       *   // type of the spec
+       *   type?: string;
+       *   // codegen version to use
+       *   codegenVersion?: string;
+       *   //
+       *   options?: Options;
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * interface Response {
+       *   // language to generate (required)
+       *   lang?: string;
+       *   // spec in json format. . Alternative to `specURL`
+       *   spec?: object;
+       *   // URL of the spec in json format. Alternative to `spec`
+       *   specURL?: string;
+       *   // type of the spec
+       *   type?: string;
+       *   // codegen version to use
+       *   codegenVersion?: string;
+       *   //
+       *   options?: Options;
+       * }
+       * ```
+       *
+       * ---
+       */
+      generateBundle<
+        Config extends Alova2MethodConfig<GenerationRequest> & {
+          data: {
+            /**
+             *language to generate (required)
+             */
+            lang?: string;
+            /**
+             *spec in json format. . Alternative to `specURL`
+             */
+            spec?: object;
+            /**
+             *URL of the spec in json format. Alternative to `spec`
+             */
+            specURL?: string;
+            /**
+             *type of the spec
+             */
+            type?: string;
+            /**
+             *codegen version to use
+             */
+            codegenVersion?: string;
+            options?: Options;
+          };
+        }
+      >(
+        config?: Config
+      ): Alova2Method<GenerationRequest, 'documentation.generateBundle', Config>;
+      /**
+       * ---
+       *
+       * [POST]render a template using the provided data
+       *
+       * **path:** /render
+       *
+       * ---
+       *
+       * **RequestBody**
+       * ```ts
+       * interface RequestBody {
+       *   // template as string
+       *   template?: string;
+       *   // context as string
+       *   context?: string;
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * type Response = any
+       * ```
+       *
+       * ---
+       */
+      renderTemplate<
+        Config extends Alova2MethodConfig<any> & {
+          data: {
+            /**
+             *template as string
+             */
+            template?: string;
+            /**
+             *context as string
+             */
+            context?: string;
+          };
+        }
+      >(
+        config?: Config
+      ): Alova2Method<any, 'documentation.renderTemplate', Config>;
     };
     config: {
       /**
@@ -737,7 +1705,18 @@ declare global {
        *
        * [GET]Generates and download code. GenerationRequest input provided as JSON available at URL specified in parameter codegenOptionsURL.
        *
-       * **path:** xxx1
+       * **path:** /generate
+       *
+       * ---
+       *
+       * **Query Parameters**
+       * ```ts
+       * interface QueryParameters {
+       *   //
+       *   // required: true
+       *   codegenOptionsURL: string;
+       * }
+       * ```
        *
        * ---
        *
@@ -748,15 +1727,32 @@ declare global {
        *
        * ---
        */
-      generateFromURL<Config extends Alova2MethodConfig<string>>(
-        config?: Alova2MethodConfig<string> & {}
+      generateFromURL<
+        Config extends Alova2MethodConfig<string> & {
+          params: {
+            codegenOptionsURL: string;
+          };
+        }
+      >(
+        config?: Config
       ): Alova2Method<string, 'config.generateFromURL', Config>;
       /**
        * ---
        *
        * [POST]Generates and download code. GenerationRequest input provided as request body.
        *
-       * **path:** xxx1
+       * **path:** /generate
+       *
+       * ---
+       *
+       * **Query Parameters**
+       * ```ts
+       * interface QueryParameters {
+       *   //
+       *   // required: true
+       *   codegenOptionsURL: string;
+       * }
+       * ```
        *
        * ---
        *
@@ -769,6 +1765,8 @@ declare global {
        *   spec?: object;
        *   // URL of the spec in json format. Alternative to `spec`
        *   specURL?: string;
+       *   // type of the spec
+       *   type?: string;
        *   // codegen version to use
        *   codegenVersion?: string;
        *   //
@@ -785,8 +1783,11 @@ declare global {
        *
        * ---
        */
-      generate<Config extends Alova2MethodConfig<string>>(
-        config?: Alova2MethodConfig<string> & {
+      generate<
+        Config extends Alova2MethodConfig<string> & {
+          params: {
+            codegenOptionsURL: string;
+          };
           data: {
             /**
              *language to generate (required)
@@ -801,13 +1802,232 @@ declare global {
              */
             specURL?: string;
             /**
+             *type of the spec
+             */
+            type?: string;
+            /**
              *codegen version to use
              */
             codegenVersion?: string;
             options?: Options;
           };
         }
+      >(
+        config?: Config
       ): Alova2Method<string, 'config.generate', Config>;
+      /**
+       * ---
+       *
+       * [GET]List generator languages of the given type and version
+       *
+       * **path:** /{type}/{version}
+       *
+       * ---
+       *
+       * **Path Parameters**
+       * ```ts
+       * interface PathParameters {
+       *   // generator type
+       *   // required: true
+       *   type: Type;
+       *   // generator version used by codegen engine
+       *   // required: true
+       *   version: string;
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * type Response = string[]
+       * ```
+       *
+       * ---
+       */
+      languages<
+        Config extends Alova2MethodConfig<string[]> & {
+          pathParams: {
+            /**
+             *generator type
+             */
+            type: Type;
+            /**
+             *generator version used by codegen engine
+             */
+            version: string;
+          };
+        }
+      >(
+        config?: Config
+      ): Alova2Method<string[], 'config.languages', Config>;
+      /**
+       * ---
+       *
+       * [GET]List generator languages of version defined in 'version parameter (defaults to V3) and type included in 'types' parameter; all languages
+       *
+       * **path:** /types
+       *
+       * ---
+       *
+       * **Query Parameters**
+       * ```ts
+       * interface QueryParameters {
+       *   // comma-separated list of generator types
+       *   // required: true
+       *   types: Types;
+       *   // generator version used by codegen engine
+       *   version?: Version;
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * type Response = string[]
+       * ```
+       *
+       * ---
+       */
+      languagesMulti<
+        Config extends Alova2MethodConfig<string[]> & {
+          params: {
+            /**
+             *comma-separated list of generator types
+             */
+            types: Types;
+            /**
+             *generator version used by codegen engine
+             */
+            version?: Version;
+          };
+        }
+      >(
+        config?: Config
+      ): Alova2Method<string[], 'config.languagesMulti', Config>;
+      /**
+       * ---
+       *
+       * [GET]Returns options for a given language and version (defaults to V3)
+       *
+       * **path:** /options
+       *
+       * ---
+       *
+       * **Query Parameters**
+       * ```ts
+       * interface QueryParameters {
+       *   // language
+       *   language?: string;
+       *   // generator version used by codegen engine
+       *   version?: Version;
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * type Response = object
+       * ```
+       *
+       * ---
+       */
+      listOptions<
+        Config extends Alova2MethodConfig<object> & {
+          params: {
+            /**
+             *language
+             */
+            language?: string;
+            /**
+             *generator version used by codegen engine
+             */
+            version?: Version;
+          };
+        }
+      >(
+        config?: Config
+      ): Alova2Method<object, 'config.listOptions', Config>;
+      /**
+       * ---
+       *
+       * [POST]Generates the intermediate model ("bundle") and returns it as a JSON. body.
+       *
+       * **path:** /model
+       *
+       * ---
+       *
+       * **RequestBody**
+       * ```ts
+       * interface RequestBody {
+       *   // language to generate (required)
+       *   lang?: string;
+       *   // spec in json format. . Alternative to `specURL`
+       *   spec?: object;
+       *   // URL of the spec in json format. Alternative to `spec`
+       *   specURL?: string;
+       *   // type of the spec
+       *   type?: string;
+       *   // codegen version to use
+       *   codegenVersion?: string;
+       *   //
+       *   options?: Options;
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * interface Response {
+       *   // language to generate (required)
+       *   lang?: string;
+       *   // spec in json format. . Alternative to `specURL`
+       *   spec?: object;
+       *   // URL of the spec in json format. Alternative to `spec`
+       *   specURL?: string;
+       *   // type of the spec
+       *   type?: string;
+       *   // codegen version to use
+       *   codegenVersion?: string;
+       *   //
+       *   options?: Options;
+       * }
+       * ```
+       *
+       * ---
+       */
+      generateBundle<
+        Config extends Alova2MethodConfig<GenerationRequest> & {
+          data: {
+            /**
+             *language to generate (required)
+             */
+            lang?: string;
+            /**
+             *spec in json format. . Alternative to `specURL`
+             */
+            spec?: object;
+            /**
+             *URL of the spec in json format. Alternative to `spec`
+             */
+            specURL?: string;
+            /**
+             *type of the spec
+             */
+            type?: string;
+            /**
+             *codegen version to use
+             */
+            codegenVersion?: string;
+            options?: Options;
+          };
+        }
+      >(
+        config?: Config
+      ): Alova2Method<GenerationRequest, 'config.generateBundle', Config>;
     };
   }
 
