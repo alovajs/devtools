@@ -3,7 +3,7 @@ const GlobalFetch = require('alova/GlobalFetch');
 const vueHook = require('alova/vue');
 const { createApis, withConfigType } = require('./createApis');
 const alovaInstance = createAlova({
-  baseURL: 'https://petstore.swagger.io/v2',
+  baseURL: '/api',
   statesHook: vueHook,
   requestAdapter: GlobalFetch(),
   beforeRequest: method => {},

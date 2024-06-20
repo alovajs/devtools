@@ -25,11 +25,11 @@ export default async function (
   // 头部注释部分
   templateData.commentText = await templateFile.readAndRenderTemplate('comment', data, { root: true });
   // 判断是否需要生成api文件
-  if (!force && isEqual(templateData, TEMPLATE_DATA[outputDir])) {
+  if (!force && isEqual(templateData, TEMPLATE_DATA.get(outputDir))) {
     return false;
   }
   // 保存templateData
-  TEMPLATE_DATA[outputDir] = templateData;
+  TEMPLATE_DATA.set(outputDir, templateData);
   // 生成alova.json文件
   writeAlovaJson(templateData, outputDir);
   // 获取是否存在index.ts|index.js

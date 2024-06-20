@@ -302,7 +302,7 @@
     "/model": {
       "post": {
         "tags": ["clients", "servers", "documentation", "config"],
-        "summary": "Generates the intermediate model (\"bundle\") and returns it as a JSON. body.",
+        "summary": "你好Generates the intermediate model (\"bundle\") and returns it as a JSON. body.",
         "operationId": "generateBundle",
         "requestBody": {
           "content": {
@@ -347,7 +347,7 @@
             "description": "successful operation"
           }
         },
-        "x-swagger-router-controller": "io.swagger.v3.generator.online.GeneratorController"
+        "x-swagger-router-controller": "io.swagger.v3.generator.online.GeneratorController24334"
       }
     }
   },
@@ -360,7 +360,7 @@
           "lang": {
             "title": "language",
             "type": "string",
-            "description": "language to generate (required)",
+            "description": "language to generate (required)456",
             "example": "java"
           },
           "spec": {

@@ -59,7 +59,7 @@ export async function readAndRenderTemplate(templatePath: string, view: any): Pr
  */
 export function generateFile(distDir: string, fileName: string, content: string) {
   if (!fs.existsSync(distDir)) {
-    fs.mkdirSync(distDir);
+    fs.mkdirSync(distDir, { recursive: true });
   }
   const filePath = path.join(distDir, fileName);
   fs.writeFile(filePath, content, (err: NodeJS.ErrnoException | null) => {
@@ -114,3 +114,7 @@ export function highPrecisionInterval(callback: () => void, intervalInMillisecon
     immediate
   };
 }
+export const getFileNameByPath = (path: string) => {
+  const [, name] = /[\/\\]([^\/\\]+)([\/\\])?$/.exec(path) ?? [];
+  return name ?? '';
+};

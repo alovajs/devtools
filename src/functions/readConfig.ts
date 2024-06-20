@@ -19,8 +19,6 @@ export function readConfig(workspaceRootPath: string, createWatch = true) {
       const config = readConfig(workspaceRootPath, false);
       // 替换配置
       const configItem = CONFIG_POOL.find(config => config.workspaceRootDir === workspaceRootPath);
-      console.log(configItem, config, 22);
-
       if (configItem && config) {
         configItem.config = config;
         // 刷新定时器
@@ -36,13 +34,15 @@ export function readConfig(workspaceRootPath: string, createWatch = true) {
   }
   return alovaConfig;
 }
-export default async () => {
-  // 关闭自动更新
-  CONFIG_POOL.forEach(config => config.closeAutoUpdate());
-  // 清空
-  CONFIG_POOL.splice(0, CONFIG_POOL.length);
-  // 清空watch
-  WATCH_CONFIG.splice(0, WATCH_CONFIG.length);
+export default async (isAutoUpdate: boolean = true) => {
+  if (isAutoUpdate) {
+    // 关闭自动更新
+    CONFIG_POOL.forEach(config => config.closeAutoUpdate());
+    // 清空
+    CONFIG_POOL.splice(0, CONFIG_POOL.length);
+    // 清空watch
+    WATCH_CONFIG.splice(0, WATCH_CONFIG.length);
+  }
   const workspaceFolders = vscode.workspace.workspaceFolders || [];
   for (const workspaceFolder of workspaceFolders) {
     const workspaceRootPath = workspaceFolder.uri.fsPath + '\\';
@@ -50,12 +50,18 @@ export default async () => {
     if (!alovaConfig) {
       return;
     }
+    // 过滤掉存在的
+    if (CONFIG_POOL.find(item => item.workspaceRootDir === workspaceRootPath)) {
+      continue;
+    }
     const configuration = new Configuration(alovaConfig, workspaceRootPath);
-    // 开启自动更新
-    configuration.autoUpdate();
+    if (isAutoUpdate) {
+      // 开启自动更新
+      configuration.autoUpdate();
+    } else {
+      configuration.refreshAutoUpdate();
+    }
     // 加入配置池子
     CONFIG_POOL.push(configuration);
-    // 读取alova.son实现自动补全
-    await configuration.readAlovaJson();
   }
 };

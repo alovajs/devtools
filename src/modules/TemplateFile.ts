@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import { generateFile, readAndRenderTemplate } from '../utils';
 import { srcPath } from '../utils/path';
 import { TemplateData } from '../functions/openApi2Data';
-export const TEMPLATE_DATA: Record<string, TemplateData> = {};
+export const TEMPLATE_DATA = new Map<string, TemplateData>();
 export class TemplateFile {
   fileName: string;
   type: TemplateType;
@@ -46,7 +46,9 @@ export const writeAlovaJson = (data: TemplateData, originPath: string) => {
 
   // 定义 JSON 文件的路径和名称
   const filePath = path.join(originPath, './alova.json');
-
+  if (!fs.existsSync(originPath)) {
+    fs.mkdirSync(originPath, { recursive: true });
+  }
   // 使用 fs.writeFile 将 JSON 数据写入文件
   fs.writeFile(filePath, jsonData, err => {
     if (err) {
@@ -63,6 +65,9 @@ export const readAlovaJson = (originPath: string) => {
     // 使用 fs.readFile 读取 JSON 文件
     fs.readFile(filePath, 'utf8', (err, data) => {
       if (err) {
+        TEMPLATE_DATA.delete(originPath);
+        console.log(TEMPLATE_DATA, 69);
+
         reject(err);
       } else {
         resolve(JSON.parse(data));

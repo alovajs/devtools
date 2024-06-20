@@ -5,9 +5,9 @@ module.exports = {
   generator: [
     {
       // openapi的json文件url地址
-      // input: 'https://petstore.swagger.io',
+      input: 'https://petstore.swagger.io',
       // input: 'https://generator3.swagger.io',
-      input: './openapi.json',
+      // input: './openapi.json',
       // input: 'http://localhost:3000/openapi.json',
       // input: 'openapi/api.json' // 以当前项目为相对目录的本地地址
       // input: 'http://192.168.5.123:8080' // 没有指向openapi文件时，必须配合platform参数使用
@@ -58,8 +58,8 @@ module.exports = {
   // autoUpdate: true
   autoUpdate: {
     // 编辑器开启时更新，默认false
-    // launchEditor: true,
+    launchEditor: true,
     // 自动更新间隔，单位毫秒
-    interval: 60 * 1000
+    interval: 10 * 1000
   }
 };

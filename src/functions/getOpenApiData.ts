@@ -53,8 +53,6 @@ export async function getPlatformOpenApiData(url: string, platformType: Platform
       let isSwaggerV2: boolean = false;
       const dataText =
         (await fetchData(url + '/openapi.json').catch(error => {
-          console.log(error, url + '/openapi.json', 56);
-
           isSwaggerV2 = true;
           return fetchData(url + '/v2/swagger.json');
         })) ?? '';

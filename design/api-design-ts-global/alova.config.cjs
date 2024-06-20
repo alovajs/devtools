@@ -60,6 +60,6 @@ module.exports = {
     // 编辑器开启时更新，默认false
     launchEditor: true,
     // 自动更新间隔，单位毫秒
-    interval: 60 * 1000
+    interval: 15 * 1000
   }
 };

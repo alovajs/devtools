@@ -10,6 +10,8 @@ export class Configuration {
   config: AlovaConfig;
   workspaceRootDir: string;
   autoUpdateControl: ReturnType<typeof highPrecisionInterval>;
+  // 是否应该开始更新api
+  shouldUpdate: boolean;
   constructor(config: AlovaConfig, workspaceRootDir: string) {
     //配置文件
     this.config = config;
@@ -73,7 +75,10 @@ export class Configuration {
     }
     const { time, immediate } = this.getAutoUpdateConfig();
     this.autoUpdateControl = highPrecisionInterval(
-      () => vscode.commands.executeCommand(generateApi.commandId),
+      () => {
+        vscode.commands.executeCommand(generateApi.commandId);
+        this.shouldUpdate = true;
+      },
       time,
       immediate
     );
@@ -90,8 +95,6 @@ export class Configuration {
     }
     const { time, immediate } = this.getAutoUpdateConfig();
     const { time: oldTime, immediate: oldImmediate, isRunning } = this.autoUpdateControl || {};
-    console.log(time, oldTime, immediate, oldImmediate, isRunning(), 90);
-
     if (time === oldTime && oldImmediate === immediate && isRunning()) {
       return;
     }
@@ -103,7 +106,7 @@ export class Configuration {
       const alovaJsonPath = path.join(this.workspaceRootDir, generator.output);
       return readAlovaJson(alovaJsonPath)
         .then(alovaJson => {
-          TEMPLATE_DATA[alovaJsonPath] = alovaJson;
+          TEMPLATE_DATA.set(alovaJsonPath, alovaJson);
           return alovaJson;
         })
         .catch(() => {

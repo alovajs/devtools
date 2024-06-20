@@ -3,6 +3,7 @@ import * as statusBar from '../components/statusBar';
 import generateApi from '../functions/generateApi';
 import readConfig from '../functions/readConfig';
 import { CONFIG_POOL } from '../modules/Configuration';
+import { getFileNameByPath } from '../utils';
 export default {
   commandId: 'alova.refresh',
   handler: (context: vscode.ExtensionContext) => async () => {
@@ -12,8 +13,11 @@ export default {
     try {
       // 读取配置文件
       await readConfig();
+      // 读取alova.son实现自动补全
       // 生成api文件
       for (const configuration of CONFIG_POOL) {
+        //读取缓存文件
+        await configuration.readAlovaJson();
         const outputPathArr = configuration.getAllOutputPath();
         const templateTypeArr = configuration.getAllTemplateType();
         const openApiData = await configuration.getAllOpenApiData();
@@ -31,7 +35,7 @@ export default {
             );
           })
         );
-        vscode.window.showInformationMessage('刷新api文件成功!');
+        vscode.window.showInformationMessage(`${getFileNameByPath(configuration.workspaceRootDir)}刷新api文件成功!`);
       }
     } catch (error: any) {
       vscode.window.showErrorMessage(error.message);

@@ -13,7 +13,7 @@ type renderItem = {
   key?: string;
   type: string;
 };
-interface Api {
+export interface Api {
   method: string;
   summary: string;
   path: string;
@@ -136,8 +136,6 @@ function convertToType(schema: JSONSchema): string {
   }
 
   function parseEnum(schema: JSONSchema): string {
-    console.log(schema.enum, 136);
-
     return schema.enum?.map?.((value: any) => JSON.stringify(value))?.join?.(' | ') || '';
   }
 
@@ -330,7 +328,6 @@ export const transformPathObj = async (
   }
   let newApiDescriptor = apiDescriptor;
   let handleApiDone = false;
-  console.log(apiDescriptor, 333);
   try {
     newApiDescriptor = handleApi(apiDescriptor);
     handleApiDone = true;
