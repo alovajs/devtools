@@ -16,7 +16,7 @@ export default async (test: string): Promise<string[]> => {
     const ext = TemplateFile.getExt(templateType[idx]);
     const apiPath = path.resolve(config.workspaceRootDir, output, `./apiDefinitions${ext}`);
     const configUrl = new URL(`file://${apiPath}`);
-    return require(configUrl.href);
+    return configUrl.href;
   });
   const apiDefinitionsArr = await Promise.all(apiDefinitionsPromise);
   console.log(apiDefinitionsArr, apiDefinitionsPromise, 22);

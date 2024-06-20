@@ -10,7 +10,10 @@ export class TemplateFile {
   }
   //获取生成文件的后缀名
   getExt() {
-    switch (this.type) {
+    return TemplateFile.getExt(this.type);
+  }
+  static getExt(type: TemplateType) {
+    switch (type) {
       case 'typescript':
         return '.ts';
       default:

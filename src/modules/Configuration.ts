@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import generateApi from '../commands/generateApi';
 import getOpenApiData from '../functions/getOpenApiData';
+import getAutoTemplateType from '../functions/getAutoTemplateType';
 import { highPrecisionInterval } from '../utils';
 export const CONFIG_POOL: Array<Configuration> = [];
 export class Configuration {
@@ -14,7 +15,7 @@ export class Configuration {
   }
   getTemplateType(generator: GeneratorConfig): TemplateType {
     let type: TemplateType;
-    const configType = generator.type;
+    const configType = generator.type ?? 'auto';
     //根据配置文件中的type来判断模板类型
     switch (configType) {
       case 'ts':
@@ -25,7 +26,7 @@ export class Configuration {
         type = 'module';
         break;
       case 'auto':
-        type = 'typescript';
+        type = getAutoTemplateType(this.workspaceRootDir);
         break;
       default:
         type = 'commonjs';

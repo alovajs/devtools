@@ -1,9 +1,11 @@
 import { createRequire } from 'node:module';
 import { PackageJson } from 'type-fest';
 import { frameworkName } from '../globalConfig';
+import path from 'node:path';
 export default function (workspaceRootDir: string) {
   const workspacedRequire = createRequire(workspaceRootDir);
   const packageJson: PackageJson = workspacedRequire('./package.json');
+  delete workspacedRequire.cache[path.resolve(workspaceRootDir, './package.json')];
   if (!packageJson) {
     return 'defaultKey';
   }

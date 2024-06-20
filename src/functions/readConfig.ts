@@ -45,7 +45,7 @@ export default () => {
   WATCH_CONFIG.splice(0, WATCH_CONFIG.length);
   const workspaceFolders = vscode.workspace.workspaceFolders || [];
   for (const workspaceFolder of workspaceFolders) {
-    const workspaceRootPath = workspaceFolder.uri.fsPath + '/';
+    const workspaceRootPath = workspaceFolder.uri.fsPath + '\\';
     const alovaConfig = readConfig(workspaceRootPath);
     if (!alovaConfig) {
       return;
