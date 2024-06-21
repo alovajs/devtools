@@ -24,6 +24,8 @@ export default async function (
   templateData[getFrameworkTag(workspaceRootDir)] = true;
   // 头部注释部分
   templateData.commentText = await templateFile.readAndRenderTemplate('comment', data, { root: true });
+  console.log(templateData, 35);
+
   // 判断是否需要生成api文件
   if (!force && isEqual(templateData, TEMPLATE_DATA.get(outputDir))) {
     return false;

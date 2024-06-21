@@ -1,6 +1,7 @@
 import { compile, JSONSchema } from 'json-schema-to-typescript';
 import { cloneDeep } from 'lodash';
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
+import { renderTsTypeStr } from '../utils';
 type Path = {
   key: string;
   method: string;
@@ -20,6 +21,8 @@ export interface Api {
   pathParameters: renderItem[];
   queryParameters: renderItem[];
   response: renderItem[] | renderItem;
+  responseSchemaText?: string;
+  requestSchemaText?: string;
   requestBody?: renderItem[] | renderItem;
   name: string;
   responseName: string;
@@ -43,7 +46,7 @@ export interface TemplateData extends Omit<OpenAPIV3_1.Document, ''> {
   commentText: string;
 }
 function isReferenceObject(obj: any): obj is OpenAPIV3.ReferenceObject {
-  return !!(obj as OpenAPIV3.ReferenceObject).$ref;
+  return !!(obj as OpenAPIV3.ReferenceObject)?.$ref;
 }
 
 const removeTitle = (obj: any) => {
@@ -166,6 +169,23 @@ const get$refName = (path: string) => {
   const nameArr = pathArr[pathArr.length - 1].split('');
   return (nameArr?.[0]?.toUpperCase?.() ?? '') + nameArr.slice(1).join('');
 };
+const removeSchemas$ref = (
+  schemaOrigin: OpenAPIV3_1.ReferenceObject | OpenAPIV3_1.SchemaObject,
+  openApi: OpenAPIV3_1.Document
+) => {
+  let schema: OpenAPIV3_1.SchemaObject & Record<string, any>;
+  if (isReferenceObject(schemaOrigin)) {
+    schema = cloneDeep(findBy$ref<OpenAPIV3_1.SchemaObject>(schemaOrigin.$ref, openApi));
+  } else {
+    schema = cloneDeep(schemaOrigin);
+  }
+  for (const key of Object.keys(schema)) {
+    if (schema[key] && typeof schema[key] == 'object') {
+      schema[key] = removeSchemas$ref(schema[key], openApi);
+    }
+  }
+  return schema;
+};
 const remove$ref = async <T = any>(
   originObj: any,
   openApi: OpenAPIV3_1.Document,
@@ -226,6 +246,7 @@ const parseResponse = async (
     openApi,
     schemasMap
   );
+  const responsePureSchema = removeSchemas$ref(responseSchema, openApi);
   const response = responseSchemaObj.properties
     ? Object.entries(responseSchemaObj.properties as OpenAPIV3_1.SchemaObject).map(([key, value]) => {
         return {
@@ -237,7 +258,9 @@ const parseResponse = async (
         };
       })
     : { type: responseName };
-  return [response, responseName] as [typeof response, string];
+  console.log(responsePureSchema, 257);
+
+  return [response, responseName, responsePureSchema] as [typeof response, string, OpenAPIV3_1.SchemaObject];
 };
 const parseRequestBody = async (
   requestBody: OpenAPIV3_1.RequestBodyObject | OpenAPIV3_1.ReferenceObject | undefined,
@@ -258,6 +281,7 @@ const parseRequestBody = async (
     openApi,
     schemasMap
   );
+  const requsetPureSchema = removeSchemas$ref(requestBodySchema, openApi);
   const requestBodyInfo = requestBodySchemaObj.properties
     ? Object.entries(requestBodySchemaObj.properties as OpenAPIV3_1.SchemaObject).map(([key, value]) => {
         return {
@@ -269,7 +293,11 @@ const parseRequestBody = async (
         };
       })
     : { type: requestName };
-  return [requestBodyInfo, requestName] as [typeof requestBodyInfo, string];
+  return [requestBodyInfo, requestName, requsetPureSchema] as [
+    typeof requestBodyInfo,
+    string,
+    OpenAPIV3_1.SchemaObject
+  ];
 };
 const getContentKey = (content: Record<string, any>, requireKey: string, defaultKey = 'application/json') => {
   let key = Object.keys(content ?? {})[0];
@@ -423,8 +451,18 @@ export default async function openApi2Data(
             });
           }
         }
-        const [response, responseName] = await parseResponse(methodInfo.responses, openApi, config, schemasMap);
-        const [requestBody, requestName] = await parseRequestBody(methodInfo.requestBody, openApi, config, schemasMap);
+        const [response, responseName, responsePureSchema] = await parseResponse(
+          methodInfo.responses,
+          openApi,
+          config,
+          schemasMap
+        );
+        const [requestBody, requestName, requsetPureSchema] = await parseRequestBody(
+          methodInfo.requestBody,
+          openApi,
+          config,
+          schemasMap
+        );
         const api: Api = {
           method: methodFormat,
           summary: methodInfo.summary ?? '',
@@ -436,6 +474,8 @@ export default async function openApi2Data(
           pathParameters,
           queryParameters,
           response,
+          responseSchemaText: await renderTsTypeStr(responsePureSchema ?? {}, { commentStr: '      *' }),
+          requestSchemaText: await renderTsTypeStr(requsetPureSchema ?? {}, { commentStr: '      *' }),
           requestBody
         };
         templateData.pathsArr.push({

@@ -4,6 +4,11 @@ import { createRequire } from 'node:module';
 import swagger2openapi from 'swagger2openapi';
 import { fetchData } from '../utils';
 import path from 'node:path';
+import { OpenAPIV3_1, OpenAPIV2 } from 'openapi-types';
+// 判断是否是swagger2.0
+function isSwagger2(data: any): data is OpenAPIV2.Document {
+  return !!data.swagger;
+}
 // 解析本地openapi文件
 function parseLocalFile(workspaceRootDir: string, filePath: string) {
   const [, extname] = /\.([^.]+)$/.exec(filePath) ?? [];
@@ -50,21 +55,35 @@ async function parseRemoteFile(url: string, platformType?: PlatformType) {
 export async function getPlatformOpenApiData(url: string, platformType: PlatformType) {
   switch (platformType) {
     case 'swagger': {
-      let isSwaggerV2: boolean = false;
       const dataText =
         (await fetchData(url + '/openapi.json').catch(error => {
-          isSwaggerV2 = true;
+          console.log(error, url, 60);
+
           return fetchData(url + '/v2/swagger.json');
         })) ?? '';
-      return isSwaggerV2 ? (await swagger2openapi.convertStr(dataText, {})).openapi : JSON.parse(dataText);
+      return JSON.parse(dataText);
     }
     default:
       break;
   }
 }
-export default async function (workspaceRootDir: string, url: string, platformType?: PlatformType) {
+// 解析openapi文件
+export default async function (
+  workspaceRootDir: string,
+  url: string,
+  platformType?: PlatformType
+): Promise<OpenAPIV3_1.Document> {
+  let data: OpenAPIV3_1.Document;
   if (!/^http(s)?:\/\//.test(url)) {
-    return parseLocalFile(workspaceRootDir, url);
+    // 本地文件
+    data = parseLocalFile(workspaceRootDir, url);
+  } else {
+    // 远程文件
+    data = await parseRemoteFile(url, platformType);
   }
-  return parseRemoteFile(url, platformType);
+  // 如果是swagger2的文件
+  if (isSwagger2(data)) {
+    data = (await swagger2openapi.convertObj(data, {})).openapi as OpenAPIV3_1.Document;
+  }
+  return data;
 }

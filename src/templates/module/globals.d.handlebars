@@ -63,9 +63,11 @@ declare global {
        * ```ts
        * interface PathParameters {
       {{#pathParameters}}
-       *   // {{{description}}}
+        {{#if description}}
+       *  // {{{description}}}
+       {{/if}}
        {{#required}}
-       *   // required: true
+       *  // required: true
        {{/required}}
        {{#deprecated}}
        *  // [deprecated]
@@ -83,14 +85,16 @@ declare global {
        * ```ts
        * interface QueryParameters {
        {{#queryParameters}}
-       *   // {{{description}}}
+       {{#if description}}
+       *  // {{{description}}}
+       {{/if}}
        {{#required}}
-       *   // required: true
+       *  // required: true
        {{/required}}
        {{#deprecated}}
        *  // [deprecated]
        {{/deprecated}}
-       *   {{{key}}}: {{{type}}};
+       *  {{{key}}}: {{{type}}};
        {{/queryParameters}}
        * }
        * ```
@@ -104,14 +108,16 @@ declare global {
        {{#isType requestBody "array"}}
        * interface RequestBody {
        {{#requestBody}}
-       *   // {{{description}}}
+       {{#if description}}
+       *  // {{{description}}}
+       {{/if}}
        {{#required}}
-       *   // required: true
+       *  // required: true
        {{/required}}
        {{#deprecated}}
        *  // [deprecated]
        {{/deprecated}}
-       *   {{{key}}}: {{{type}}};
+       *  {{{key}}}: {{{type}}};
        {{/requestBody}}
        {{/isType}}
        {{#isType requestBody "object"}}
@@ -129,11 +135,13 @@ declare global {
        {{#isType response "array"}}
        * interface Response {
        {{#response}}
-       *   // {{{description}}}
+       {{#if description}}
+       *  // {{{description}}}
+       {{/if}}
        {{#deprecated}}
        *  // [deprecated]
        {{/deprecated}}
-       *   {{{key}}}: {{{type}}};
+       *  {{{key}}}: {{{type}}};
        {{/response}}
        * }
        {{/isType}}

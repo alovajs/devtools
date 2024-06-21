@@ -134,8 +134,8 @@ declare global {
        * **Path Parameters**
        * ```ts
        * interface PathParameters {
-       *   // ID of pet to update
-       *   // required: true
+       *  // ID of pet to update
+       *  // required: true
        *   petId: number;
        * }
        * ```
@@ -145,10 +145,10 @@ declare global {
        * **RequestBody**
        * ```ts
        * interface RequestBody {
-       *   // Additional data to pass to server
-       *   additionalMetadata?: string;
-       *   // file to upload
-       *   file?: string;
+       *  // Additional data to pass to server
+       *  additionalMetadata?: string;
+       *  // file to upload
+       *  file?: string;
        * }
        * ```
        *
@@ -157,12 +157,9 @@ declare global {
        * **Response**
        * ```ts
        * interface Response {
-       *   //
-       *   code?: number;
-       *   //
-       *   type?: string;
-       *   //
-       *   message?: string;
+       *  code?: number;
+       *  type?: string;
+       *  message?: string;
        * }
        * ```
        *
@@ -202,18 +199,13 @@ declare global {
        * **RequestBody**
        * ```ts
        * interface RequestBody {
-       *   //
-       *   id?: number;
-       *   //
-       *   category?: Category;
-       *   //
-       *   name?: string;
-       *   //
-       *   photoUrls?: string[];
-       *   //
-       *   tags?: any[];
-       *   // pet status in the store
-       *   status?: string;
+       *  id?: number;
+       *  category?: Category;
+       *  name?: string;
+       *  photoUrls?: string[];
+       *  tags?: any[];
+       *  // pet status in the store
+       *  status?: string;
        * }
        * ```
        *
@@ -255,18 +247,13 @@ declare global {
        * **RequestBody**
        * ```ts
        * interface RequestBody {
-       *   //
-       *   id?: number;
-       *   //
-       *   category?: Category;
-       *   //
-       *   name?: string;
-       *   //
-       *   photoUrls?: string[];
-       *   //
-       *   tags?: any[];
-       *   // pet status in the store
-       *   status?: string;
+       *  id?: number;
+       *  category?: Category;
+       *  name?: string;
+       *  photoUrls?: string[];
+       *  tags?: any[];
+       *  // pet status in the store
+       *  status?: string;
        * }
        * ```
        *
@@ -308,9 +295,9 @@ declare global {
        * **Query Parameters**
        * ```ts
        * interface QueryParameters {
-       *   // Status values that need to be considered for filter
-       *   // required: true
-       *   status: string[];
+       *  // Status values that need to be considered for filter
+       *  // required: true
+       *  status: string[];
        * }
        * ```
        *
@@ -347,9 +334,9 @@ declare global {
        * **Query Parameters**
        * ```ts
        * interface QueryParameters {
-       *   // Tags to filter by
-       *   // required: true
-       *   tags: string[];
+       *  // Tags to filter by
+       *  // required: true
+       *  tags: string[];
        * }
        * ```
        *
@@ -386,8 +373,8 @@ declare global {
        * **Path Parameters**
        * ```ts
        * interface PathParameters {
-       *   // ID of pet to return
-       *   // required: true
+       *  // ID of pet to return
+       *  // required: true
        *   petId: number;
        * }
        * ```
@@ -397,18 +384,13 @@ declare global {
        * **Response**
        * ```ts
        * interface Response {
-       *   //
-       *   id?: number;
-       *   //
-       *   category?: Category;
-       *   //
-       *   name?: string;
-       *   //
-       *   photoUrls?: string[];
-       *   //
-       *   tags?: any[];
-       *   // pet status in the store
-       *   status?: string;
+       *  id?: number;
+       *  category?: Category;
+       *  name?: string;
+       *  photoUrls?: string[];
+       *  tags?: any[];
+       *  // pet status in the store
+       *  status?: string;
        * }
        * ```
        *
@@ -438,8 +420,8 @@ declare global {
        * **Path Parameters**
        * ```ts
        * interface PathParameters {
-       *   // ID of pet that needs to be updated
-       *   // required: true
+       *  // ID of pet that needs to be updated
+       *  // required: true
        *   petId: number;
        * }
        * ```
@@ -449,10 +431,10 @@ declare global {
        * **RequestBody**
        * ```ts
        * interface RequestBody {
-       *   // Updated name of the pet
-       *   name?: string;
-       *   // Updated status of the pet
-       *   status?: string;
+       *  // Updated name of the pet
+       *  name?: string;
+       *  // Updated status of the pet
+       *  status?: string;
        * }
        * ```
        *
@@ -499,8 +481,8 @@ declare global {
        * **Path Parameters**
        * ```ts
        * interface PathParameters {
-       *   // Pet id to delete
-       *   // required: true
+       *  // Pet id to delete
+       *  // required: true
        *   petId: number;
        * }
        * ```
@@ -559,18 +541,13 @@ declare global {
        * **RequestBody**
        * ```ts
        * interface RequestBody {
-       *   //
-       *   id?: number;
-       *   //
-       *   petId?: number;
-       *   //
-       *   quantity?: number;
-       *   //
-       *   shipDate?: string;
-       *   // Order Status
-       *   status?: string;
-       *   //
-       *   complete?: boolean;
+       *  id?: number;
+       *  petId?: number;
+       *  quantity?: number;
+       *  shipDate?: string;
+       *  // Order Status
+       *  status?: string;
+       *  complete?: boolean;
        * }
        * ```
        *
@@ -579,18 +556,13 @@ declare global {
        * **Response**
        * ```ts
        * interface Response {
-       *   //
-       *   id?: number;
-       *   //
-       *   petId?: number;
-       *   //
-       *   quantity?: number;
-       *   //
-       *   shipDate?: string;
-       *   // Order Status
-       *   status?: string;
-       *   //
-       *   complete?: boolean;
+       *  id?: number;
+       *  petId?: number;
+       *  quantity?: number;
+       *  shipDate?: string;
+       *  // Order Status
+       *  status?: string;
+       *  complete?: boolean;
        * }
        * ```
        *
@@ -625,8 +597,8 @@ declare global {
        * **Path Parameters**
        * ```ts
        * interface PathParameters {
-       *   // ID of pet that needs to be fetched
-       *   // required: true
+       *  // ID of pet that needs to be fetched
+       *  // required: true
        *   orderId: number;
        * }
        * ```
@@ -636,18 +608,13 @@ declare global {
        * **Response**
        * ```ts
        * interface Response {
-       *   //
-       *   id?: number;
-       *   //
-       *   petId?: number;
-       *   //
-       *   quantity?: number;
-       *   //
-       *   shipDate?: string;
-       *   // Order Status
-       *   status?: string;
-       *   //
-       *   complete?: boolean;
+       *  id?: number;
+       *  petId?: number;
+       *  quantity?: number;
+       *  shipDate?: string;
+       *  // Order Status
+       *  status?: string;
+       *  complete?: boolean;
        * }
        * ```
        *
@@ -677,8 +644,8 @@ declare global {
        * **Path Parameters**
        * ```ts
        * interface PathParameters {
-       *   // ID of the order that needs to be deleted
-       *   // required: true
+       *  // ID of the order that needs to be deleted
+       *  // required: true
        *   orderId: number;
        * }
        * ```
@@ -749,8 +716,8 @@ declare global {
        * **Path Parameters**
        * ```ts
        * interface PathParameters {
-       *   // The name that needs to be fetched. Use user1 for testing.
-       *   // required: true
+       *  // The name that needs to be fetched. Use user1 for testing.
+       *  // required: true
        *   username: string;
        * }
        * ```
@@ -760,22 +727,15 @@ declare global {
        * **Response**
        * ```ts
        * interface Response {
-       *   //
-       *   id?: number;
-       *   //
-       *   username?: string;
-       *   //
-       *   firstName?: string;
-       *   //
-       *   lastName?: string;
-       *   //
-       *   email?: string;
-       *   //
-       *   password?: string;
-       *   //
-       *   phone?: string;
-       *   // User Status
-       *   userStatus?: number;
+       *  id?: number;
+       *  username?: string;
+       *  firstName?: string;
+       *  lastName?: string;
+       *  email?: string;
+       *  password?: string;
+       *  phone?: string;
+       *  // User Status
+       *  userStatus?: number;
        * }
        * ```
        *
@@ -805,8 +765,8 @@ declare global {
        * **Path Parameters**
        * ```ts
        * interface PathParameters {
-       *   // name that need to be updated
-       *   // required: true
+       *  // name that need to be updated
+       *  // required: true
        *   username: string;
        * }
        * ```
@@ -816,22 +776,15 @@ declare global {
        * **RequestBody**
        * ```ts
        * interface RequestBody {
-       *   //
-       *   id?: number;
-       *   //
-       *   username?: string;
-       *   //
-       *   firstName?: string;
-       *   //
-       *   lastName?: string;
-       *   //
-       *   email?: string;
-       *   //
-       *   password?: string;
-       *   //
-       *   phone?: string;
-       *   // User Status
-       *   userStatus?: number;
+       *  id?: number;
+       *  username?: string;
+       *  firstName?: string;
+       *  lastName?: string;
+       *  email?: string;
+       *  password?: string;
+       *  phone?: string;
+       *  // User Status
+       *  userStatus?: number;
        * }
        * ```
        *
@@ -881,8 +834,8 @@ declare global {
        * **Path Parameters**
        * ```ts
        * interface PathParameters {
-       *   // The name that needs to be deleted
-       *   // required: true
+       *  // The name that needs to be deleted
+       *  // required: true
        *   username: string;
        * }
        * ```
@@ -920,12 +873,12 @@ declare global {
        * **Query Parameters**
        * ```ts
        * interface QueryParameters {
-       *   // The user name for login
-       *   // required: true
-       *   username: string;
-       *   // The password for login in clear text
-       *   // required: true
-       *   password: string;
+       *  // The user name for login
+       *  // required: true
+       *  username: string;
+       *  // The password for login in clear text
+       *  // required: true
+       *  password: string;
        * }
        * ```
        *
@@ -1016,22 +969,15 @@ declare global {
        * **RequestBody**
        * ```ts
        * interface RequestBody {
-       *   //
-       *   id?: number;
-       *   //
-       *   username?: string;
-       *   //
-       *   firstName?: string;
-       *   //
-       *   lastName?: string;
-       *   //
-       *   email?: string;
-       *   //
-       *   password?: string;
-       *   //
-       *   phone?: string;
-       *   // User Status
-       *   userStatus?: number;
+       *  id?: number;
+       *  username?: string;
+       *  firstName?: string;
+       *  lastName?: string;
+       *  email?: string;
+       *  password?: string;
+       *  phone?: string;
+       *  // User Status
+       *  userStatus?: number;
        * }
        * ```
        *

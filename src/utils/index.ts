@@ -2,6 +2,8 @@ import handlebars, { HelperOptions } from 'handlebars';
 import fetch from 'node-fetch';
 import fs, { promises } from 'node:fs';
 import path from 'node:path';
+import { OpenAPIV3_1 } from 'openapi-types';
+import { srcPath } from '../utils/path';
 export const getType = (obj: any) => Object.prototype.toString.call(obj).slice(8, -1).toLowerCase();
 handlebars.registerHelper('isType', function (this: any, value, type: string, options: HelperOptions) {
   if (getType(value) === type) {
@@ -35,6 +37,9 @@ handlebars.registerHelper('or', function (this: any) {
   });
 
   return result ? options.fn(this) : options.inverse(this);
+});
+handlebars.registerHelper('eq', function (a, b) {
+  return a === b;
 });
 /**
  * 读取并渲染 handlebars 文件
@@ -117,4 +122,13 @@ export function highPrecisionInterval(callback: () => void, intervalInMillisecon
 export const getFileNameByPath = (path: string) => {
   const [, name] = /[\/\\]([^\/\\]+)([\/\\])?$/.exec(path) ?? [];
   return name ?? '';
+};
+interface TsTypeConfig {
+  commentStr: string;
+}
+export const renderTsTypeStr = async (schema: OpenAPIV3_1.SchemaObject, config: TsTypeConfig) => {
+  const templatePath = path.resolve(srcPath, `templates/tstype.handlebars`);
+  const tsStr = await readAndRenderTemplate(templatePath, schema);
+  const tsStrArr = tsStr.trim().split('\n');
+  return tsStrArr.map((line, idx) => (idx ? config.commentStr : '') + line).join('\n');
 };
