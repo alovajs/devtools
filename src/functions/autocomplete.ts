@@ -6,17 +6,14 @@ import path from 'node:path';
 type AutoCompleteItem = {
   replaceText: string;
   summary: string;
+  documentation?: string;
   path: string;
   method: string;
 };
 const filterAutoCompleteItem = (text: string, apiArr: Api[]): AutoCompleteItem[] => {
   const autoCompleteArr: AutoCompleteItem[] = [];
-  const autoCompleteSet = new Set();
   apiArr.forEach(api => {
     const replaceText = `Apis.${api.pathKey}`;
-    if (autoCompleteSet.has(replaceText)) {
-      return;
-    }
     if (api.path.includes(text)) {
       autoCompleteArr.push({
         replaceText,
@@ -24,8 +21,6 @@ const filterAutoCompleteItem = (text: string, apiArr: Api[]): AutoCompleteItem[]
         path: api.path,
         method: api.method
       });
-      autoCompleteSet.add(replaceText);
-      return;
     }
     if (api.summary.includes(text)) {
       autoCompleteArr.push({
@@ -34,18 +29,15 @@ const filterAutoCompleteItem = (text: string, apiArr: Api[]): AutoCompleteItem[]
         path: api.summary,
         method: api.method
       });
-      autoCompleteSet.add(replaceText);
-      return;
     }
     if (api.pathKey.includes(text)) {
       autoCompleteArr.push({
         replaceText,
         summary: api.path,
         path: api.pathKey,
+        documentation: api.summary,
         method: api.method
       });
-      autoCompleteSet.add(replaceText);
-      return;
     }
   });
   return autoCompleteArr;
