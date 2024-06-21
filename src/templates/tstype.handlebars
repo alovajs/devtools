@@ -1,0 +1,28 @@
+{{!-- 定义递归的模板片段 --}}
+{{#*inline "property"}}
+{{#if this.description}}
+{{! 添加描述 }}
+// {{{this.description}}}
+{{/if}}{{#if this.deprecated}}
+{{! 标记为废弃 }}
+// [deprecated]
+{{/if}}
+{{@key}}{{#unless ../required.[@key]}}?{{/unless}}: {{>"tsType" this}}{{/inline}}
+{{! ts类型模板 }}
+{{#*inline "tsType"}}
+{{#if this.enum}}{{#each this.enum}}"{{this}}"{{#unless @last}} | {{/unless}}{{/each}}{{else if (eq this.type "array")}}{{>"arrayType" this}}{{else if (eq this.type "object")}}{
+  {{>"objectType" this}}
+}{{else}}{{>"lineType" this}}{{/if}}
+{{/inline}}
+{{! 可以一行渲染的类型}}
+{{#*inline "lineType"}}{{#if (eq this.type "string")}}string{{else if (eq this.type "integer")}}number{{else if (eq this.type "boolean")}}boolean{{else}}unknown{{/if}}{{/inline}}
+{{! 处理数组类型}}
+{{#*inline "arrayType"}}{{#if this.items.length}}[
+  {{#each this.items}}{{>property this}}{{#unless @last}}, {{/unless}}{{/each}}
+]{{else if (eq this.items.type "object")}}Array<{
+  {{>"objectType" this.items}}
+}>{{else if (eq this.items.type "array")}}{{>"arrayType" this.items}}{{else}}{{>"lineType" this.items}}[]{{/if}}{{/inline}}
+{{! 处理对象类型}}
+{{#*inline "objectType"}}{{#if this}}{{#each this.properties}}{{>property}}{{/each}}{{/if}}{{/inline}}
+{{!-- 使用模板 --}}
+{{>"tsType" this}}
