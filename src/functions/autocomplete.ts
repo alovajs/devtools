@@ -1,8 +1,8 @@
+import path from 'node:path';
+import { AUTO_COMPLETE } from '../components/autocomplete';
 import { CONFIG_POOL } from '../modules/Configuration';
 import { TEMPLATE_DATA } from '../modules/TemplateFile';
-import { AUTO_COMPLETE } from '../components/autocomplete';
 import { Api } from './openApi2Data';
-import path from 'node:path';
 type AutoCompleteItem = {
   replaceText: string;
   summary: string;

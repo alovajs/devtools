@@ -38,6 +38,8 @@ export default {
         vscode.window.showInformationMessage(`${getFileNameByPath(configuration.workspaceRootDir)}刷新api文件成功!`);
       }
     } catch (error: any) {
+      console.log(error, 41);
+
       vscode.window.showErrorMessage(error.message);
     }
     // 完成加载

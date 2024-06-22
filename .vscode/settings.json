@@ -5,8 +5,8 @@
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.suggestSelection": "recentlyUsedByPrefix",
   "editor.codeActionsOnSave": {
-    // "source.organizeImports": "explicit",
-    // "source.fixAll.eslint": "explicit"
+    "source.organizeImports": "explicit",
+    "source.fixAll.eslint": "explicit"
   },
   "typescript.tsdk": "node_modules/typescript/lib",
   "files.exclude": {

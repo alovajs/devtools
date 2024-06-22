@@ -2,9 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * Swagger Petstore - version 1.0.7
+ * OpenAPI Petstore - version 1.0.0
  *
- * This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #swagger](http://swagger.io/irc/).  For this sample, you can use the api key &#x60;special-key&#x60; to test the authorization filters.
+ * This is a sample server Petstore server. For this sample, you can use the api key &#x60;special-key&#x60; to test the authorization filters.
  *
  * OpenAPI version: 3.0.0
  *
@@ -17,24 +17,24 @@
  * **Do not edit the file manually.**
  */
 export default {
-  'pet.uploadFile': ['POST', '/pet/{petId}/uploadImage'],
-  'pet.addPet': ['POST', '/pet'],
+  'tag.增加pet2': ['POST', '/pet'],
   'pet.updatePet': ['PUT', '/pet'],
   'pet.findPetsByStatus': ['GET', '/pet/findByStatus'],
   'pet.findPetsByTags': ['GET', '/pet/findByTags'],
   'pet.getPetById': ['GET', '/pet/{petId}'],
   'pet.updatePetWithForm': ['POST', '/pet/{petId}'],
   'pet.deletePet': ['DELETE', '/pet/{petId}'],
+  'pet.uploadFile': ['POST', '/pet/{petId}/uploadImage'],
   'store.getInventory': ['GET', '/store/inventory'],
   'store.placeOrder': ['POST', '/store/order'],
   'store.getOrderById': ['GET', '/store/order/{orderId}'],
   'store.deleteOrder': ['DELETE', '/store/order/{orderId}'],
+  'user.createUser': ['POST', '/user'],
+  'user.createUsersWithArrayInput': ['POST', '/user/createWithArray'],
   'user.createUsersWithListInput': ['POST', '/user/createWithList'],
-  'user.getUserByName': ['GET', '/user/{username}'],
-  'user.updateUser': ['PUT', '/user/{username}'],
-  'user.deleteUser': ['DELETE', '/user/{username}'],
   'user.loginUser': ['GET', '/user/login'],
   'user.logoutUser': ['GET', '/user/logout'],
-  'user.createUsersWithArrayInput': ['POST', '/user/createWithArray'],
-  'user.createUser': ['POST', '/user']
+  'user.getUserByName': ['GET', '/user/{username}'],
+  'user.updateUser': ['PUT', '/user/{username}'],
+  'user.deleteUser': ['DELETE', '/user/{username}']
 };

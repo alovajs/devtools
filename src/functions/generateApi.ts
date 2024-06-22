@@ -1,10 +1,10 @@
+import { isEqual } from 'lodash';
+import fs from 'node:fs';
 import path from 'node:path';
 import { OpenAPIV3_1 } from 'openapi-types';
 import openApi2Data from '../functions/openApi2Data';
-import { TemplateFile, TEMPLATE_DATA, writeAlovaJson } from '../modules/TemplateFile';
+import { TEMPLATE_DATA, TemplateFile, writeAlovaJson } from '../modules/TemplateFile';
 import getFrameworkTag from './getFrameworkTag';
-import fs from 'node:fs';
-import { isEqual } from 'lodash';
 export default async function (
   workspaceRootDir: string,
   outputPath: string,
@@ -50,14 +50,15 @@ export default async function (
     },
     {
       fileName: 'globals.d',
-      ext: '.ts'
+      ext: '.ts',
+      root: true
     }
   ].forEach(item => {
     if (!item) {
       return;
     }
-    const { fileName, ext } = item;
-    templateFile.outputFile(templateData, fileName, outputDir, { ext });
+    const { fileName, ext, root } = item;
+    templateFile.outputFile(templateData, fileName, outputDir, { ext, root });
   });
   return true;
 }

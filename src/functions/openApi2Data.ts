@@ -1,29 +1,22 @@
 import { compile, JSONSchema } from 'json-schema-to-typescript';
 import { cloneDeep } from 'lodash';
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
-import { renderTsTypeStr } from '../utils';
+import { format } from '../utils';
 type Path = {
   key: string;
   method: string;
   path: string;
 };
-type renderItem = {
-  description?: string;
-  required?: boolean;
-  deprecated?: boolean;
-  key?: string;
-  type: string;
-};
 export interface Api {
   method: string;
   summary: string;
   path: string;
-  pathParameters: renderItem[];
-  queryParameters: renderItem[];
-  response: renderItem[] | renderItem;
-  responseSchemaText?: string;
-  requestSchemaText?: string;
-  requestBody?: renderItem[] | renderItem;
+  pathParameters: string;
+  queryParameters: string;
+  pathParametersComment?: string;
+  queryParametersComment?: string;
+  responseComment?: string;
+  requestComment?: string;
   name: string;
   responseName: string;
   requestName?: string;
@@ -73,28 +66,54 @@ const jsonSchema2TsStr = async (
   const tsStr = await compile(removeTitle(cloneDeep({ ...schema, components: openApi.components })), name, {
     bannerComment: '',
     additionalProperties: false,
-    declareExternallyReferenced: true
+    declareExternallyReferenced: false
   });
   const transformer = () => {
     let result = tsStr;
     if (!options.export) {
       result = result.replace(/export(\s)+/g, '');
     }
-
     return tsStr;
   };
   return transformer();
 };
-function convertToType(schema: JSONSchema): string {
-  if (!schema) {
-    return 'string';
+export async function convertToType(
+  schemaOrigin: OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject,
+  openApi: OpenAPIV3_1.Document,
+  config: {
+    deep?: boolean;
+    defaultType?: 'any' | 'unknown';
+    commentStyle?: 'line' | 'docment';
+    preText?: string;
+  } = {
+    deep: true,
+    defaultType: 'unknown',
+    commentStyle: 'line',
+    preText: ''
   }
-  function parseSchema(schema: JSONSchema): string {
+): Promise<string> {
+  if (!schemaOrigin) {
+    return config.defaultType ?? 'unknown';
+  }
+  function parseSchema(
+    schemaOrigin: OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject,
+    openApi: OpenAPIV3_1.Document
+  ): string {
+    let schema: OpenAPIV3_1.SchemaObject = schemaOrigin;
+    if (isReferenceObject(schemaOrigin)) {
+      if (!config.deep) {
+        return get$refName(schemaOrigin.$ref);
+      }
+      schema = findBy$ref(schemaOrigin.$ref, openApi);
+    }
+    if (schema.enum) {
+      return parseEnum(schema);
+    }
     switch (schema.type) {
       case 'object':
-        return parseObject(schema);
+        return parseObject(schema, openApi);
       case 'array':
-        return parseArray(schema);
+        return parseArray(schema, openApi);
       case 'string':
         return 'string';
       case 'number':
@@ -105,44 +124,106 @@ function convertToType(schema: JSONSchema): string {
       case 'null':
         return 'null';
       default:
-        if (schema.enum) {
-          return parseEnum(schema);
+        if (schema.oneOf) {
+          return schema.oneOf.map(item => parseSchema(item, openApi)).join(' | ');
         }
-        return typeof schema.type === 'string' ? schema.type ?? 'any' : 'any';
+        return typeof schema.type === 'string'
+          ? (schema.type || config.defaultType) ?? 'unknown'
+          : config.defaultType ?? 'unknown';
     }
   }
-
-  function parseObject(schema: JSONSchema): string {
+  function comment(type: 'line' | 'docment') {
+    const startText = type === 'docment' ? '/**\n' : '';
+    const endText = type === 'docment' ? '\n */\n' : '\n';
+    let str = '';
+    let idx = 0;
+    const preText = type === 'docment' ? ' *' : '//';
+    return {
+      add(text: string) {
+        if (idx) {
+          str += '\n';
+        }
+        str += text
+          .split('\n')
+          .map(item => `${preText} ${item}`)
+          .join('\n');
+        idx++;
+      },
+      end() {
+        if (!str) {
+          return str;
+        }
+        return startText + str + endText;
+      }
+    };
+  }
+  function parseObject(schema: OpenAPIV3_1.SchemaObject, openApi: OpenAPIV3_1.Document): string {
     const properties = schema.properties || {};
-    const required = new Set(typeof schema?.required === 'boolean' ? [] : schema.required ?? []);
+    const required = new Set(schema.required ?? []);
     const lines: string[] = [`{`];
-
-    for (const [key, value] of Object.entries(properties)) {
+    for (const [key, valueOrigin] of Object.entries(properties)) {
       const optionalFlag = required.has(key) ? '' : '?';
-      const type = parseSchema(value);
-      lines.push(`  ${key}${optionalFlag}: ${type};`);
+      const value = isReferenceObject(valueOrigin) ? findBy$ref(valueOrigin.$ref, openApi) : valueOrigin;
+      const type = parseSchema(valueOrigin, openApi);
+      let valueStr = '';
+      const doc = comment(config.commentStyle ?? 'line');
+      if (value.description) {
+        doc.add(value.description);
+      }
+      if (required.has(key)) {
+        doc.add('[required]');
+      }
+      if (value.deprecated) {
+        doc.add('[deprecated]');
+      }
+      valueStr = doc.end() + `${key}${optionalFlag}: ${type};`;
+      valueStr.split('\n').forEach(line => lines.push(' ' + line));
     }
-
     lines.push(`}`);
     return lines.length > 2 ? lines.join('\n') : 'object';
   }
 
-  function parseArray(schema: JSONSchema): string {
+  function parseArray(schema: OpenAPIV3_1.ArraySchemaObject, openApi: OpenAPIV3_1.Document): string {
     if (Array.isArray(schema.items)) {
-      const types = schema.items.map(item => parseSchema(item));
-      return `(${types.join(' | ')})[]`;
+      const types = schema.items.map(item => parseSchema(item, openApi));
+      return `[\n${types.map(type => `${type},\n`)}\n]`;
     } else if (schema.items) {
-      const type = parseSchema(schema.items);
+      let items: OpenAPIV3_1.SchemaObject = schema.items;
+      if (isReferenceObject(schema.items)) {
+        if (!config.deep) {
+          return `${get$refName(schema.items.$ref)}[]`;
+        }
+        items = findBy$ref(schema.items.$ref, openApi);
+      }
+      const type = parseSchema(items, openApi);
+      switch (items.type) {
+        case 'object':
+          return `Array<${type}>`;
+        case 'array':
+          return `${type}[]`;
+        default:
+          break;
+      }
+      if (items.oneOf || items.enum) {
+        return `(${type})[]`;
+      }
       return `${type}[]`;
     }
-    return 'any[]';
+    return '[]';
   }
 
-  function parseEnum(schema: JSONSchema): string {
+  function parseEnum(schema: OpenAPIV3_1.SchemaObject): string {
     return schema.enum?.map?.((value: any) => JSON.stringify(value))?.join?.(' | ') || '';
   }
-
-  return parseSchema(schema);
+  const tsStr = parseSchema(schemaOrigin, openApi);
+  // 格式化ts类型
+  const tsStrFormat = await format(`type Ts = ${tsStr}`, {
+    semi: false // 去掉分号
+  });
+  const resultFormat = /type Ts = (.*)/s.exec(tsStrFormat)?.[1] ?? '';
+  const tsStrArr = resultFormat.trim().split('\n');
+  // 加前缀，便于生成注释
+  return tsStrArr.map((line, idx) => (idx ? config.preText : '') + line).join('\n');
 }
 /**
  *
@@ -169,10 +250,7 @@ const get$refName = (path: string) => {
   const nameArr = pathArr[pathArr.length - 1].split('');
   return (nameArr?.[0]?.toUpperCase?.() ?? '') + nameArr.slice(1).join('');
 };
-const removeSchemas$ref = (
-  schemaOrigin: OpenAPIV3_1.ReferenceObject | OpenAPIV3_1.SchemaObject,
-  openApi: OpenAPIV3_1.Document
-) => {
+const removeSchemas$ref = <T = OpenAPIV3_1.SchemaObject>(schemaOrigin: any, openApi: OpenAPIV3_1.Document) => {
   let schema: OpenAPIV3_1.SchemaObject & Record<string, any>;
   if (isReferenceObject(schemaOrigin)) {
     schema = cloneDeep(findBy$ref<OpenAPIV3_1.SchemaObject>(schemaOrigin.$ref, openApi));
@@ -184,47 +262,41 @@ const removeSchemas$ref = (
       schema[key] = removeSchemas$ref(schema[key], openApi);
     }
   }
-  return schema;
+  return schema as T;
 };
-const remove$ref = async <T = any>(
-  originObj: any,
+const remove$ref = async (
+  originObj: OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject,
   openApi: OpenAPIV3_1.Document,
-  schemasMap?: Map<string, string>
-): Promise<[T, string]> => {
+  schemasMap?: Map<string, string>,
+  preText: string = ''
+): Promise<string> => {
   const obj = cloneDeep(originObj);
   if (isReferenceObject(obj)) {
-    const data = findBy$ref<T>(obj.$ref, openApi);
-    const jsonschema: JSONSchema = (data as any)?.schema ?? data;
+    const data = findBy$ref(obj.$ref, openApi);
     const type = get$refName(obj.$ref);
     if (schemasMap && !schemasMap.has(type)) {
-      await jsonSchema2TsStr(jsonschema, type, openApi, { export: true }).then(schema => {
+      await jsonSchema2TsStr(data, type, openApi, { export: true }).then(schema => {
         schemasMap.set(type, schema);
       });
     }
-    const [result] = await remove$ref(data, openApi, schemasMap);
-    return [result, type];
+    await remove$ref(data, openApi, schemasMap);
+    return type;
   }
+
   if (typeof obj === 'object' && obj) {
-    for (const key in obj) {
-      if (key === 'schema' && obj) {
-        const [result, type] = await remove$ref(obj[key], openApi, schemasMap);
-        obj[key] = result;
-        obj[key].type = ['any', 'object', 'null', undefined].includes(type) ? obj[key].type : type;
-      }
+    const keyArr = Object.keys(obj) as UnionToTuple<keyof OpenAPIV3_1.SchemaObject>;
+    for (const key of keyArr) {
       if (typeof obj[key] === 'object' && ['items', 'properties'].includes(key)) {
-        for (const [k, value] of Object.entries(obj[key])) {
+        for (const value of Object.values(obj[key])) {
           if (typeof value !== 'object' || !value) {
             continue;
           }
-          const [result, type] = await remove$ref(value, openApi, schemasMap);
-          obj[key][k] = result;
-          obj[key][k].type = ['any', 'object', 'null', undefined].includes(type) ? obj[key][k].type : type;
+          (value as any).type = await remove$ref(value, openApi, schemasMap);
         }
       }
     }
   }
-  delete obj.$ref;
-  return [obj, convertToType(obj?.schema || obj)];
+  return await convertToType(obj, openApi, { deep: false, commentStyle: 'docment', preText });
 };
 const parseResponse = async (
   responses: OpenAPIV3_1.ResponsesObject,
@@ -234,33 +306,21 @@ const parseResponse = async (
 ) => {
   const responseInfo = responses?.['200'];
   if (!responseInfo) {
-    return [{ type: 'unknown' }, 'unknown'] as [renderItem, string];
+    return {
+      responseName: 'unknown',
+      responseComment: 'unknown'
+    };
   }
   const responseObject: OpenAPIV3_1.ResponseObject = isReferenceObject(responseInfo)
     ? findBy$ref(responseInfo.$ref, openApi)
     : responseInfo;
   const key = getContentKey(responseObject.content ?? {}, config.responseMediaType);
   const responseSchema = responseObject?.content?.[key]?.schema ?? {};
-  const [responseSchemaObj, responseName] = await remove$ref<OpenAPIV3_1.SchemaObject>(
-    responseSchema,
-    openApi,
-    schemasMap
-  );
-  const responsePureSchema = removeSchemas$ref(responseSchema, openApi);
-  const response = responseSchemaObj.properties
-    ? Object.entries(responseSchemaObj.properties as OpenAPIV3_1.SchemaObject).map(([key, value]) => {
-        return {
-          key: key + (!value.required ? '?' : ''),
-          description: value.description || '',
-          type: value?.type,
-          required: !!value.required,
-          deprecated: !!value.deprecated
-        };
-      })
-    : { type: responseName };
-  console.log(responsePureSchema, 257);
-
-  return [response, responseName, responsePureSchema] as [typeof response, string, OpenAPIV3_1.SchemaObject];
+  const responseName = await remove$ref(responseSchema, openApi, schemasMap);
+  return {
+    responseName,
+    responseComment: await convertToType(responseSchema, openApi, { deep: true, preText: '* ' })
+  };
 };
 const parseRequestBody = async (
   requestBody: OpenAPIV3_1.RequestBodyObject | OpenAPIV3_1.ReferenceObject | undefined,
@@ -269,35 +329,21 @@ const parseRequestBody = async (
   schemasMap: Map<string, string>
 ) => {
   if (!requestBody) {
-    return [{ type: '' }, ''] as [renderItem, string];
+    return {
+      requestName: '',
+      requestComment: ''
+    };
   }
   const requestBodyObject: OpenAPIV3_1.RequestBodyObject = isReferenceObject(requestBody)
     ? findBy$ref(requestBody.$ref, openApi)
     : requestBody;
   const key = getContentKey(requestBodyObject.content, config.bodyMediaType);
   const requestBodySchema = requestBodyObject?.content?.[key]?.schema ?? {};
-  const [requestBodySchemaObj, requestName] = await remove$ref<OpenAPIV3_1.SchemaObject>(
-    requestBodySchema,
-    openApi,
-    schemasMap
-  );
-  const requsetPureSchema = removeSchemas$ref(requestBodySchema, openApi);
-  const requestBodyInfo = requestBodySchemaObj.properties
-    ? Object.entries(requestBodySchemaObj.properties as OpenAPIV3_1.SchemaObject).map(([key, value]) => {
-        return {
-          key: key + (!value.required ? '?' : ''),
-          description: value.description || '',
-          type: value?.type,
-          required: !!value.required,
-          deprecated: !!value.deprecated
-        };
-      })
-    : { type: requestName };
-  return [requestBodyInfo, requestName, requsetPureSchema] as [
-    typeof requestBodyInfo,
-    string,
-    OpenAPIV3_1.SchemaObject
-  ];
+  const requestName = await remove$ref(requestBodySchema, openApi, schemasMap);
+  return {
+    requestName,
+    requestComment: await convertToType(requestBodySchema, openApi, { deep: true, preText: '* ' })
+  };
 };
 const getContentKey = (content: Record<string, any>, requireKey: string, defaultKey = 'application/json') => {
   let key = Object.keys(content ?? {})[0];
@@ -306,6 +352,74 @@ const getContentKey = (content: Record<string, any>, requireKey: string, default
   }
   key = key ?? defaultKey;
   return key;
+};
+const parseParameters = async (
+  parameters: (OpenAPIV3_1.ReferenceObject | OpenAPIV3_1.ParameterObject)[] | undefined,
+  openApi: OpenAPIV3_1.Document,
+  config: GeneratorConfig,
+  schemasMap: Map<string, string>
+) => {
+  const pathParameters: OpenAPIV3_1.SchemaObject = {
+    type: 'object'
+  };
+  const queryParameters: OpenAPIV3_1.SchemaObject = {
+    type: 'object'
+  };
+  for (const refParameter of parameters || []) {
+    const parameter = isReferenceObject(refParameter)
+      ? findBy$ref<OpenAPIV3.ParameterObject>(refParameter.$ref, openApi)
+      : refParameter;
+    if (parameter.in === 'path') {
+      if (!pathParameters.properties) {
+        pathParameters.properties = {};
+      }
+      if (!pathParameters.required) {
+        pathParameters.required = [];
+      }
+      if (parameter.required) {
+        pathParameters.required.push(parameter.name);
+      }
+      pathParameters.properties[parameter.name] = {
+        ...parameter.schema,
+        description: parameter.description || '',
+        deprecated: !!parameter.deprecated
+      };
+    }
+    if (parameter.in === 'query') {
+      if (!queryParameters.properties) {
+        queryParameters.properties = {};
+      }
+      if (!queryParameters.required) {
+        queryParameters.required = [];
+      }
+      if (parameter.required) {
+        queryParameters.required.push(parameter.name);
+      }
+      queryParameters.properties[parameter.name] = {
+        ...parameter.schema,
+        description: parameter.description || '',
+        deprecated: !!parameter.deprecated
+      };
+    }
+  }
+  let pathParametersStr = '';
+  let queryParametersStr = '';
+  let pathParametersComment = '';
+  let queryParametersComment = '';
+  if (Object.keys(pathParameters.properties ?? {}).length) {
+    pathParametersStr = await remove$ref(pathParameters, openApi, schemasMap);
+    pathParametersComment = await convertToType(pathParameters, openApi, { deep: true, preText: '       * ' });
+  }
+  if (Object.keys(queryParameters.properties ?? {}).length) {
+    queryParametersStr = await remove$ref(queryParameters, openApi, schemasMap);
+    queryParametersComment = await convertToType(queryParameters, openApi, { deep: true, preText: '       * ' });
+  }
+  return {
+    pathParameters: pathParametersStr,
+    queryParameters: queryParametersStr,
+    pathParametersComment,
+    queryParametersComment
+  };
 };
 export const transformPathObj = async (
   url: string,
@@ -336,7 +450,7 @@ export const transformPathObj = async (
       ? findBy$ref<typeof apiParameters>(apiParameters.$ref, openApi)
       : apiParameters;
     for (const parameter of parameters) {
-      const [parameterObject] = await remove$ref<OpenAPIV3.ParameterObject>(parameter, openApi);
+      const parameterObject = await removeSchemas$ref<OpenAPIV3.ParameterObject>(parameter, openApi);
       apiDescriptor.parameters.push(parameterObject);
     }
   }
@@ -344,14 +458,14 @@ export const transformPathObj = async (
     requestBodyObject = isReferenceObject(requestBody) ? findBy$ref(requestBody.$ref, openApi) : requestBody;
     requestKey = getContentKey(requestBodyObject.content || {}, config.bodyMediaType);
     const requestBodySchema = requestBodyObject.content?.[requestKey].schema ?? {};
-    const [requestBodySchemaObj] = await remove$ref<OpenAPIV3_1.SchemaObject>(requestBodySchema, openApi);
+    const requestBodySchemaObj = await removeSchemas$ref<OpenAPIV3_1.SchemaObject>(requestBodySchema, openApi);
     apiDescriptor.requestData = requestBodySchemaObj;
   }
   if (response200) {
     responseObject = isReferenceObject(response200) ? findBy$ref(response200.$ref, openApi) : response200;
     responseKey = getContentKey(responseObject.content || {}, config.responseMediaType);
     const responseSchema = responseObject.content?.[responseKey].schema ?? {};
-    const [responseSchemaObj] = await remove$ref<OpenAPIV3_1.SchemaObject>(responseSchema, openApi);
+    const responseSchemaObj = await removeSchemas$ref<OpenAPIV3_1.SchemaObject>(responseSchema, openApi);
     apiDescriptor.response = responseSchemaObj;
   }
   let newApiDescriptor = apiDescriptor;
@@ -387,6 +501,7 @@ export const transformPathObj = async (
     method: apiDescriptor.method
   };
 };
+
 export default async function openApi2Data(
   openApi: OpenAPIV3_1.Document,
   config: GeneratorConfig
@@ -428,36 +543,15 @@ export default async function openApi2Data(
       const methodFormat = newMethod.toUpperCase();
       const allPromise = methodInfo.tags?.map(async tag => {
         const pathKey = `${tag}.${methodInfo.operationId}`;
-        const pathParameters: renderItem[] = [];
-        const queryParameters: renderItem[] = [];
-        for (const refParameter of methodInfo.parameters || []) {
-          const [parameter, type] = await remove$ref<OpenAPIV3.ParameterObject>(refParameter, openApi, schemasMap);
-          if (parameter.in === 'path') {
-            pathParameters.push({
-              key: parameter.name + (!parameter.required ? '?' : ''),
-              description: parameter.description || '',
-              type,
-              required: !!parameter.required,
-              deprecated: !!parameter.deprecated
-            });
-          }
-          if (parameter.in === 'query') {
-            queryParameters.push({
-              key: parameter.name + (!parameter.required ? '?' : ''),
-              description: parameter.description || '',
-              type,
-              required: !!parameter.required,
-              deprecated: !!parameter.deprecated
-            });
-          }
-        }
-        const [response, responseName, responsePureSchema] = await parseResponse(
+        const { queryParameters, queryParametersComment, pathParameters, pathParametersComment } =
+          await parseParameters(methodInfo.parameters, openApi, config, schemasMap);
+        const { responseName, responseComment } = await parseResponse(
           methodInfo.responses,
           openApi,
           config,
           schemasMap
         );
-        const [requestBody, requestName, requsetPureSchema] = await parseRequestBody(
+        const { requestName, requestComment } = await parseRequestBody(
           methodInfo.requestBody,
           openApi,
           config,
@@ -471,12 +565,12 @@ export default async function openApi2Data(
           responseName,
           requestName,
           pathKey,
-          pathParameters,
           queryParameters,
-          response,
-          responseSchemaText: await renderTsTypeStr(responsePureSchema ?? {}, { commentStr: '      *' }),
-          requestSchemaText: await renderTsTypeStr(requsetPureSchema ?? {}, { commentStr: '      *' }),
-          requestBody
+          queryParametersComment,
+          pathParameters,
+          pathParametersComment,
+          responseComment,
+          requestComment
         };
         templateData.pathsArr.push({
           key: pathKey,
@@ -500,6 +594,6 @@ export default async function openApi2Data(
     }
   }
   templateData.baseUrl = openApi.servers?.[0]?.url || '';
-  templateData.schemas = [...schemasMap.values()];
+  templateData.schemas = [...new Set(schemasMap.values())];
   return templateData;
 }

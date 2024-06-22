@@ -1,8 +1,8 @@
-import path from 'node:path';
 import fs from 'node:fs';
+import path from 'node:path';
+import { TemplateData } from '../functions/openApi2Data';
 import { generateFile, readAndRenderTemplate } from '../utils';
 import { srcPath } from '../utils/path';
-import { TemplateData } from '../functions/openApi2Data';
 export const TEMPLATE_DATA = new Map<string, TemplateData>();
 export class TemplateFile {
   fileName: string;
@@ -31,7 +31,7 @@ export class TemplateFile {
   ) {
     // 这里实现模板文件渲染工作，例如返回文件内容和文件名，然后再写入output的文件夹
     const renderContent = await this.readAndRenderTemplate(fileName, data, config);
-    generateFile(ouput, `${config?.outFileName ?? fileName}${config?.ext ?? this.getExt()}`, renderContent);
+    await generateFile(ouput, `${config?.outFileName ?? fileName}${config?.ext ?? this.getExt()}`, renderContent);
   }
   readAndRenderTemplate(fileName: string, data: any, config?: { root?: boolean }) {
     const filePath = config?.root ? fileName : `${this.type}/${fileName}`;

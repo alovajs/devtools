@@ -2,8 +2,8 @@ import handlebars, { HelperOptions } from 'handlebars';
 import fetch from 'node-fetch';
 import fs, { promises } from 'node:fs';
 import path from 'node:path';
-import { OpenAPIV3_1 } from 'openapi-types';
-import { srcPath } from '../utils/path';
+import prettier, { Config as prettierConfig } from 'prettier';
+import { projectPath } from './path';
 export const getType = (obj: any) => Object.prototype.toString.call(obj).slice(8, -1).toLowerCase();
 handlebars.registerHelper('isType', function (this: any, value, type: string, options: HelperOptions) {
   if (getType(value) === type) {
@@ -30,12 +30,9 @@ handlebars.registerHelper('or', function (this: any) {
   const result = args.some(arg => {
     if (Array.isArray(arg)) {
       return arg.length !== 0;
-    } else if (typeof arg === 'string') {
-      return arg !== 'any';
     }
     return Boolean(arg);
   });
-
   return result ? options.fn(this) : options.inverse(this);
 });
 handlebars.registerHelper('eq', function (a, b) {
@@ -62,19 +59,27 @@ export async function readAndRenderTemplate(templatePath: string, view: any): Pr
  * @param fileName 待生成文件名
  * @param content 文件内容
  */
-export function generateFile(distDir: string, fileName: string, content: string) {
+export async function generateFile(distDir: string, fileName: string, content: string) {
   if (!fs.existsSync(distDir)) {
     fs.mkdirSync(distDir, { recursive: true });
   }
   const filePath = path.join(distDir, fileName);
-  fs.writeFile(filePath, content, (err: NodeJS.ErrnoException | null) => {
+  const formattedText = await format(content);
+  fs.writeFile(filePath, formattedText, (err: NodeJS.ErrnoException | null) => {
     if (err) {
       return console.error('Error writing file:', err);
     }
     console.log('File written successfully at', filePath);
   });
 }
-
+export function format(text: string, config?: prettierConfig) {
+  const prettierConfig = require(path.join(projectPath, './.prettierrc.cjs'));
+  return prettier.format(text, {
+    ...prettierConfig,
+    parser: 'typescript', // 指定使用 babel 解析器
+    ...(config ?? {})
+  });
+}
 export async function fetchData(url: string) {
   return fetch(url).then(response => {
     if (!response.ok) {
@@ -122,13 +127,4 @@ export function highPrecisionInterval(callback: () => void, intervalInMillisecon
 export const getFileNameByPath = (path: string) => {
   const [, name] = /[\/\\]([^\/\\]+)([\/\\])?$/.exec(path) ?? [];
   return name ?? '';
-};
-interface TsTypeConfig {
-  commentStr: string;
-}
-export const renderTsTypeStr = async (schema: OpenAPIV3_1.SchemaObject, config: TsTypeConfig) => {
-  const templatePath = path.resolve(srcPath, `templates/tstype.handlebars`);
-  const tsStr = await readAndRenderTemplate(templatePath, schema);
-  const tsStrArr = tsStr.trim().split('\n');
-  return tsStrArr.map((line, idx) => (idx ? config.commentStr : '') + line).join('\n');
 };

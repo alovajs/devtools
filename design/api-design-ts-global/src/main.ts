@@ -1,11 +1,5 @@
-const result = await Apis.pet.uploadFile({
+const data = await Apis.store.deleteOrder({
   pathParams: {
-    petId: 23
-  },
-  data: {},
-  transformData(data, headers) {
-    // 处理返回的数据
-    return data.message;
-  },
-  params: {}
+    orderId: 2
+  }
 });
