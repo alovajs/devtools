@@ -16,8 +16,6 @@ export default {
       // 读取alova.son实现自动补全
       // 生成api文件
       for (const configuration of CONFIG_POOL) {
-        //读取缓存文件
-        await configuration.readAlovaJson();
         const outputPathArr = configuration.getAllOutputPath();
         const templateTypeArr = configuration.getAllTemplateType();
         const openApiData = await configuration.getAllOpenApiData();

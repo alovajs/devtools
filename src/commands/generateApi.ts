@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 import { loading, reset } from '../components/statusBar';
 import generateApi from '../functions/generateApi';
+import readConfig from '../functions/readConfig';
 import { CONFIG_POOL } from '../modules/Configuration';
 import { getFileNameByPath } from '../utils';
-import readConfig from '../functions/readConfig';
 // 用于自动生成
 export default {
   commandId: 'alova.generateApi',
@@ -19,8 +19,6 @@ export default {
         }
         configuration.shouldUpdate = false;
         const fileName = getFileNameByPath(configuration.workspaceRootDir);
-        //读取缓存文件
-        await configuration.readAlovaJson();
         const outputPathArr = configuration.getAllOutputPath();
         const templateTypeArr = configuration.getAllTemplateType();
         const openApiData = await configuration.getAllOpenApiData();

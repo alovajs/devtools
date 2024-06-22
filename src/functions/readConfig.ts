@@ -55,6 +55,8 @@ export default async (isAutoUpdate: boolean = true) => {
       continue;
     }
     const configuration = new Configuration(alovaConfig, workspaceRootPath);
+    //读取缓存文件
+    await configuration.readAlovaJson();
     if (isAutoUpdate) {
       // 开启自动更新
       configuration.autoUpdate();

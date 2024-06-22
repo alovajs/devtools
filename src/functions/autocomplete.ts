@@ -13,7 +13,7 @@ type AutoCompleteItem = {
 const filterAutoCompleteItem = (text: string, apiArr: Api[]): AutoCompleteItem[] => {
   const autoCompleteArr: AutoCompleteItem[] = [];
   apiArr.forEach(api => {
-    const replaceText = `Apis.${api.pathKey}`;
+    const replaceText = `Apis.${api.pathKey}({${api.pathParameters ? `\n  pathParams:{},` : ''}${api.queryParameters ? `\n  params:{},` : ''}${api.requestName ? `\n  data:{}` : ''}\n})`;
     if (api.path.includes(text)) {
       autoCompleteArr.push({
         replaceText,
@@ -55,6 +55,8 @@ export default (text: string): AutoCompleteItem[] => {
     .map(output => {
       const apiPath = path.join(config.workspaceRootDir, output);
       const templateData = TEMPLATE_DATA.get(apiPath);
+      console.log(templateData, apiPath, 67);
+
       if (!templateData) {
         return [];
       }
