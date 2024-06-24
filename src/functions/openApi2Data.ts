@@ -436,7 +436,7 @@ export const transformPathObj = async (
   const apiDescriptor: ApiDescriptor = {
     ...pathObj,
     requestBody: {},
-    response: {},
+    responses: {},
     parameters: [],
     url,
     method
@@ -469,15 +469,15 @@ export const transformPathObj = async (
     requestBodyObject = isReferenceObject(requestBody) ? findBy$ref(requestBody.$ref, openApi) : requestBody;
     requestKey = getContentKey(requestBodyObject.content || {}, config.bodyMediaType);
     const requestBodySchema = requestBodyObject.content?.[requestKey].schema ?? {};
-    const requestBodySchemaObj = await removeSchemas$ref<OpenAPIV3_1.SchemaObject>(requestBodySchema, openApi);
+    const requestBodySchemaObj = removeSchemas$ref<OpenAPIV3_1.SchemaObject>(requestBodySchema, openApi);
     apiDescriptor.requestBody = requestBodySchemaObj;
   }
   if (response200) {
     responseObject = isReferenceObject(response200) ? findBy$ref(response200.$ref, openApi) : response200;
     responseKey = getContentKey(responseObject.content || {}, config.responseMediaType);
     const responseSchema = responseObject.content?.[responseKey].schema ?? {};
-    const responseSchemaObj = await removeSchemas$ref<OpenAPIV3_1.SchemaObject>(responseSchema, openApi);
-    apiDescriptor.response = responseSchemaObj;
+    const responseSchemaObj = removeSchemas$ref<OpenAPIV3_1.SchemaObject>(responseSchema, openApi);
+    apiDescriptor.responses = responseSchemaObj;
   }
   let newApiDescriptor = apiDescriptor;
   let handleApiDone = false;
@@ -499,9 +499,9 @@ export const transformPathObj = async (
     pathObj.requestBody = requestBodyObject;
     pathObj.requestBody.content[requestKey].schema = apiDescriptor.requestBody;
   }
-  if (apiDescriptor.response && pathObj.responses?.['200'] && responseObject.content) {
+  if (apiDescriptor.responses && pathObj.responses?.['200'] && responseObject.content) {
     pathObj.responses['200'] = responseObject;
-    responseObject.content[responseKey].schema = apiDescriptor.response;
+    responseObject.content[responseKey].schema = apiDescriptor.responses;
   }
   if (apiDescriptor.parameters) {
     pathObj.parameters = apiDescriptor.parameters.map(parameter => {
@@ -516,7 +516,7 @@ export const transformPathObj = async (
     });
   }
   delete apiDescriptor.requestBody;
-  delete apiDescriptor.response;
+  delete apiDescriptor.responses;
   delete apiDescriptor.parameters;
   Object.assign(pathObj, apiDescriptor);
   return {

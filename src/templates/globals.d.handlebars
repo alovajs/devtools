@@ -93,15 +93,9 @@ declare global {
        {{/if}}
        */
       {{{name}}}<Config extends Alova2MethodConfig<{{{responseName}}}>{{#or pathParameters queryParameters requestName }} & {
-          {{#if pathParameters}}
-          pathParams: {{{pathParameters}}};
-          {{/if}}
-          {{#if queryParameters}}
-          params: {{{queryParameters}}};
-          {{/if}}
-          {{#if requestName}}
-          data: {{{requestName}}};
-          {{/if}}
+          pathParams: {{#if pathParameters}}{{{pathParameters}}}{{else}}never{{/if}};
+          params: {{#if queryParameters}}{{{queryParameters}}}{{else}}never{{/if}};
+          data: {{#if requestName}}{{{requestName}}}{{else}}never{{/if}};
         }{{/or}}>(
         config{{#or pathParameters queryParameters requestName }}{{else}}?{{/or}}: Config
       ): Alova2Method<{{{responseName}}}, '{{{pathKey}}}', Config>;

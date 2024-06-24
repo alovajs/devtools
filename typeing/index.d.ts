@@ -8,7 +8,7 @@ declare namespace OpenAPIV3_1 {}
 declare type SchemaObject = import('openapi-types').OpenAPIV3_1.SchemaObject;
 declare type Parameter = import('openapi-types').OpenAPIV3_1.ParameterObject;
 declare type OperationObject = import('openapi-types').OpenAPIV3_1.OperationObject;
-declare type ApiDescriptor = Omit<OperationObject, 'requestBody' | 'parameters'> & {
+declare type ApiDescriptor = Omit<OperationObject, 'requestBody' | 'parameters' | 'responses'> & {
   url: string;
   method: string;
   parameters?: Array<
@@ -19,7 +19,7 @@ declare type ApiDescriptor = Omit<OperationObject, 'requestBody' | 'parameters'>
       }
   >;
   requestBody?: SchemaObject;
-  response?: SchemaObject;
+  responses?: SchemaObject;
 };
 declare type GeneratorConfig = {
   // openapi的json文件url地址
