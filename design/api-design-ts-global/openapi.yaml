@@ -201,7 +201,7 @@ paths:
       parameters:
         - name: petId
           in: path
-          description: ID of pet that needs to be updated
+          description: ID of pet that needs to be updated2
           required: true
           schema:
             type: integer

@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { TemplateData } from '../functions/openApi2Data';
-import { generateFile, readAndRenderTemplate } from '../utils';
+import { format, generateFile, readAndRenderTemplate } from '../utils';
 import { srcPath } from '../utils/path';
 export const TEMPLATE_DATA = new Map<string, TemplateData>();
 export class TemplateFile {
@@ -40,12 +40,12 @@ export class TemplateFile {
   }
 }
 
-export const writeAlovaJson = (data: TemplateData, originPath: string) => {
+export const writeAlovaJson = async (data: TemplateData, originPath: string, name = 'alova.json') => {
   // 将数据转换为 JSON 字符串
-  const jsonData = JSON.stringify(data, null, 2);
+  const jsonData = await format(JSON.stringify(data, null, 2), { parser: 'json' });
 
   // 定义 JSON 文件的路径和名称
-  const filePath = path.join(originPath, './alova.json');
+  const filePath = path.join(originPath, `./${name}`);
   if (!fs.existsSync(originPath)) {
     fs.mkdirSync(originPath, { recursive: true });
   }
@@ -66,8 +66,6 @@ export const readAlovaJson = (originPath: string) => {
     fs.readFile(filePath, 'utf8', (err, data) => {
       if (err) {
         TEMPLATE_DATA.delete(originPath);
-        console.log(TEMPLATE_DATA, 69);
-
         reject(err);
       } else {
         resolve(JSON.parse(data));

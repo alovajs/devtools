@@ -44,18 +44,21 @@ export default async (isAutoUpdate: boolean = true) => {
     WATCH_CONFIG.splice(0, WATCH_CONFIG.length);
   }
   const workspaceFolders = vscode.workspace.workspaceFolders || [];
+  // 读取所有已存在配置的缓存文件
+  await Promise.all(CONFIG_POOL.map(config => config.readAlovaJson()));
   for (const workspaceFolder of workspaceFolders) {
     const workspaceRootPath = workspaceFolder.uri.fsPath + '\\';
     const alovaConfig = readConfig(workspaceRootPath);
+    // 过滤掉没有配置文件
     if (!alovaConfig) {
-      return;
+      continue;
     }
     // 过滤掉存在的
     if (CONFIG_POOL.find(item => item.workspaceRootDir === workspaceRootPath)) {
       continue;
     }
     const configuration = new Configuration(alovaConfig, workspaceRootPath);
-    //读取缓存文件
+    //读取新配置的缓存文件
     await configuration.readAlovaJson();
     if (isAutoUpdate) {
       // 开启自动更新

@@ -6,10 +6,19 @@ declare type TemplateType = 'typescript' | 'module' | 'commonjs';
 declare type PlatformType = 'swagger' | 'knife4j' | 'yapi';
 declare namespace OpenAPIV3_1 {}
 declare type SchemaObject = import('openapi-types').OpenAPIV3_1.SchemaObject;
-declare type ApiDescriptor = import('openapi-types').OpenAPIV3_1.OperationObject & {
+declare type Parameter = import('openapi-types').OpenAPIV3_1.ParameterObject;
+declare type OperationObject = import('openapi-types').OpenAPIV3_1.OperationObject;
+declare type ApiDescriptor = Omit<OperationObject, 'requestBody' | 'parameters'> & {
   url: string;
   method: string;
-  requestData?: SchemaObject;
+  parameters?: Array<
+    Omit<Parameter, 'schema' | 'required' | 'examples'> &
+      SchemaObject & {
+        paramsRequired?: boolean;
+        paramsExamples: Parameter['examples'];
+      }
+  >;
+  requestBody?: SchemaObject;
   response?: SchemaObject;
 };
 declare type GeneratorConfig = {

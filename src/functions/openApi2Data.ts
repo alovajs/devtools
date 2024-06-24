@@ -1,7 +1,7 @@
 import { compile, JSONSchema } from 'json-schema-to-typescript';
 import { cloneDeep } from 'lodash';
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
-import { format } from '../utils';
+import { format, removeUndefined } from '../utils';
 type Path = {
   key: string;
   method: string;
@@ -432,9 +432,12 @@ export const transformPathObj = async (
   if (!handleApi || typeof handleApi !== 'function') {
     return { ...pathObj, url, method };
   }
-  const { requestBody, responses } = pathObj;
+  const { requestBody, responses, parameters } = pathObj;
   const apiDescriptor: ApiDescriptor = {
     ...pathObj,
+    requestBody: {},
+    response: {},
+    parameters: [],
     url,
     method
   };
@@ -443,15 +446,23 @@ export const transformPathObj = async (
   let responseObject = response200 as OpenAPIV3_1.ResponseObject;
   let requestKey = '';
   let responseKey = '';
-  if (apiDescriptor.parameters) {
-    const apiParameters = apiDescriptor.parameters;
+  if (parameters) {
+    const apiParameters = parameters;
     apiDescriptor.parameters = [];
-    const parameters = isReferenceObject(apiParameters)
+    const parametersArray = isReferenceObject(apiParameters)
       ? findBy$ref<typeof apiParameters>(apiParameters.$ref, openApi)
-      : apiParameters;
-    for (const parameter of parameters) {
+      : apiParameters ?? [];
+    for (const parameter of parametersArray) {
       const parameterObject = await removeSchemas$ref<OpenAPIV3.ParameterObject>(parameter, openApi);
-      apiDescriptor.parameters.push(parameterObject);
+      const schema = (parameterObject.schema ?? {}) as OpenAPIV3_1.SchemaObject;
+      apiDescriptor.parameters.push({
+        ...parameterObject,
+        ...schema,
+        examples: schema.examples,
+        required: schema.required,
+        paramsRequired: parameterObject.required,
+        paramsExamples: parameterObject.examples
+      });
     }
   }
   if (requestBody) {
@@ -459,7 +470,7 @@ export const transformPathObj = async (
     requestKey = getContentKey(requestBodyObject.content || {}, config.bodyMediaType);
     const requestBodySchema = requestBodyObject.content?.[requestKey].schema ?? {};
     const requestBodySchemaObj = await removeSchemas$ref<OpenAPIV3_1.SchemaObject>(requestBodySchema, openApi);
-    apiDescriptor.requestData = requestBodySchemaObj;
+    apiDescriptor.requestBody = requestBodySchemaObj;
   }
   if (response200) {
     responseObject = isReferenceObject(response200) ? findBy$ref(response200.$ref, openApi) : response200;
@@ -484,16 +495,29 @@ export const transformPathObj = async (
     return null;
   }
   Object.assign(apiDescriptor, newApiDescriptor);
-  if (apiDescriptor.requestData && requestBody) {
+  if (apiDescriptor.requestBody && requestBody) {
     pathObj.requestBody = requestBodyObject;
-    pathObj.requestBody.content[requestKey].schema = apiDescriptor.requestData;
+    pathObj.requestBody.content[requestKey].schema = apiDescriptor.requestBody;
   }
   if (apiDescriptor.response && pathObj.responses?.['200'] && responseObject.content) {
     pathObj.responses['200'] = responseObject;
     responseObject.content[responseKey].schema = apiDescriptor.response;
   }
-  delete apiDescriptor.requestData;
+  if (apiDescriptor.parameters) {
+    pathObj.parameters = apiDescriptor.parameters.map(parameter => {
+      const { paramsExamples, paramsRequired, ...parameterSchema } = parameter;
+      const pathParamter = {
+        ...parameterSchema,
+        schema: parameterSchema as OpenAPIV3_1.ParameterObject['schema'],
+        required: paramsRequired,
+        examples: paramsExamples
+      };
+      return pathParamter;
+    });
+  }
+  delete apiDescriptor.requestBody;
   delete apiDescriptor.response;
+  delete apiDescriptor.parameters;
   Object.assign(pathObj, apiDescriptor);
   return {
     ...pathObj,
@@ -595,5 +619,5 @@ export default async function openApi2Data(
   }
   templateData.baseUrl = openApi.servers?.[0]?.url || '';
   templateData.schemas = [...new Set(schemasMap.values())];
-  return templateData;
+  return removeUndefined(templateData);
 }

@@ -294,7 +294,7 @@
           {
             "name": "petId",
             "in": "path",
-            "description": "ID of pet that needs to be updated",
+            "description": "ID of pet that needs to be updated2",
             "required": true,
             "schema": {
               "type": "integer",
@@ -1219,8 +1219,8 @@
           "queryParametersComment": "",
           "pathParameters": "",
           "pathParametersComment": "",
-          "responseComment": "{\n*  id?: number\n*  // A category for a pet\n*  category?: {\n*    id?: number\n*    name?: string\n*  }\n*  // [required]\n*  name: string\n*  // [required]\n*  photoUrls: string[]\n*  tags?: Array<{\n*    id?: number\n*    name?: string\n*  }>\n*  // pet status in the store\n*  // [deprecated]\n*  status?: 'available' | 'pending' | 'sold'\n*}",
-          "requestComment": "{\n*  id?: number\n*  // A category for a pet\n*  category?: {\n*    id?: number\n*    name?: string\n*  }\n*  // [required]\n*  name: string\n*  // [required]\n*  photoUrls: string[]\n*  tags?: Array<{\n*    id?: number\n*    name?: string\n*  }>\n*  // pet status in the store\n*  // [deprecated]\n*  status?: 'available' | 'pending' | 'sold'\n*}"
+          "responseComment": "{\n*   id?: number\n*   // A category for a pet\n*   category?: {\n*     id?: number\n*     name?: string\n*   }\n*   // [required]\n*   name: string\n*   // [required]\n*   photoUrls: string[]\n*   tags?: Array<{\n*     id?: number\n*     name?: string\n*   }>\n*   // pet status in the store\n*   // [deprecated]\n*   status?: 'available' | 'pending' | 'sold'\n* }",
+          "requestComment": "{\n*   id?: number\n*   // A category for a pet\n*   category?: {\n*     id?: number\n*     name?: string\n*   }\n*   // [required]\n*   name: string\n*   // [required]\n*   photoUrls: string[]\n*   tags?: Array<{\n*     id?: number\n*     name?: string\n*   }>\n*   // pet status in the store\n*   // [deprecated]\n*   status?: 'available' | 'pending' | 'sold'\n* }"
         }
       ]
     },
@@ -1239,8 +1239,8 @@
           "queryParametersComment": "",
           "pathParameters": "",
           "pathParametersComment": "",
-          "responseComment": "{\n*  id?: number\n*  // A category for a pet\n*  category?: {\n*    id?: number\n*    name?: string\n*  }\n*  // [required]\n*  name: string\n*  // [required]\n*  photoUrls: string[]\n*  tags?: Array<{\n*    id?: number\n*    name?: string\n*  }>\n*  // pet status in the store\n*  // [deprecated]\n*  status?: 'available' | 'pending' | 'sold'\n*}",
-          "requestComment": "{\n*  id?: number\n*  // A category for a pet\n*  category?: {\n*    id?: number\n*    name?: string\n*  }\n*  // [required]\n*  name: string\n*  // [required]\n*  photoUrls: string[]\n*  tags?: Array<{\n*    id?: number\n*    name?: string\n*  }>\n*  // pet status in the store\n*  // [deprecated]\n*  status?: 'available' | 'pending' | 'sold'\n*}"
+          "responseComment": "{\n*   id?: number\n*   // A category for a pet\n*   category?: {\n*     id?: number\n*     name?: string\n*   }\n*   // [required]\n*   name: string\n*   // [required]\n*   photoUrls: string[]\n*   tags?: Array<{\n*     id?: number\n*     name?: string\n*   }>\n*   // pet status in the store\n*   // [deprecated]\n*   status?: 'available' | 'pending' | 'sold'\n* }",
+          "requestComment": "{\n*   id?: number\n*   // A category for a pet\n*   category?: {\n*     id?: number\n*     name?: string\n*   }\n*   // [required]\n*   name: string\n*   // [required]\n*   photoUrls: string[]\n*   tags?: Array<{\n*     id?: number\n*     name?: string\n*   }>\n*   // pet status in the store\n*   // [deprecated]\n*   status?: 'available' | 'pending' | 'sold'\n* }"
         },
         {
           "method": "GET",
@@ -1254,7 +1254,7 @@
           "queryParametersComment": "{\n       *   // Status values that need to be considered for filter\n       *   // [required]\n       *   // [deprecated]\n       *   status: ('available' | 'pending' | 'sold')[]\n       * }",
           "pathParameters": "",
           "pathParametersComment": "",
-          "responseComment": "Array<{\n*  id?: number\n*  // A category for a pet\n*  category?: {\n*    id?: number\n*    name?: string\n*  }\n*  // [required]\n*  name: string\n*  // [required]\n*  photoUrls: string[]\n*  tags?: Array<{\n*    id?: number\n*    name?: string\n*  }>\n*  // pet status in the store\n*  // [deprecated]\n*  status?: 'available' | 'pending' | 'sold'\n*}>",
+          "responseComment": "Array<{\n*   id?: number\n*   // A category for a pet\n*   category?: {\n*     id?: number\n*     name?: string\n*   }\n*   // [required]\n*   name: string\n*   // [required]\n*   photoUrls: string[]\n*   tags?: Array<{\n*     id?: number\n*     name?: string\n*   }>\n*   // pet status in the store\n*   // [deprecated]\n*   status?: 'available' | 'pending' | 'sold'\n* }>",
           "requestComment": ""
         },
         {
@@ -1269,7 +1269,7 @@
           "queryParametersComment": "{\n       *   // Tags to filter by\n       *   // [required]\n       *   tags: string[]\n       * }",
           "pathParameters": "",
           "pathParametersComment": "",
-          "responseComment": "Array<{\n*  id?: number\n*  // A category for a pet\n*  category?: {\n*    id?: number\n*    name?: string\n*  }\n*  // [required]\n*  name: string\n*  // [required]\n*  photoUrls: string[]\n*  tags?: Array<{\n*    id?: number\n*    name?: string\n*  }>\n*  // pet status in the store\n*  // [deprecated]\n*  status?: 'available' | 'pending' | 'sold'\n*}>",
+          "responseComment": "Array<{\n*   id?: number\n*   // A category for a pet\n*   category?: {\n*     id?: number\n*     name?: string\n*   }\n*   // [required]\n*   name: string\n*   // [required]\n*   photoUrls: string[]\n*   tags?: Array<{\n*     id?: number\n*     name?: string\n*   }>\n*   // pet status in the store\n*   // [deprecated]\n*   status?: 'available' | 'pending' | 'sold'\n* }>",
           "requestComment": ""
         },
         {
@@ -1284,7 +1284,7 @@
           "queryParametersComment": "",
           "pathParameters": "{\n  /**\n   * ID of pet to return\n   * [required]\n   */\n  petId: number\n}",
           "pathParametersComment": "{\n       *   // ID of pet to return\n       *   // [required]\n       *   petId: number\n       * }",
-          "responseComment": "{\n*  id?: number\n*  // A category for a pet\n*  category?: {\n*    id?: number\n*    name?: string\n*  }\n*  // [required]\n*  name: string\n*  // [required]\n*  photoUrls: string[]\n*  tags?: Array<{\n*    id?: number\n*    name?: string\n*  }>\n*  // pet status in the store\n*  // [deprecated]\n*  status?: 'available' | 'pending' | 'sold'\n*}",
+          "responseComment": "{\n*   id?: number\n*   // A category for a pet\n*   category?: {\n*     id?: number\n*     name?: string\n*   }\n*   // [required]\n*   name: string\n*   // [required]\n*   photoUrls: string[]\n*   tags?: Array<{\n*     id?: number\n*     name?: string\n*   }>\n*   // pet status in the store\n*   // [deprecated]\n*   status?: 'available' | 'pending' | 'sold'\n* }",
           "requestComment": ""
         },
         {
@@ -1297,10 +1297,10 @@
           "pathKey": "pet.updatePetWithForm",
           "queryParameters": "",
           "queryParametersComment": "",
-          "pathParameters": "{\n  /**\n   * ID of pet that needs to be updated\n   * [required]\n   */\n  petId: number\n}",
-          "pathParametersComment": "{\n       *   // ID of pet that needs to be updated\n       *   // [required]\n       *   petId: number\n       * }",
+          "pathParameters": "{\n  /**\n   * ID of pet that needs to be updated2\n   * [required]\n   */\n  petId: number\n}",
+          "pathParametersComment": "{\n       *   // ID of pet that needs to be updated2\n       *   // [required]\n       *   petId: number\n       * }",
           "responseComment": "unknown",
-          "requestComment": "{\n*  // Updated name of the pet\n*  name?: string\n*  // Updated status of the pet\n*  status?: string\n*}"
+          "requestComment": "{\n*   // Updated name of the pet\n*   name?: string\n*   // Updated status of the pet\n*   status?: string\n* }"
         },
         {
           "method": "DELETE",
@@ -1329,8 +1329,8 @@
           "queryParametersComment": "",
           "pathParameters": "{\n  /**\n   * ID of pet to update\n   * [required]\n   */\n  petId: number\n}",
           "pathParametersComment": "{\n       *   // ID of pet to update\n       *   // [required]\n       *   petId: number\n       * }",
-          "responseComment": "{\n*  code?: number\n*  type?: string\n*  message?: string\n*}",
-          "requestComment": "{\n*  // Additional data to pass to server\n*  additionalMetadata?: string\n*  // file to upload\n*  file?: string\n*}"
+          "responseComment": "{\n*   code?: number\n*   type?: string\n*   message?: string\n* }",
+          "requestComment": "{\n*   // Additional data to pass to server\n*   additionalMetadata?: string\n*   // file to upload\n*   file?: string\n* }"
         }
       ]
     },
@@ -1364,8 +1364,8 @@
           "queryParametersComment": "",
           "pathParameters": "",
           "pathParametersComment": "",
-          "responseComment": "{\n*  id?: number\n*  petId?: number\n*  quantity?: number\n*  shipDate?: string\n*  // Order Status\n*  status?: 'placed' | 'approved' | 'delivered'\n*  complete?: boolean\n*}",
-          "requestComment": "{\n*  id?: number\n*  petId?: number\n*  quantity?: number\n*  shipDate?: string\n*  // Order Status\n*  status?: 'placed' | 'approved' | 'delivered'\n*  complete?: boolean\n*}"
+          "responseComment": "{\n*   id?: number\n*   petId?: number\n*   quantity?: number\n*   shipDate?: string\n*   // Order Status\n*   status?: 'placed' | 'approved' | 'delivered'\n*   complete?: boolean\n* }",
+          "requestComment": "{\n*   id?: number\n*   petId?: number\n*   quantity?: number\n*   shipDate?: string\n*   // Order Status\n*   status?: 'placed' | 'approved' | 'delivered'\n*   complete?: boolean\n* }"
         },
         {
           "method": "GET",
@@ -1379,7 +1379,7 @@
           "queryParametersComment": "",
           "pathParameters": "{\n  /**\n   * ID of pet that needs to be fetched\n   * [required]\n   */\n  orderId: number\n}",
           "pathParametersComment": "{\n       *   // ID of pet that needs to be fetched\n       *   // [required]\n       *   orderId: number\n       * }",
-          "responseComment": "{\n*  id?: number\n*  petId?: number\n*  quantity?: number\n*  shipDate?: string\n*  // Order Status\n*  status?: 'placed' | 'approved' | 'delivered'\n*  complete?: boolean\n*}",
+          "responseComment": "{\n*   id?: number\n*   petId?: number\n*   quantity?: number\n*   shipDate?: string\n*   // Order Status\n*   status?: 'placed' | 'approved' | 'delivered'\n*   complete?: boolean\n* }",
           "requestComment": ""
         },
         {
@@ -1415,7 +1415,7 @@
           "pathParameters": "",
           "pathParametersComment": "",
           "responseComment": "unknown",
-          "requestComment": "{\n*  id?: number\n*  username?: string\n*  firstName?: string\n*  lastName?: string\n*  email?: string\n*  password?: string\n*  phone?: string\n*  // User Status\n*  userStatus?: number\n*}"
+          "requestComment": "{\n*   id?: number\n*   username?: string\n*   firstName?: string\n*   lastName?: string\n*   email?: string\n*   password?: string\n*   phone?: string\n*   // User Status\n*   userStatus?: number\n* }"
         },
         {
           "method": "POST",
@@ -1430,7 +1430,7 @@
           "pathParameters": "",
           "pathParametersComment": "",
           "responseComment": "unknown",
-          "requestComment": "Array<{\n*  id?: number\n*  username?: string\n*  firstName?: string\n*  lastName?: string\n*  email?: string\n*  password?: string\n*  phone?: string\n*  // User Status\n*  userStatus?: number\n*}>"
+          "requestComment": "Array<{\n*   id?: number\n*   username?: string\n*   firstName?: string\n*   lastName?: string\n*   email?: string\n*   password?: string\n*   phone?: string\n*   // User Status\n*   userStatus?: number\n* }>"
         },
         {
           "method": "POST",
@@ -1445,7 +1445,7 @@
           "pathParameters": "",
           "pathParametersComment": "",
           "responseComment": "unknown",
-          "requestComment": "Array<{\n*  id?: number\n*  username?: string\n*  firstName?: string\n*  lastName?: string\n*  email?: string\n*  password?: string\n*  phone?: string\n*  // User Status\n*  userStatus?: number\n*}>"
+          "requestComment": "Array<{\n*   id?: number\n*   username?: string\n*   firstName?: string\n*   lastName?: string\n*   email?: string\n*   password?: string\n*   phone?: string\n*   // User Status\n*   userStatus?: number\n* }>"
         },
         {
           "method": "GET",
@@ -1489,7 +1489,7 @@
           "queryParametersComment": "",
           "pathParameters": "{\n  /**\n   * The name that needs to be fetched. Use user1 for testing.\n   * [required]\n   */\n  username: string\n}",
           "pathParametersComment": "{\n       *   // The name that needs to be fetched. Use user1 for testing.\n       *   // [required]\n       *   username: string\n       * }",
-          "responseComment": "{\n*  id?: number\n*  username?: string\n*  firstName?: string\n*  lastName?: string\n*  email?: string\n*  password?: string\n*  phone?: string\n*  // User Status\n*  userStatus?: number\n*}",
+          "responseComment": "{\n*   id?: number\n*   username?: string\n*   firstName?: string\n*   lastName?: string\n*   email?: string\n*   password?: string\n*   phone?: string\n*   // User Status\n*   userStatus?: number\n* }",
           "requestComment": ""
         },
         {
@@ -1505,7 +1505,7 @@
           "pathParameters": "{\n  /**\n   * name that need to be deleted\n   * [required]\n   */\n  username: string\n}",
           "pathParametersComment": "{\n       *   // name that need to be deleted\n       *   // [required]\n       *   username: string\n       * }",
           "responseComment": "unknown",
-          "requestComment": "{\n*  id?: number\n*  username?: string\n*  firstName?: string\n*  lastName?: string\n*  email?: string\n*  password?: string\n*  phone?: string\n*  // User Status\n*  userStatus?: number\n*}"
+          "requestComment": "{\n*   id?: number\n*   username?: string\n*   firstName?: string\n*   lastName?: string\n*   email?: string\n*   password?: string\n*   phone?: string\n*   // User Status\n*   userStatus?: number\n* }"
         },
         {
           "method": "DELETE",

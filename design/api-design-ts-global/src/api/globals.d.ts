@@ -157,24 +157,24 @@ declare global {
        * **RequestBody**
        * ```ts
        * type RequestBody = {
-       *  id?: number
-       *  // A category for a pet
-       *  category?: {
-       *    id?: number
-       *    name?: string
-       *  }
-       *  // [required]
-       *  name: string
-       *  // [required]
-       *  photoUrls: string[]
-       *  tags?: Array<{
-       *    id?: number
-       *    name?: string
-       *  }>
-       *  // pet status in the store
-       *  // [deprecated]
-       *  status?: 'available' | 'pending' | 'sold'
-       *}
+       *   id?: number
+       *   // A category for a pet
+       *   category?: {
+       *     id?: number
+       *     name?: string
+       *   }
+       *   // [required]
+       *   name: string
+       *   // [required]
+       *   photoUrls: string[]
+       *   tags?: Array<{
+       *     id?: number
+       *     name?: string
+       *   }>
+       *   // pet status in the store
+       *   // [deprecated]
+       *   status?: 'available' | 'pending' | 'sold'
+       * }
        * ```
        *
        * ---
@@ -182,24 +182,24 @@ declare global {
        * **Response**
        * ```ts
        * type Response = {
-       *  id?: number
-       *  // A category for a pet
-       *  category?: {
-       *    id?: number
-       *    name?: string
-       *  }
-       *  // [required]
-       *  name: string
-       *  // [required]
-       *  photoUrls: string[]
-       *  tags?: Array<{
-       *    id?: number
-       *    name?: string
-       *  }>
-       *  // pet status in the store
-       *  // [deprecated]
-       *  status?: 'available' | 'pending' | 'sold'
-       *}
+       *   id?: number
+       *   // A category for a pet
+       *   category?: {
+       *     id?: number
+       *     name?: string
+       *   }
+       *   // [required]
+       *   name: string
+       *   // [required]
+       *   photoUrls: string[]
+       *   tags?: Array<{
+       *     id?: number
+       *     name?: string
+       *   }>
+       *   // pet status in the store
+       *   // [deprecated]
+       *   status?: 'available' | 'pending' | 'sold'
+       * }
        * ```
        */
       增加pet2<
@@ -223,24 +223,24 @@ declare global {
        * **RequestBody**
        * ```ts
        * type RequestBody = {
-       *  id?: number
-       *  // A category for a pet
-       *  category?: {
-       *    id?: number
-       *    name?: string
-       *  }
-       *  // [required]
-       *  name: string
-       *  // [required]
-       *  photoUrls: string[]
-       *  tags?: Array<{
-       *    id?: number
-       *    name?: string
-       *  }>
-       *  // pet status in the store
-       *  // [deprecated]
-       *  status?: 'available' | 'pending' | 'sold'
-       *}
+       *   id?: number
+       *   // A category for a pet
+       *   category?: {
+       *     id?: number
+       *     name?: string
+       *   }
+       *   // [required]
+       *   name: string
+       *   // [required]
+       *   photoUrls: string[]
+       *   tags?: Array<{
+       *     id?: number
+       *     name?: string
+       *   }>
+       *   // pet status in the store
+       *   // [deprecated]
+       *   status?: 'available' | 'pending' | 'sold'
+       * }
        * ```
        *
        * ---
@@ -248,24 +248,24 @@ declare global {
        * **Response**
        * ```ts
        * type Response = {
-       *  id?: number
-       *  // A category for a pet
-       *  category?: {
-       *    id?: number
-       *    name?: string
-       *  }
-       *  // [required]
-       *  name: string
-       *  // [required]
-       *  photoUrls: string[]
-       *  tags?: Array<{
-       *    id?: number
-       *    name?: string
-       *  }>
-       *  // pet status in the store
-       *  // [deprecated]
-       *  status?: 'available' | 'pending' | 'sold'
-       *}
+       *   id?: number
+       *   // A category for a pet
+       *   category?: {
+       *     id?: number
+       *     name?: string
+       *   }
+       *   // [required]
+       *   name: string
+       *   // [required]
+       *   photoUrls: string[]
+       *   tags?: Array<{
+       *     id?: number
+       *     name?: string
+       *   }>
+       *   // pet status in the store
+       *   // [deprecated]
+       *   status?: 'available' | 'pending' | 'sold'
+       * }
        * ```
        */
       updatePet<
@@ -299,24 +299,24 @@ declare global {
        * **Response**
        * ```ts
        * type Response = Array<{
-       *  id?: number
-       *  // A category for a pet
-       *  category?: {
-       *    id?: number
-       *    name?: string
-       *  }
-       *  // [required]
-       *  name: string
-       *  // [required]
-       *  photoUrls: string[]
-       *  tags?: Array<{
-       *    id?: number
-       *    name?: string
-       *  }>
-       *  // pet status in the store
-       *  // [deprecated]
-       *  status?: 'available' | 'pending' | 'sold'
-       *}>
+       *   id?: number
+       *   // A category for a pet
+       *   category?: {
+       *     id?: number
+       *     name?: string
+       *   }
+       *   // [required]
+       *   name: string
+       *   // [required]
+       *   photoUrls: string[]
+       *   tags?: Array<{
+       *     id?: number
+       *     name?: string
+       *   }>
+       *   // pet status in the store
+       *   // [deprecated]
+       *   status?: 'available' | 'pending' | 'sold'
+       * }>
        * ```
        */
       findPetsByStatus<
@@ -356,24 +356,24 @@ declare global {
        * **Response**
        * ```ts
        * type Response = Array<{
-       *  id?: number
-       *  // A category for a pet
-       *  category?: {
-       *    id?: number
-       *    name?: string
-       *  }
-       *  // [required]
-       *  name: string
-       *  // [required]
-       *  photoUrls: string[]
-       *  tags?: Array<{
-       *    id?: number
-       *    name?: string
-       *  }>
-       *  // pet status in the store
-       *  // [deprecated]
-       *  status?: 'available' | 'pending' | 'sold'
-       *}>
+       *   id?: number
+       *   // A category for a pet
+       *   category?: {
+       *     id?: number
+       *     name?: string
+       *   }
+       *   // [required]
+       *   name: string
+       *   // [required]
+       *   photoUrls: string[]
+       *   tags?: Array<{
+       *     id?: number
+       *     name?: string
+       *   }>
+       *   // pet status in the store
+       *   // [deprecated]
+       *   status?: 'available' | 'pending' | 'sold'
+       * }>
        * ```
        */
       findPetsByTags<
@@ -412,24 +412,24 @@ declare global {
        * **Response**
        * ```ts
        * type Response = {
-       *  id?: number
-       *  // A category for a pet
-       *  category?: {
-       *    id?: number
-       *    name?: string
-       *  }
-       *  // [required]
-       *  name: string
-       *  // [required]
-       *  photoUrls: string[]
-       *  tags?: Array<{
-       *    id?: number
-       *    name?: string
-       *  }>
-       *  // pet status in the store
-       *  // [deprecated]
-       *  status?: 'available' | 'pending' | 'sold'
-       *}
+       *   id?: number
+       *   // A category for a pet
+       *   category?: {
+       *     id?: number
+       *     name?: string
+       *   }
+       *   // [required]
+       *   name: string
+       *   // [required]
+       *   photoUrls: string[]
+       *   tags?: Array<{
+       *     id?: number
+       *     name?: string
+       *   }>
+       *   // pet status in the store
+       *   // [deprecated]
+       *   status?: 'available' | 'pending' | 'sold'
+       * }
        * ```
        */
       getPetById<
@@ -457,7 +457,7 @@ declare global {
        * **Path Parameters**
        * ```ts
        * type PathParameters = {
-       *   // ID of pet that needs to be updated
+       *   // ID of pet that needs to be updated2
        *   // [required]
        *   petId: number
        * }
@@ -468,11 +468,11 @@ declare global {
        * **RequestBody**
        * ```ts
        * type RequestBody = {
-       *  // Updated name of the pet
-       *  name?: string
-       *  // Updated status of the pet
-       *  status?: string
-       *}
+       *   // Updated name of the pet
+       *   name?: string
+       *   // Updated status of the pet
+       *   status?: string
+       * }
        * ```
        *
        * ---
@@ -486,7 +486,7 @@ declare global {
         Config extends Alova2MethodConfig<unknown> & {
           pathParams: {
             /**
-             * ID of pet that needs to be updated
+             * ID of pet that needs to be updated2
              * [required]
              */
             petId: number;
@@ -566,11 +566,11 @@ declare global {
        * **RequestBody**
        * ```ts
        * type RequestBody = {
-       *  // Additional data to pass to server
-       *  additionalMetadata?: string
-       *  // file to upload
-       *  file?: string
-       *}
+       *   // Additional data to pass to server
+       *   additionalMetadata?: string
+       *   // file to upload
+       *   file?: string
+       * }
        * ```
        *
        * ---
@@ -578,10 +578,10 @@ declare global {
        * **Response**
        * ```ts
        * type Response = {
-       *  code?: number
-       *  type?: string
-       *  message?: string
-       *}
+       *   code?: number
+       *   type?: string
+       *   message?: string
+       * }
        * ```
        */
       uploadFile<
@@ -638,14 +638,14 @@ declare global {
        * **RequestBody**
        * ```ts
        * type RequestBody = {
-       *  id?: number
-       *  petId?: number
-       *  quantity?: number
-       *  shipDate?: string
-       *  // Order Status
-       *  status?: 'placed' | 'approved' | 'delivered'
-       *  complete?: boolean
-       *}
+       *   id?: number
+       *   petId?: number
+       *   quantity?: number
+       *   shipDate?: string
+       *   // Order Status
+       *   status?: 'placed' | 'approved' | 'delivered'
+       *   complete?: boolean
+       * }
        * ```
        *
        * ---
@@ -653,14 +653,14 @@ declare global {
        * **Response**
        * ```ts
        * type Response = {
-       *  id?: number
-       *  petId?: number
-       *  quantity?: number
-       *  shipDate?: string
-       *  // Order Status
-       *  status?: 'placed' | 'approved' | 'delivered'
-       *  complete?: boolean
-       *}
+       *   id?: number
+       *   petId?: number
+       *   quantity?: number
+       *   shipDate?: string
+       *   // Order Status
+       *   status?: 'placed' | 'approved' | 'delivered'
+       *   complete?: boolean
+       * }
        * ```
        */
       placeOrder<
@@ -693,14 +693,14 @@ declare global {
        * **Response**
        * ```ts
        * type Response = {
-       *  id?: number
-       *  petId?: number
-       *  quantity?: number
-       *  shipDate?: string
-       *  // Order Status
-       *  status?: 'placed' | 'approved' | 'delivered'
-       *  complete?: boolean
-       *}
+       *   id?: number
+       *   petId?: number
+       *   quantity?: number
+       *   shipDate?: string
+       *   // Order Status
+       *   status?: 'placed' | 'approved' | 'delivered'
+       *   complete?: boolean
+       * }
        * ```
        */
       getOrderById<
@@ -768,16 +768,16 @@ declare global {
        * **RequestBody**
        * ```ts
        * type RequestBody = {
-       *  id?: number
-       *  username?: string
-       *  firstName?: string
-       *  lastName?: string
-       *  email?: string
-       *  password?: string
-       *  phone?: string
-       *  // User Status
-       *  userStatus?: number
-       *}
+       *   id?: number
+       *   username?: string
+       *   firstName?: string
+       *   lastName?: string
+       *   email?: string
+       *   password?: string
+       *   phone?: string
+       *   // User Status
+       *   userStatus?: number
+       * }
        * ```
        *
        * ---
@@ -806,16 +806,16 @@ declare global {
        * **RequestBody**
        * ```ts
        * type RequestBody = Array<{
-       *  id?: number
-       *  username?: string
-       *  firstName?: string
-       *  lastName?: string
-       *  email?: string
-       *  password?: string
-       *  phone?: string
-       *  // User Status
-       *  userStatus?: number
-       *}>
+       *   id?: number
+       *   username?: string
+       *   firstName?: string
+       *   lastName?: string
+       *   email?: string
+       *   password?: string
+       *   phone?: string
+       *   // User Status
+       *   userStatus?: number
+       * }>
        * ```
        *
        * ---
@@ -844,16 +844,16 @@ declare global {
        * **RequestBody**
        * ```ts
        * type RequestBody = Array<{
-       *  id?: number
-       *  username?: string
-       *  firstName?: string
-       *  lastName?: string
-       *  email?: string
-       *  password?: string
-       *  phone?: string
-       *  // User Status
-       *  userStatus?: number
-       *}>
+       *   id?: number
+       *   username?: string
+       *   firstName?: string
+       *   lastName?: string
+       *   email?: string
+       *   password?: string
+       *   phone?: string
+       *   // User Status
+       *   userStatus?: number
+       * }>
        * ```
        *
        * ---
@@ -956,16 +956,16 @@ declare global {
        * **Response**
        * ```ts
        * type Response = {
-       *  id?: number
-       *  username?: string
-       *  firstName?: string
-       *  lastName?: string
-       *  email?: string
-       *  password?: string
-       *  phone?: string
-       *  // User Status
-       *  userStatus?: number
-       *}
+       *   id?: number
+       *   username?: string
+       *   firstName?: string
+       *   lastName?: string
+       *   email?: string
+       *   password?: string
+       *   phone?: string
+       *   // User Status
+       *   userStatus?: number
+       * }
        * ```
        */
       getUserByName<
@@ -1004,16 +1004,16 @@ declare global {
        * **RequestBody**
        * ```ts
        * type RequestBody = {
-       *  id?: number
-       *  username?: string
-       *  firstName?: string
-       *  lastName?: string
-       *  email?: string
-       *  password?: string
-       *  phone?: string
-       *  // User Status
-       *  userStatus?: number
-       *}
+       *   id?: number
+       *   username?: string
+       *   firstName?: string
+       *   lastName?: string
+       *   email?: string
+       *   password?: string
+       *   phone?: string
+       *   // User Status
+       *   userStatus?: number
+       * }
        * ```
        *
        * ---

@@ -128,3 +128,17 @@ export const getFileNameByPath = (path: string) => {
   const [, name] = /[\/\\]([^\/\\]+)([\/\\])?$/.exec(path) ?? [];
   return name ?? '';
 };
+// 去掉所有为空的undefined值
+export function removeUndefined<T>(obj: T) {
+  const defaultObject = Array.isArray(obj) ? [] : {};
+  if (typeof obj !== 'object' || !obj) {
+    return obj;
+  }
+  return Object.keys(obj).reduce((result, key) => {
+    const value = removeUndefined((obj as any)[key]);
+    if (value !== undefined) {
+      (result as any)[key] = value;
+    }
+    return result;
+  }, defaultObject) as T;
+}
