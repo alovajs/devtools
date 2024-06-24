@@ -42,7 +42,7 @@ export const createApis = (alovaInstance, configMap) =>
  * @typedef {Parameters<typeof import('./index')['alovaInstance']['Get']>[1]} GetConfig
  */
 /**
- * @typedef {Object<string, NonNullable<GetConfig>>} MethodsConfigMap
+ * @typedef {{#raw "{{ " }}{{/raw}}[apiPath in keyof typeof import('./apiDefinitions').default]?: NonNullable<GetConfig>{{#raw " }}" }}{{/raw}} MethodsConfigMap
  */
 /**
  * @template {MethodsConfigMap} Config

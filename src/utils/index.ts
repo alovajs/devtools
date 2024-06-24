@@ -38,6 +38,11 @@ handlebars.registerHelper('or', function (this: any) {
 handlebars.registerHelper('eq', function (a, b) {
   return a === b;
 });
+// 注册自定义助手函数 'raw'
+handlebars.registerHelper('raw', function (text) {
+  // 返回原始字符串，不进行 HTML 转义
+  return new handlebars.SafeString(text);
+});
 /**
  * 读取并渲染 handlebars 文件
  * @param templatePath 模板文件路径
