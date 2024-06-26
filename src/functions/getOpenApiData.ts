@@ -7,7 +7,7 @@ import swagger2openapi from 'swagger2openapi';
 import { fetchData } from '../utils';
 // 判断是否是swagger2.0
 function isSwagger2(data: any): data is OpenAPIV2.Document {
-  return !!data.swagger;
+  return !!data?.swagger;
 }
 // 解析本地openapi文件
 function parseLocalFile(workspaceRootDir: string, filePath: string) {
@@ -71,17 +71,26 @@ export default async function (
   url: string,
   platformType?: PlatformType
 ): Promise<OpenAPIV3_1.Document> {
-  let data: OpenAPIV3_1.Document;
-  if (!/^http(s)?:\/\//.test(url)) {
-    // 本地文件
-    data = parseLocalFile(workspaceRootDir, url);
-  } else {
-    // 远程文件
-    data = await parseRemoteFile(url, platformType);
+  let data: OpenAPIV3_1.Document | null = null;
+  try {
+    if (!/^http(s)?:\/\//.test(url)) {
+      // 本地文件
+      data = parseLocalFile(workspaceRootDir, url);
+    } else {
+      // 远程文件
+      data = await parseRemoteFile(url, platformType);
+    }
+    // 如果是swagger2的文件
+    if (isSwagger2(data)) {
+      data = (await swagger2openapi.convertObj(data, {})).openapi as OpenAPIV3_1.Document;
+    }
+  } catch (error) {
+    throw Error(`Cannot read file from ${url}`);
   }
-  // 如果是swagger2的文件
-  if (isSwagger2(data)) {
-    data = (await swagger2openapi.convertObj(data, {})).openapi as OpenAPIV3_1.Document;
+  console.log(data, 90);
+
+  if (!data) {
+    throw Error(`Cannot read file from ${url}`);
   }
   return data;
 }

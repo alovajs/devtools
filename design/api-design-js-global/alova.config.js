@@ -15,7 +15,7 @@ module.exports = {
       // 支持openapi的平台，目前先支持swagger、knife4j、yapi，默认为空
       // 当指定了此参数后，input字段只需要指定文档的地址而不需要指定到openapi文件，减小使用门槛
       // 不同平台，它的openapi文件地址不一样，根据平台标识去对应地址下读取文件即可。
-      platform: 'swagger',
+      platform: 'swagger23',
 
       // 接口文件和类型文件的输出路径，多个generator不能重复的地址，否则生成的代码会相互覆盖，无意义
       output: 'src/api',
@@ -60,14 +60,14 @@ module.exports = {
         return apiDescriptor;
       }
     }
-  ]
+  ],
 
   // 是否自动更新接口，默认开启，每5分钟检查一次，false时关闭
   // autoUpdate: true
-  // autoUpdate: {
-  //   // 编辑器开启时更新，默认false
-  //   launchEditor: true,
-  //   // 自动更新间隔，单位毫秒
-  //   interval: 10 * 1000
-  // }
+  autoUpdate: {
+    // 编辑器开启时更新，默认false
+    launchEditor: true,
+    // 自动更新间隔，单位秒
+    interval: 10
+  }
 };

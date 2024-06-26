@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { loading, reset } from '../components/statusBar';
 import generateApi from '../functions/generateApi';
 import readConfig from '../functions/readConfig';
 import { CONFIG_POOL } from '../modules/Configuration';
@@ -23,7 +22,6 @@ export default {
         const templateTypeArr = configuration.getAllTemplateType();
         const openApiData = await configuration.getAllOpenApiData();
         const generatorConfigArr = configuration.config.generator;
-        loading(fileName);
         const result = await Promise.all(
           outputPathArr.map((outputPath, idx) => {
             // 生成api文件
@@ -43,6 +41,5 @@ export default {
     } catch (error: any) {
       vscode.window.showErrorMessage(error.message);
     }
-    reset();
   }
 };

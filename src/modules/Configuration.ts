@@ -1,10 +1,10 @@
+import path from 'node:path';
 import * as vscode from 'vscode';
 import generateApi from '../commands/generateApi';
-import getOpenApiData from '../functions/getOpenApiData';
 import getAutoTemplateType from '../functions/getAutoTemplateType';
-import { highPrecisionInterval } from '../utils';
+import getOpenApiData from '../functions/getOpenApiData';
 import { readAlovaJson, TEMPLATE_DATA } from '../modules/TemplateFile';
-import path from 'node:path';
+import { highPrecisionInterval } from '../utils';
 export const CONFIG_POOL: Array<Configuration> = [];
 export class Configuration {
   config: AlovaConfig;
@@ -16,6 +16,27 @@ export class Configuration {
     //配置文件
     this.config = config;
     this.workspaceRootDir = workspaceRootDir;
+  }
+  // 检测配置文件
+  checkConfig() {
+    if (!this.config.generator?.length) {
+      throw new Error('No items found in the `config.generator`');
+    }
+    this.config.generator.forEach(item => {
+      if (!item.input) {
+        throw new Error('Field input is required in `config.generator`');
+      }
+      if (!item.output) {
+        throw new Error('Field output is required in `config.generator`');
+      }
+    });
+    if (typeof this.config.autoUpdate === 'object') {
+      const { interval } = this.config.autoUpdate;
+      if (isNaN(Number(interval))) {
+        this.closeAutoUpdate();
+        throw new Error('autoUpdate.interval must be a number');
+      }
+    }
   }
   getTemplateType(generator: GeneratorConfig): TemplateType {
     let type: TemplateType;
@@ -57,11 +78,15 @@ export class Configuration {
   }
   private getAutoUpdateConfig() {
     const autoUpdateConfig = this.config.autoUpdate;
-    let time = 1000 * 60 * 5;
+    let time = 60 * 5; // 默认五分钟
     let immediate = false;
     if (typeof autoUpdateConfig === 'object') {
-      time = autoUpdateConfig.interval;
+      time = Number(autoUpdateConfig.interval);
       immediate = !!autoUpdateConfig.launchEditor;
+    }
+    if (isNaN(time)) {
+      this.closeAutoUpdate();
+      throw Error('autoUpdate.interval must be a number');
     }
     return {
       time,
@@ -79,7 +104,7 @@ export class Configuration {
         vscode.commands.executeCommand(generateApi.commandId);
         this.shouldUpdate = true;
       },
-      time,
+      time * 1000,
       immediate
     );
     return this.autoUpdateControl;
