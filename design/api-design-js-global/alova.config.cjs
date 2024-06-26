@@ -41,15 +41,22 @@ module.exports = {
         // if (!apiDescriptor.url.startsWith('/generate')) {
         //   return;
         // }
-
-        apiDescriptor.parameters = apiDescriptor.parameters.filter(param => param.in === 'path');
-        if (apiDescriptor?.requestData?.properties) {
-          delete apiDescriptor.requestData.properties.type;
-        }
+        // apiDescriptor.parameters = apiDescriptor.parameters.filter(param => param.in === 'path');
+        // if (apiDescriptor?.requestData?.properties) {
+        //   delete apiDescriptor.requestData.properties.type;
+        // }
+        // apiDescriptor.responses.properties['test'] = {
+        //   type: 'string'
+        // };
         // apiDescriptor.url = apiDescriptor.url.replace('/generate', 'xxx1');
-        apiDescriptor.response.properties['test'] = {
-          type: 'string'
-        };
+        if (apiDescriptor.parameters.length > 0) {
+          apiDescriptor.parameters = apiDescriptor.parameters.slice(-1);
+        }
+        if (apiDescriptor.responses.properties) {
+          apiDescriptor.responses.properties['test'] = {
+            type: 'string'
+          };
+        }
         return apiDescriptor;
       }
     }

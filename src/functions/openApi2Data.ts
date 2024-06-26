@@ -1,5 +1,5 @@
 import { compile, JSONSchema } from 'json-schema-to-typescript';
-import { cloneDeep } from 'lodash';
+import { cloneDeep, isArray, isEqualWith, isObject, mergeWith, sortBy } from 'lodash';
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
 import { format, removeUndefined } from '../utils';
 type Path = {
@@ -232,7 +232,11 @@ export async function convertToType(
  * @param refMap 缓存查找数据
  * @returns 查找到的SchemaObject
  */
-const findBy$ref = <T = OpenAPIV3_1.SchemaObject>(path: string, openApi: OpenAPIV3_1.Document) => {
+const findBy$ref = <T = OpenAPIV3_1.SchemaObject>(
+  path: string,
+  openApi: OpenAPIV3_1.Document,
+  isDeep: boolean = false
+) => {
   const pathArr = path.split('/');
   let find: any = {
     '#': openApi
@@ -242,12 +246,31 @@ const findBy$ref = <T = OpenAPIV3_1.SchemaObject>(path: string, openApi: OpenAPI
       find = find[key];
     }
   });
-  return find as T;
+  return (isDeep ? cloneDeep(find) : find) as T;
 };
-
-const get$refName = (path: string) => {
+const setComponentsBy$ref = (path: string, data: any, openApi: OpenAPIV3_1.Document) => {
+  const pathArr = path.split('/');
+  let find: any = {
+    '#': openApi
+  };
+  pathArr.forEach((key, idx) => {
+    if (idx + 1 === pathArr.length) {
+      find[key] = data;
+      return;
+    }
+    if (find[key]) {
+      find = find[key];
+    } else {
+      find = find[key] = {};
+    }
+  });
+};
+const get$refName = (path: string, toUpperCase: boolean = true) => {
   const pathArr = path.split('/');
   const nameArr = pathArr[pathArr.length - 1].split('');
+  if (!toUpperCase) {
+    return nameArr.join('');
+  }
   return (nameArr?.[0]?.toUpperCase?.() ?? '') + nameArr.slice(1).join('');
 };
 const removeSchemas$ref = <T = OpenAPIV3_1.SchemaObject>(schemaOrigin: any, openApi: OpenAPIV3_1.Document) => {
@@ -299,7 +322,7 @@ const remove$ref = async (
   return await convertToType(obj, openApi, { deep: false, commentStyle: 'docment', preText });
 };
 const parseResponse = async (
-  responses: OpenAPIV3_1.ResponsesObject,
+  responses: OpenAPIV3_1.ResponsesObject | undefined,
   openApi: OpenAPIV3_1.Document,
   config: GeneratorConfig,
   schemasMap: Map<string, string>
@@ -421,19 +444,113 @@ const parseParameters = async (
     queryParametersComment
   };
 };
+function isEqualObject(objValue: any, srcValue: any, openApi: OpenAPIV3_1.Document) {
+  function customizer(objValueOrigin: any, otherValueOrigin: any) {
+    let objValue = objValueOrigin;
+    let otherValue = otherValueOrigin;
+    if (isReferenceObject(objValueOrigin)) {
+      objValue = findBy$ref(objValueOrigin.$ref, openApi);
+    }
+    if (isReferenceObject(otherValueOrigin)) {
+      otherValue = findBy$ref(otherValueOrigin.$ref, openApi);
+    }
+    // 忽略数组顺序的影响
+    if (isArray(objValue) && isArray(otherValue)) {
+      const sortObjValue = sortBy(objValue);
+      const sortOtherValue = sortBy(otherValue);
+      const keys = [...new Set([...Object.keys(sortObjValue), ...Object.keys(sortOtherValue)])];
+      return keys.every(key => isEqualWith((sortObjValue as any)[key], (sortOtherValue as any)[key], customizer));
+    }
+    // 如果是对象，递归比较
+    if (isObject(objValue) && isObject(otherValue)) {
+      const keys = [...new Set([...Object.keys(objValue), ...Object.keys(otherValue)])];
+      return keys.every(key => isEqualWith((objValue as any)[key], (otherValue as any)[key], customizer));
+    }
+  }
+  return isEqualWith(objValue, srcValue, customizer);
+}
+export const mergePathObject = (
+  pathObjOrigin: OpenAPIV3_1.OperationObject,
+  pathObj: OpenAPIV3_1.OperationObject,
+  openApi: OpenAPIV3_1.Document
+) => {
+  const map: Array<[string, any]> = [];
+  function getNameVersion(path: string) {
+    const name = get$refName(path, false);
+    const [, nameVersion = 0] = /(\d+)$/.exec(name) ?? [];
+    return Number(nameVersion);
+  }
+  function getOnlyName(path: string) {
+    const name = get$refName(path, false);
+    const [, onlyName] = /(.*?)(\d*)$/.exec(name) ?? [];
+    return onlyName;
+  }
+  function getOnlyPath(path: string) {
+    return path.split('/').slice(0, -1).join('/');
+  }
+  function getNext$refKey(path: string) {
+    const name = getOnlyName(path);
+    const basePath = getOnlyPath(path);
+    let nameVersion = getNameVersion(path);
+    map.forEach(([key]) => {
+      if (getOnlyName(key) === name && getOnlyPath(path) === basePath) {
+        nameVersion = Math.max(nameVersion, getNameVersion(key));
+      }
+    });
+    return `${basePath}/${name}${nameVersion + 1}`;
+  }
+  function customizer(objValue: any, srcValue: any, key: string) {
+    // 如果都是数组，并且srcValue为空数组，则直接返回objValue
+    if (isArray(objValue) && isArray(srcValue) && !srcValue.length) {
+      return srcValue;
+    }
+    // 如果是对象，则递归合并
+    if (isObject(objValue) && isObject(srcValue) && !isReferenceObject(objValue)) {
+      return mergeWith(objValue, srcValue, customizer);
+    }
+    // 处理$ref合并
+    if (isReferenceObject(objValue)) {
+      if (isReferenceObject(srcValue) && objValue.$ref === srcValue.$ref) {
+        return objValue;
+      }
+      if (isEqualObject(objValue, srcValue, openApi)) {
+        return objValue;
+      }
+      const [path] = map.find(([, item]) => isEqualObject(item, srcValue, openApi)) ?? [];
+      if (path) {
+        return cloneDeep({
+          ...objValue,
+          $ref: path
+        });
+      }
+      const nextPath = getNext$refKey(objValue.$ref);
+      const objValue2 = findBy$ref(objValue.$ref, openApi, true);
+      const nextValue = mergeWith(objValue2, srcValue, customizer);
+      map.push([nextPath, nextValue]);
+      setComponentsBy$ref(nextPath, nextValue, openApi);
+      return cloneDeep({
+        ...objValue,
+        $ref: nextPath
+      });
+    }
+    return srcValue;
+  }
+  return mergeWith(pathObjOrigin, pathObj, customizer);
+};
 export const transformPathObj = async (
   url: string,
   method: string,
-  pathObj: OpenAPIV3_1.OperationObject,
+  pathObjOrigin: OpenAPIV3_1.OperationObject,
   openApi: OpenAPIV3_1.Document,
   config: GeneratorConfig
 ) => {
   const handleApi = config.handleApi;
+  const pathObj = cloneDeep(pathObjOrigin);
   if (!handleApi || typeof handleApi !== 'function') {
-    return { ...pathObj, url, method };
+    return { ...pathObjOrigin, url, method };
   }
   const { requestBody, responses, parameters } = pathObj;
-  const apiDescriptor: ApiDescriptor = {
+  let apiDescriptor: ApiDescriptor = {
     ...pathObj,
     requestBody: {},
     responses: {},
@@ -447,33 +564,24 @@ export const transformPathObj = async (
   let requestKey = '';
   let responseKey = '';
   if (parameters) {
-    const apiParameters = parameters;
     apiDescriptor.parameters = [];
-    const parametersArray = isReferenceObject(apiParameters)
-      ? findBy$ref<typeof apiParameters>(apiParameters.$ref, openApi)
-      : apiParameters ?? [];
+    const parametersArray = isReferenceObject(parameters)
+      ? findBy$ref<typeof parameters>(parameters.$ref, openApi, true)
+      : parameters ?? [];
     for (const parameter of parametersArray) {
-      const parameterObject = await removeSchemas$ref<OpenAPIV3.ParameterObject>(parameter, openApi);
-      const schema = (parameterObject.schema ?? {}) as OpenAPIV3_1.SchemaObject;
-      apiDescriptor.parameters.push({
-        ...parameterObject,
-        ...schema,
-        examples: schema.examples,
-        required: schema.required,
-        paramsRequired: parameterObject.required,
-        paramsExamples: parameterObject.examples
-      });
+      const parameterObject = removeSchemas$ref<OpenAPIV3.ParameterObject>(parameter, openApi);
+      apiDescriptor.parameters.push(parameterObject);
     }
   }
   if (requestBody) {
-    requestBodyObject = isReferenceObject(requestBody) ? findBy$ref(requestBody.$ref, openApi) : requestBody;
+    requestBodyObject = isReferenceObject(requestBody) ? findBy$ref(requestBody.$ref, openApi, true) : requestBody;
     requestKey = getContentKey(requestBodyObject.content || {}, config.bodyMediaType);
     const requestBodySchema = requestBodyObject.content?.[requestKey].schema ?? {};
     const requestBodySchemaObj = removeSchemas$ref<OpenAPIV3_1.SchemaObject>(requestBodySchema, openApi);
     apiDescriptor.requestBody = requestBodySchemaObj;
   }
   if (response200) {
-    responseObject = isReferenceObject(response200) ? findBy$ref(response200.$ref, openApi) : response200;
+    responseObject = isReferenceObject(response200) ? findBy$ref(response200.$ref, openApi, true) : response200;
     responseKey = getContentKey(responseObject.content || {}, config.responseMediaType);
     const responseSchema = responseObject.content?.[responseKey].schema ?? {};
     const responseSchemaObj = removeSchemas$ref<OpenAPIV3_1.SchemaObject>(responseSchema, openApi);
@@ -485,8 +593,8 @@ export const transformPathObj = async (
     newApiDescriptor = handleApi(apiDescriptor);
     handleApiDone = true;
   } catch (error) {
+    console.log(error, 591);
     handleApiDone = false;
-    console.log(error);
   }
   if (!handleApiDone) {
     return { ...pathObj, url, method };
@@ -494,7 +602,7 @@ export const transformPathObj = async (
   if (!newApiDescriptor) {
     return null;
   }
-  Object.assign(apiDescriptor, newApiDescriptor);
+  apiDescriptor = cloneDeep(newApiDescriptor);
   if (apiDescriptor.requestBody && requestBody) {
     pathObj.requestBody = requestBodyObject;
     pathObj.requestBody.content[requestKey].schema = apiDescriptor.requestBody;
@@ -503,29 +611,20 @@ export const transformPathObj = async (
     pathObj.responses['200'] = responseObject;
     responseObject.content[responseKey].schema = apiDescriptor.responses;
   }
-  if (apiDescriptor.parameters) {
-    pathObj.parameters = apiDescriptor.parameters.map(parameter => {
-      const { paramsExamples, paramsRequired, ...parameterSchema } = parameter;
-      const pathParamter = {
-        ...parameterSchema,
-        schema: parameterSchema as OpenAPIV3_1.ParameterObject['schema'],
-        required: paramsRequired,
-        examples: paramsExamples
-      };
-      return pathParamter;
-    });
+  if (apiDescriptor.parameters && parameters) {
+    pathObj.parameters = apiDescriptor.parameters;
   }
   delete apiDescriptor.requestBody;
   delete apiDescriptor.responses;
   delete apiDescriptor.parameters;
   Object.assign(pathObj, apiDescriptor);
-  return {
-    ...pathObj,
+  const result = {
+    ...mergePathObject(pathObjOrigin, pathObj, openApi),
     url: apiDescriptor.url,
     method: apiDescriptor.method
   };
+  return result;
 };
-
 export default async function openApi2Data(
   openApi: OpenAPIV3_1.Document,
   config: GeneratorConfig
@@ -540,30 +639,24 @@ export default async function openApi2Data(
     commentText: '',
     schemas: []
   };
-  const schemas = openApi.components?.schemas || [];
   const schemasMap = new Map<string, string>();
-  for (const [schema, schemaInfo] of Object.entries(schemas)) {
-    const tsStr = await jsonSchema2TsStr(schemaInfo, schema, openApi, { export: true });
-    schemasMap.set(schema, tsStr);
-  }
   const paths = openApi.paths || [];
   for (const [url, pathInfo] of Object.entries(paths)) {
     if (!pathInfo) {
       continue;
     }
-    for (const [method, methodInfo] of Object.entries(pathInfo)) {
+    for (const [method, methodInfoOrigin] of Object.entries(pathInfo)) {
       if (!['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace'].includes(method)) {
         continue;
       }
-      if (typeof methodInfo === 'string' || Array.isArray(methodInfo)) {
+      if (typeof methodInfoOrigin === 'string' || Array.isArray(methodInfoOrigin)) {
         continue;
       }
-      const newMethodInfo = await transformPathObj(url, method, methodInfo, openApi, config);
+      const newMethodInfo = await transformPathObj(url, method, methodInfoOrigin, openApi, config);
       if (!newMethodInfo) {
         continue;
       }
-      const { url: path, method: newMethod } = newMethodInfo;
-      Object.assign(methodInfo, newMethodInfo);
+      const { url: path, method: newMethod, ...methodInfo } = newMethodInfo;
       const methodFormat = newMethod.toUpperCase();
       const allPromise = methodInfo.tags?.map(async tag => {
         const pathKey = `${tag}.${methodInfo.operationId}`;
@@ -618,6 +711,11 @@ export default async function openApi2Data(
     }
   }
   templateData.baseUrl = openApi.servers?.[0]?.url || '';
+  const schemas = openApi.components?.schemas || [];
+  for (const [schema, schemaInfo] of Object.entries(schemas)) {
+    const tsStr = await jsonSchema2TsStr(schemaInfo, schema, openApi, { export: true });
+    schemasMap.set(schema, tsStr);
+  }
   templateData.schemas = [...new Set(schemasMap.values())];
   return removeUndefined(templateData);
 }

@@ -55,8 +55,6 @@ export default (text: string): AutoCompleteItem[] => {
     .map(output => {
       const apiPath = path.join(config.workspaceRootDir, output);
       const templateData = TEMPLATE_DATA.get(apiPath);
-      console.log(templateData, apiPath, 67);
-
       if (!templateData) {
         return [];
       }

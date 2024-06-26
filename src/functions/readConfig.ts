@@ -47,7 +47,7 @@ export default async (isAutoUpdate: boolean = true) => {
   // 读取所有已存在配置的缓存文件
   await Promise.all(CONFIG_POOL.map(config => config.readAlovaJson()));
   for (const workspaceFolder of workspaceFolders) {
-    const workspaceRootPath = workspaceFolder.uri.fsPath + '\\';
+    const workspaceRootPath = workspaceFolder.uri.fsPath + '/';
     const alovaConfig = readConfig(workspaceRootPath);
     // 过滤掉没有配置文件
     if (!alovaConfig) {

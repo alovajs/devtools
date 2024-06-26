@@ -58,6 +58,83 @@ type Alova2Method<
     : never;
 
 /**
+ * a Pet
+ * ---
+ * A pet for sale in the pet store
+ */
+export interface Pet1 {
+  id?: number;
+  category?: Category;
+  name: string;
+  photoUrls: string[];
+  tags?: Tag[];
+  /**
+   * @deprecated
+   * pet status in the store
+   */
+  status?: 'available' | 'pending' | 'sold';
+  test?: string;
+}
+
+/**
+ * Pet category
+ * ---
+ * A category for a pet
+ */
+export interface Category {
+  id?: number;
+  name?: string;
+}
+
+/**
+ * a Pet
+ * ---
+ * A pet for sale in the pet store
+ */
+export interface Pet {
+  id?: number;
+  category?: Category;
+  name: string;
+  photoUrls: string[];
+  tags?: Tag[];
+  /**
+   * @deprecated
+   * pet status in the store
+   */
+  status?: 'available' | 'pending' | 'sold';
+}
+
+/**
+ * An uploaded response
+ * ---
+ * Describes the result of uploading an image resource
+ */
+export interface ApiResponse1 {
+  code?: number;
+  type?: string;
+  message?: string;
+  test?: string;
+}
+
+/**
+ * Pet Order
+ * ---
+ * An order for a pets from the pet store
+ */
+export interface Order1 {
+  id?: number;
+  petId?: number;
+  quantity?: number;
+  shipDate?: string;
+  /**
+   * Order Status
+   */
+  status?: 'placed' | 'approved' | 'delivered';
+  complete?: boolean;
+  test?: string;
+}
+
+/**
  * Pet Order
  * ---
  * An order for a pets from the pet store
@@ -72,16 +149,6 @@ export interface Order {
    */
   status?: 'placed' | 'approved' | 'delivered';
   complete?: boolean;
-}
-
-/**
- * Pet category
- * ---
- * A category for a pet
- */
-export interface Category {
-  id?: number;
-  name?: string;
 }
 
 /**
@@ -104,6 +171,26 @@ export interface User {
 }
 
 /**
+ * a User
+ * ---
+ * A User who is purchasing from the pet store
+ */
+export interface User1 {
+  id?: number;
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  password?: string;
+  phone?: string;
+  /**
+   * User Status
+   */
+  userStatus?: number;
+  test?: string;
+}
+
+/**
  * Pet Tag
  * ---
  * A tag for a pet
@@ -111,24 +198,6 @@ export interface User {
 export interface Tag {
   id?: number;
   name?: string;
-}
-
-/**
- * a Pet
- * ---
- * A pet for sale in the pet store
- */
-export interface Pet {
-  id?: number;
-  category?: Category;
-  name: string;
-  photoUrls: string[];
-  tags?: Tag[];
-  /**
-   * @deprecated
-   * pet status in the store
-   */
-  status?: 'available' | 'pending' | 'sold';
 }
 
 /**
@@ -157,24 +226,24 @@ declare global {
        * **RequestBody**
        * ```ts
        * type RequestBody = {
-       *  id?: number
-       *  // A category for a pet
-       *  category?: {
-       *    id?: number
-       *    name?: string
-       *  }
-       *  // [required]
-       *  name: string
-       *  // [required]
-       *  photoUrls: string[]
-       *  tags?: Array<{
-       *    id?: number
-       *    name?: string
-       *  }>
-       *  // pet status in the store
-       *  // [deprecated]
-       *  status?: 'available' | 'pending' | 'sold'
-       *}
+       *   id?: number
+       *   // A category for a pet
+       *   category?: {
+       *     id?: number
+       *     name?: string
+       *   }
+       *   // [required]
+       *   name: string
+       *   // [required]
+       *   photoUrls: string[]
+       *   tags?: Array<{
+       *     id?: number
+       *     name?: string
+       *   }>
+       *   // pet status in the store
+       *   // [deprecated]
+       *   status?: 'available' | 'pending' | 'sold'
+       * }
        * ```
        *
        * ---
@@ -182,33 +251,34 @@ declare global {
        * **Response**
        * ```ts
        * type Response = {
-       *  id?: number
-       *  // A category for a pet
-       *  category?: {
-       *    id?: number
-       *    name?: string
-       *  }
-       *  // [required]
-       *  name: string
-       *  // [required]
-       *  photoUrls: string[]
-       *  tags?: Array<{
-       *    id?: number
-       *    name?: string
-       *  }>
-       *  // pet status in the store
-       *  // [deprecated]
-       *  status?: 'available' | 'pending' | 'sold'
-       *}
+       *   id?: number
+       *   // A category for a pet
+       *   category?: {
+       *     id?: number
+       *     name?: string
+       *   }
+       *   // [required]
+       *   name: string
+       *   // [required]
+       *   photoUrls: string[]
+       *   tags?: Array<{
+       *     id?: number
+       *     name?: string
+       *   }>
+       *   // pet status in the store
+       *   // [deprecated]
+       *   status?: 'available' | 'pending' | 'sold'
+       *   test?: string
+       * }
        * ```
        */
       增加pet2<
-        Config extends Alova2MethodConfig<Pet> & {
+        Config extends Omit<Alova2MethodConfig<Pet1>, 'params'> & {
           data: Pet;
         }
       >(
         config: Config
-      ): Alova2Method<Pet, 'tag.增加pet2', Config>;
+      ): Alova2Method<Pet1, 'tag.增加pet2', Config>;
     };
     pet: {
       /**
@@ -223,24 +293,24 @@ declare global {
        * **RequestBody**
        * ```ts
        * type RequestBody = {
-       *  id?: number
-       *  // A category for a pet
-       *  category?: {
-       *    id?: number
-       *    name?: string
-       *  }
-       *  // [required]
-       *  name: string
-       *  // [required]
-       *  photoUrls: string[]
-       *  tags?: Array<{
-       *    id?: number
-       *    name?: string
-       *  }>
-       *  // pet status in the store
-       *  // [deprecated]
-       *  status?: 'available' | 'pending' | 'sold'
-       *}
+       *   id?: number
+       *   // A category for a pet
+       *   category?: {
+       *     id?: number
+       *     name?: string
+       *   }
+       *   // [required]
+       *   name: string
+       *   // [required]
+       *   photoUrls: string[]
+       *   tags?: Array<{
+       *     id?: number
+       *     name?: string
+       *   }>
+       *   // pet status in the store
+       *   // [deprecated]
+       *   status?: 'available' | 'pending' | 'sold'
+       * }
        * ```
        *
        * ---
@@ -248,33 +318,34 @@ declare global {
        * **Response**
        * ```ts
        * type Response = {
-       *  id?: number
-       *  // A category for a pet
-       *  category?: {
-       *    id?: number
-       *    name?: string
-       *  }
-       *  // [required]
-       *  name: string
-       *  // [required]
-       *  photoUrls: string[]
-       *  tags?: Array<{
-       *    id?: number
-       *    name?: string
-       *  }>
-       *  // pet status in the store
-       *  // [deprecated]
-       *  status?: 'available' | 'pending' | 'sold'
-       *}
+       *   id?: number
+       *   // A category for a pet
+       *   category?: {
+       *     id?: number
+       *     name?: string
+       *   }
+       *   // [required]
+       *   name: string
+       *   // [required]
+       *   photoUrls: string[]
+       *   tags?: Array<{
+       *     id?: number
+       *     name?: string
+       *   }>
+       *   // pet status in the store
+       *   // [deprecated]
+       *   status?: 'available' | 'pending' | 'sold'
+       *   test?: string
+       * }
        * ```
        */
       updatePet<
-        Config extends Alova2MethodConfig<Pet> & {
+        Config extends Omit<Alova2MethodConfig<Pet1>, 'params'> & {
           data: Pet;
         }
       >(
         config: Config
-      ): Alova2Method<Pet, 'pet.updatePet', Config>;
+      ): Alova2Method<Pet1, 'pet.updatePet', Config>;
       /**
        * ---
        *
@@ -299,28 +370,28 @@ declare global {
        * **Response**
        * ```ts
        * type Response = Array<{
-       *  id?: number
-       *  // A category for a pet
-       *  category?: {
-       *    id?: number
-       *    name?: string
-       *  }
-       *  // [required]
-       *  name: string
-       *  // [required]
-       *  photoUrls: string[]
-       *  tags?: Array<{
-       *    id?: number
-       *    name?: string
-       *  }>
-       *  // pet status in the store
-       *  // [deprecated]
-       *  status?: 'available' | 'pending' | 'sold'
-       *}>
+       *   id?: number
+       *   // A category for a pet
+       *   category?: {
+       *     id?: number
+       *     name?: string
+       *   }
+       *   // [required]
+       *   name: string
+       *   // [required]
+       *   photoUrls: string[]
+       *   tags?: Array<{
+       *     id?: number
+       *     name?: string
+       *   }>
+       *   // pet status in the store
+       *   // [deprecated]
+       *   status?: 'available' | 'pending' | 'sold'
+       * }>
        * ```
        */
       findPetsByStatus<
-        Config extends Alova2MethodConfig<Pet[]> & {
+        Config extends Omit<Alova2MethodConfig<Pet[]>, 'params'> & {
           params: {
             /**
              * Status values that need to be considered for filter
@@ -356,28 +427,28 @@ declare global {
        * **Response**
        * ```ts
        * type Response = Array<{
-       *  id?: number
-       *  // A category for a pet
-       *  category?: {
-       *    id?: number
-       *    name?: string
-       *  }
-       *  // [required]
-       *  name: string
-       *  // [required]
-       *  photoUrls: string[]
-       *  tags?: Array<{
-       *    id?: number
-       *    name?: string
-       *  }>
-       *  // pet status in the store
-       *  // [deprecated]
-       *  status?: 'available' | 'pending' | 'sold'
-       *}>
+       *   id?: number
+       *   // A category for a pet
+       *   category?: {
+       *     id?: number
+       *     name?: string
+       *   }
+       *   // [required]
+       *   name: string
+       *   // [required]
+       *   photoUrls: string[]
+       *   tags?: Array<{
+       *     id?: number
+       *     name?: string
+       *   }>
+       *   // pet status in the store
+       *   // [deprecated]
+       *   status?: 'available' | 'pending' | 'sold'
+       * }>
        * ```
        */
       findPetsByTags<
-        Config extends Alova2MethodConfig<Pet[]> & {
+        Config extends Omit<Alova2MethodConfig<Pet[]>, 'params'> & {
           params: {
             /**
              * Tags to filter by
@@ -412,57 +483,29 @@ declare global {
        * **Response**
        * ```ts
        * type Response = {
-       *  id?: number
-       *  // A category for a pet
-       *  category?: {
-       *    id?: number
-       *    name?: string
-       *  }
-       *  // [required]
-       *  name: string
-       *  // [required]
-       *  photoUrls: string[]
-       *  tags?: Array<{
-       *    id?: number
-       *    name?: string
-       *  }>
-       *  // pet status in the store
-       *  // [deprecated]
-       *  status?: 'available' | 'pending' | 'sold'
-       *  test?: string
-       *}
+       *   id?: number
+       *   // A category for a pet
+       *   category?: {
+       *     id?: number
+       *     name?: string
+       *   }
+       *   // [required]
+       *   name: string
+       *   // [required]
+       *   photoUrls: string[]
+       *   tags?: Array<{
+       *     id?: number
+       *     name?: string
+       *   }>
+       *   // pet status in the store
+       *   // [deprecated]
+       *   status?: 'available' | 'pending' | 'sold'
+       *   test?: string
+       * }
        * ```
        */
       getPetById<
-        Config extends Alova2MethodConfig<{
-          id?: number;
-          /**
-           * A category for a pet
-           */
-          category?: {
-            id?: number;
-            name?: string;
-          };
-          /**
-           * [required]
-           */
-          name: string;
-          /**
-           * [required]
-           */
-          photoUrls: string[];
-          tags?: Array<{
-            id?: number;
-            name?: string;
-            type?: unknown;
-          }>;
-          /**
-           * pet status in the store
-           * [deprecated]
-           */
-          status?: 'available' | 'pending' | 'sold';
-          test?: string;
-        }> & {
+        Config extends Omit<Alova2MethodConfig<Pet1>, 'params'> & {
           pathParams: {
             /**
              * ID of pet to return
@@ -473,39 +516,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<
-        {
-          id?: number;
-          /**
-           * A category for a pet
-           */
-          category?: {
-            id?: number;
-            name?: string;
-          };
-          /**
-           * [required]
-           */
-          name: string;
-          /**
-           * [required]
-           */
-          photoUrls: string[];
-          tags?: Array<{
-            id?: number;
-            name?: string;
-            type?: unknown;
-          }>;
-          /**
-           * pet status in the store
-           * [deprecated]
-           */
-          status?: 'available' | 'pending' | 'sold';
-          test?: string;
-        },
-        'pet.getPetById',
-        Config
-      >;
+      ): Alova2Method<Pet1, 'pet.getPetById', Config>;
       /**
        * ---
        *
@@ -529,11 +540,11 @@ declare global {
        * **RequestBody**
        * ```ts
        * type RequestBody = {
-       *  // Updated name of the pet
-       *  name?: string
-       *  // Updated status of the pet
-       *  status?: string
-       *}
+       *   // Updated name of the pet
+       *   name?: string
+       *   // Updated status of the pet
+       *   status?: string
+       * }
        * ```
        *
        * ---
@@ -544,7 +555,7 @@ declare global {
        * ```
        */
       updatePetWithForm<
-        Config extends Alova2MethodConfig<unknown> & {
+        Config extends Omit<Alova2MethodConfig<unknown>, 'params'> & {
           pathParams: {
             /**
              * ID of pet that needs to be updated
@@ -592,7 +603,7 @@ declare global {
        * ```
        */
       deletePet<
-        Config extends Alova2MethodConfig<unknown> & {
+        Config extends Omit<Alova2MethodConfig<unknown>, 'params'> & {
           pathParams: {
             /**
              * Pet id to delete
@@ -627,11 +638,11 @@ declare global {
        * **RequestBody**
        * ```ts
        * type RequestBody = {
-       *  // Additional data to pass to server
-       *  additionalMetadata?: string
-       *  // file to upload
-       *  file?: string
-       *}
+       *   // Additional data to pass to server
+       *   additionalMetadata?: string
+       *   // file to upload
+       *   file?: string
+       * }
        * ```
        *
        * ---
@@ -639,20 +650,15 @@ declare global {
        * **Response**
        * ```ts
        * type Response = {
-       *  code?: number
-       *  type?: string
-       *  message?: string
-       *  test?: string
-       *}
+       *   code?: number
+       *   type?: string
+       *   message?: string
+       *   test?: string
+       * }
        * ```
        */
       uploadFile<
-        Config extends Alova2MethodConfig<{
-          code?: number;
-          type?: string;
-          message?: string;
-          test?: string;
-        }> & {
+        Config extends Omit<Alova2MethodConfig<ApiResponse1>, 'params'> & {
           pathParams: {
             /**
              * ID of pet to update
@@ -673,16 +679,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<
-        {
-          code?: number;
-          type?: string;
-          message?: string;
-          test?: string;
-        },
-        'pet.uploadFile',
-        Config
-      >;
+      ): Alova2Method<ApiResponse1, 'pet.uploadFile', Config>;
     };
     store: {
       /**
@@ -699,7 +696,7 @@ declare global {
        * type Response = object
        * ```
        */
-      getInventory<Config extends Alova2MethodConfig<object>>(
+      getInventory<Config extends Omit<Alova2MethodConfig<object>, 'params'>>(
         config?: Config
       ): Alova2Method<object, 'store.getInventory', Config>;
       /**
@@ -714,14 +711,14 @@ declare global {
        * **RequestBody**
        * ```ts
        * type RequestBody = {
-       *  id?: number
-       *  petId?: number
-       *  quantity?: number
-       *  shipDate?: string
-       *  // Order Status
-       *  status?: 'placed' | 'approved' | 'delivered'
-       *  complete?: boolean
-       *}
+       *   id?: number
+       *   petId?: number
+       *   quantity?: number
+       *   shipDate?: string
+       *   // Order Status
+       *   status?: 'placed' | 'approved' | 'delivered'
+       *   complete?: boolean
+       * }
        * ```
        *
        * ---
@@ -729,23 +726,24 @@ declare global {
        * **Response**
        * ```ts
        * type Response = {
-       *  id?: number
-       *  petId?: number
-       *  quantity?: number
-       *  shipDate?: string
-       *  // Order Status
-       *  status?: 'placed' | 'approved' | 'delivered'
-       *  complete?: boolean
-       *}
+       *   id?: number
+       *   petId?: number
+       *   quantity?: number
+       *   shipDate?: string
+       *   // Order Status
+       *   status?: 'placed' | 'approved' | 'delivered'
+       *   complete?: boolean
+       *   test?: string
+       * }
        * ```
        */
       placeOrder<
-        Config extends Alova2MethodConfig<Order> & {
+        Config extends Omit<Alova2MethodConfig<Order1>, 'params'> & {
           data: Order;
         }
       >(
         config: Config
-      ): Alova2Method<Order, 'store.placeOrder', Config>;
+      ): Alova2Method<Order1, 'store.placeOrder', Config>;
       /**
        * ---
        *
@@ -769,30 +767,19 @@ declare global {
        * **Response**
        * ```ts
        * type Response = {
-       *  id?: number
-       *  petId?: number
-       *  quantity?: number
-       *  shipDate?: string
-       *  // Order Status
-       *  status?: 'placed' | 'approved' | 'delivered'
-       *  complete?: boolean
-       *  test?: string
-       *}
+       *   id?: number
+       *   petId?: number
+       *   quantity?: number
+       *   shipDate?: string
+       *   // Order Status
+       *   status?: 'placed' | 'approved' | 'delivered'
+       *   complete?: boolean
+       *   test?: string
+       * }
        * ```
        */
       getOrderById<
-        Config extends Alova2MethodConfig<{
-          id?: number;
-          petId?: number;
-          quantity?: number;
-          shipDate?: string;
-          /**
-           * Order Status
-           */
-          status?: 'placed' | 'approved' | 'delivered';
-          complete?: boolean;
-          test?: string;
-        }> & {
+        Config extends Omit<Alova2MethodConfig<Order1>, 'params'> & {
           pathParams: {
             /**
              * ID of pet that needs to be fetched
@@ -803,22 +790,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<
-        {
-          id?: number;
-          petId?: number;
-          quantity?: number;
-          shipDate?: string;
-          /**
-           * Order Status
-           */
-          status?: 'placed' | 'approved' | 'delivered';
-          complete?: boolean;
-          test?: string;
-        },
-        'store.getOrderById',
-        Config
-      >;
+      ): Alova2Method<Order1, 'store.getOrderById', Config>;
       /**
        * ---
        *
@@ -845,7 +817,7 @@ declare global {
        * ```
        */
       deleteOrder<
-        Config extends Alova2MethodConfig<unknown> & {
+        Config extends Omit<Alova2MethodConfig<unknown>, 'params'> & {
           pathParams: {
             /**
              * ID of the order that needs to be deleted
@@ -871,16 +843,16 @@ declare global {
        * **RequestBody**
        * ```ts
        * type RequestBody = {
-       *  id?: number
-       *  username?: string
-       *  firstName?: string
-       *  lastName?: string
-       *  email?: string
-       *  password?: string
-       *  phone?: string
-       *  // User Status
-       *  userStatus?: number
-       *}
+       *   id?: number
+       *   username?: string
+       *   firstName?: string
+       *   lastName?: string
+       *   email?: string
+       *   password?: string
+       *   phone?: string
+       *   // User Status
+       *   userStatus?: number
+       * }
        * ```
        *
        * ---
@@ -891,7 +863,7 @@ declare global {
        * ```
        */
       createUser<
-        Config extends Alova2MethodConfig<unknown> & {
+        Config extends Omit<Alova2MethodConfig<unknown>, 'params'> & {
           data: User;
         }
       >(
@@ -909,16 +881,16 @@ declare global {
        * **RequestBody**
        * ```ts
        * type RequestBody = Array<{
-       *  id?: number
-       *  username?: string
-       *  firstName?: string
-       *  lastName?: string
-       *  email?: string
-       *  password?: string
-       *  phone?: string
-       *  // User Status
-       *  userStatus?: number
-       *}>
+       *   id?: number
+       *   username?: string
+       *   firstName?: string
+       *   lastName?: string
+       *   email?: string
+       *   password?: string
+       *   phone?: string
+       *   // User Status
+       *   userStatus?: number
+       * }>
        * ```
        *
        * ---
@@ -929,7 +901,7 @@ declare global {
        * ```
        */
       createUsersWithArrayInput<
-        Config extends Alova2MethodConfig<unknown> & {
+        Config extends Omit<Alova2MethodConfig<unknown>, 'params'> & {
           data: User[];
         }
       >(
@@ -947,16 +919,16 @@ declare global {
        * **RequestBody**
        * ```ts
        * type RequestBody = Array<{
-       *  id?: number
-       *  username?: string
-       *  firstName?: string
-       *  lastName?: string
-       *  email?: string
-       *  password?: string
-       *  phone?: string
-       *  // User Status
-       *  userStatus?: number
-       *}>
+       *   id?: number
+       *   username?: string
+       *   firstName?: string
+       *   lastName?: string
+       *   email?: string
+       *   password?: string
+       *   phone?: string
+       *   // User Status
+       *   userStatus?: number
+       * }>
        * ```
        *
        * ---
@@ -967,7 +939,7 @@ declare global {
        * ```
        */
       createUsersWithListInput<
-        Config extends Alova2MethodConfig<unknown> & {
+        Config extends Omit<Alova2MethodConfig<unknown>, 'params'> & {
           data: User[];
         }
       >(
@@ -985,9 +957,6 @@ declare global {
        * **Query Parameters**
        * ```ts
        * type QueryParameters = {
-       *   // The user name for login
-       *   // [required]
-       *   username: string
        *   // The password for login in clear text
        *   // [required]
        *   password: string
@@ -1002,13 +971,8 @@ declare global {
        * ```
        */
       loginUser<
-        Config extends Alova2MethodConfig<string> & {
+        Config extends Omit<Alova2MethodConfig<string>, 'params'> & {
           params: {
-            /**
-             * The user name for login
-             * [required]
-             */
-            username: string;
             /**
              * The password for login in clear text
              * [required]
@@ -1033,7 +997,7 @@ declare global {
        * type Response = unknown
        * ```
        */
-      logoutUser<Config extends Alova2MethodConfig<unknown>>(
+      logoutUser<Config extends Omit<Alova2MethodConfig<unknown>, 'params'>>(
         config?: Config
       ): Alova2Method<unknown, 'user.logoutUser', Config>;
       /**
@@ -1059,34 +1023,21 @@ declare global {
        * **Response**
        * ```ts
        * type Response = {
-       *  id?: number
-       *  username?: string
-       *  firstName?: string
-       *  lastName?: string
-       *  email?: string
-       *  password?: string
-       *  phone?: string
-       *  // User Status
-       *  userStatus?: number
-       *  test?: string
-       *}
+       *   id?: number
+       *   username?: string
+       *   firstName?: string
+       *   lastName?: string
+       *   email?: string
+       *   password?: string
+       *   phone?: string
+       *   // User Status
+       *   userStatus?: number
+       *   test?: string
+       * }
        * ```
        */
       getUserByName<
-        Config extends Alova2MethodConfig<{
-          id?: number;
-          username?: string;
-          firstName?: string;
-          lastName?: string;
-          email?: string;
-          password?: string;
-          phone?: string;
-          /**
-           * User Status
-           */
-          userStatus?: number;
-          test?: string;
-        }> & {
+        Config extends Omit<Alova2MethodConfig<User1>, 'params'> & {
           pathParams: {
             /**
              * The name that needs to be fetched. Use user1 for testing.
@@ -1097,24 +1048,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<
-        {
-          id?: number;
-          username?: string;
-          firstName?: string;
-          lastName?: string;
-          email?: string;
-          password?: string;
-          phone?: string;
-          /**
-           * User Status
-           */
-          userStatus?: number;
-          test?: string;
-        },
-        'user.getUserByName',
-        Config
-      >;
+      ): Alova2Method<User1, 'user.getUserByName', Config>;
       /**
        * ---
        *
@@ -1138,16 +1072,16 @@ declare global {
        * **RequestBody**
        * ```ts
        * type RequestBody = {
-       *  id?: number
-       *  username?: string
-       *  firstName?: string
-       *  lastName?: string
-       *  email?: string
-       *  password?: string
-       *  phone?: string
-       *  // User Status
-       *  userStatus?: number
-       *}
+       *   id?: number
+       *   username?: string
+       *   firstName?: string
+       *   lastName?: string
+       *   email?: string
+       *   password?: string
+       *   phone?: string
+       *   // User Status
+       *   userStatus?: number
+       * }
        * ```
        *
        * ---
@@ -1158,7 +1092,7 @@ declare global {
        * ```
        */
       updateUser<
-        Config extends Alova2MethodConfig<unknown> & {
+        Config extends Omit<Alova2MethodConfig<unknown>, 'params'> & {
           pathParams: {
             /**
              * name that need to be deleted
@@ -1197,7 +1131,7 @@ declare global {
        * ```
        */
       deleteUser<
-        Config extends Alova2MethodConfig<unknown> & {
+        Config extends Omit<Alova2MethodConfig<unknown>, 'params'> & {
           pathParams: {
             /**
              * The name that needs to be deleted

@@ -1,10 +1,10 @@
 import YAML from 'js-yaml';
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
+import path from 'node:path';
+import { OpenAPIV2, OpenAPIV3_1 } from 'openapi-types';
 import swagger2openapi from 'swagger2openapi';
 import { fetchData } from '../utils';
-import path from 'node:path';
-import { OpenAPIV3_1, OpenAPIV2 } from 'openapi-types';
 // 判断是否是swagger2.0
 function isSwagger2(data: any): data is OpenAPIV2.Document {
   return !!data.swagger;
@@ -57,8 +57,6 @@ export async function getPlatformOpenApiData(url: string, platformType: Platform
     case 'swagger': {
       const dataText =
         (await fetchData(url + '/openapi.json').catch(error => {
-          console.log(error, url, 60);
-
           return fetchData(url + '/v2/swagger.json');
         })) ?? '';
       return JSON.parse(dataText);

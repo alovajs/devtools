@@ -15,12 +15,12 @@
  *
  * **Do not edit the file manually.**
  */
-/**
- * @typedef {'clients.generateFromURL' | 'servers.generateFromURL' | 'documentation.generateFromURL' | 'config.generateFromURL' | 'clients.generate' | 'servers.generate' | 'documentation.generate' | 'config.generate' | 'clients.clientLanguages' | 'documentation.clientLanguages' | 'servers.serverLanguages' | 'documentation.documentationLanguages' | 'clients.languages' | 'servers.languages' | 'documentation.languages' | 'config.languages' | 'clients.languagesMulti' | 'servers.languagesMulti' | 'documentation.languagesMulti' | 'config.languagesMulti' | 'clients.listOptions' | 'servers.listOptions' | 'documentation.listOptions' | 'config.listOptions' | 'clients.generateBundle' | 'servers.generateBundle' | 'documentation.generateBundle' | 'config.generateBundle' | 'documentation.renderTemplate'} ApiEndpointKey
- */
-/**
- * @type {Record<ApiEndpointKey, [string,string]>}
- */
+// /**
+//  * @typedef {'clients.generateFromURL' | 'servers.generateFromURL' | 'documentation.generateFromURL' | 'config.generateFromURL' | 'clients.generate' | 'servers.generate' | 'documentation.generate' | 'config.generate' | 'clients.clientLanguages' | 'documentation.clientLanguages' | 'servers.serverLanguages' | 'documentation.documentationLanguages' | 'clients.languages' | 'servers.languages' | 'documentation.languages' | 'config.languages' | 'clients.languagesMulti' | 'servers.languagesMulti' | 'documentation.languagesMulti' | 'config.languagesMulti' | 'clients.listOptions' | 'servers.listOptions' | 'documentation.listOptions' | 'config.listOptions' | 'clients.generateBundle' | 'servers.generateBundle' | 'documentation.generateBundle' | 'config.generateBundle' | 'documentation.renderTemplate'} ApiEndpointKey
+//  */
+// /**
+//  * @type {Record<ApiEndpointKey, [string,string]>}
+//  */
 module.exports = {
   'clients.generateFromURL': ['GET', '/generate'],
   'servers.generateFromURL': ['GET', '/generate'],

@@ -11,13 +11,7 @@ declare type OperationObject = import('openapi-types').OpenAPIV3_1.OperationObje
 declare type ApiDescriptor = Omit<OperationObject, 'requestBody' | 'parameters' | 'responses'> & {
   url: string;
   method: string;
-  parameters?: Array<
-    Omit<Parameter, 'schema' | 'required' | 'examples'> &
-      SchemaObject & {
-        paramsRequired?: boolean;
-        paramsExamples: Parameter['examples'];
-      }
-  >;
+  parameters?: Parameter[];
   requestBody?: SchemaObject;
   responses?: SchemaObject;
 };
