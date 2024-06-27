@@ -4,6 +4,9 @@ import { TemplateData } from '../functions/openApi2Data';
 import { format, generateFile, readAndRenderTemplate } from '../utils';
 import { srcPath } from '../utils/path';
 export const TEMPLATE_DATA = new Map<string, TemplateData>();
+export const getAlovaJsonPath = (workspaceRootDir: string, outputPath: string) => {
+  return path.join(workspaceRootDir, 'node_modules/.alova/', outputPath);
+};
 export class TemplateFile {
   fileName: string;
   type: TemplateType;
@@ -23,6 +26,15 @@ export class TemplateFile {
         return '.js';
     }
   }
+  static getModuleType(type: TemplateType) {
+    switch (type) {
+      case 'typescript':
+      case 'module':
+        return 'ESModule';
+      default:
+        return 'commonJs';
+    }
+  }
   async outputFile(
     data: Record<string, any>,
     fileName: string,
@@ -40,7 +52,7 @@ export class TemplateFile {
   }
 }
 
-export const writeAlovaJson = async (data: TemplateData, originPath: string, name = 'alova.json') => {
+export const writeAlovaJson = async (data: TemplateData, originPath: string, name = 'api.json') => {
   // 将数据转换为 JSON 字符串
   const jsonData = await format(JSON.stringify(data, null, 2), { parser: 'json' });
 
@@ -58,14 +70,17 @@ export const writeAlovaJson = async (data: TemplateData, originPath: string, nam
     }
   });
 };
-export const readAlovaJson = (originPath: string) => {
+export const readAlovaJson = (originPath: string, name = 'api.json') => {
   // 定义 JSON 文件的路径和名称
-  const filePath = path.join(originPath, './alova.json');
+  const filePath = path.join(originPath, `./${name}`);
   return new Promise<TemplateData>((resolve, reject) => {
+    if (!fs.existsSync(filePath)) {
+      reject('alovaJson not exists');
+      return;
+    }
     // 使用 fs.readFile 读取 JSON 文件
     fs.readFile(filePath, 'utf8', (err, data) => {
       if (err) {
-        TEMPLATE_DATA.delete(originPath);
         reject(err);
       } else {
         resolve(JSON.parse(data));

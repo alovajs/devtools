@@ -17,7 +17,7 @@
  * **Do not edit the file manually.**
  */
 export default {
-  'tag.增加pet2': ['POST', '/pet'],
+  'tag.增加pet24': ['POST', '/pet'],
   'pet.updatePet': ['PUT', '/pet'],
   'pet.findPetsByStatus': ['GET', '/pet/findByStatus'],
   'pet.findPetsByTags': ['GET', '/pet/findByTags'],

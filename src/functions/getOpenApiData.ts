@@ -87,8 +87,6 @@ export default async function (
   } catch (error) {
     throw Error(`Cannot read file from ${url}`);
   }
-  console.log(data, 90);
-
   if (!data) {
     throw Error(`Cannot read file from ${url}`);
   }

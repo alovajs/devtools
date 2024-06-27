@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { OpenAPIV3_1 } from 'openapi-types';
 import openApi2Data from '../functions/openApi2Data';
-import { TEMPLATE_DATA, TemplateFile, writeAlovaJson } from '../modules/TemplateFile';
+import { getAlovaJsonPath, TEMPLATE_DATA, TemplateFile, writeAlovaJson } from '../modules/TemplateFile';
 import getFrameworkTag from './getFrameworkTag';
 export default async function (
   workspaceRootDir: string,
@@ -16,7 +16,10 @@ export default async function (
   if (!data) {
     return;
   }
+  // 输出目录
   const outputDir = path.join(workspaceRootDir, outputPath);
+  // 缓存文件地址
+  const alovaJsonPath = getAlovaJsonPath(workspaceRootDir, outputPath);
   const templateFile = new TemplateFile(type);
   // 将openApi对象转成template对象
   const templateData = await openApi2Data(data, config);
@@ -24,14 +27,17 @@ export default async function (
   templateData[getFrameworkTag(workspaceRootDir)] = true;
   // 头部注释部分
   templateData.commentText = await templateFile.readAndRenderTemplate('comment', data, { root: true });
+  // 模块类型
+  templateData.moduleType = TemplateFile.getModuleType(type);
+  // 是否需要生成api文件
   // 判断是否需要生成api文件
-  if (!force && isEqual(templateData, TEMPLATE_DATA.get(outputDir))) {
+  if (!force && isEqual(templateData, TEMPLATE_DATA.get(alovaJsonPath))) {
     return false;
   }
   // 保存templateData
-  TEMPLATE_DATA.set(outputDir, templateData);
+  TEMPLATE_DATA.set(alovaJsonPath, templateData);
   // 生成alova.json文件
-  writeAlovaJson(templateData, outputDir);
+  writeAlovaJson(templateData, alovaJsonPath);
   // 获取是否存在index.ts|index.js
   const indexIsExists = fs.existsSync(path.join(outputDir, `index${templateFile.getExt()}`));
   // mustache语法生成
@@ -44,7 +50,8 @@ export default async function (
       fileName: 'createApis'
     },
     {
-      fileName: 'apiDefinitions'
+      fileName: 'apiDefinitions',
+      root: true
     },
     {
       fileName: 'globals.d',

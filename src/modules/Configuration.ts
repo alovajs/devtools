@@ -1,9 +1,8 @@
-import path from 'node:path';
 import * as vscode from 'vscode';
 import generateApi from '../commands/generateApi';
 import getAutoTemplateType from '../functions/getAutoTemplateType';
 import getOpenApiData from '../functions/getOpenApiData';
-import { readAlovaJson, TEMPLATE_DATA } from '../modules/TemplateFile';
+import { getAlovaJsonPath, readAlovaJson, TEMPLATE_DATA } from '../modules/TemplateFile';
 import { highPrecisionInterval } from '../utils';
 export const CONFIG_POOL: Array<Configuration> = [];
 export class Configuration {
@@ -32,9 +31,14 @@ export class Configuration {
     });
     if (typeof this.config.autoUpdate === 'object') {
       const { interval } = this.config.autoUpdate;
-      if (isNaN(Number(interval))) {
+      const time = Number(interval);
+      if (isNaN(time)) {
         this.closeAutoUpdate();
         throw new Error('autoUpdate.interval must be a number');
+      }
+      if (time <= 0) {
+        //最少一秒钟
+        throw Error('Expected to set number which great than 1 in `config.autoUpdate.interval`');
       }
     }
   }
@@ -84,10 +88,6 @@ export class Configuration {
       time = Number(autoUpdateConfig.interval);
       immediate = !!autoUpdateConfig.launchEditor;
     }
-    if (isNaN(time)) {
-      this.closeAutoUpdate();
-      throw Error('autoUpdate.interval must be a number');
-    }
     return {
       time,
       immediate
@@ -128,13 +128,14 @@ export class Configuration {
   }
   readAlovaJson() {
     const allAlovaJSon = this.config.generator.map(generator => {
-      const alovaJsonPath = path.join(this.workspaceRootDir, generator.output);
+      const alovaJsonPath = getAlovaJsonPath(this.workspaceRootDir, generator.output);
       return readAlovaJson(alovaJsonPath)
         .then(alovaJson => {
           TEMPLATE_DATA.set(alovaJsonPath, alovaJson);
           return alovaJson;
         })
         .catch(() => {
+          TEMPLATE_DATA.delete(alovaJsonPath);
           return {};
         });
     });

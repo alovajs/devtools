@@ -4,7 +4,7 @@ import vueHook from 'alova/vue';
 import { createApis, withConfigType } from './createApis';
 
 export const alovaInstance = createAlova({
-  baseURL: 'http://petstore.swagger.io/v2',
+  baseURL: '/api1',
   statesHook: vueHook,
   requestAdapter: GlobalFetch(),
   beforeRequest: method => {},

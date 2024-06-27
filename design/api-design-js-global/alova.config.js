@@ -7,7 +7,7 @@ module.exports = {
       // openapi的json文件url地址
       // input: 'https://petstore.swagger.io',
       // input: 'https://generator3.swagger.io',
-      input: './openapi.yaml',
+      input: './openapi.xxx',
       // input: 'http://localhost:3000/openapi.json',
       // input: 'openapi/api.json' // 以当前项目为相对目录的本地地址
       // input: 'http://192.168.5.123:8080' // 没有指向openapi文件时，必须配合platform参数使用
@@ -15,7 +15,7 @@ module.exports = {
       // 支持openapi的平台，目前先支持swagger、knife4j、yapi，默认为空
       // 当指定了此参数后，input字段只需要指定文档的地址而不需要指定到openapi文件，减小使用门槛
       // 不同平台，它的openapi文件地址不一样，根据平台标识去对应地址下读取文件即可。
-      platform: 'swagger23',
+      platform: 'swagger',
 
       // 接口文件和类型文件的输出路径，多个generator不能重复的地址，否则生成的代码会相互覆盖，无意义
       output: 'src/api',

@@ -1,6 +1,6 @@
 ///<reference path='./globals.d.ts' />
 {{{commentText}}}
-export default {
+{{#if (eq moduleType "ESModule")}}export default{{else if (eq moduleType "commonJs")}}module.exports ={{/if}} {
 {{#pathsArr}}
   "{{{key}}}": ["{{method}}", "{{{path}}}"],
 {{/pathsArr}}

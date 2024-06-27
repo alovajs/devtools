@@ -31,6 +31,7 @@ export interface TemplateData extends Omit<OpenAPIV3_1.Document, ''> {
   // ...
   vue?: boolean;
   react?: boolean;
+  moduleType?: 'commonJs' | 'ESModule';
   defaultKey?: boolean;
   baseUrl: string;
   pathsArr: Path[];
@@ -499,7 +500,7 @@ export const mergePathObject = (
     });
     return `${basePath}/${name}${nameVersion + 1}`;
   }
-  function customizer(objValue: any, srcValue: any, key: string) {
+  function customizer(objValue: any, srcValue: any, key: string): any {
     // 如果都是数组，并且srcValue为空数组，则直接返回objValue
     if (isArray(objValue) && isArray(srcValue) && !srcValue.length) {
       return srcValue;

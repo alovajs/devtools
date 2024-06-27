@@ -8,7 +8,7 @@ type UserMethodConfigMap = typeof $$userConfigMap;
 
 type Alova2MethodConfig<Responded> =
   CollapsedAlova extends Alova<any, any, infer RequestConfig, any, infer ResponseHeader>
-    ? AlovaMethodCreateConfig<any, Responded, RequestConfig, ResponseHeader>
+    ? Omit<AlovaMethodCreateConfig<any, Responded, RequestConfig, ResponseHeader>,"params">
     : never;
 
 // Extract the return type of transformData function that define in $$userConfigMap, if it not exists, use the default type.
@@ -92,7 +92,8 @@ declare global {
        * ```
        {{/if}}
        */
-      {{{name}}}<Config extends Omit<Alova2MethodConfig<{{{responseName}}}>,'params'>{{#or pathParameters queryParameters requestName }} & {
+      {{{name}}}<Config extends Alova2MethodConfig<{{{responseName}}}>>(
+        config{{#or pathParameters queryParameters requestName }}{{else}}?{{/or}}: Config{{#or pathParameters queryParameters requestName }} & {
           {{#if pathParameters}}
           pathParams: {{{pathParameters}}};
           {{/if}}
@@ -102,8 +103,7 @@ declare global {
           {{#if requestName}}
           data: {{{requestName}}};
           {{/if}}
-        }{{/or}}>(
-        config{{#or pathParameters queryParameters requestName }}{{else}}?{{/or}}: Config
+        }{{/or}}
       ): Alova2Method<{{{responseName}}}, '{{{pathKey}}}', Config>;
      {{/apis}}
     };
