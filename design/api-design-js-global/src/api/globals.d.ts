@@ -57,70 +57,67 @@ type Alova2Method<
       >
     : never;
 
-/**
- * a Pet
- * ---
- * A pet for sale in the pet store
- */
-export interface Pet1 {
-  id?: number;
-  category?: Category;
-  name: string;
-  photoUrls: string[];
-  tags?: Tag[];
-  /**
-   * @deprecated
-   * pet status in the store
-   */
-  status?: 'available' | 'pending' | 'sold';
-  test?: string;
-}
-
-/**
- * Pet category
- * ---
- * A category for a pet
- */
 export interface Category {
   id?: number;
   name?: string;
 }
-
-/**
- * a Pet
- * ---
- * A pet for sale in the pet store
- */
-export interface Pet {
+export interface Tag {
   id?: number;
+  name?: string;
+}
+export interface Pet1 {
+  id?: number;
+  /**
+   * Pet category
+   * ---
+   * A category for a pet
+   */
   category?: Category;
+  /**
+   * [required]
+   */
   name: string;
+  /**
+   * [required]
+   */
   photoUrls: string[];
   tags?: Tag[];
   /**
-   * @deprecated
    * pet status in the store
+   * @deprecated
+   */
+  status?: 'available' | 'pending' | 'sold';
+  test?: string;
+}
+export interface Pet {
+  id?: number;
+  /**
+   * Pet category
+   * ---
+   * A category for a pet
+   */
+  category?: Category;
+  /**
+   * [required]
+   */
+  name: string;
+  /**
+   * [required]
+   */
+  photoUrls: string[];
+  tags?: Tag[];
+  /**
+   * pet status in the store
+   * @deprecated
    */
   status?: 'available' | 'pending' | 'sold';
 }
-
-/**
- * An uploaded response
- * ---
- * Describes the result of uploading an image resource
- */
 export interface ApiResponse1 {
   code?: number;
   type?: string;
   message?: string;
   test?: string;
 }
-
-/**
- * Pet Order
- * ---
- * An order for a pets from the pet store
- */
 export interface Order1 {
   id?: number;
   petId?: number;
@@ -133,12 +130,6 @@ export interface Order1 {
   complete?: boolean;
   test?: string;
 }
-
-/**
- * Pet Order
- * ---
- * An order for a pets from the pet store
- */
 export interface Order {
   id?: number;
   petId?: number;
@@ -150,12 +141,6 @@ export interface Order {
   status?: 'placed' | 'approved' | 'delivered';
   complete?: boolean;
 }
-
-/**
- * a User
- * ---
- * A User who is purchasing from the pet store
- */
 export interface User {
   id?: number;
   username?: string;
@@ -169,12 +154,6 @@ export interface User {
    */
   userStatus?: number;
 }
-
-/**
- * a User
- * ---
- * A User who is purchasing from the pet store
- */
 export interface User1 {
   id?: number;
   username?: string;
@@ -189,28 +168,6 @@ export interface User1 {
   userStatus?: number;
   test?: string;
 }
-
-/**
- * Pet Tag
- * ---
- * A tag for a pet
- */
-export interface Tag {
-  id?: number;
-  name?: string;
-}
-
-/**
- * An uploaded response
- * ---
- * Describes the result of uploading an image resource
- */
-export interface ApiResponse {
-  code?: number;
-  type?: string;
-  message?: string;
-}
-
 declare global {
   interface APIS {
     tag: {
@@ -227,6 +184,7 @@ declare global {
        * ```ts
        * type RequestBody = {
        *   id?: number
+       *   // [title] Pet category
        *   // A category for a pet
        *   category?: {
        *     id?: number
@@ -252,6 +210,7 @@ declare global {
        * ```ts
        * type Response = {
        *   id?: number
+       *   // [title] Pet category
        *   // A category for a pet
        *   category?: {
        *     id?: number
@@ -292,6 +251,7 @@ declare global {
        * ```ts
        * type RequestBody = {
        *   id?: number
+       *   // [title] Pet category
        *   // A category for a pet
        *   category?: {
        *     id?: number
@@ -317,6 +277,7 @@ declare global {
        * ```ts
        * type Response = {
        *   id?: number
+       *   // [title] Pet category
        *   // A category for a pet
        *   category?: {
        *     id?: number
@@ -367,6 +328,7 @@ declare global {
        * ```ts
        * type Response = Array<{
        *   id?: number
+       *   // [title] Pet category
        *   // A category for a pet
        *   category?: {
        *     id?: number
@@ -392,7 +354,7 @@ declare global {
             /**
              * Status values that need to be considered for filter
              * [required]
-             * [deprecated]
+             * @deprecated
              */
             status: ('available' | 'pending' | 'sold')[];
           };
@@ -422,6 +384,7 @@ declare global {
        * ```ts
        * type Response = Array<{
        *   id?: number
+       *   // [title] Pet category
        *   // A category for a pet
        *   category?: {
        *     id?: number
@@ -476,6 +439,7 @@ declare global {
        * ```ts
        * type Response = {
        *   id?: number
+       *   // [title] Pet category
        *   // A category for a pet
        *   category?: {
        *     id?: number

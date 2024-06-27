@@ -7,7 +7,7 @@ module.exports = {
       // openapi的json文件url地址
       // input: 'https://petstore.swagger.io',
       // input: 'https://generator3.swagger.io',
-      input: './openapi.xxx',
+      input: './openapi.yaml',
       // input: 'http://localhost:3000/openapi.json',
       // input: 'openapi/api.json' // 以当前项目为相对目录的本地地址
       // input: 'http://192.168.5.123:8080' // 没有指向openapi文件时，必须配合platform参数使用
