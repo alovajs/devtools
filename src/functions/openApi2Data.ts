@@ -40,46 +40,27 @@ export interface TemplateData extends Omit<OpenAPIV3_1.Document, ''> {
   pathApis: PathApis[];
   commentText: string;
 }
-const remove$ref = async (
+const remove$ref = (
   originObj: OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject,
   openApi: OpenAPIV3_1.Document,
   schemasMap?: Map<string, string>,
   preText: string = ''
 ): Promise<string> => {
-  const obj = cloneDeep(originObj);
-  if (isReferenceObject(obj)) {
-    const data = findBy$ref(obj.$ref, openApi);
-    const type = get$refName(obj.$ref);
-    if (schemasMap && !schemasMap.has(type)) {
-      await jsonSchema2TsStr(data, type, openApi, {
-        export: true,
-        on$RefTsStr(name, tsStr) {
-          if (!schemasMap.has(name)) {
-            schemasMap.set(name, tsStr);
-          }
-        }
-      }).then(schema => {
-        schemasMap.set(type, schema);
-      });
-    }
-    await remove$ref(data, openApi, schemasMap);
-    return type;
-  }
-
-  if (typeof obj === 'object' && obj) {
-    const keyArr = Object.keys(obj) as UnionToTuple<keyof OpenAPIV3_1.SchemaObject>;
-    for (const key of keyArr) {
-      if (typeof obj[key] === 'object' && ['items', 'properties'].includes(key)) {
-        for (const value of Object.values(obj[key])) {
-          if (typeof value !== 'object' || !value) {
-            continue;
-          }
-          (value as any).type = await remove$ref(value, openApi, schemasMap);
-        }
+  return convertToType(originObj, openApi, {
+    deep: false,
+    commentStyle: 'docment',
+    preText,
+    on$Ref(refOject) {
+      const type = get$refName(refOject.$ref);
+      if (schemasMap && !schemasMap.has(type)) {
+        jsonSchema2TsStr(refOject, type, openApi, {
+          export: true
+        }).then(schema => {
+          schemasMap.set(type, schema);
+        });
       }
     }
-  }
-  return await convertToType(obj, openApi, { deep: false, commentStyle: 'docment', preText });
+  });
 };
 const parseResponse = async (
   responses: OpenAPIV3_1.ResponsesObject | undefined,
@@ -260,7 +241,6 @@ export const transformPathObj = async (
     newApiDescriptor = handleApi(apiDescriptor);
     handleApiDone = true;
   } catch (error) {
-    console.log(error, 591);
     handleApiDone = false;
   }
   if (!handleApiDone) {

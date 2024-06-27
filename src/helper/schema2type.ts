@@ -4,6 +4,7 @@ import { findBy$ref, get$refName, isReferenceObject } from './openapi';
 
 export interface Schema2TypeOptions {
   deep?: boolean; // 是否递归解析
+  shallowDeep?: boolean; //只有最外层是解析的
   defaultType?: 'any' | 'unknown'; // 未匹配的时的默认类型
   commentStyle?: 'line' | 'docment'; // 注释风格
   preText?: string; // 注释前缀
@@ -74,9 +75,10 @@ function parseSchema(
   let schema: OpenAPIV3_1.SchemaObject = schemaOrigin;
   if (isReferenceObject(schemaOrigin)) {
     config.on$Ref?.(schemaOrigin);
-    if (!config.deep) {
+    if (!config.deep && !config.shallowDeep) {
       return get$refName(schemaOrigin.$ref);
     }
+    config.shallowDeep = false;
     schema = findBy$ref(schemaOrigin.$ref, openApi);
   }
   if (schema.enum) {
@@ -224,7 +226,6 @@ export async function convertToType(
 }
 interface JsonSchema2TsOptions {
   export?: boolean;
-  deep?: boolean;
   on$RefTsStr?: (name: string, tsStr: string) => void;
 }
 /**
@@ -243,7 +244,7 @@ export const jsonSchema2TsStr = async (
   map: Map<string, string> = new Map()
 ): Promise<string> => {
   const tsStr = await convertToType(schema, openApi, {
-    deep: options.deep,
+    shallowDeep: true,
     defaultType: 'unknown',
     commentStyle: 'docment',
     preText: '',
