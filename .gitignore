@@ -8,4 +8,6 @@ pnpm-lock.yaml
 # Generated files
 .psci
 out
+# 忽略design src 下的生成文件
 design/**/src/*
+!design/**/src
