@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
+import autocomplete from '../components/autocomplete';
 import readConfig from '../functions/readConfig';
 import showStatusBarIcon from './showStatusBarIcon';
-import autocomplete from '../components/autocomplete';
 export default {
   commandId: 'alova.setup',
   handler: (context: vscode.ExtensionContext) => async () => {
