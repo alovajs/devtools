@@ -10,4 +10,4 @@ pnpm-lock.yaml
 out
 # 忽略design src 下的生成文件
 design/**/src/*
-!design/**/src
+!design/**/src/.gitkeep
