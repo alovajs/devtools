@@ -10,4 +10,8 @@ pnpm-lock.yaml
 out
 # 忽略design src 下的生成文件
 design/**/src/*
+design/**/openapi.*
+design/**/swagger.*
+design/**/alova.config.*
 !design/**/src/.gitkeep
+!design/common/*

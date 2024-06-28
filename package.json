@@ -61,8 +61,9 @@
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
     "test": "vscode-test",
+    "design": "tsx scripts/design.ts",
     "commit": "git-cz && git push",
-    "prepare": "husky"
+    "prepare": "husky && pnpm design"
   },
   "license": "MIT",
   "repository": {
@@ -104,6 +105,7 @@
     "prettier": "^3.2.5",
     "prettier-plugin-organize-imports": "^3.2.4",
     "prettier-plugin-sort-json": "^4.0.0",
+    "tsx": "^4.15.8",
     "type-fest": "^4.20.0",
     "typescript": "^5.4.5"
   },

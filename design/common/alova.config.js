@@ -6,7 +6,7 @@ module.exports = {
     {
       // openapi的json文件url地址
       // input: 'https://petstore.swagger.io',
-      // input: 'http://petstore.swagger.io',
+      // input: 'https://generator3.swagger.io',
       input: './openapi.yaml',
       // input: 'http://localhost:3000/openapi.json',
       // input: 'openapi/api.json' // 以当前项目为相对目录的本地地址
@@ -30,27 +30,35 @@ module.exports = {
       // ts/typescript：意思相同，表示生成ts类型文件
       // module：生成esModule规范文件
       // commonjs：表示生成commonjs规范文件
-      type: 'ts'
+      type: 'module',
 
       // （具体看下面）过滤或转换生成的api接口函数，返回一个新的apiDescriptor来生成api调用函数
       // 未指定此函数时则不转换apiDescripor对象
       // apiDescriptor的格式与openapi文件的接口对象格式相同
       // 对类型生成也同样适用123
-      // handleApi: apiDescriptor => {
-      //   // 返回空表示过滤掉此api
-      //   if (!apiDescriptor.url.startsWith('/generate')) {
-      //     return;
-      //   }
-
-      //   apiDescriptor.parameters = apiDescriptor.parameters.filter(
-      //     param => param.in === 'header' && param.name === 'token'
-      //   );
-      //   if (apiDescriptor?.requestData?.properties) {
-      //     delete apiDescriptor.requestData.properties.type;
-      //   }
-      //   apiDescriptor.url = apiDescriptor.url.replace('/generate', 'xxx1');
-      //   return apiDescriptor;
-      // }
+      handleApi: apiDescriptor => {
+        // 返回空表示过滤掉此api
+        // if (!apiDescriptor.url.startsWith('/generate')) {
+        //   return;
+        // }
+        // apiDescriptor.parameters = apiDescriptor.parameters.filter(param => param.in === 'path');
+        // if (apiDescriptor?.requestData?.properties) {
+        //   delete apiDescriptor.requestData.properties.type;
+        // }
+        // apiDescriptor.responses.properties['test'] = {
+        //   type: 'string'
+        // };
+        // apiDescriptor.url = apiDescriptor.url.replace('/generate', 'xxx1');
+        // if (apiDescriptor.parameters.length > 0) {
+        //   apiDescriptor.parameters = apiDescriptor.parameters.slice(-1);
+        // }
+        // if (apiDescriptor.responses.properties) {
+        //   apiDescriptor.responses.properties['test'] = {
+        //     type: 'string'
+        //   };
+        // }
+        return apiDescriptor;
+      }
     }
   ],
 
@@ -59,7 +67,7 @@ module.exports = {
   autoUpdate: {
     // 编辑器开启时更新，默认false
     launchEditor: true,
-    // 自动更新间隔，单位毫秒
-    interval: 1
+    // 自动更新间隔，单位秒
+    interval: 10
   }
 };
