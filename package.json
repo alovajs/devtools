@@ -102,6 +102,8 @@
     "js-yaml": "^4.1.0",
     "lint-staged": "^15.2.2",
     "prettier": "^3.2.5",
+    "prettier-plugin-organize-imports": "^3.2.4",
+    "prettier-plugin-sort-json": "^4.0.0",
     "type-fest": "^4.20.0",
     "typescript": "^5.4.5"
   },

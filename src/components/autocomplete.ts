@@ -18,7 +18,7 @@ export default vscode.languages.registerCompletionItemProvider(
         return autocomplete(value.trim()).map(item => {
           let completionItem = new vscode.CompletionItem(item.path, vscode.CompletionItemKind.Function);
           completionItem.detail = `[${item.method}] ${item.summary}`;
-          completionItem.documentation = item.documentation ?? item.replaceText;
+          completionItem.documentation = new vscode.MarkdownString(item.documentation ?? item.replaceText);
           // 代码替换位置，查找位置会同步应用
           completionItem.filterText = item.path;
           completionItem.insertText = item.replaceText;

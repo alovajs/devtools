@@ -2,7 +2,8 @@ import { cloneDeep } from 'lodash';
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
 import { findBy$ref, get$refName, isReferenceObject, mergeObject, removeAll$ref } from '../helper/openapi';
 import { convertToType, jsonSchema2TsStr } from '../helper/schema2type';
-import { removeUndefined } from '../utils';
+import { generateDefaultValues } from '../helper/typeStr';
+import { format, removeUndefined } from '../utils';
 type Path = {
   key: string;
   method: string;
@@ -21,12 +22,33 @@ export interface Api {
   name: string;
   responseName: string;
   requestName?: string;
+  defaultValue?: string;
   pathKey: string;
 }
 interface PathApis {
   tag: string;
   apis: Api[];
 }
+export const getApiDefultValue = (api: Api) => {
+  let configStrArr: string[] = [];
+  if (api.pathParametersComment) {
+    configStrArr.push(`pathParams: ${generateDefaultValues(api.pathParametersComment.replaceAll('*', ''))}`);
+  }
+  if (api.queryParametersComment) {
+    configStrArr.push(`params: ${generateDefaultValues(api.queryParametersComment.replaceAll('*', ''))}`);
+  }
+  if (api.requestComment) {
+    configStrArr.push(`data: ${generateDefaultValues(api.requestComment.replaceAll('*', ''))}`);
+  }
+  return format(`Apis.${api.pathKey}({${configStrArr.join(',\n')}})`, {
+    printWidth: 40, // 缩短printWidth以强制换行
+    tabWidth: 2,
+    useTabs: false,
+    trailingComma: 'all',
+    bracketSpacing: true,
+    arrowParens: 'always'
+  });
+};
 export interface TemplateData extends Omit<OpenAPIV3_1.Document, ''> {
   // 定义模板数据类型
   // ...
@@ -54,7 +76,10 @@ const remove$ref = (
       const type = get$refName(refOject.$ref);
       if (schemasMap && !schemasMap.has(type)) {
         jsonSchema2TsStr(refOject, type, openApi, {
-          export: true
+          export: true,
+          on$RefTsStr(name, tsStr) {
+            schemasMap.set(name, tsStr);
+          }
         }).then(schema => {
           schemasMap.set(type, schema);
         });
@@ -350,6 +375,7 @@ export default async function openApi2Data(
             })
           );
         }
+        api.defaultValue = await getApiDefultValue(api);
         tagApis.apis.push(api);
       });
       if (allPromise) {

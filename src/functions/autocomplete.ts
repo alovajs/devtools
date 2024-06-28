@@ -1,6 +1,5 @@
 import path from 'node:path';
 import { AUTO_COMPLETE } from '../components/autocomplete';
-import { generateDefaultValues } from '../helper/typeStr';
 import { CONFIG_POOL } from '../modules/Configuration';
 import { TEMPLATE_DATA, getAlovaJsonPath } from '../modules/TemplateFile';
 import { Api } from './openApi2Data';
@@ -11,28 +10,17 @@ type AutoCompleteItem = {
   path: string;
   method: string;
 };
-const getApiDefultValue = (api: Api) => {
-  let configStrArr: string[] = [];
-  if (api.pathParametersComment) {
-    configStrArr.push(`\n  pathParams: ${generateDefaultValues(api.pathParametersComment.replaceAll('*', ''))}`);
-  }
-  if (api.queryParametersComment) {
-    configStrArr.push(`\n  params: ${generateDefaultValues(api.queryParametersComment.replaceAll('*', ''))}`);
-  }
-  if (api.requestComment) {
-    configStrArr.push(`\n  data: ${generateDefaultValues(api.requestComment.replaceAll('*', ''))}`);
-  }
-  return `Apis.${api.pathKey}({${configStrArr.join(',')}${configStrArr.length ? '\n' : ''}})`;
-};
+
 const filterAutoCompleteItem = (text: string, apiArr: Api[]): AutoCompleteItem[] => {
   const autoCompleteArr: AutoCompleteItem[] = [];
   apiArr.forEach(api => {
-    const replaceText = getApiDefultValue(api);
+    const replaceText = api.defaultValue ?? '';
     if (api.path.includes(text)) {
       autoCompleteArr.push({
         replaceText,
-        summary: api.summary,
+        summary: api.path,
         path: api.path,
+        documentation: `${api.summary}\n\`\`\`typescript\n${replaceText}\`\`\``,
         method: api.method
       });
     }
@@ -41,6 +29,7 @@ const filterAutoCompleteItem = (text: string, apiArr: Api[]): AutoCompleteItem[]
         replaceText,
         summary: api.path,
         path: api.summary,
+        documentation: `${api.summary}\n\`\`\`typescript\n${replaceText}\`\`\``,
         method: api.method
       });
     }
@@ -49,7 +38,7 @@ const filterAutoCompleteItem = (text: string, apiArr: Api[]): AutoCompleteItem[]
         replaceText,
         summary: api.path,
         path: api.pathKey,
-        documentation: api.summary,
+        documentation: `${api.summary}\n\`\`\`typescript\n${replaceText}\`\`\``,
         method: api.method
       });
     }
@@ -61,6 +50,8 @@ export default (text: string): AutoCompleteItem[] => {
   const config = CONFIG_POOL.find(item => {
     return filePath.includes(path.resolve(item.workspaceRootDir));
   });
+  console.log(config, text, CONFIG_POOL);
+
   if (!config) {
     return [];
   }

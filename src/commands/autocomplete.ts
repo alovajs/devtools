@@ -4,7 +4,7 @@ export default {
   commandId: 'alova.autocomplete',
   handler: (context: vscode.ExtensionContext) => () => {
     const editor = vscode.window.activeTextEditor;
-    if (!editor) {
+    if (!editor || !AUTO_COMPLETE.text) {
       return;
     }
     const position = editor.selection.active;
@@ -16,6 +16,7 @@ export default {
         new vscode.Range(new vscode.Position(position.line, result?.index ?? 0), position),
         AUTO_COMPLETE.text
       );
+      AUTO_COMPLETE.text = '';
     });
   }
 };
