@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import message from '../components/message';
 import generateApi from '../functions/generateApi';
 import readConfig from '../functions/readConfig';
 import { CONFIG_POOL } from '../modules/Configuration';
@@ -27,7 +28,7 @@ export default {
           );
         })
       );
-      vscode.window.showInformationMessage(`${getFileNameByPath(configuration.workspaceRootDir)}刷新api文件成功!`);
+      message.info(`${getFileNameByPath(configuration.workspaceRootDir)}刷新api文件成功!`, 3000);
     }
   }
 };

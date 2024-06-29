@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import message from '../components/message';
 import generateApi from '../functions/generateApi';
 import readConfig from '../functions/readConfig';
 import { CONFIG_POOL } from '../modules/Configuration';
@@ -34,7 +35,7 @@ export default {
         })
       );
       if (result.some(item => !!item)) {
-        vscode.window.showInformationMessage(`${fileName}生成api文件成功!`);
+        message.info(`${fileName}生成api文件成功!`, 3000);
       }
     }
   }

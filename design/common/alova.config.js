@@ -30,7 +30,7 @@ module.exports = {
       // ts/typescript：意思相同，表示生成ts类型文件
       // module：生成esModule规范文件
       // commonjs：表示生成commonjs规范文件
-      type: 'module',
+      // type: 'module',
 
       // （具体看下面）过滤或转换生成的api接口函数，返回一个新的apiDescriptor来生成api调用函数
       // 未指定此函数时则不转换apiDescripor对象

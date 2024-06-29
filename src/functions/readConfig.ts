@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import * as vscode from 'vscode';
+import message from '../components/message';
 import { CONFIG_POOL, Configuration } from '../modules/Configuration';
 const WATCH_CONFIG: Map<string, fs.FSWatcher> = new Map();
 const SUPPORT_EXT = ['.js', '.cjs'];
@@ -36,7 +37,7 @@ export function createWatcher(workspaceRootPath: string) {
       // 刷新定时器
       configItem?.refreshAutoUpdate?.();
     } catch (error: any) {
-      vscode.window.showErrorMessage(error.message);
+      message.error(error.message);
       configItem?.closeAutoUpdate?.();
     }
   });
