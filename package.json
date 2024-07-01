@@ -61,9 +61,9 @@
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
     "test": "vscode-test",
-    "design": "tsx scripts/design.ts",
+    "api-test": "tsx scripts/api-test.ts",
     "commit": "git-cz && git push",
-    "prepare": "husky && pnpm design"
+    "prepare": "husky && pnpm api-test"
   },
   "license": "MIT",
   "repository": {

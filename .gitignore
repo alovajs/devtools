@@ -8,10 +8,9 @@ pnpm-lock.yaml
 # Generated files
 .psci
 out
-# 忽略design src 下的生成文件
-design/**/src/*
-design/**/openapi*.*
-design/**/swagger*.*
-design/**/alova.config.*
-!design/**/src/.gitkeep
-!design/common/*
+# 忽略test下的生成文件
+test/api-*/src/*
+test/api-*/openapi*.*
+test/api-*/swagger*.*
+test/api-*/alova.config.*
+!test/api-*/src/.gitkeep

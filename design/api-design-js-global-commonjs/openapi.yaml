@@ -26,9 +26,9 @@ paths:
     post:
       tags:
         - tag
-      summary: Add a new pet to the store 2
+      summary: Add a new pet to the store
       description: ''
-      operationId: 增加pet24
+      operationId: 增加pet2
       responses:
         '200':
           description: successful operation
@@ -50,7 +50,7 @@ paths:
     put:
       tags:
         - pet
-      summary: Update an existing pet 2
+      summary: Update an existing pet
       description: ''
       operationId: updatePet
       externalDocs:
