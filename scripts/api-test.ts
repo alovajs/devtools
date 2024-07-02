@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { projectPath } from '../src/utils/path';
-const DESIGN_NO_DIR = ['common'];
+const DESIGN_NO_DIR = ['api-common'];
 /**
  * Recursively copies files from one directory to another
  * @param {string} src - The source directory
@@ -45,12 +45,12 @@ function getSubdirectories(dir) {
   return subdirectories;
 }
 function main() {
-  const commonDir = path.join(projectPath, './design/common');
-  const designDirArray = getSubdirectories(path.join(projectPath, './design')).filter(
-    dir => !DESIGN_NO_DIR.includes(dir)
+  const commonDir = path.join(projectPath, './test/api-common');
+  const designDirArray = getSubdirectories(path.join(projectPath, './test')).filter(
+    dir => !DESIGN_NO_DIR.includes(dir) && dir.startsWith('api-')
   );
   designDirArray.forEach(dir => {
-    copyDirectory(commonDir, path.join(projectPath, `./design/${dir}`));
+    copyDirectory(commonDir, path.join(projectPath, `./test/${dir}`));
   });
 }
 main();
