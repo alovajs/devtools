@@ -5,6 +5,9 @@ export const AUTO_COMPLETE = {
   path: '',
   text: ''
 };
+class AutoComplete extends vscode.CompletionItem {
+  autoText: string;
+}
 export default vscode.languages.registerCompletionItemProvider(
   ['javascript', 'typescript'],
   {
@@ -16,12 +19,12 @@ export default vscode.languages.registerCompletionItemProvider(
         const [, value] = /a->(.*)[\s.>:\-]?/.exec(text) || [];
         AUTO_COMPLETE.path = document.uri.fsPath;
         return autocomplete(value.trim()).map(item => {
-          let completionItem = new vscode.CompletionItem(item.path, vscode.CompletionItemKind.Function);
+          let completionItem = new AutoComplete(item.path, vscode.CompletionItemKind.Function);
           completionItem.detail = `[${item.method}] ${item.summary}`;
           completionItem.documentation = new vscode.MarkdownString(item.documentation ?? item.replaceText);
           // 代码替换位置，查找位置会同步应用
           completionItem.filterText = item.path;
-          completionItem.insertText = item.replaceText;
+          completionItem.autoText = item.replaceText;
           completionItem.preselect = true;
           completionItem.command = {
             command: 'alova.autocomplete',
@@ -32,9 +35,8 @@ export default vscode.languages.registerCompletionItemProvider(
       }
     },
     // 处理选中的CompletionItem
-    resolveCompletionItem(item: vscode.CompletionItem, token: vscode.CancellationToken) {
-      AUTO_COMPLETE.text = (item.insertText as string) ?? '';
-      item.insertText = '';
+    resolveCompletionItem(item: AutoComplete, token: vscode.CancellationToken) {
+      AUTO_COMPLETE.text = item.autoText;
       return item;
     }
   },

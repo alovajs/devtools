@@ -5,7 +5,7 @@ import { format, generateFile, readAndRenderTemplate } from '../utils';
 import { srcPath } from '../utils/path';
 export const TEMPLATE_DATA = new Map<string, TemplateData>();
 export const getAlovaJsonPath = (workspaceRootDir: string, outputPath: string) => {
-  return path.join(workspaceRootDir, 'node_modules/.alova/', outputPath);
+  return path.join(workspaceRootDir, 'node_modules/.alova/', outputPath.split(/\/|\\/).join('_'));
 };
 export class TemplateFile {
   fileName: string;
@@ -55,11 +55,11 @@ export class TemplateFile {
 export const writeAlovaJson = async (data: TemplateData, originPath: string, name = 'api.json') => {
   // 将数据转换为 JSON 字符串
   const jsonData = await format(JSON.stringify(data, null, 2), { parser: 'json' });
-
   // 定义 JSON 文件的路径和名称
-  const filePath = path.join(originPath, `./${name}`);
-  if (!fs.existsSync(originPath)) {
-    fs.mkdirSync(originPath, { recursive: true });
+  const filePath = `${originPath}_${name}`;
+  const dirPath = filePath.split(/\/|\\/).slice(0, -1).join('/');
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
   }
   // 使用 fs.writeFile 将 JSON 数据写入文件
   fs.writeFile(filePath, jsonData, err => {
@@ -72,7 +72,7 @@ export const writeAlovaJson = async (data: TemplateData, originPath: string, nam
 };
 export const readAlovaJson = (originPath: string, name = 'api.json') => {
   // 定义 JSON 文件的路径和名称
-  const filePath = path.join(originPath, `./${name}`);
+  const filePath = `${originPath}_${name}`;
   return new Promise<TemplateData>((resolve, reject) => {
     if (!fs.existsSync(filePath)) {
       reject('alovaJson not exists');

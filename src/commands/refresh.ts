@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import message from '../components/message';
+import { loading, reset } from '../components/statusBar';
 import generateApi from '../functions/generateApi';
 import readConfig from '../functions/readConfig';
 import { CONFIG_POOL } from '../modules/Configuration';
@@ -7,6 +8,7 @@ import { getFileNameByPath } from '../utils';
 export default {
   commandId: 'alova.refresh',
   handler: (context: vscode.ExtensionContext) => async () => {
+    loading();
     // 读取配置文件
     await readConfig();
     // 生成api文件
@@ -28,7 +30,8 @@ export default {
           );
         })
       );
-      message.info(`${getFileNameByPath(configuration.workspaceRootDir)}刷新api文件成功!`, 3000);
+      reset();
+      message.info(`[${getFileNameByPath(configuration.workspaceRootDir)}]:Your API is refresh`);
     }
   }
 };

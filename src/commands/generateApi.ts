@@ -35,7 +35,7 @@ export default {
         })
       );
       if (result.some(item => !!item)) {
-        message.info(`${fileName}生成api文件成功!`, 3000);
+        message.info(`[${fileName}]:Your API is updated`);
       }
     }
   }

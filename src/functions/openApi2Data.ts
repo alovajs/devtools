@@ -43,8 +43,10 @@ export const getApiDefultValue = (api: Api) => {
   return format(`Apis.${api.pathKey}({${configStrArr.join(',\n')}})`, {
     printWidth: 40, // 缩短printWidth以强制换行
     tabWidth: 2,
+    semi: false, // 去掉末尾分号
     useTabs: false,
-    trailingComma: 'all',
+    trailingComma: 'none',
+    endOfLine: 'lf',
     bracketSpacing: true,
     arrowParens: 'always'
   });
