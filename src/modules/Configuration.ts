@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import generateApi from '../commands/generateApi';
+import Error from '../components/error';
 import getAutoTemplateType from '../functions/getAutoTemplateType';
 import getOpenApiData from '../functions/getOpenApiData';
 import { getAlovaJsonPath, readAlovaJson, TEMPLATE_DATA } from '../modules/TemplateFile';
@@ -38,7 +39,7 @@ export class Configuration {
       }
       if (time <= 0) {
         //最少一秒钟
-        throw Error('Expected to set number which great than 1 in `config.autoUpdate.interval`');
+        throw new Error('Expected to set number which great than 1 in `config.autoUpdate.interval`');
       }
     }
   }

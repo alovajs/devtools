@@ -3,6 +3,7 @@ import fetch from 'node-fetch';
 import fs, { promises } from 'node:fs';
 import path from 'node:path';
 import prettier, { Config as prettierConfig } from 'prettier';
+import Error from '../components/error';
 import { projectPath } from './path';
 export const getType = (obj: any) => Object.prototype.toString.call(obj).slice(8, -1).toLowerCase();
 handlebars.registerHelper('isType', function (this: any, value, type: string, options: HelperOptions) {

@@ -4,6 +4,7 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { OpenAPIV2, OpenAPIV3_1 } from 'openapi-types';
 import swagger2openapi from 'swagger2openapi';
+import Error from '../components/error';
 import { fetchData } from '../utils';
 // 判断是否是swagger2.0
 function isSwagger2(data: any): data is OpenAPIV2.Document {
@@ -85,10 +86,10 @@ export default async function (
       data = (await swagger2openapi.convertObj(data, {})).openapi as OpenAPIV3_1.Document;
     }
   } catch (error) {
-    throw Error(`Cannot read file from ${url}`);
+    throw new Error(`Cannot read file from ${url}`);
   }
   if (!data) {
-    throw Error(`Cannot read file from ${url}`);
+    throw new Error(`Cannot read file from ${url}`);
   }
   return data;
 }

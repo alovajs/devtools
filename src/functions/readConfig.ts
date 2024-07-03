@@ -2,6 +2,7 @@ import chokidar, { FSWatcher } from 'chokidar';
 import { cosmiconfig } from 'cosmiconfig';
 import path from 'node:path';
 import * as vscode from 'vscode';
+import Error from '../components/error';
 import message from '../components/message';
 import { loadJs, loadTs } from '../helper/lodaders';
 import { CONFIG_POOL, Configuration } from '../modules/Configuration';
@@ -20,8 +21,7 @@ export function createWatcher(workspaceRootPath: string) {
     .watch(`${workspaceRootPath}/*alova*`, {
       ignored: [/node_modules/]
     })
-    .on('change', async (event, fileName) => {
-      console.log(event, fileName, 11);
+    .on('change', async () => {
       let configItem: Configuration | undefined;
       try {
         const config = await readConfig(workspaceRootPath, false);
@@ -65,7 +65,7 @@ export async function readConfig(workspaceRootPath: string, createWatch = true) 
       // 移除配置
       CONFIG_POOL.splice(idx, 1);
     }
-    throw Error('Expected to create alova.config.js in root directory.');
+    throw new Error('Expected to create alova.config.js in root directory.');
   }
   // 读取文件内容
   alovaConfig = searchResult.config;
