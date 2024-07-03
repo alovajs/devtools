@@ -107,6 +107,7 @@ export class Configuration {
       time * 1000,
       immediate
     );
+    this.autoUpdateControl.time = time;
     return this.autoUpdateControl;
   }
   closeAutoUpdate() {

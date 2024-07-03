@@ -4,6 +4,7 @@ import generateApi from './commands/generateApi';
 import refresh from './commands/refresh';
 import setup from './commands/setup';
 import showStatusBarIcon from './commands/showStatusBarIcon';
+import { reset } from './components/statusBar';
 // let myStatusBarItem: vscode.StatusBarItem;
 const commands = [setup, refresh, showStatusBarIcon, generateApi, autocomplete];
 
@@ -15,8 +16,10 @@ export function activate(context: vscode.ExtensionContext) {
   vscode.commands.executeCommand(setup.commandId);
 }
 process.on('uncaughtException', err => {
+  reset();
   vscode.window.showErrorMessage(err.message);
 });
 process.on('unhandledRejection', (error: any, promise) => {
+  reset();
   vscode.window.showErrorMessage(error?.message ?? error ?? 'unhandledRejection');
 });
