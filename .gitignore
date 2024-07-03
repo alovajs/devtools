@@ -8,6 +8,8 @@ pnpm-lock.yaml
 # Generated files
 .psci
 out
+.vsix
+
 # 忽略test下的生成文件
 test/api-*/src/*
 test/api-*/openapi*.*

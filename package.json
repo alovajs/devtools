@@ -1,7 +1,7 @@
 {
-  "name": "@alova/vscode-extension",
-  "displayName": "alova",
-  "description": "",
+  "name": "alova-vscode-extension",
+  "displayName": "Alova",
+  "description": "The vscode extension for alova.js",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.89.0",
@@ -63,8 +63,13 @@
     "test": "vscode-test",
     "api-test": "tsx scripts/api-test.ts",
     "commit": "git-cz && git push",
-    "prepare": "husky && pnpm api-test"
+    "prepare": "husky && pnpm api-test",
+    "pack:pre": "vsce package --no-dependencies --pre-release",
+    "release:pre": "vsce publish --no-dependencies --pre-release",
+    "pack": "vsce package --no-dependencies",
+    "release": "vsce publish --no-dependencies"
   },
+  "publisher": "Alova",
   "license": "MIT",
   "repository": {
     "type": "git",
