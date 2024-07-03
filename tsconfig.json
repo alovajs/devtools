@@ -19,9 +19,9 @@
     "skipDefaultLibCheck": false,
     "esModuleInterop": true,
     "paths": {
-      "~/*": ["./typeing/*"]
+      "~/*": ["./typings/*"]
     }
   },
   "exclude": ["design/**"],
-  "include": ["src/**/*.ts", "typeing/**/*.d.ts"]
+  "include": ["src/**/*.ts", "typings/**/*.d.ts"]
 }
