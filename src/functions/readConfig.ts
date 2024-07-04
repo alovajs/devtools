@@ -67,6 +67,8 @@ export async function readConfig(workspaceRootPath: string, createWatch = true) 
     }
     throw new Error('Expected to create alova.config.js in root directory.');
   }
+  console.log(workspaceRootPath, searchResult, 39);
+
   // 读取文件内容
   alovaConfig = searchResult.config;
   alovaExplorer.clearCaches();

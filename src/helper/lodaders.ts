@@ -23,7 +23,7 @@ export const loadTs: Loader = async function loadTs(filepath, content) {
     error.message = `TypeScript Error in ${filepath}:\n${error.message}`;
     throw error;
   }
-  return createTempFile(filepath, transpiledContent, 'mjs', mjsPath => loadJs(mjsPath, transpiledContent));
+  return createTempFile(filepath, transpiledContent, 'js', jsPath => loadJs(jsPath, transpiledContent));
 };
 let importFresh: typeof import('import-fresh');
 export const loadJsSync: LoaderSync = function loadJsSync(filepath) {
@@ -39,27 +39,37 @@ export const loadEsModule = async (filepath: string) => {
 export const createTempFile = async <T = any>(
   filepath: string,
   content: string,
-  ext: 'cjs' | 'mjs',
+  ext: 'cjs' | 'mjs' | 'js',
   callback?: (compiledFilepath: string) => T | Promise<T>
 ) => {
   const compiledFilepath = `${filepath.slice(0, -2)}${ext}`;
+  let result = null;
+  const done = () => {
+    return new Promise(async resolve => {
+      const result = await callback?.(compiledFilepath);
+      setTimeout(() => {
+        resolve(result);
+      }, 50);
+    });
+  };
   try {
     await writeFile(compiledFilepath, content);
-    return callback?.(compiledFilepath);
+    result = await done();
   } finally {
     if (existsSync(compiledFilepath)) {
       await rm(compiledFilepath);
     }
   }
+  return result as T;
 };
 export const loadJs: Loader = async function loadJs(filepath, content) {
   try {
     return loadJsSync(filepath, '');
-  } catch (error) {
+  } catch (requireError: any) {
     try {
       return await loadEsModule(filepath);
-    } catch (requireError: any) {
-      const errorStr = requireError.toString();
+    } catch (error: any) {
+      const errorStr = requireError.toString() + error.toString();
       if (errorStr.includes("SyntaxError: Unexpected token 'export'")) {
         return createTempFile(filepath, content, 'mjs', mjsPath => loadEsModule(mjsPath));
       }
