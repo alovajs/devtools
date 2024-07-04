@@ -13,7 +13,9 @@ const alovaExplorer = cosmiconfig('alova', {
     '.js': loadJs,
     '.cjs': loadJs,
     '.mjs': loadJs,
-    '.ts': loadTs
+    '.ts': loadTs,
+    '.mts': loadTs,
+    '.cts': loadTs
   }
 });
 export function createWatcher(workspaceRootPath: string) {
@@ -21,12 +23,15 @@ export function createWatcher(workspaceRootPath: string) {
     .watch(`${workspaceRootPath}/*alova*`, {
       ignored: [/node_modules/]
     })
-    .on('change', async () => {
+    .on('all', async (eventName, watchPath) => {
+      if (!['add', 'change'].includes(eventName)) {
+        return;
+      }
       let configItem: Configuration | undefined;
       try {
-        const config = await readConfig(workspaceRootPath, false);
-        // 没有配置文件
-        if (!config) {
+        const { config, filepath } = await readConfig(workspaceRootPath, false);
+        // 没有配置文件或者修改的不是当前的配置文件
+        if (!config || filepath !== watchPath) {
           return;
         }
         configItem = CONFIG_POOL.find(config => config.workspaceRootDir === workspaceRootPath);
@@ -67,12 +72,13 @@ export async function readConfig(workspaceRootPath: string, createWatch = true) 
     }
     throw new Error('Expected to create alova.config.js in root directory.');
   }
-  console.log(workspaceRootPath, searchResult, 39);
-
   // 读取文件内容
   alovaConfig = searchResult.config;
   alovaExplorer.clearCaches();
-  return alovaConfig;
+  return {
+    ...searchResult,
+    config: alovaConfig
+  };
 }
 export default async (isAutoUpdate: boolean = true) => {
   if (isAutoUpdate) {
@@ -92,7 +98,7 @@ export default async (isAutoUpdate: boolean = true) => {
   await Promise.all(CONFIG_POOL.map(config => config.readAlovaJson()));
   for (const workspaceFolder of workspaceFolders) {
     const workspaceRootPath = workspaceFolder.uri.fsPath + '/';
-    const alovaConfig = await readConfig(workspaceRootPath);
+    const { config: alovaConfig } = await readConfig(workspaceRootPath);
     // 过滤掉没有配置文件
     if (!alovaConfig) {
       continue;

@@ -3,6 +3,7 @@ import { existsSync } from 'node:fs';
 import { rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import Error from '../components/error';
 let typescript: typeof import('typescript');
 export const loadTs: Loader = async function loadTs(filepath, content) {
   if (typescript === undefined) {
@@ -42,19 +43,12 @@ export const createTempFile = async <T = any>(
   ext: 'cjs' | 'mjs' | 'js',
   callback?: (compiledFilepath: string) => T | Promise<T>
 ) => {
-  const compiledFilepath = `${filepath.slice(0, -2)}${ext}`;
+  const parsedPath = path.parse(filepath);
+  const compiledFilepath = path.join(parsedPath.dir, `${Date.now()}-${Math.random().toString(16).slice(2)}.${ext}`);
   let result = null;
-  const done = () => {
-    return new Promise(async resolve => {
-      const result = await callback?.(compiledFilepath);
-      setTimeout(() => {
-        resolve(result);
-      }, 50);
-    });
-  };
   try {
     await writeFile(compiledFilepath, content);
-    result = await done();
+    result = await callback?.(compiledFilepath);
   } finally {
     if (existsSync(compiledFilepath)) {
       await rm(compiledFilepath);
@@ -71,23 +65,23 @@ export const loadJs: Loader = async function loadJs(filepath, content) {
     } catch (error: any) {
       const errorStr = requireError.toString() + error.toString();
       if (errorStr.includes("SyntaxError: Unexpected token 'export'")) {
-        return createTempFile(filepath, content, 'mjs', mjsPath => loadEsModule(mjsPath));
+        return await createTempFile(filepath, content, 'mjs', mjsPath => loadEsModule(mjsPath));
       }
       if (
         errorStr.includes(
           'contains "type": "module". To treat it as a CommonJS script, rename it to use the \'.cjs\' file extension'
         )
       ) {
-        return createTempFile(filepath, content, 'cjs', cjsPath => loadJsSync(cjsPath, ''));
+        return await createTempFile(filepath, content, 'cjs', cjsPath => loadJsSync(cjsPath, ''));
       }
       if (
         requireError.code === 'ERR_REQUIRE_ESM' ||
         (requireError instanceof SyntaxError &&
           requireError.toString().includes('Cannot use import statement outside a module'))
       ) {
-        throw error;
+        throw new Error(error.toString());
       }
-      throw requireError;
+      throw new Error(requireError.toString());
     }
   }
 };
