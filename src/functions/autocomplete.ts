@@ -13,9 +13,10 @@ type AutoCompleteItem = {
 
 const filterAutoCompleteItem = (text: string, apiArr: Api[]): AutoCompleteItem[] => {
   const autoCompleteArr: AutoCompleteItem[] = [];
+  const filter = (text: string, otherText: string) => otherText.includes(text);
   apiArr.forEach(api => {
     const replaceText = api.defaultValue ?? '';
-    if (api.path.includes(text)) {
+    if (filter(text, api.path)) {
       autoCompleteArr.push({
         replaceText,
         summary: api.path,
@@ -24,7 +25,7 @@ const filterAutoCompleteItem = (text: string, apiArr: Api[]): AutoCompleteItem[]
         method: api.method
       });
     }
-    if (api.summary.includes(text)) {
+    if (filter(text, api.summary)) {
       autoCompleteArr.push({
         replaceText,
         summary: api.path,
@@ -33,7 +34,7 @@ const filterAutoCompleteItem = (text: string, apiArr: Api[]): AutoCompleteItem[]
         method: api.method
       });
     }
-    if (api.pathKey.includes(text)) {
+    if (filter(text, api.pathKey)) {
       autoCompleteArr.push({
         replaceText,
         summary: api.path,

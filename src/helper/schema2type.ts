@@ -144,7 +144,13 @@ function parseObject(
     valueStr.split('\n').forEach(line => lines.push(' ' + line));
   }
   lines.push(`}`);
-  return lines.length > 2 ? lines.join('\n') : 'object';
+  if (lines.length > 2) {
+    return lines.join('\n');
+  }
+  if (schema.additionalProperties && typeof schema.additionalProperties !== 'boolean') {
+    return `Record<string,${parseSchema(schema.additionalProperties, openApi, config)}>`;
+  }
+  return 'object';
 }
 /**
  * 将array类型的schema解析为ts类型字符串
