@@ -2,12 +2,14 @@ import Error from '@/components/error';
 import message from '@/components/message';
 import { loadJs, loadTs } from '@/helper/lodaders';
 import { CONFIG_POOL, Configuration } from '@/modules/Configuration';
+import { getFileNameByPath } from '@/utils';
 import chokidar, { FSWatcher } from 'chokidar';
 import { cosmiconfig } from 'cosmiconfig';
 import path from 'node:path';
 import * as vscode from 'vscode';
 
 const WATCH_CONFIG: Map<string, FSWatcher> = new Map();
+const NO_CONFIG_WORKSPACE = new Set<string>();
 const alovaExplorer = cosmiconfig('alova', {
   cache: false,
   loaders: {
@@ -71,11 +73,23 @@ export async function readConfig(workspaceRootPath: string, createWatch = true) 
       // 移除配置
       CONFIG_POOL.splice(idx, 1);
     }
-    throw new Error('Expected to create alova.config.js in root directory.');
+    if (NO_CONFIG_WORKSPACE.has(workspaceRootPath)) {
+      return {
+        ...searchResult,
+        config: alovaConfig
+      };
+    }
+    NO_CONFIG_WORKSPACE.add(workspaceRootPath);
+    // 提示用户创建配置文件
+    throw new Error(`[${getFileNameByPath(workspaceRootPath)}] Expected to create alova.config.js in root directory.`);
   }
   // 读取文件内容
   alovaConfig = searchResult.config;
   alovaExplorer.clearCaches();
+  // 能读到配置文件，则移除没有配置文件的标记
+  if (NO_CONFIG_WORKSPACE.has(workspaceRootPath) && alovaConfig) {
+    NO_CONFIG_WORKSPACE.delete(workspaceRootPath);
+  }
   return {
     ...searchResult,
     config: alovaConfig
@@ -121,5 +135,9 @@ export default async (isAutoUpdate: boolean = true) => {
     }
     // 加入配置池子
     CONFIG_POOL.push(configuration);
+  }
+  // 提示用户创建配置文件
+  if (workspaceFolders.length && workspaceFolders.length === NO_CONFIG_WORKSPACE.size) {
+    throw new Error('Expected to create alova.config.js in root directory.');
   }
 };
