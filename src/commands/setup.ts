@@ -5,7 +5,7 @@ import showStatusBarIcon from './showStatusBarIcon';
 
 export default {
   commandId: 'alova.setup',
-  handler: (context: vscode.ExtensionContext) => async () => {
+  handler: context => async () => {
     vscode.commands.executeCommand(showStatusBarIcon.commandId);
     // 读取配置文件
     readConfig();

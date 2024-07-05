@@ -1,6 +1,5 @@
 {{{commentText}}}
-import { Alova, Method, MethodType } from 'alova';
-import type { alovaInstance } from '.';
+import { Alova, Method, MethodType, AlovaMethodCreateConfig } from 'alova';
 import apiDefinitions from './apiDefinitions';
 
 const createFunctionalProxy = (
@@ -43,7 +42,17 @@ export const createApis = (alovaInstance: Alova<any, any, any, any, any>, config
     }
   );
 
+type MethodConfig<T> = AlovaMethodCreateConfig<any, T, RequestInit, Headers>;
+type APISofParameters<Tag extends string, Url extends string> = Tag extends keyof APIS
+  ? Url extends keyof APIS[Tag]
+    ? APIS[Tag][Url] extends (...args: any) => any
+      ? Parameters<APIS[Tag][Url]>
+      : any
+    : any
+  : any;
 type MethodsConfigMap = {
-  [apiPath in keyof typeof apiDefinitions]?: Parameters<(typeof alovaInstance)['Get']>['1'];
+  [P in keyof typeof import('./apiDefinitions').default]?: MethodConfig<
+    P extends `${infer Tag}.${infer Url}` ? Parameters<APISofParameters<Tag, Url>[0]['transformData']>[0] : any
+  >;
 };
 export const withConfigType = <Config extends MethodsConfigMap>(config: Config) => config;
