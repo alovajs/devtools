@@ -1,7 +1,13 @@
 {{{commentText}}}
 import { Method } from 'alova';
 import apiDefinitions from './apiDefinitions';
-
+/**
+ *
+ * @param {(string|symbol)[]} array
+ * @param {Alova<any, any, any, any, any>} alovaInstance
+ * @param {any} configMap
+ * @returns {()=>void}
+ */
 const createFunctionalProxy = (array, alovaInstance, configMap) => {
   // create a new proxy instance
   return new Proxy(function () {}, {
@@ -27,7 +33,12 @@ const createFunctionalProxy = (array, alovaInstance, configMap) => {
     }
   });
 };
-
+/**
+ *
+ * @param {Alova<any, any, any, any, any>} alovaInstance
+ * @param {any} configMap
+ * @returns
+ */
 export const createApis = (alovaInstance, configMap) =>
   new Proxy(
     {},

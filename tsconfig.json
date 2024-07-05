@@ -18,6 +18,7 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": false,
     "esModuleInterop": true,
+    "strictNullChecks": true,
     "allowJs": true,
     "paths": {
       "~/*": ["./typings/*"],

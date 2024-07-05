@@ -107,7 +107,6 @@
     "cz-conventional-changelog": "^3.3.0",
     "esbuild": "^0.23.0",
     "esbuild-plugin-alias": "^0.2.1",
-    "esbuild-plugin-copy": "^2.1.1",
     "eslint": "^8.57.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-typescript": "^18.0.0",

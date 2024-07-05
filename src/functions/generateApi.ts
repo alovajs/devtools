@@ -4,6 +4,7 @@ import { isEqual } from 'lodash';
 import fs from 'node:fs';
 import path from 'node:path';
 import { OpenAPIV3_1 } from 'openapi-types';
+import getAlovaVersion from './getAlovaVersion';
 import getFrameworkTag from './getFrameworkTag';
 
 export default async function (
@@ -21,13 +22,18 @@ export default async function (
   const outputDir = path.join(workspaceRootDir, outputPath);
   // 缓存文件地址
   const alovaJsonPath = getAlovaJsonPath(workspaceRootDir, outputPath);
-  const templateFile = new TemplateFile(type);
+  // 获取alova版本
+  const alovaVersion = getAlovaVersion(workspaceRootDir);
+  const templateFile = new TemplateFile(type, alovaVersion);
   // 将openApi对象转成template对象
   const templateData = await openApi2Data(data, config);
   // 框架技术栈标签  vue | react
   templateData[getFrameworkTag(workspaceRootDir)] = true;
   // 头部注释部分
-  templateData.commentText = await templateFile.readAndRenderTemplate('comment', data, { root: true });
+  templateData.commentText = await templateFile.readAndRenderTemplate('comment', data, {
+    root: true,
+    hasVersion: false
+  });
   // 模块类型
   templateData.moduleType = TemplateFile.getModuleType(type);
   // 是否需要生成api文件
@@ -52,7 +58,8 @@ export default async function (
     },
     {
       fileName: 'apiDefinitions',
-      root: true
+      root: true,
+      hasVersion: false
     },
     {
       fileName: 'globals.d',
@@ -63,8 +70,8 @@ export default async function (
     if (!item) {
       return;
     }
-    const { fileName, ext, root } = item;
-    templateFile.outputFile(templateData, fileName, outputDir, { ext, root });
+    const { fileName, ext, root, hasVersion } = item;
+    templateFile.outputFile(templateData, fileName, outputDir, { ext, root, hasVersion });
   });
   return true;
 }

@@ -1,20 +1,35 @@
 import Error from '@/components/error';
+import { AlovaVersion } from '@/functions/getAlovaVersion';
 import { TemplateData } from '@/functions/openApi2Data';
 import { format, generateFile, readAndRenderTemplate } from '@/utils';
+import { cloneDeep, merge } from 'lodash';
 import fs from 'node:fs';
 import path from 'node:path';
 
 export const TEMPLATE_DATA = new Map<string, TemplateData>();
 export const getAlovaJsonPath = (workspaceRootDir: string, outputPath: string) =>
   path.join(workspaceRootDir, 'node_modules/.alova/', outputPath.split(/\/|\\/).join('_'));
+interface RenderTemplateOptions {
+  root?: boolean;
+  hasVersion?: boolean;
+  ext?: string;
+  outFileName?: string;
+}
+const DEFAULT_OPTIONS = {
+  root: false,
+  hasVersion: true
+};
 export class TemplateFile {
   fileName: string;
 
   type: TemplateType;
 
-  constructor(type: TemplateType) {
+  alovaVersion: AlovaVersion;
+
+  constructor(type: TemplateType, alovaVersion: AlovaVersion) {
     // 根据type确定使用哪个模板文件夹下的模板
     this.type = type;
+    this.alovaVersion = alovaVersion;
   }
 
   // 获取生成文件的后缀名
@@ -41,20 +56,26 @@ export class TemplateFile {
     }
   }
 
-  async outputFile(
-    data: Record<string, any>,
-    fileName: string,
-    ouput: string,
-    config?: { ext?: string; root?: boolean; outFileName?: string }
-  ) {
+  async outputFile(data: Record<string, any>, fileName: string, ouput: string, config?: RenderTemplateOptions) {
     // 这里实现模板文件渲染工作，例如返回文件内容和文件名，然后再写入output的文件夹
     const renderContent = await this.readAndRenderTemplate(fileName, data, config);
     await generateFile(ouput, `${config?.outFileName ?? fileName}${config?.ext ?? this.getExt()}`, renderContent);
   }
 
-  readAndRenderTemplate(fileName: string, data: any, config?: { root?: boolean }) {
-    const filePath = config?.root ? fileName : `${this.type}/${fileName}`;
-    const templatePath = path.resolve(__dirname, `./templates/${filePath}.handlebars`);
+  private getVersion() {
+    switch (this.alovaVersion) {
+      case 'v3':
+        return 'v3-';
+      default:
+        return '';
+    }
+  }
+
+  readAndRenderTemplate(fileName: string, data: any, userConfig?: RenderTemplateOptions) {
+    const config = merge(cloneDeep(DEFAULT_OPTIONS), userConfig);
+    const fileVersion = config.hasVersion ? this.getVersion() : '';
+    const filePath = config?.root ? fileVersion + fileName : `${this.type}/${fileVersion}${fileName}`;
+    const templatePath = path.resolve(__dirname, `../templates/${filePath}.handlebars`);
     return readAndRenderTemplate(templatePath, data);
   }
 }

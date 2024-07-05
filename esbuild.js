@@ -4,7 +4,6 @@ const alias = require('esbuild-plugin-alias');
 const production = process.argv.includes('--production');
 const watch = process.argv.includes('--watch');
 const path = require('path');
-const { copy } = require('esbuild-plugin-copy');
 /**
  * @type {import('esbuild').Plugin}
  */
@@ -42,14 +41,6 @@ async function main() {
         '@': path.resolve(__dirname, './src'),
         '~': path.resolve(__dirname, './typings'),
         '#': path.resolve(__dirname, '.')
-      }),
-      copy({
-        resolveFrom: 'cwd',
-        assets: {
-          from: ['./src/templates/**/*'],
-          to: ['./out/templates']
-        },
-        watch: true
       }),
       /* add to the end of plugins array */
       esbuildProblemMatcherPlugin
