@@ -8,7 +8,9 @@ pnpm-lock.yaml
 # Generated files
 .psci
 out
-.vsix
+dist
+*.vsix
+.vscode-test/
 
 # 忽略test下的生成文件
 test/api-*/src/*

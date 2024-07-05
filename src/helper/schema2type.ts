@@ -1,10 +1,10 @@
+import { format } from '@/utils';
 import { OpenAPIV3_1 } from 'openapi-types';
-import { format } from '../utils';
 import { findBy$ref, get$refName, isReferenceObject } from './openapi';
 
 export interface Schema2TypeOptions {
   deep?: boolean; // 是否递归解析
-  shallowDeep?: boolean; //只有最外层是解析的
+  shallowDeep?: boolean; // 只有最外层是解析的
   defaultType?: 'any' | 'unknown'; // 未匹配的时的默认类型
   commentStyle?: 'line' | 'docment'; // 注释风格
   preText?: string; // 注释前缀
@@ -50,7 +50,7 @@ export function comment(type: 'line' | 'docment') {
         .split('\n')
         .map(item => `${preText} ${item}`)
         .join('\n');
-      idx++;
+      idx += 1;
     },
     end() {
       if (!str) {
@@ -140,8 +140,8 @@ function parseObject(
     if (value.deprecated) {
       doc.add('[deprecated]');
     }
-    valueStr = doc.end() + `${key}${optionalFlag}: ${type};`;
-    valueStr.split('\n').forEach(line => lines.push(' ' + line));
+    valueStr = `${doc.end()}${key}${optionalFlag}: ${type};`;
+    valueStr.split('\n').forEach(line => lines.push(` ${line}`));
   }
   lines.push(`}`);
   if (lines.length > 2) {
@@ -167,8 +167,9 @@ function parseArray(
   if (Array.isArray(schema.items)) {
     const types = schema.items.map(item => parseSchema(item, openApi, config));
     return `[\n${types.map(type => `${type},\n`)}\n]`;
-  } else if (schema.items) {
-    let items: OpenAPIV3_1.SchemaObject = schema.items;
+  }
+  if (schema.items) {
+    let items = schema.items as OpenAPIV3_1.SchemaObject;
     if (isReferenceObject(schema.items)) {
       if (!config.deep) {
         config.on$Ref?.(schema.items);

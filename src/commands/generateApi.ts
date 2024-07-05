@@ -1,13 +1,12 @@
-import * as vscode from 'vscode';
-import message from '../components/message';
-import generateApi from '../functions/generateApi';
-import readConfig from '../functions/readConfig';
-import { CONFIG_POOL } from '../modules/Configuration';
-import { getFileNameByPath } from '../utils';
+import message from '@/components/message';
+import generateApi from '@/functions/generateApi';
+import readConfig from '@/functions/readConfig';
+import { CONFIG_POOL } from '@/modules/Configuration';
+import { getFileNameByPath } from '@/utils';
 // 用于自动生成
 export default {
   commandId: 'alova.generateApi',
-  handler: (context: vscode.ExtensionContext) => async () => {
+  handler: () => async () => {
     // 读取配置文件
     await readConfig(false);
     // 生成api文件
@@ -23,20 +22,20 @@ export default {
       const openApiData = await configuration.getAllOpenApiData();
       const generatorConfigArr = configuration.config.generator;
       const result = await Promise.all(
-        outputPathArr.map((outputPath, idx) => {
+        outputPathArr.map((outputPath, idx) =>
           // 生成api文件
-          return generateApi(
+          generateApi(
             configuration.workspaceRootDir,
             outputPath,
             openApiData[idx],
             generatorConfigArr[idx],
             templateTypeArr[idx] ?? 'commonjs'
-          );
-        })
+          )
+        )
       );
       if (result.some(item => !!item)) {
         message.info(`[${fileName}]:Your API is updated`);
       }
     }
   }
-};
+} as Commonand;

@@ -5,7 +5,8 @@ import refresh from './commands/refresh';
 import setup from './commands/setup';
 import showStatusBarIcon from './commands/showStatusBarIcon';
 import Error from './components/error';
-const commands = [setup, refresh, showStatusBarIcon, generateApi, autocomplete];
+
+const commands = [setup, autocomplete, generateApi, refresh, showStatusBarIcon];
 
 export function activate(context: vscode.ExtensionContext) {
   // 插件注册
@@ -24,3 +25,6 @@ process.on('unhandledRejection', (error: Error) => {
     vscode.window.showErrorMessage(error?.message ?? error ?? 'unhandledRejection');
   }
 });
+export default {
+  activate
+};

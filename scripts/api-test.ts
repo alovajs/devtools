@@ -1,13 +1,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { projectPath } from '../src/utils/path';
+import { projectPath } from '../path';
+
 const DESIGN_NO_DIR = ['api-common'];
 /**
  * Recursively copies files from one directory to another
  * @param {string} src - The source directory
  * @param {string} dest - The destination directory
  */
-function copyDirectory(src, dest) {
+function copyDirectory(src: string, dest: string) {
   // Ensure the destination directory exists
   if (!fs.existsSync(dest)) {
     fs.mkdirSync(dest, { recursive: true });
@@ -17,7 +18,7 @@ function copyDirectory(src, dest) {
   const entries = fs.readdirSync(src, { withFileTypes: true });
 
   // Loop through each entry in the source directory
-  for (let entry of entries) {
+  for (const entry of entries) {
     const srcPath = path.join(src, entry.name);
     const destPath = path.join(dest, entry.name);
 
@@ -35,7 +36,7 @@ function copyDirectory(src, dest) {
  * @param {string} dir - The directory path to read
  * @returns {string[]} - An array of subdirectory names
  */
-function getSubdirectories(dir) {
+function getSubdirectories(dir: string) {
   // Read the contents of the directory
   const entries = fs.readdirSync(dir, { withFileTypes: true });
 

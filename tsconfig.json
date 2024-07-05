@@ -18,10 +18,13 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": false,
     "esModuleInterop": true,
+    "allowJs": true,
     "paths": {
-      "~/*": ["./typings/*"]
+      "~/*": ["./typings/*"],
+      "@/*": ["./src/*"],
+      "#/*": ["./*"]
     }
   },
-  "exclude": ["design/**"],
-  "include": ["src/**/*.ts", "typings/**/*.d.ts"]
+  "exclude": ["design/**", "test/**"],
+  "include": ["src/**/*.ts", "*.*js", "*.*ts", "scripts/**.*", "typings/**/*.d.ts"]
 }

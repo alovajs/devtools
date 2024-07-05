@@ -82,7 +82,7 @@ export const removeAll$ref = <T = OpenAPIV3_1.SchemaObject>(schemaOrigin: any, o
     schema = cloneDeep(schemaOrigin);
   }
   for (const key of Object.keys(schema)) {
-    if (schema[key] && typeof schema[key] == 'object') {
+    if (schema[key] && typeof schema[key] === 'object') {
       schema[key] = removeAll$ref(schema[key], openApi);
     }
   }
@@ -159,7 +159,7 @@ export function getNext$refKey(path: string, map: Array<[string, any]> = []) {
  */
 export const mergeObject = <T>(objValue: any, srcValue: any, openApi: OpenAPIV3_1.Document): T => {
   const map: Array<[string, any]> = [];
-  function customizer(objValue: any, srcValue: any, key: string): any {
+  function customizer(objValue: any, srcValue: any): any {
     // 如果都是数组，并且srcValue为空数组，则直接返回srcValue
     if (isArray(objValue) && isArray(srcValue) && !srcValue.length) {
       return srcValue;

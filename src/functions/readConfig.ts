@@ -1,11 +1,12 @@
+import Error from '@/components/error';
+import message from '@/components/message';
+import { loadJs, loadTs } from '@/helper/lodaders';
+import { CONFIG_POOL, Configuration } from '@/modules/Configuration';
 import chokidar, { FSWatcher } from 'chokidar';
 import { cosmiconfig } from 'cosmiconfig';
 import path from 'node:path';
 import * as vscode from 'vscode';
-import Error from '../components/error';
-import message from '../components/message';
-import { loadJs, loadTs } from '../helper/lodaders';
-import { CONFIG_POOL, Configuration } from '../modules/Configuration';
+
 const WATCH_CONFIG: Map<string, FSWatcher> = new Map();
 const alovaExplorer = cosmiconfig('alova', {
   cache: false,
@@ -97,7 +98,7 @@ export default async (isAutoUpdate: boolean = true) => {
   // 读取所有已存在配置的缓存文件
   await Promise.all(CONFIG_POOL.map(config => config.readAlovaJson()));
   for (const workspaceFolder of workspaceFolders) {
-    const workspaceRootPath = workspaceFolder.uri.fsPath + '/';
+    const workspaceRootPath = `${workspaceFolder.uri.fsPath}/`;
     const { config: alovaConfig } = await readConfig(workspaceRootPath);
     // 过滤掉没有配置文件
     if (!alovaConfig) {
@@ -110,7 +111,7 @@ export default async (isAutoUpdate: boolean = true) => {
     const configuration = new Configuration(alovaConfig, workspaceRootPath);
     // 检查新配置
     configuration.checkConfig();
-    //读取新配置的缓存文件
+    // 读取新配置的缓存文件
     await configuration.readAlovaJson();
     if (isAutoUpdate) {
       // 开启自动更新

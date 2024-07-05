@@ -1,9 +1,11 @@
 import { Loader, LoaderSync } from 'cosmiconfig';
+import importFresh from 'import-fresh';
 import { existsSync } from 'node:fs';
 import { rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import Error from '../components/error';
+
 let typescript: typeof import('typescript');
 export const loadTs: Loader = async function loadTs(filepath, content) {
   if (typescript === undefined) {
@@ -26,13 +28,8 @@ export const loadTs: Loader = async function loadTs(filepath, content) {
   }
   return createTempFile(filepath, transpiledContent, 'js', jsPath => loadJs(jsPath, transpiledContent));
 };
-let importFresh: typeof import('import-fresh');
-export const loadJsSync: LoaderSync = function loadJsSync(filepath) {
-  if (importFresh === undefined) {
-    importFresh = require('import-fresh');
-  }
-  return importFresh(filepath);
-};
+
+export const loadJsSync: LoaderSync = importFresh;
 export const loadEsModule = async (filepath: string) => {
   const { href } = pathToFileURL(filepath);
   return (await import(`${href}?t=${Date.now()}`)).default;
@@ -65,14 +62,14 @@ export const loadJs: Loader = async function loadJs(filepath, content) {
     } catch (error: any) {
       const errorStr = requireError.toString() + error.toString();
       if (errorStr.includes("SyntaxError: Unexpected token 'export'")) {
-        return await createTempFile(filepath, content, 'mjs', mjsPath => loadEsModule(mjsPath));
+        return createTempFile(filepath, content, 'mjs', mjsPath => loadEsModule(mjsPath));
       }
       if (
         errorStr.includes(
           'contains "type": "module". To treat it as a CommonJS script, rename it to use the \'.cjs\' file extension'
         )
       ) {
-        return await createTempFile(filepath, content, 'cjs', cjsPath => loadJsSync(cjsPath, ''));
+        return createTempFile(filepath, content, 'cjs', cjsPath => loadJsSync(cjsPath, ''));
       }
       if (
         requireError.code === 'ERR_REQUIRE_ESM' ||
@@ -86,9 +83,7 @@ export const loadJs: Loader = async function loadJs(filepath, content) {
   }
 };
 function resolveTsConfig(directory: string): any {
-  const filePath = typescript.findConfigFile(directory, fileName => {
-    return typescript.sys.fileExists(fileName);
-  });
+  const filePath = typescript.findConfigFile(directory, fileName => typescript.sys.fileExists(fileName));
   if (filePath !== undefined) {
     const { config, error } = typescript.readConfigFile(filePath, path => typescript.sys.readFile(path));
     if (error) {
@@ -96,5 +91,4 @@ function resolveTsConfig(directory: string): any {
     }
     return config;
   }
-  return;
 }

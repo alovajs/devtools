@@ -1,11 +1,15 @@
 .vscode/**
 .vscode-test/**
+dist/**
 src/**
 .gitignore
 .yarnrc
 vsc-extension-quickstart.md
 **/tsconfig.json
-**/.eslintrc.json
+**/.eslintrc.*
+**/prettier.config.*
 **/*.map
 **/*.ts
 **/.vscode-test.*
+pnpm-lock.yaml
+pnpm-workspace.yaml

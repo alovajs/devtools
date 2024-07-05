@@ -1,21 +1,25 @@
+import prettierConfig from '#/prettier.config.cjs';
+import Error from '@/components/error';
 import handlebars, { HelperOptions } from 'handlebars';
 import fetch from 'node-fetch';
 import fs, { promises } from 'node:fs';
 import path from 'node:path';
-import prettier, { Config as prettierConfig } from 'prettier';
-import Error from '../components/error';
-import { projectPath } from './path';
+import { Config as PrettierConfig } from 'prettier';
+import * as prettierBabel from 'prettier/plugins/babel';
+import * as prettierEsTree from 'prettier/plugins/estree';
+import * as prettierTs from 'prettier/plugins/typescript';
+import * as prettier from 'prettier/standalone';
+
 export const getType = (obj: any) => Object.prototype.toString.call(obj).slice(8, -1).toLowerCase();
 handlebars.registerHelper('isType', function (this: any, value, type: string, options: HelperOptions) {
   if (getType(value) === type) {
     return options.fn(this);
-  } else {
-    return options.inverse(this);
   }
+  return options.inverse(this);
 });
-handlebars.registerHelper('and', function (this: any) {
-  const args = Array.prototype.slice.call(arguments, 0, -1);
-  const options = arguments[arguments.length - 1];
+handlebars.registerHelper('and', function (this: any, ...rest) {
+  const args = Array.prototype.slice.call(rest, 0, -1);
+  const options = rest[rest.length - 1] as HelperOptions;
   const result = args.every(arg => {
     if (Array.isArray(arg)) {
       return arg.length === 0;
@@ -24,10 +28,9 @@ handlebars.registerHelper('and', function (this: any) {
   });
   return result ? options.fn(this) : options.inverse(this);
 });
-handlebars.registerHelper('or', function (this: any) {
-  const args = Array.prototype.slice.call(arguments, 0, -1);
-  const options = arguments[arguments.length - 1];
-
+handlebars.registerHelper('or', function (this: any, ...rest) {
+  const args = Array.prototype.slice.call(rest, 0, -1);
+  const options = rest[rest.length - 1] as HelperOptions;
   const result = args.some(arg => {
     if (Array.isArray(arg)) {
       return arg.length !== 0;
@@ -36,14 +39,14 @@ handlebars.registerHelper('or', function (this: any) {
   });
   return result ? options.fn(this) : options.inverse(this);
 });
-handlebars.registerHelper('eq', function (a, b) {
-  return a === b;
-});
+handlebars.registerHelper('eq', (a, b) => a === b);
 // 注册自定义助手函数 'raw'
-handlebars.registerHelper('raw', function (text) {
-  // 返回原始字符串，不进行 HTML 转义
-  return new handlebars.SafeString(text);
-});
+handlebars.registerHelper(
+  'raw',
+  text =>
+    // 返回原始字符串，不进行 HTML 转义
+    new handlebars.SafeString(text)
+);
 /**
  * 读取并渲染 handlebars 文件
  * @param templatePath 模板文件路径
@@ -51,14 +54,17 @@ handlebars.registerHelper('raw', function (text) {
  * @returns 渲染后的内容
  */
 export async function readAndRenderTemplate(templatePath: string, view: any): Promise<string> {
-  try {
-    const data = await promises.readFile(templatePath, 'utf-8');
-    return handlebars.compile(data)(view);
-  } catch (err) {
-    throw err;
-  }
+  const data = await promises.readFile(templatePath, 'utf-8');
+  return handlebars.compile(data)(view);
 }
-
+export async function format(text: string, config?: PrettierConfig) {
+  return prettier.format(text, {
+    ...(prettierConfig as PrettierConfig),
+    parser: 'typescript', // 指定使用 babel 解析器
+    ...(config ?? {}),
+    plugins: [prettierTs, prettierEsTree, prettierBabel]
+  });
+}
 /**
  * 传入文本内容，在指定目录下生成自定义文件
  * @param distDir 待生成文件所在目录
@@ -76,14 +82,6 @@ export async function generateFile(distDir: string, fileName: string, content: s
       return console.error('Error writing file:', err);
     }
     console.log('File written successfully at', filePath);
-  });
-}
-export function format(text: string, config?: prettierConfig) {
-  const prettierConfig = require(path.join(projectPath, './.prettierrc.cjs'));
-  return prettier.format(text, {
-    ...prettierConfig,
-    parser: 'typescript', // 指定使用 babel 解析器
-    ...(config ?? {})
   });
 }
 export async function fetchData(url: string) {
@@ -131,7 +129,7 @@ export function highPrecisionInterval(callback: () => void, intervalInMillisecon
   };
 }
 export const getFileNameByPath = (path: string) => {
-  const [, name] = /[\/\\]([^\/\\]+)([\/\\])?$/.exec(path) ?? [];
+  const [, name] = /[/\\]([^/\\]+)([/\\])?$/.exec(path) ?? [];
   return name ?? '';
 };
 // 去掉所有为空的undefined值

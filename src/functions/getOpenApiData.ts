@@ -1,11 +1,11 @@
+import Error from '@/components/error';
+import { fetchData } from '@/utils';
 import YAML from 'js-yaml';
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { OpenAPIV2, OpenAPIV3_1 } from 'openapi-types';
 import swagger2openapi from 'swagger2openapi';
-import Error from '../components/error';
-import { fetchData } from '../utils';
 // 判断是否是swagger2.0
 function isSwagger2(data: any): data is OpenAPIV2.Document {
   return !!data?.swagger;
@@ -56,10 +56,7 @@ async function parseRemoteFile(url: string, platformType?: PlatformType) {
 export async function getPlatformOpenApiData(url: string, platformType: PlatformType) {
   switch (platformType) {
     case 'swagger': {
-      const dataText =
-        (await fetchData(url + '/openapi.json').catch(error => {
-          return fetchData(url + '/v2/swagger.json');
-        })) ?? '';
+      const dataText = (await fetchData(`${url}/openapi.json`).catch(() => fetchData(`${url}/v2/swagger.json`))) ?? '';
       return JSON.parse(dataText);
     }
     default:

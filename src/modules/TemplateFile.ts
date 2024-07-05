@@ -1,23 +1,27 @@
+import Error from '@/components/error';
+import { TemplateData } from '@/functions/openApi2Data';
+import { format, generateFile, readAndRenderTemplate } from '@/utils';
 import fs from 'node:fs';
 import path from 'node:path';
-import { TemplateData } from '../functions/openApi2Data';
-import { format, generateFile, readAndRenderTemplate } from '../utils';
-import { srcPath } from '../utils/path';
+
 export const TEMPLATE_DATA = new Map<string, TemplateData>();
-export const getAlovaJsonPath = (workspaceRootDir: string, outputPath: string) => {
-  return path.join(workspaceRootDir, 'node_modules/.alova/', outputPath.split(/\/|\\/).join('_'));
-};
+export const getAlovaJsonPath = (workspaceRootDir: string, outputPath: string) =>
+  path.join(workspaceRootDir, 'node_modules/.alova/', outputPath.split(/\/|\\/).join('_'));
 export class TemplateFile {
   fileName: string;
+
   type: TemplateType;
+
   constructor(type: TemplateType) {
     // 根据type确定使用哪个模板文件夹下的模板
     this.type = type;
   }
-  //获取生成文件的后缀名
+
+  // 获取生成文件的后缀名
   getExt() {
     return TemplateFile.getExt(this.type);
   }
+
   static getExt(type: TemplateType) {
     switch (type) {
       case 'typescript':
@@ -26,6 +30,7 @@ export class TemplateFile {
         return '.js';
     }
   }
+
   static getModuleType(type: TemplateType) {
     switch (type) {
       case 'typescript':
@@ -35,6 +40,7 @@ export class TemplateFile {
         return 'commonJs';
     }
   }
+
   async outputFile(
     data: Record<string, any>,
     fileName: string,
@@ -45,9 +51,10 @@ export class TemplateFile {
     const renderContent = await this.readAndRenderTemplate(fileName, data, config);
     await generateFile(ouput, `${config?.outFileName ?? fileName}${config?.ext ?? this.getExt()}`, renderContent);
   }
+
   readAndRenderTemplate(fileName: string, data: any, config?: { root?: boolean }) {
     const filePath = config?.root ? fileName : `${this.type}/${fileName}`;
-    const templatePath = path.resolve(srcPath, `templates/${filePath}.handlebars`);
+    const templatePath = path.resolve(__dirname, `./templates/${filePath}.handlebars`);
     return readAndRenderTemplate(templatePath, data);
   }
 }
@@ -75,7 +82,7 @@ export const readAlovaJson = (originPath: string, name = 'api.json') => {
   const filePath = `${originPath}_${name}`;
   return new Promise<TemplateData>((resolve, reject) => {
     if (!fs.existsSync(filePath)) {
-      reject('alovaJson not exists');
+      reject(new Error('alovaJson not exists'));
       return;
     }
     // 使用 fs.readFile 读取 JSON 文件

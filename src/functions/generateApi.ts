@@ -1,10 +1,11 @@
+import openApi2Data from '@/functions/openApi2Data';
+import { getAlovaJsonPath, TEMPLATE_DATA, TemplateFile, writeAlovaJson } from '@/modules/TemplateFile';
 import { isEqual } from 'lodash';
 import fs from 'node:fs';
 import path from 'node:path';
 import { OpenAPIV3_1 } from 'openapi-types';
-import openApi2Data from '../functions/openApi2Data';
-import { getAlovaJsonPath, TEMPLATE_DATA, TemplateFile, writeAlovaJson } from '../modules/TemplateFile';
 import getFrameworkTag from './getFrameworkTag';
+
 export default async function (
   workspaceRootDir: string,
   outputPath: string,

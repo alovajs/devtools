@@ -1,22 +1,28 @@
+import generateApi from '@/commands/generateApi';
+import Error from '@/components/error';
+import getAutoTemplateType from '@/functions/getAutoTemplateType';
+import getOpenApiData from '@/functions/getOpenApiData';
+import { getAlovaJsonPath, readAlovaJson, TEMPLATE_DATA } from '@/modules/TemplateFile';
+import { highPrecisionInterval } from '@/utils';
 import * as vscode from 'vscode';
-import generateApi from '../commands/generateApi';
-import Error from '../components/error';
-import getAutoTemplateType from '../functions/getAutoTemplateType';
-import getOpenApiData from '../functions/getOpenApiData';
-import { getAlovaJsonPath, readAlovaJson, TEMPLATE_DATA } from '../modules/TemplateFile';
-import { highPrecisionInterval } from '../utils';
+
 export const CONFIG_POOL: Array<Configuration> = [];
 export class Configuration {
   config: AlovaConfig;
+
   workspaceRootDir: string;
+
   autoUpdateControl: ReturnType<typeof highPrecisionInterval>;
+
   // 是否应该开始更新api
   shouldUpdate: boolean;
+
   constructor(config: AlovaConfig, workspaceRootDir: string) {
-    //配置文件
+    // 配置文件
     this.config = config;
     this.workspaceRootDir = workspaceRootDir;
   }
+
   // 检测配置文件
   checkConfig() {
     if (!this.config.generator?.length) {
@@ -33,20 +39,21 @@ export class Configuration {
     if (typeof this.config.autoUpdate === 'object') {
       const { interval } = this.config.autoUpdate;
       const time = Number(interval);
-      if (isNaN(time)) {
+      if (Number.isNaN(time)) {
         this.closeAutoUpdate();
         throw new Error('autoUpdate.interval must be a number');
       }
       if (time <= 0) {
-        //最少一秒钟
+        // 最少一秒钟
         throw new Error('Expected to set number which great than 1 in `config.autoUpdate.interval`');
       }
     }
   }
+
   getTemplateType(generator: GeneratorConfig): TemplateType {
     let type: TemplateType;
     const configType = generator.type ?? 'auto';
-    //根据配置文件中的type来判断模板类型
+    // 根据配置文件中的type来判断模板类型
     switch (configType) {
       case 'ts':
       case 'typescript':
@@ -64,23 +71,25 @@ export class Configuration {
     }
     return type;
   }
+
   getAllTemplateType() {
     return this.config.generator.map(generator => this.getTemplateType(generator));
   }
-  getOutputPath(generator: GeneratorConfig) {
-    return generator.output;
-  }
+
   getAllOutputPath() {
-    return this.config.generator.map(generator => this.getOutputPath(generator));
+    return this.config.generator.map(generator => generator.output);
   }
+
   // 获取openapi数据
   getOpenApiData(generator: GeneratorConfig) {
     return getOpenApiData(this.workspaceRootDir, generator.input, generator.platform);
   }
+
   // 获取所有openapi数据
   getAllOpenApiData() {
     return Promise.all(this.config.generator.map(generator => this.getOpenApiData(generator)));
   }
+
   private getAutoUpdateConfig() {
     const autoUpdateConfig = this.config.autoUpdate;
     let time = 60 * 5; // 默认五分钟
@@ -94,6 +103,7 @@ export class Configuration {
       immediate
     };
   }
+
   autoUpdate() {
     const autoUpdateConfig = this.config.autoUpdate;
     if (!autoUpdateConfig) {
@@ -111,9 +121,11 @@ export class Configuration {
     this.autoUpdateControl.time = time;
     return this.autoUpdateControl;
   }
+
   closeAutoUpdate() {
     this.autoUpdateControl?.clear?.();
   }
+
   refreshAutoUpdate() {
     const autoUpdateConfig = this.config.autoUpdate;
     if (!autoUpdateConfig) {
@@ -128,6 +140,7 @@ export class Configuration {
     this.closeAutoUpdate();
     this.autoUpdate();
   }
+
   readAlovaJson() {
     const allAlovaJSon = this.config.generator.map(generator => {
       const alovaJsonPath = getAlovaJsonPath(this.workspaceRootDir, generator.output);

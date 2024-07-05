@@ -9,6 +9,7 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 'latest',
+    project: './tsconfig.json', // 确保路径正确
     tsconfigRootDir: __dirname
   },
   plugins: ['@typescript-eslint', 'prettier'],
@@ -33,7 +34,8 @@ module.exports = {
     'guard-for-in': 'off',
     'max-classes-per-file': 'off',
     'no-await-in-loop': 'off',
-
+    'func-names': 'off',
+    'no-continue': 'off',
     // @typescript-eslint
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-unused-vars': ['error', { destructuredArrayIgnorePattern: '^_' }],
@@ -44,6 +46,7 @@ module.exports = {
     '@typescript-eslint/no-unused-expressions': 'off',
     '@typescript-eslint/no-implied-eval': 'off',
     '@typescript-eslint/no-shadow': 'off',
+    '@typescript-eslint/no-use-before-define': 'off',
     'no-empty': 'off'
   }
 };

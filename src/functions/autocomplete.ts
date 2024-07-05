@@ -1,8 +1,9 @@
+import { AUTO_COMPLETE } from '@/components/autocomplete';
+import { CONFIG_POOL } from '@/modules/Configuration';
+import { TEMPLATE_DATA, getAlovaJsonPath } from '@/modules/TemplateFile';
 import path from 'node:path';
-import { AUTO_COMPLETE } from '../components/autocomplete';
-import { CONFIG_POOL } from '../modules/Configuration';
-import { TEMPLATE_DATA, getAlovaJsonPath } from '../modules/TemplateFile';
 import { Api } from './openApi2Data';
+
 type AutoCompleteItem = {
   replaceText: string;
   summary: string;
@@ -48,9 +49,7 @@ const filterAutoCompleteItem = (text: string, apiArr: Api[]): AutoCompleteItem[]
 };
 export default (text: string): AutoCompleteItem[] => {
   const filePath = AUTO_COMPLETE.path;
-  const config = CONFIG_POOL.find(item => {
-    return filePath.includes(path.resolve(item.workspaceRootDir));
-  });
+  const config = CONFIG_POOL.find(item => filePath.includes(path.resolve(item.workspaceRootDir)));
   console.log(config, text, CONFIG_POOL);
 
   if (!config) {

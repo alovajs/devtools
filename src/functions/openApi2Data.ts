@@ -1,9 +1,10 @@
+import { generateDefaultValues } from '@/helper/typeStr';
+import { format, removeUndefined } from '@/utils';
 import { cloneDeep } from 'lodash';
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
 import { findBy$ref, get$refName, isReferenceObject, mergeObject, removeAll$ref } from '../helper/openapi';
 import { convertToType, jsonSchema2TsStr } from '../helper/schema2type';
-import { generateDefaultValues } from '../helper/typeStr';
-import { format, removeUndefined } from '../utils';
+
 type Path = {
   key: string;
   method: string;
@@ -30,7 +31,7 @@ interface PathApis {
   apis: Api[];
 }
 export const getApiDefultValue = (api: Api) => {
-  let configStrArr: string[] = [];
+  const configStrArr: string[] = [];
   if (api.pathParametersComment) {
     configStrArr.push(`pathParams: ${generateDefaultValues(api.pathParametersComment.replaceAll('*', ''))}`);
   }
@@ -69,8 +70,8 @@ const remove$ref = (
   openApi: OpenAPIV3_1.Document,
   schemasMap?: Map<string, string>,
   preText: string = ''
-): Promise<string> => {
-  return convertToType(originObj, openApi, {
+): Promise<string> =>
+  convertToType(originObj, openApi, {
     deep: false,
     commentStyle: 'docment',
     preText,
@@ -88,7 +89,6 @@ const remove$ref = (
       }
     }
   });
-};
 const parseResponse = async (
   responses: OpenAPIV3_1.ResponsesObject | undefined,
   openApi: OpenAPIV3_1.Document,
@@ -219,7 +219,7 @@ export const transformPathObj = async (
   openApi: OpenAPIV3_1.Document,
   config: GeneratorConfig
 ) => {
-  const handleApi = config.handleApi;
+  const { handleApi } = config;
   const pathObj = cloneDeep(pathObjOrigin);
   if (!handleApi || typeof handleApi !== 'function') {
     return { ...pathObjOrigin, url, method };
