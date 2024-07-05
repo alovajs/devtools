@@ -1,13 +1,11 @@
-const esbuild = require('esbuild');
-const alias = require('esbuild-plugin-alias');
+import esbuild, { Plugin } from 'esbuild';
+import alias from 'esbuild-plugin-alias';
+import path from 'node:path';
 
 const production = process.argv.includes('--production');
 const watch = process.argv.includes('--watch');
-const path = require('path');
-/**
- * @type {import('esbuild').Plugin}
- */
-const esbuildProblemMatcherPlugin = {
+
+const esbuildProblemMatcherPlugin: Plugin = {
   name: 'esbuild-problem-matcher',
 
   setup(build) {
@@ -17,7 +15,7 @@ const esbuildProblemMatcherPlugin = {
     build.onEnd(result => {
       result.errors.forEach(({ text, location }) => {
         console.error(`✘ [ERROR] ${text}`);
-        console.error(`    ${location.file}:${location.line}:${location.column}:`);
+        console.error(`    ${location?.file ?? ''}:${location?.line ?? ''}:${location?.column ?? ''}:`);
       });
       console.log('[watch] build finished');
     });
@@ -26,14 +24,14 @@ const esbuildProblemMatcherPlugin = {
 
 async function main() {
   const ctx = await esbuild.context({
-    entryPoints: ['src/extension.ts'],
+    entryPoints: ['src/extension.ts', 'src/work.ts'],
     bundle: true,
     format: 'cjs',
     minify: production,
     sourcemap: !production,
     sourcesContent: false,
     platform: 'node',
-    outfile: 'out/extension.js',
+    outdir: 'out',
     external: ['vscode'],
     logLevel: 'silent',
     plugins: [
@@ -41,7 +39,7 @@ async function main() {
         '@': path.resolve(__dirname, './src'),
         '~': path.resolve(__dirname, './typings'),
         '#': path.resolve(__dirname, '.')
-      }),
+      }) as Plugin,
       /* add to the end of plugins array */
       esbuildProblemMatcherPlugin
     ]

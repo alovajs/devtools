@@ -1,3 +1,4 @@
+/* eslint-disable no-bitwise */
 import prettierConfig from '#/prettier.config.cjs';
 import Error from '@/components/error';
 import handlebars, { HelperOptions } from 'handlebars';
@@ -145,4 +146,18 @@ export function removeUndefined<T>(obj: T) {
     }
     return result;
   }, defaultObject) as T;
+}
+// 加载ESM 模块
+export function loadEsmModule<T>(modulePath: string | URL): Promise<T> {
+  return new Function('modulePath', `return import(modulePath);`)(modulePath) as Promise<T>;
+}
+// 生成唯一id
+export function uuid() {
+  let dt = new Date().getTime();
+  const id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = (dt + Math.random() * 16) % 16 | 0;
+    dt = Math.floor(dt / 16);
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  });
+  return id;
 }

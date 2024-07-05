@@ -1,10 +1,11 @@
+import Error from '@/components/error';
 import { Loader, LoaderSync } from 'cosmiconfig';
 import importFresh from 'import-fresh';
 import { existsSync } from 'node:fs';
 import { rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import Error from '../components/error';
+import { alovaWork } from './work';
 
 let typescript: typeof import('typescript');
 export const loadTs: Loader = async function loadTs(filepath, content) {
@@ -30,9 +31,10 @@ export const loadTs: Loader = async function loadTs(filepath, content) {
 };
 
 export const loadJsSync: LoaderSync = importFresh;
+
 export const loadEsModule = async (filepath: string) => {
   const { href } = pathToFileURL(filepath);
-  return (await import(`${href}?t=${Date.now()}`)).default;
+  return (await alovaWork.importEsmModule<any>(`${href}?t=${Date.now()}`)).default;
 };
 export const createTempFile = async <T = any>(
   filepath: string,
