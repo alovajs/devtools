@@ -65,7 +65,7 @@ declare interface AlovaConfig {
 }
 declare interface Commonand {
   commandId: string;
-  handler: (context: import('vscode').ExtensionContext) => <T = void>() => T | Promise<T>;
+  handler: (context: import('vscode').ExtensionContext) => <T = void, U = []>(...args: U) => T | Promise<T>;
 }
 type UnionToIntersection<U> = (U extends any ? (x: U) => any : never) extends (x: infer R) => any ? R : never;
 

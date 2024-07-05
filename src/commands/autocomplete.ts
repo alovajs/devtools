@@ -1,4 +1,3 @@
-import { AUTO_COMPLETE } from '@/components/autocomplete';
 import * as vscode from 'vscode';
 
 function countLeadingSpace(str: string): number {
@@ -7,16 +6,16 @@ function countLeadingSpace(str: string): number {
 }
 export default {
   commandId: 'alova.autocomplete',
-  handler: () => () => {
+  handler: () => (autoText: string) => {
     const editor = vscode.window.activeTextEditor;
-    if (!editor || !AUTO_COMPLETE.text) {
+    if (!editor) {
       return;
     }
     const position = editor.selection.active;
     const { document } = editor;
     const text = document.lineAt(position).text.slice(0, position.character);
     const preText = Array(countLeadingSpace(text)).fill(' ').join('');
-    const replaceText = AUTO_COMPLETE.text
+    const replaceText = autoText
       .split('\n')
       .map((line, idx) => `${idx > 0 ? preText : ''}${line}`)
       .join('\n')
@@ -27,7 +26,6 @@ export default {
         new vscode.Range(new vscode.Position(position.line, result?.index ?? 0), position),
         replaceText
       );
-      AUTO_COMPLETE.text = '';
     });
   }
 } as Commonand;
