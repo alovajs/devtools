@@ -1,6 +1,8 @@
-import { loadEsmModule } from '@/utils';
+import { loadEsmModule } from '@/utils/work';
 import { parentPort } from 'worker_threads';
-
+/**
+ * work子线程，用来处理主线程不能处理的东西，不能引入vscode模块
+ */
 parentPort?.on('message', async ({ type, payload, id }) => {
   switch (type) {
     // 支持动态imort esm

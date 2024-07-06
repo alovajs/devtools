@@ -1,6 +1,7 @@
 import Error from '@/components/error';
 import { AlovaVersion } from '@/functions/getAlovaVersion';
 import { TemplateData } from '@/functions/openApi2Data';
+import { TEMPLATE_PATH } from '@/globalConfig';
 import { format, generateFile, readAndRenderTemplate } from '@/utils';
 import { cloneDeep, merge } from 'lodash';
 import fs from 'node:fs';
@@ -75,7 +76,7 @@ export class TemplateFile {
     const config = merge(cloneDeep(DEFAULT_OPTIONS), userConfig);
     const fileVersion = config.hasVersion ? this.getVersion() : '';
     const filePath = config?.root ? fileVersion + fileName : `${this.type}/${fileVersion}${fileName}`;
-    const templatePath = path.resolve(__dirname, `../templates/${filePath}.handlebars`);
+    const templatePath = path.resolve(TEMPLATE_PATH, `./${filePath}.handlebars`);
     return readAndRenderTemplate(templatePath, data);
   }
 }

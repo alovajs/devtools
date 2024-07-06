@@ -1,5 +1,8 @@
-export const alovaJSConfigFilename = 'alova.config.js';
-export const alovaTSConfigFilename = 'alova.config.ts';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+
 export const frameworkName: ['vue', 'react'] = ['vue', 'react'];
-// openapi平台对应url
-export const jsonUrl = 'https://generator3.swagger.io/openapi.json';
+// work.js线程路径
+export const WORK_PATH = pathToFileURL(path.join(__dirname, '/work.js'));
+// 渲染模板路径
+export const TEMPLATE_PATH = path.join(__dirname, '../templates');

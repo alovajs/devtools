@@ -1,10 +1,9 @@
+import { WORK_PATH } from '@/globalConfig';
 import { uuid } from '@/utils';
-import path from 'node:path';
 import { Worker } from 'worker_threads';
 
 interface Task {
   type: string;
-  id: string;
   payload: {
     resolve: (data: any) => void;
     reject: (reason: any) => void;
@@ -13,15 +12,15 @@ interface Task {
 export default class AlovaWork {
   private alovaWork: Worker;
 
-  private taskArr: Task[] = [];
+  private taskMap = new Map<string, Task>();
 
   constructor() {
-    this.alovaWork = new Worker(path.join(__dirname, '/work.js'));
+    this.alovaWork = new Worker(WORK_PATH);
     this.alovaWork.on('message', async ({ type, id, payload }) => {
-      const task = this.taskArr.find(task => task.id === id);
-      if (!task) {
+      if (!this.taskMap.has(id)) {
         return;
       }
+      const task = this.taskMap.get(id) as Task;
       switch (type) {
         case 'import': {
           const { data, error } = payload;
@@ -36,10 +35,10 @@ export default class AlovaWork {
           console.log(type, payload);
         }
       }
-      const idx = this.taskArr.findIndex(item => item.id === task.id);
-      if (idx >= 0) {
-        this.taskArr.splice(idx, 1);
-      }
+      this.taskMap.delete(id);
+    });
+    this.alovaWork.on('error', error => {
+      console.log(error, 47);
     });
   }
 
@@ -51,7 +50,7 @@ export default class AlovaWork {
         id: taskId,
         payload: modulePath
       });
-      this.taskArr.push({ type: 'import', id: taskId, payload: { resolve, reject } });
+      this.taskMap.set(taskId, { type: 'import', payload: { resolve, reject } });
     });
   }
 }

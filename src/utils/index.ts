@@ -147,10 +147,7 @@ export function removeUndefined<T>(obj: T) {
     return result;
   }, defaultObject) as T;
 }
-// 加载ESM 模块
-export function loadEsmModule<T>(modulePath: string | URL): Promise<T> {
-  return new Function('modulePath', `return import(modulePath);`)(modulePath) as Promise<T>;
-}
+
 // 生成唯一id
 export function uuid() {
   let dt = new Date().getTime();
