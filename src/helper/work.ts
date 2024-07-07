@@ -1,5 +1,5 @@
 import { WORK_PATH } from '@/globalConfig';
-import { uuid } from '@/utils';
+import { deserialize, uuid } from '@/utils';
 import { Worker } from 'worker_threads';
 
 interface Task {
@@ -27,7 +27,7 @@ export default class AlovaWork {
           if (!data) {
             task.payload.reject(error);
           } else {
-            task.payload.resolve(data);
+            task.payload.resolve(deserialize(data));
           }
           break;
         }

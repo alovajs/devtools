@@ -1,5 +1,7 @@
 import { loadEsmModule } from '@/utils/work';
+import serialize from 'serialize-javascript';
 import { parentPort } from 'worker_threads';
+
 /**
  * work子线程，用来处理主线程不能处理的东西，不能引入vscode模块
  */
@@ -10,7 +12,7 @@ parentPort?.on('message', async ({ type, payload, id }) => {
       let data: any;
       let error: any;
       try {
-        data = JSON.parse(JSON.stringify(await loadEsmModule<any>(payload)));
+        data = serialize(await loadEsmModule<any>(payload));
       } catch (err) {
         error = err;
       }

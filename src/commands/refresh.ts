@@ -13,6 +13,7 @@ export default {
       loading();
       // 读取配置文件
       await readConfig();
+
       // 生成api文件
       for (const configuration of CONFIG_POOL) {
         const outputPathArr = configuration.getAllOutputPath();

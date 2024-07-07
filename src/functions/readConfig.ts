@@ -125,6 +125,8 @@ export default async (isAutoUpdate: boolean = true) => {
     const configuration = new Configuration(alovaConfig, workspaceRootPath);
     // 检查新配置
     configuration.checkConfig();
+    // 加入配置池子
+    CONFIG_POOL.push(configuration);
     // 读取新配置的缓存文件
     await configuration.readAlovaJson();
     if (isAutoUpdate) {
@@ -133,8 +135,6 @@ export default async (isAutoUpdate: boolean = true) => {
     } else {
       configuration.refreshAutoUpdate();
     }
-    // 加入配置池子
-    CONFIG_POOL.push(configuration);
   }
   // 提示用户创建配置文件
   if (workspaceFolders.length && workspaceFolders.length === NO_CONFIG_WORKSPACE.size) {

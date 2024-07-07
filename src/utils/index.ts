@@ -158,3 +158,8 @@ export function uuid() {
   });
   return id;
 }
+// 反序列化
+export function deserialize(serializedJavascript: string) {
+  // eslint-disable-next-line no-eval
+  return eval(`(${serializedJavascript})`);
+}
