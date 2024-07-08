@@ -1,7 +1,8 @@
 import Error from '@/components/error';
+import { ALOVA_TEMP_PATH } from '@/globalConfig';
 import { Loader, LoaderSync } from 'cosmiconfig';
 import importFresh from 'import-fresh';
-import { existsSync } from 'node:fs';
+import { existsSync, mkdirSync } from 'node:fs';
 import { rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -43,7 +44,12 @@ export const createTempFile = async <T = any>(
   callback?: (compiledFilepath: string) => T | Promise<T>
 ) => {
   const parsedPath = path.parse(filepath);
-  const compiledFilepath = path.join(parsedPath.dir, `${Date.now()}-${Math.random().toString(16).slice(2)}.${ext}`);
+  const addPath = ALOVA_TEMP_PATH;
+  const dirPath = path.join(parsedPath.dir, parsedPath.dir.includes(addPath) ? '' : addPath);
+  const compiledFilepath = path.join(dirPath, `${Date.now()}-${Math.random().toString(16).slice(2)}.${ext}`);
+  if (!existsSync(dirPath)) {
+    mkdirSync(dirPath, { recursive: true });
+  }
   let result = null;
   try {
     await writeFile(compiledFilepath, content);

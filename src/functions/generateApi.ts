@@ -4,7 +4,7 @@ import { isEqual } from 'lodash';
 import fs from 'node:fs';
 import path from 'node:path';
 import { OpenAPIV3_1 } from 'openapi-types';
-import getAlovaVersion from './getAlovaVersion';
+import getAlovaVersion, { AlovaVersion } from './getAlovaVersion';
 import getFrameworkTag from './getFrameworkTag';
 
 export default async function (
@@ -23,7 +23,10 @@ export default async function (
   // 缓存文件地址
   const alovaJsonPath = getAlovaJsonPath(workspaceRootDir, outputPath);
   // 获取alova版本
-  const alovaVersion = getAlovaVersion(workspaceRootDir);
+  const configVersion = Number(config.version);
+  const alovaVersion: AlovaVersion = Number.isNaN(configVersion)
+    ? getAlovaVersion(workspaceRootDir)
+    : `v${configVersion}`;
   const templateFile = new TemplateFile(type, alovaVersion);
   // 将openApi对象转成template对象
   const templateData = await openApi2Data(data, config);
@@ -36,6 +39,8 @@ export default async function (
   });
   // 模块类型
   templateData.moduleType = TemplateFile.getModuleType(type);
+  // alova版本
+  templateData.alovaVersion = alovaVersion;
   // 是否需要生成api文件
   // 判断是否需要生成api文件
   if (!force && isEqual(templateData, TEMPLATE_DATA.get(alovaJsonPath))) {

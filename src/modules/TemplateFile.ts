@@ -1,7 +1,7 @@
 import Error from '@/components/error';
 import { AlovaVersion } from '@/functions/getAlovaVersion';
 import { TemplateData } from '@/functions/openApi2Data';
-import { TEMPLATE_PATH } from '@/globalConfig';
+import { ALOVA_TEMP_PATH, TEMPLATE_PATH } from '@/globalConfig';
 import { format, generateFile, readAndRenderTemplate } from '@/utils';
 import { cloneDeep, merge } from 'lodash';
 import fs from 'node:fs';
@@ -9,7 +9,7 @@ import path from 'node:path';
 
 export const TEMPLATE_DATA = new Map<string, TemplateData>();
 export const getAlovaJsonPath = (workspaceRootDir: string, outputPath: string) =>
-  path.join(workspaceRootDir, 'node_modules/.alova/', outputPath.split(/\/|\\/).join('_'));
+  path.join(workspaceRootDir, ALOVA_TEMP_PATH, outputPath.split(/\/|\\/).join('_'));
 interface RenderTemplateOptions {
   root?: boolean;
   hasVersion?: boolean;

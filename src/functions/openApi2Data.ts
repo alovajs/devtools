@@ -4,6 +4,7 @@ import { cloneDeep } from 'lodash';
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
 import { findBy$ref, get$refName, isReferenceObject, mergeObject, removeAll$ref } from '../helper/openapi';
 import { convertToType, jsonSchema2TsStr } from '../helper/schema2type';
+import { AlovaVersion } from './getAlovaVersion';
 
 type Path = {
   key: string;
@@ -63,6 +64,7 @@ export interface TemplateData extends Omit<OpenAPIV3_1.Document, ''> {
   pathsArr: Path[];
   schemas?: string[];
   pathApis: PathApis[];
+  alovaVersion: AlovaVersion;
   commentText: string;
 }
 const remove$ref = (
@@ -311,7 +313,8 @@ export default async function openApi2Data(
     pathsArr: [],
     pathApis: [],
     commentText: '',
-    schemas: []
+    schemas: [],
+    alovaVersion: 'v2'
   };
   const schemasMap = new Map<string, string>();
   const paths = openApi.paths || [];

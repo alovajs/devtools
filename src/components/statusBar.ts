@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 export const loading = (text: string = '') => {
   statusBarItem.text = `$(sync~spin) ${text} Loading...`;
   statusBarItem.tooltip = 'loading';
-  statusBarItem.command = '';
+  delete statusBarItem.command;
 };
 export const reset = () => {
   statusBarItem.text = `$(alova-icon-id) alova`;
