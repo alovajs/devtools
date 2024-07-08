@@ -42,7 +42,7 @@ export const createApis = (alovaInstance: Alova<any, any, any, any, any>, config
     }
   );
 
-type MethodConfig<T> = AlovaMethodCreateConfig<any, T, RequestInit, Headers>;
+type MethodConfig<T> = typeof import('./index')['alovaInstance'] extends Alova<any, any, infer RC, any, infer RH> ? import('alova').AlovaMethodCreateConfig<any, T, RC, RH> : never;
 type APISofParameters<Tag extends string, Url extends string> = Tag extends keyof APIS
   ? Url extends keyof APIS[Tag]
     ? APIS[Tag][Url] extends (...args: any) => any

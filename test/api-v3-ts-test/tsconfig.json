@@ -4,6 +4,7 @@
     "baseUrl": ".",
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "strictNullChecks": true,
     "paths": {
       "@/*": ["./src/*"]
     }

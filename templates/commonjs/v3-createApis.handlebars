@@ -52,12 +52,12 @@ const createApis = (alovaInstance, configMap) =>
     }
   );
 
- /**
+/**
  * @template T
- * @typedef {import('alova').AlovaMethodCreateConfig<AlovaGenericsany, any, T>} MethodConfig
+ * @typedef {import('alova').AlovaMethodCreateConfig<typeof import('./index')['alovaInstance'] extends import('alova').Alova<infer AG> ? AG : any, any, T>} MethodConfig
  */
 /**
- * @typedef {{#raw "{{ " }}{{/raw}}[P in keyof typeof import('./apiDefinitions')]?: MethodConfig<P extends `${infer Tag}.${infer Url}` ? Parameters<Parameters<APIS[Tag][Url]>[0]['transformData']>[0] : any>{{#raw " }}" }}{{/raw}} MethodsConfigMap
+ * @typedef {{#raw "{{ " }}{{/raw}}[P in keyof typeof import('./apiDefinitions')]?: MethodConfig<P extends `${infer Tag}.${infer Url}` ? Parameters<Parameters<APIS[Tag][Url]>[0]['transform']>[0] : any>{{#raw " }}" }}{{/raw}} MethodsConfigMap
  */
 /**
  * @template {MethodsConfigMap} Config

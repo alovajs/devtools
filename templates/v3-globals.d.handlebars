@@ -1,5 +1,5 @@
 {{{commentText}}}
-import { Alova, AlovaMethodCreateConfig, Method } from 'alova';
+import { Alova, AlovaMethodCreateConfig, AlovaGenerics, Method } from 'alova';
 import type { $$userConfigMap, alovaInstance } from '.';
 import type apiDefinitions from './apiDefinitions';
 
@@ -9,20 +9,19 @@ type UserMethodConfigMap = typeof $$userConfigMap;
 type Alova2MethodConfig<Responded> =
   CollapsedAlova extends Alova<
     AlovaGenerics<
-      infer State,
-      infer Computed,
-      infer Watches,
-      infer Export,
       any,
       any,
       infer RequestConfig,
       infer Response,
-      infer ResponseHeader
+      infer ResponseHeader,
+      infer L1Cache,
+      infer L2Cache,
+      infer SE
     >
   >
     ? Omit<
         AlovaMethodCreateConfig<
-          AlovaGenerics<State, Computed, Watches, Export, Responded, any, RequestConfig, Response, ResponseHeader>,
+          AlovaGenerics<Responded, any, RequestConfig, Response, ResponseHeader, L1Cache, L2Cache, SE>,
           any,
           Responded
         >,
@@ -46,23 +45,18 @@ type Alova2Method<
 > =
   CollapsedAlova extends Alova<
     AlovaGenerics<
-      infer State,
-      infer Computed,
-      infer Watches,
-      infer Export,
       any,
       any,
       infer RequestConfig,
       infer Response,
-      infer ResponseHeader
+      infer ResponseHeader,
+      infer L1Cache,
+      infer L2Cache,
+      infer SE
     >
   >
     ? Method<
         AlovaGenerics<
-          State,
-          Computed,
-          Watches,
-          Export,
           CurrentConfig extends undefined
             ? ExtractUserDefinedTransformed<DefinitionKey, Responded>
             : CurrentConfig['transform'] extends (...args: any[]) => any
@@ -71,7 +65,10 @@ type Alova2Method<
           any,
           RequestConfig,
           Response,
-          ResponseHeader
+          ResponseHeader,
+          L1Cache,
+          L2Cache,
+          SE
         >
       >
     : never;

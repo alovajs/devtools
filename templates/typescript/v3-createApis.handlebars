@@ -42,7 +42,7 @@ export const createApis = (alovaInstance: Alova<AlovaGenerics>, configMap: any) 
     }
   );
 
-type MethodConfig<T> = AlovaMethodCreateConfig<AlovaGenerics, any , T>;
+type MethodConfig<T> = AlovaMethodCreateConfig<typeof import('./index')['alovaInstance'] extends Alova<infer AG> ? AG : any, any, T>;
 type APISofParameters<Tag extends string, Url extends string> = Tag extends keyof APIS
   ? Url extends keyof APIS[Tag]
     ? APIS[Tag][Url] extends (...args: any) => any
@@ -52,7 +52,7 @@ type APISofParameters<Tag extends string, Url extends string> = Tag extends keyo
   : any;
 type MethodsConfigMap = {
   [P in keyof typeof import('./apiDefinitions').default]?: MethodConfig<
-    P extends `${infer Tag}.${infer Url}` ? Parameters<APISofParameters<Tag, Url>[0]['transformData']>[0] : any
+    P extends `${infer Tag}.${infer Url}` ? Parameters<APISofParameters<Tag, Url>[0]['transform']>[0] : any
   >;
 };
 export const withConfigType = <Config extends MethodsConfigMap>(config: Config) => config;
