@@ -10,5 +10,11 @@ export default {
     // 读取配置文件
     readConfig();
     context.subscriptions.push(autocomplete);
+    vscode.workspace.onDidChangeWorkspaceFolders(event => {
+      event.added.forEach(() => {
+        // 读取配置文件
+        readConfig();
+      });
+    });
   }
 } as Commonand;

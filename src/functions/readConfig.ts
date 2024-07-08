@@ -65,30 +65,36 @@ export async function readConfig(workspaceRootPath: string, createWatch = true) 
     }
   }
   const searchResult = await alovaExplorer.search(path.resolve(workspaceRootPath));
-  if (!searchResult || searchResult?.isEmpty) {
-    const idx = CONFIG_POOL.findIndex(config => config.workspaceRootDir === workspaceRootPath);
-    if (idx >= 0) {
-      // 关闭自动更新
-      CONFIG_POOL[idx].closeAutoUpdate();
-      // 移除配置
-      CONFIG_POOL.splice(idx, 1);
+  try {
+    if (!searchResult || searchResult?.isEmpty) {
+      const idx = CONFIG_POOL.findIndex(config => config.workspaceRootDir === workspaceRootPath);
+      if (idx >= 0) {
+        // 关闭自动更新
+        CONFIG_POOL[idx].closeAutoUpdate();
+        // 移除配置
+        CONFIG_POOL.splice(idx, 1);
+      }
+      if (NO_CONFIG_WORKSPACE.has(workspaceRootPath)) {
+        return {
+          ...searchResult,
+          config: alovaConfig
+        };
+      }
+      NO_CONFIG_WORKSPACE.add(workspaceRootPath);
+      // 提示用户创建配置文件
+      throw new Error(
+        `[${getFileNameByPath(workspaceRootPath)}] Expected to create alova.config.js in root directory.`
+      );
     }
-    if (NO_CONFIG_WORKSPACE.has(workspaceRootPath)) {
-      return {
-        ...searchResult,
-        config: alovaConfig
-      };
+    // 读取文件内容
+    alovaConfig = searchResult.config;
+    alovaExplorer.clearCaches();
+    // 能读到配置文件，则移除没有配置文件的标记
+    if (NO_CONFIG_WORKSPACE.has(workspaceRootPath) && alovaConfig) {
+      NO_CONFIG_WORKSPACE.delete(workspaceRootPath);
     }
-    NO_CONFIG_WORKSPACE.add(workspaceRootPath);
-    // 提示用户创建配置文件
-    throw new Error(`[${getFileNameByPath(workspaceRootPath)}] Expected to create alova.config.js in root directory.`);
-  }
-  // 读取文件内容
-  alovaConfig = searchResult.config;
-  alovaExplorer.clearCaches();
-  // 能读到配置文件，则移除没有配置文件的标记
-  if (NO_CONFIG_WORKSPACE.has(workspaceRootPath) && alovaConfig) {
-    NO_CONFIG_WORKSPACE.delete(workspaceRootPath);
+  } catch (error: any) {
+    message.error(error.message);
   }
   return {
     ...searchResult,
@@ -135,9 +141,5 @@ export default async (isAutoUpdate: boolean = true) => {
     } else {
       configuration.refreshAutoUpdate();
     }
-  }
-  // 提示用户创建配置文件
-  if (workspaceFolders.length && workspaceFolders.length === NO_CONFIG_WORKSPACE.size) {
-    throw new Error('Expected to create alova.config.js in root directory.');
   }
 };
