@@ -63,7 +63,7 @@ export const createTempFile = async <T = any>(
 };
 export const loadJs: Loader = async function loadJs(filepath, content) {
   try {
-    return loadJsSync(filepath, '');
+    return await createTempFile(filepath, content, 'js', jspath => loadJsSync(jspath, ''));
   } catch (requireError: any) {
     try {
       return await loadEsModule(filepath);

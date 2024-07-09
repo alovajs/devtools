@@ -54,7 +54,7 @@ export function createWatcher(workspaceRootPath: string) {
       }
     });
 }
-export async function readConfig(workspaceRootPath: string, createWatch = true) {
+export async function readConfig(workspaceRootPath: string, isShowError = true, createWatch = true) {
   let alovaConfig: AlovaConfig | null = null;
   if (createWatch) {
     // 如果监听器存在则先关闭
@@ -82,12 +82,14 @@ export async function readConfig(workspaceRootPath: string, createWatch = true) 
       }
       NO_CONFIG_WORKSPACE.add(workspaceRootPath);
       // 提示用户创建配置文件
-      throw new Error(
-        `[${getFileNameByPath(workspaceRootPath)}] Expected to create alova.config.js in root directory.`
-      );
+      if (isShowError) {
+        throw new Error(
+          `[${getFileNameByPath(workspaceRootPath)}] Expected to create alova.config.js in root directory.`
+        );
+      }
     }
     // 读取文件内容
-    alovaConfig = searchResult.config;
+    alovaConfig = searchResult?.config;
     alovaExplorer.clearCaches();
     // 能读到配置文件，则移除没有配置文件的标记
     if (NO_CONFIG_WORKSPACE.has(workspaceRootPath) && alovaConfig) {
@@ -101,7 +103,7 @@ export async function readConfig(workspaceRootPath: string, createWatch = true) 
     config: alovaConfig
   };
 }
-export default async (isAutoUpdate: boolean = true) => {
+export default async (isAutoUpdate: boolean = true, isShowError: boolean = true) => {
   if (isAutoUpdate) {
     // 关闭自动更新
     CONFIG_POOL.forEach(config => config.closeAutoUpdate());
@@ -119,7 +121,7 @@ export default async (isAutoUpdate: boolean = true) => {
   await Promise.all(CONFIG_POOL.map(config => config.readAlovaJson()));
   for (const workspaceFolder of workspaceFolders) {
     const workspaceRootPath = `${workspaceFolder.uri.fsPath}/`;
-    const { config: alovaConfig } = await readConfig(workspaceRootPath);
+    const { config: alovaConfig } = await readConfig(workspaceRootPath, isShowError);
     // 过滤掉没有配置文件
     if (!alovaConfig) {
       continue;

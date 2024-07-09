@@ -8,12 +8,12 @@ export default {
   handler: context => async () => {
     vscode.commands.executeCommand(showStatusBarIcon.commandId);
     // 读取配置文件
-    readConfig();
+    readConfig(true, false);
     context.subscriptions.push(autocomplete);
     vscode.workspace.onDidChangeWorkspaceFolders(event => {
       event.added.forEach(() => {
         // 读取配置文件
-        readConfig();
+        readConfig(true, false);
       });
     });
   }
