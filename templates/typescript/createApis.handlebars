@@ -1,0 +1,58 @@
+{{{commentText}}}
+import { Alova, Method, MethodType, AlovaMethodCreateConfig } from 'alova';
+import apiDefinitions from './apiDefinitions';
+
+const createFunctionalProxy = (
+  array: (string | symbol)[],
+  alovaInstance: Alova<any, any, any, any, any>,
+  configMap: any
+) => {
+  // create a new proxy instance
+  return new Proxy(function () {}, {
+    get(_, property) {
+      // record the target property, so that it can get the completed accessing paths
+      array.push(property);
+      // always return a new proxy to continue recording accessing paths.
+      return createFunctionalProxy(array, alovaInstance, configMap);
+    },
+    apply(_, __, [config]) {
+      const apiItem = apiDefinitions[array.join('.')] as string[] | undefined;
+      if (!apiItem) {
+        throw new Error(`the api path of \`${apiItem}\` is not found`);
+      }
+      const [method, url] = apiItem;
+      const { pathParams, data } = config;
+      const urlReplaced = url.replace(/\{([^}]+)\}/g, (_, key) => {
+        const pathParam = pathParams[key];
+        return pathParam;
+      });
+      delete config.pathParams;
+      return new Method(method.toUpperCase() as MethodType, alovaInstance, urlReplaced, config, data);
+    }
+  });
+};
+
+export const createApis = (alovaInstance: Alova<any, any, any, any, any>, configMap: any) =>
+  new Proxy(
+    {},
+    {
+      get(_, property) {
+        return createFunctionalProxy([property], alovaInstance, configMap);
+      }
+    }
+  );
+
+type MethodConfig<T> = typeof import('./index')['alovaInstance'] extends Alova<any, any, infer RC, any, infer RH> ? import('alova').AlovaMethodCreateConfig<any, T, RC, RH> : never;
+type APISofParameters<Tag extends string, Url extends string> = Tag extends keyof APIS
+  ? Url extends keyof APIS[Tag]
+    ? APIS[Tag][Url] extends (...args: any) => any
+      ? Parameters<APIS[Tag][Url]>
+      : any
+    : any
+  : any;
+type MethodsConfigMap = {
+  [P in keyof typeof import('./apiDefinitions').default]?: MethodConfig<
+    P extends `${infer Tag}.${infer Url}` ? Parameters<APISofParameters<Tag, Url>[0]['transformData']>[0] : any
+  >;
+};
+export const withConfigType = <Config extends MethodsConfigMap>(config: Config) => config;

@@ -3,7 +3,19 @@
 .spago
 bower_components
 node_modules
+pnpm-lock.yaml
 
 # Generated files
 .psci
-output
+out
+dist
+*.vsix
+.vscode-test/
+
+# 忽略test下的生成文件
+test/api-*/src/*
+test/api-*/openapi*.*
+test/api-*/swagger*.*
+test/api-*/alova.config.*
+!test/api-*/src/.gitkeep
+!test/api-common/*

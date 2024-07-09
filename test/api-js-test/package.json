@@ -1,0 +1,17 @@
+{
+  "name": "api-js-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "gen": "openapi --input ./openapi.yaml --output ./src/api"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "alova": "^2.20.5",
+    "vue": "^3.4.27"
+  }
+}
