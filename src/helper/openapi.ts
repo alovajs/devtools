@@ -74,16 +74,27 @@ export const get$refName = (path: string, toUpperCase: boolean = true) => {
  * @param openApi openApi文档对象
  * @returns 去除了$ref的对象
  */
-export const removeAll$ref = <T = OpenAPIV3_1.SchemaObject>(schemaOrigin: any, openApi: OpenAPIV3_1.Document) => {
+export const removeAll$ref = <T = OpenAPIV3_1.SchemaObject>(
+  schemaOrigin: any,
+  openApi: OpenAPIV3_1.Document,
+  searchMap: Map<string, OpenAPIV3_1.SchemaObject> = new Map()
+) => {
+  const deepSchemaOrigin = cloneDeep(schemaOrigin);
   let schema: OpenAPIV3_1.SchemaObject & Record<string, any>;
-  if (isReferenceObject(schemaOrigin)) {
-    schema = cloneDeep(findBy$ref<OpenAPIV3_1.SchemaObject>(schemaOrigin.$ref, openApi));
+  // console.log(schemaOrigin, 79);
+
+  if (isReferenceObject(deepSchemaOrigin)) {
+    if (searchMap.has(deepSchemaOrigin.$ref)) {
+      return searchMap.get(deepSchemaOrigin.$ref) as T;
+    }
+    schema = findBy$ref<OpenAPIV3_1.SchemaObject>(deepSchemaOrigin.$ref, openApi, true);
+    searchMap.set(deepSchemaOrigin.$ref, schema);
   } else {
-    schema = cloneDeep(schemaOrigin);
+    schema = deepSchemaOrigin;
   }
   for (const key of Object.keys(schema)) {
     if (schema[key] && typeof schema[key] === 'object') {
-      schema[key] = removeAll$ref(schema[key], openApi);
+      schema[key] = removeAll$ref(schema[key], openApi, searchMap);
     }
   }
   return schema as T;
@@ -96,7 +107,11 @@ export const removeAll$ref = <T = OpenAPIV3_1.SchemaObject>(schemaOrigin: any, o
  * @returns 是否相等
  */
 export function isEqualObject(objValue: any, srcValue: any, openApi: OpenAPIV3_1.Document) {
+  const visited = new WeakMap();
   function customizer(objValueOrigin: any, otherValueOrigin: any) {
+    if (objValueOrigin === otherValueOrigin) {
+      return true;
+    }
     let objValue = objValueOrigin;
     let otherValue = otherValueOrigin;
     if (isReferenceObject(objValueOrigin)) {
@@ -114,6 +129,10 @@ export function isEqualObject(objValue: any, srcValue: any, openApi: OpenAPIV3_1
     }
     // 如果是对象，递归比较
     if (isObject(objValue) && isObject(otherValue)) {
+      if (visited.has(objValue) && visited.get(objValue) === otherValue) {
+        return true;
+      }
+      visited.set(objValue, otherValue);
       const keys = [...new Set([...Object.keys(objValue), ...Object.keys(otherValue)])];
       return keys.every(key => isEqualWith((objValue as any)[key], (otherValue as any)[key], customizer));
     }
@@ -165,7 +184,7 @@ export const mergeObject = <T>(objValue: any, srcValue: any, openApi: OpenAPIV3_
       return srcValue;
     }
     // 如果是对象，则递归合并
-    if (isObject(objValue) && isObject(srcValue) && !isReferenceObject(objValue)) {
+    if (isObject(objValue) && isObject(srcValue) && !isReferenceObject(objValue) && !isReferenceObject(srcValue)) {
       return mergeWith(objValue, srcValue, customizer);
     }
     // 处理$ref合并

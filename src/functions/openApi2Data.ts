@@ -1,9 +1,9 @@
+import { findBy$ref, get$refName, isReferenceObject, mergeObject, removeAll$ref } from '@/helper/openapi';
+import { convertToType, jsonSchema2TsStr } from '@/helper/schema2type';
 import { generateDefaultValues } from '@/helper/typeStr';
 import { format, removeUndefined } from '@/utils';
 import { cloneDeep } from 'lodash';
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
-import { findBy$ref, get$refName, isReferenceObject, mergeObject, removeAll$ref } from '../helper/openapi';
-import { convertToType, jsonSchema2TsStr } from '../helper/schema2type';
 import { AlovaVersion } from './getAlovaVersion';
 
 type Path = {
@@ -71,21 +71,31 @@ const remove$ref = (
   originObj: OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject,
   openApi: OpenAPIV3_1.Document,
   schemasMap?: Map<string, string>,
-  preText: string = ''
+  preText: string = '',
+  searchMap: Map<string, string> = new Map(),
+  map: Map<string, string> = new Map()
 ): Promise<string> =>
   convertToType(originObj, openApi, {
     deep: false,
     commentStyle: 'docment',
     preText,
+    searchMap,
     on$Ref(refOject) {
       const type = get$refName(refOject.$ref);
       if (schemasMap && !schemasMap.has(type)) {
-        jsonSchema2TsStr(refOject, type, openApi, {
-          export: true,
-          on$RefTsStr(name, tsStr) {
-            schemasMap.set(name, tsStr);
-          }
-        }).then(schema => {
+        jsonSchema2TsStr(
+          refOject,
+          type,
+          openApi,
+          {
+            export: true,
+            on$RefTsStr(name, tsStr) {
+              schemasMap.set(name, tsStr);
+            }
+          },
+          searchMap,
+          map
+        ).then(schema => {
           schemasMap.set(type, schema);
         });
       }
@@ -95,7 +105,9 @@ const parseResponse = async (
   responses: OpenAPIV3_1.ResponsesObject | undefined,
   openApi: OpenAPIV3_1.Document,
   config: GeneratorConfig,
-  schemasMap: Map<string, string>
+  schemasMap: Map<string, string>,
+  searchMap: Map<string, string>,
+  removeMap: Map<string, string>
 ) => {
   const responseInfo = responses?.['200'];
   if (!responseInfo) {
@@ -109,17 +121,19 @@ const parseResponse = async (
     : responseInfo;
   const key = getContentKey(responseObject.content ?? {}, config.responseMediaType);
   const responseSchema = responseObject?.content?.[key]?.schema ?? {};
-  const responseName = await remove$ref(responseSchema, openApi, schemasMap);
+  const responseName = await remove$ref(responseSchema, openApi, schemasMap, '', removeMap);
   return {
     responseName,
-    responseComment: await convertToType(responseSchema, openApi, { deep: true, preText: '* ' })
+    responseComment: await convertToType(responseSchema, openApi, { deep: true, preText: '* ', searchMap })
   };
 };
 const parseRequestBody = async (
   requestBody: OpenAPIV3_1.RequestBodyObject | OpenAPIV3_1.ReferenceObject | undefined,
   openApi: OpenAPIV3_1.Document,
   config: GeneratorConfig,
-  schemasMap: Map<string, string>
+  schemasMap: Map<string, string>,
+  searchMap: Map<string, string>,
+  removeMap: Map<string, string>
 ) => {
   if (!requestBody) {
     return {
@@ -132,10 +146,10 @@ const parseRequestBody = async (
     : requestBody;
   const key = getContentKey(requestBodyObject.content, config.bodyMediaType);
   const requestBodySchema = requestBodyObject?.content?.[key]?.schema ?? {};
-  const requestName = await remove$ref(requestBodySchema, openApi, schemasMap);
+  const requestName = await remove$ref(requestBodySchema, openApi, schemasMap, '', removeMap);
   return {
     requestName,
-    requestComment: await convertToType(requestBodySchema, openApi, { deep: true, preText: '* ' })
+    requestComment: await convertToType(requestBodySchema, openApi, { deep: true, preText: '* ', searchMap })
   };
 };
 const getContentKey = (content: Record<string, any>, requireKey: string, defaultKey = 'application/json') => {
@@ -150,7 +164,9 @@ const parseParameters = async (
   parameters: (OpenAPIV3_1.ReferenceObject | OpenAPIV3_1.ParameterObject)[] | undefined,
   openApi: OpenAPIV3_1.Document,
   config: GeneratorConfig,
-  schemasMap: Map<string, string>
+  schemasMap: Map<string, string>,
+  searchMap: Map<string, string>,
+  removeMap: Map<string, string>
 ) => {
   const pathParameters: OpenAPIV3_1.SchemaObject = {
     type: 'object'
@@ -200,12 +216,20 @@ const parseParameters = async (
   let pathParametersComment = '';
   let queryParametersComment = '';
   if (Object.keys(pathParameters.properties ?? {}).length) {
-    pathParametersStr = await remove$ref(pathParameters, openApi, schemasMap);
-    pathParametersComment = await convertToType(pathParameters, openApi, { deep: true, preText: '* ' });
+    pathParametersStr = await remove$ref(pathParameters, openApi, schemasMap, '', removeMap);
+    pathParametersComment = await convertToType(pathParameters, openApi, {
+      deep: true,
+      preText: '* ',
+      searchMap
+    });
   }
   if (Object.keys(queryParameters.properties ?? {}).length) {
-    queryParametersStr = await remove$ref(queryParameters, openApi, schemasMap);
-    queryParametersComment = await convertToType(queryParameters, openApi, { deep: true, preText: '* ' });
+    queryParametersStr = await remove$ref(queryParameters, openApi, schemasMap, '', removeMap);
+    queryParametersComment = await convertToType(queryParameters, openApi, {
+      deep: true,
+      preText: '* ',
+      searchMap
+    });
   }
   return {
     pathParameters: pathParametersStr,
@@ -317,6 +341,8 @@ export default async function openApi2Data(
     alovaVersion: 'v2'
   };
   const schemasMap = new Map<string, string>();
+  const searchMap = new Map<string, string>();
+  const removeMap = new Map<string, string>();
   const paths = openApi.paths || [];
   for (const [url, pathInfo] of Object.entries(paths)) {
     if (!pathInfo) {
@@ -336,52 +362,60 @@ export default async function openApi2Data(
       const { url: path, method: newMethod, ...methodInfo } = newMethodInfo;
       const methodFormat = newMethod.toUpperCase();
       const allPromise = methodInfo.tags?.map(async tag => {
-        const pathKey = `${tag}.${methodInfo.operationId}`;
-        const { queryParameters, queryParametersComment, pathParameters, pathParametersComment } =
-          await parseParameters(methodInfo.parameters, openApi, config, schemasMap);
-        const { responseName, responseComment } = await parseResponse(
-          methodInfo.responses,
-          openApi,
-          config,
-          schemasMap
-        );
-        const { requestName, requestComment } = await parseRequestBody(
-          methodInfo.requestBody,
-          openApi,
-          config,
-          schemasMap
-        );
-        const api: Api = {
-          method: methodFormat,
-          summary: methodInfo.summary ?? '',
-          path,
-          name: methodInfo.operationId || '',
-          responseName,
-          requestName,
-          pathKey,
-          queryParameters,
-          queryParametersComment,
-          pathParameters,
-          pathParametersComment,
-          responseComment,
-          requestComment
-        };
-        templateData.pathsArr.push({
-          key: pathKey,
-          method: methodFormat,
-          path
-        });
-        let tagApis = templateData.pathApis.find(item => item.tag === tag);
-        if (!tagApis) {
-          templateData.pathApis.push(
-            (tagApis = {
-              tag,
-              apis: []
-            })
+        try {
+          const pathKey = `${tag}.${methodInfo.operationId || 'hello'}`;
+          const { queryParameters, queryParametersComment, pathParameters, pathParametersComment } =
+            await parseParameters(methodInfo.parameters, openApi, config, schemasMap, searchMap, removeMap);
+          const { responseName, responseComment } = await parseResponse(
+            methodInfo.responses,
+            openApi,
+            config,
+            schemasMap,
+            searchMap,
+            removeMap
           );
+          const { requestName, requestComment } = await parseRequestBody(
+            methodInfo.requestBody,
+            openApi,
+            config,
+            schemasMap,
+            searchMap,
+            removeMap
+          );
+          const api: Api = {
+            method: methodFormat,
+            summary: methodInfo.summary ?? '',
+            path,
+            name: methodInfo.operationId || 'hello',
+            responseName,
+            requestName,
+            pathKey,
+            queryParameters,
+            queryParametersComment,
+            pathParameters,
+            pathParametersComment,
+            responseComment,
+            requestComment
+          };
+          templateData.pathsArr.push({
+            key: pathKey,
+            method: methodFormat,
+            path
+          });
+          let tagApis = templateData.pathApis.find(item => item.tag === tag);
+          if (!tagApis) {
+            templateData.pathApis.push(
+              (tagApis = {
+                tag,
+                apis: []
+              })
+            );
+          }
+          api.defaultValue = await getApiDefultValue(api);
+          tagApis.apis.push(api);
+        } catch (error) {
+          console.log(error);
         }
-        api.defaultValue = await getApiDefultValue(api);
-        tagApis.apis.push(api);
       });
       if (allPromise) {
         await Promise.all(allPromise);

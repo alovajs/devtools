@@ -8,6 +8,8 @@ export interface Schema2TypeOptions {
   defaultType?: 'any' | 'unknown'; // 未匹配的时的默认类型
   commentStyle?: 'line' | 'docment'; // 注释风格
   preText?: string; // 注释前缀
+  searchMap: Map<string, string>;
+  visited?: Set<string>;
   on$Ref?: (refOject: OpenAPIV3_1.ReferenceObject) => void;
 }
 /**
@@ -73,39 +75,67 @@ function parseSchema(
   config: Schema2TypeOptions
 ): string {
   let schema: OpenAPIV3_1.SchemaObject = schemaOrigin;
+  let refPath = '';
   if (isReferenceObject(schemaOrigin)) {
-    config.on$Ref?.(schemaOrigin);
-    if (!config.deep && !config.shallowDeep) {
-      return get$refName(schemaOrigin.$ref);
+    refPath = schemaOrigin.$ref;
+    const nameType = get$refName(schemaOrigin.$ref);
+    if (config.visited?.has(refPath)) {
+      return nameType;
     }
+    config.visited?.add(refPath);
+    if (!config.deep && !config.shallowDeep) {
+      config.on$Ref?.(schemaOrigin);
+      return nameType;
+    }
+    if (config.searchMap.has(schemaOrigin.$ref)) {
+      return config.searchMap.get(schemaOrigin.$ref) as string;
+    }
+    config.on$Ref?.(schemaOrigin);
     config.shallowDeep = false;
     schema = findBy$ref(schemaOrigin.$ref, openApi);
   }
+  let result: string;
   if (schema.enum) {
-    return parseEnum(schema);
+    result = parseEnum(schema);
+    if (refPath) {
+      config.searchMap.set(refPath, result);
+    }
+    return result;
   }
   switch (schema.type) {
     case 'object':
-      return parseObject(schema, openApi, config);
+      result = parseObject(schema, openApi, config);
+      break;
     case 'array':
-      return parseArray(schema, openApi, config);
+      result = parseArray(schema, openApi, config);
+      break;
     case 'string':
-      return 'string';
+      result = 'string';
+      break;
     case 'number':
     case 'integer':
-      return 'number';
+      result = 'number';
+      break;
     case 'boolean':
-      return 'boolean';
+      result = 'boolean';
+      break;
     case 'null':
-      return 'null';
+      result = 'null';
+      break;
     default:
       if (schema.oneOf) {
-        return schema.oneOf.map(item => parseSchema(item, openApi, config)).join(' | ');
+        result = schema.oneOf.map(item => parseSchema(item, openApi, config)).join(' | ');
+      } else {
+        result =
+          typeof schema.type === 'string'
+            ? (schema.type || config.defaultType) ?? 'unknown'
+            : config.defaultType ?? 'unknown';
       }
-      return typeof schema.type === 'string'
-        ? (schema.type || config.defaultType) ?? 'unknown'
-        : config.defaultType ?? 'unknown';
   }
+  if (refPath) {
+    config.searchMap.set(refPath, result);
+  }
+  return result;
 }
 /**
  *将object类型的schema解析为ts类型字符串
@@ -124,8 +154,16 @@ function parseObject(
   const lines: string[] = [`{`];
   for (const [key, valueOrigin] of Object.entries(properties)) {
     const optionalFlag = required.has(key) ? '' : '?';
-    const value = isReferenceObject(valueOrigin) ? findBy$ref(valueOrigin.$ref, openApi) : valueOrigin;
-    const type = parseSchema(valueOrigin, openApi, config);
+    let refPath = '';
+    let value = valueOrigin as OpenAPIV3_1.SchemaObject;
+    if (isReferenceObject(valueOrigin)) {
+      refPath = valueOrigin.$ref;
+      value = findBy$ref(valueOrigin.$ref, openApi);
+    }
+    let type = parseSchema(valueOrigin, openApi, config);
+    if (!config.deep && refPath) {
+      type = get$refName(refPath);
+    }
     let valueStr = '';
     const doc = comment(config.commentStyle ?? 'line');
     if (value.title) {
@@ -170,14 +208,15 @@ function parseArray(
   }
   if (schema.items) {
     let items = schema.items as OpenAPIV3_1.SchemaObject;
+    let refPath = '';
     if (isReferenceObject(schema.items)) {
-      if (!config.deep) {
-        config.on$Ref?.(schema.items);
-        return `${get$refName(schema.items.$ref)}[]`;
-      }
       items = findBy$ref(schema.items.$ref, openApi);
+      refPath = schema.items.$ref;
     }
-    const type = parseSchema(items, openApi, config);
+    const type = parseSchema(schema.items, openApi, config);
+    if (!config.deep && refPath) {
+      return `${get$refName(refPath)}[]`;
+    }
     switch (items.type) {
       case 'object':
         return `Array<${type}>`;
@@ -211,15 +250,13 @@ function parseEnum(schema: OpenAPIV3_1.SchemaObject): string {
 export async function convertToType(
   schemaOrigin: OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject,
   openApi: OpenAPIV3_1.Document,
-  config: Schema2TypeOptions = {
-    deep: true,
-    defaultType: 'unknown',
-    commentStyle: 'line',
-    preText: ''
-  }
+  config: Schema2TypeOptions
 ): Promise<string> {
   if (!schemaOrigin) {
     return config.defaultType ?? 'unknown';
+  }
+  if (!config.visited) {
+    config.visited = new Set();
   }
   const tsStr = parseSchema(schemaOrigin, openApi, config);
   // 格式化ts类型
@@ -248,13 +285,16 @@ export const jsonSchema2TsStr = async (
   name: string,
   openApi: OpenAPIV3_1.Document,
   options: JsonSchema2TsOptions = { export: false },
-  map: Map<string, string> = new Map()
+  searchMap: Map<string, string> = new Map(),
+  map: Map<string, string> = new Map(),
+  visited: Set<string> = new Set()
 ): Promise<string> => {
   const tsStr = await convertToType(schema, openApi, {
     shallowDeep: true,
     defaultType: 'unknown',
     commentStyle: 'docment',
     preText: '',
+    searchMap,
     async on$Ref(refObject) {
       if (options.on$RefTsStr) {
         const name = get$refName(refObject.$ref);
@@ -262,13 +302,25 @@ export const jsonSchema2TsStr = async (
           options.on$RefTsStr(name, map.get(name) ?? '');
           return;
         }
-        const result = await jsonSchema2TsStr(findBy$ref(refObject.$ref, openApi), name, openApi, options, map);
+        if (visited.has(refObject.$ref)) {
+          return;
+        }
+        visited.add(refObject.$ref);
+        const result = await jsonSchema2TsStr(
+          findBy$ref(refObject.$ref, openApi),
+          name,
+          openApi,
+          options,
+          searchMap,
+          map,
+          visited
+        );
         map.set(name, result);
         options.on$RefTsStr(name, result);
       }
     }
   });
-  let result = `interface ${name} ${tsStr}`;
+  let result = `type ${name} = ${tsStr}`;
   if (options.export) {
     result = `export ${result}`;
   }

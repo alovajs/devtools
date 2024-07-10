@@ -16,14 +16,18 @@ export function activate(context: vscode.ExtensionContext) {
   vscode.commands.executeCommand(setup.commandId);
 }
 process.on('uncaughtException', (err: Error) => {
-  if (err.ERROR_CODE) {
-    vscode.window.showErrorMessage(err.message);
-  }
+  console.log(err, 24);
+
+  // if (err.ERROR_CODE) {
+  vscode.window.showErrorMessage(err.message);
+  // }
 });
 process.on('unhandledRejection', (error: Error) => {
-  if (error.ERROR_CODE) {
-    vscode.window.showErrorMessage(error?.message ?? error ?? 'unhandledRejection');
-  }
+  console.log(error, 24);
+
+  // if (error.ERROR_CODE) {
+  vscode.window.showErrorMessage(error?.message ?? error ?? 'unhandledRejection');
+  // }
 });
 export default {
   activate
