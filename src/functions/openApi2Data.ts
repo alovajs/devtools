@@ -1,5 +1,6 @@
 import { findBy$ref, get$refName, isReferenceObject, mergeObject, removeAll$ref } from '@/helper/openapi';
 import { convertToType, jsonSchema2TsStr } from '@/helper/schema2type';
+import { getStandardOperationId, getStandardTags } from '@/helper/standard';
 import { generateDefaultValues } from '@/helper/typeStr';
 import { format, removeUndefined } from '@/utils';
 import { cloneDeep } from 'lodash';
@@ -343,6 +344,7 @@ export default async function openApi2Data(
   const schemasMap = new Map<string, string>();
   const searchMap = new Map<string, string>();
   const removeMap = new Map<string, string>();
+  const operationIdSet = new Set<string>();
   const paths = openApi.paths || [];
   for (const [url, pathInfo] of Object.entries(paths)) {
     if (!pathInfo) {
@@ -355,6 +357,8 @@ export default async function openApi2Data(
       if (typeof methodInfoOrigin === 'string' || Array.isArray(methodInfoOrigin)) {
         continue;
       }
+      methodInfoOrigin.operationId = getStandardOperationId(methodInfoOrigin, url, method, operationIdSet);
+      methodInfoOrigin.tags = getStandardTags(methodInfoOrigin.tags);
       const newMethodInfo = await transformPathObj(url, method, methodInfoOrigin, openApi, config);
       if (!newMethodInfo) {
         continue;
@@ -363,7 +367,7 @@ export default async function openApi2Data(
       const methodFormat = newMethod.toUpperCase();
       const allPromise = methodInfo.tags?.map(async tag => {
         try {
-          const pathKey = `${tag}.${methodInfo.operationId || 'hello'}`;
+          const pathKey = `${tag}.${methodInfo.operationId}`;
           const { queryParameters, queryParametersComment, pathParameters, pathParametersComment } =
             await parseParameters(methodInfo.parameters, openApi, config, schemasMap, searchMap, removeMap);
           const { responseName, responseComment } = await parseResponse(
@@ -386,7 +390,7 @@ export default async function openApi2Data(
             method: methodFormat,
             summary: methodInfo.summary ?? '',
             path,
-            name: methodInfo.operationId || 'hello',
+            name: methodInfo.operationId ?? '',
             responseName,
             requestName,
             pathKey,

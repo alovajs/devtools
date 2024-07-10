@@ -81,8 +81,6 @@ export const removeAll$ref = <T = OpenAPIV3_1.SchemaObject>(
 ) => {
   const deepSchemaOrigin = cloneDeep(schemaOrigin);
   let schema: OpenAPIV3_1.SchemaObject & Record<string, any>;
-  // console.log(schemaOrigin, 79);
-
   if (isReferenceObject(deepSchemaOrigin)) {
     if (searchMap.has(deepSchemaOrigin.$ref)) {
       return searchMap.get(deepSchemaOrigin.$ref) as T;

@@ -1,0 +1,1208 @@
+{
+  "openapi": "3.0.2",
+  "info": { "title": "FastAPI", "version": "0.1.0" },
+  "paths": {
+    "/account/user": {
+      "put": {
+        "tags": ["用户管理"],
+        "summary": "Put User A P I",
+        "operationId": "Put_User_A_P_I_account_user_put",
+        "parameters": [
+          { "required": true, "schema": { "title": "Uid", "type": "integer" }, "name": "uid", "in": "query" }
+        ],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UserBase" } } },
+          "required": true
+        },
+        "responses": {
+          "200": { "description": "Successful Response", "content": { "application/json": { "schema": {} } } },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      },
+      "post": {
+        "tags": ["用户管理"],
+        "summary": "Post User A P I",
+        "operationId": "Post_User_A_P_I_account_user_post",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UserCreate" } } },
+          "required": true
+        },
+        "responses": {
+          "200": { "description": "Successful Response", "content": { "application/json": { "schema": {} } } },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/account/user/list": {
+      "get": {
+        "tags": ["用户管理"],
+        "summary": "User List",
+        "operationId": "user_list_account_user_list_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": { "title": "Pg", "minimum": 1.0, "type": "integer", "default": 1 },
+            "name": "pg",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": { "title": "Size", "exclusiveMaximum": 100.0, "minimum": 1.0, "type": "integer", "default": 10 },
+            "name": "size",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": { "title": "Name", "pattern": "(|.{2,30})", "type": "string" },
+            "name": "name",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": { "title": "Phone", "pattern": "(|1\\d{10})", "type": "string" },
+            "name": "phone",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": { "title": "Account", "pattern": "(|1\\d{10})", "type": "string" },
+            "name": "account",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Successful Response", "content": { "application/json": { "schema": {} } } },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/account/auth": {
+      "get": {
+        "tags": ["用户管理"],
+        "summary": "Get Auth A P I",
+        "operationId": "Get_Auth_A_P_I_account_auth_get",
+        "responses": {
+          "200": { "description": "Successful Response", "content": { "application/json": { "schema": {} } } }
+        }
+      },
+      "post": {
+        "tags": ["用户管理"],
+        "summary": "Post Auth A P I",
+        "operationId": "Post_Auth_A_P_I_account_auth_post",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UserLogin" } } },
+          "required": true
+        },
+        "responses": {
+          "200": { "description": "Successful Response", "content": { "application/json": { "schema": {} } } },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["用户管理"],
+        "summary": "Delete Auth A P I",
+        "operationId": "Delete_Auth_A_P_I_account_auth_delete",
+        "responses": {
+          "200": { "description": "Successful Response", "content": { "application/json": { "schema": {} } } }
+        }
+      }
+    },
+    "/account/user/register": {
+      "post": {
+        "tags": ["用户管理"],
+        "summary": "用户注册",
+        "operationId": "user_register_account_user_register_post",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UserCreate" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Ret" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/account/reset/pwd": {
+      "put": {
+        "tags": ["用户管理"],
+        "summary": "重置密码",
+        "operationId": "reset_passwd_account_reset_pwd_put",
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/Body_reset_passwd_account_reset_pwd_put" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Ret" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/account/questions": {
+      "get": {
+        "tags": ["用户管理"],
+        "summary": "获取超管(老板)密保问题",
+        "operationId": "question_reset_passwd_account_questions_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Ret" } } }
+          }
+        }
+      }
+    },
+    "/account/question/reset/pwd": {
+      "post": {
+        "tags": ["用户管理"],
+        "summary": "密保问题重置密码",
+        "operationId": "question_reset_passwd_account_question_reset_pwd_post",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UserQuestionResetPwd" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Ret" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/account/user/reset/pwd": {
+      "put": {
+        "tags": ["用户管理"],
+        "summary": "重置当前用户密码",
+        "operationId": "reset_user_passwd_account_user_reset_pwd_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Body_reset_user_passwd_account_user_reset_pwd_put" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Ret" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/assets": {
+      "get": {
+        "tags": ["资产管理接口v1.7"],
+        "summary": "获取资产列表",
+        "operationId": "get_asset_assets_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": { "title": "Limit", "maximum": 100.0, "minimum": 10.0, "type": "integer", "default": 10 },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": { "title": "Offset", "minimum": 1.0, "type": "integer", "default": 1 },
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "description": "主机名称",
+            "required": false,
+            "schema": { "title": "Hostname", "type": "string", "description": "主机名称" },
+            "name": "hostname",
+            "in": "query"
+          },
+          {
+            "description": "用户名",
+            "required": false,
+            "schema": { "title": "Name", "maxLength": 30, "minLength": 1, "type": "string", "description": "用户名" },
+            "name": "name",
+            "in": "query"
+          },
+          {
+            "description": "ip",
+            "required": false,
+            "schema": { "title": "Ip", "type": "string", "description": "ip" },
+            "name": "ip",
+            "in": "query"
+          },
+          {
+            "description": "备注",
+            "required": false,
+            "schema": { "title": "Notes", "type": "string", "description": "备注" },
+            "name": "notes",
+            "in": "query"
+          },
+          {
+            "description": "状态",
+            "required": false,
+            "schema": { "allOf": [{ "$ref": "#/components/schemas/OnlineStatusEnum" }], "description": "状态" },
+            "name": "online_status",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/QueryListAsset" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      },
+      "put": {
+        "tags": ["资产管理接口v1.7"],
+        "summary": "修改资产",
+        "operationId": "modify_assets_assets_put",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ModifyAsset" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Ret" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["资产管理接口v1.7"],
+        "summary": "删除资产",
+        "operationId": "del_assets_assets_delete",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DelAsset" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Ret" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/assets/protection/no": {
+      "get": {
+        "tags": ["资产管理接口v1.7"],
+        "summary": "获取未防护资产列表",
+        "operationId": "no_protection_assets_assets_protection_no_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NoProtectionList" } } }
+          }
+        }
+      }
+    },
+    "/assets/logs": {
+      "get": {
+        "tags": ["资产管理接口v1.7"],
+        "summary": "获取资产日志列表",
+        "operationId": "logs_assets_logs_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": { "title": "Limit", "maximum": 100.0, "minimum": 10.0, "type": "integer", "default": 10 },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": { "title": "Offset", "minimum": 1.0, "type": "integer", "default": 1 },
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "description": "唯一标识",
+            "required": false,
+            "schema": { "title": "Unique Id", "type": "string", "description": "唯一标识" },
+            "name": "unique_id",
+            "in": "query"
+          },
+          {
+            "description": "详情",
+            "required": false,
+            "schema": { "title": "Detail", "type": "string", "description": "详情" },
+            "name": "detail",
+            "in": "query"
+          },
+          {
+            "description": "用户名",
+            "required": false,
+            "schema": { "title": "Name", "type": "string", "description": "用户名" },
+            "name": "name",
+            "in": "query"
+          },
+          {
+            "description": "资产ip",
+            "required": false,
+            "schema": { "title": "Ip", "type": "string", "description": "资产ip" },
+            "name": "ip",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/QueryListAssetLog" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/assets/stats": {
+      "get": {
+        "tags": ["资产管理接口v1.7"],
+        "summary": "资产部署统计",
+        "operationId": "get_stats_asset_assets_stats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/StatsAsset" } } }
+          }
+        }
+      }
+    },
+    "/assets/home_page": {
+      "get": {
+        "tags": ["资产管理接口v1.7"],
+        "summary": "首页",
+        "operationId": "get_home_page_assets_home_page_get",
+        "parameters": [
+          {
+            "description": "唯一表示",
+            "required": true,
+            "schema": { "title": "Unique Id", "type": "string", "description": "唯一表示" },
+            "name": "unique_id",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HomePageRet" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/assets/dns_status_change": {
+      "post": {
+        "tags": ["资产管理接口v1.7"],
+        "summary": "dns状态切换",
+        "operationId": "dns_status_change_assets_dns_status_change_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Body_dns_status_change_assets_dns_status_change_post" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": { "description": "Successful Response", "content": { "application/json": { "schema": {} } } },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/assets/assets_status": {
+      "get": {
+        "tags": ["资产管理接口v1.7"],
+        "summary": "资产状态",
+        "operationId": "get_assets_status_assets_assets_status_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": { "title": "Limit", "maximum": 100.0, "minimum": 10.0, "type": "integer", "default": 10 },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": { "title": "Offset", "minimum": 1.0, "type": "integer", "default": 1 },
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "description": "状态",
+            "required": false,
+            "schema": { "title": "Online Status", "type": "integer", "description": "状态" },
+            "name": "online_status",
+            "in": "query"
+          },
+          {
+            "description": "主机名称",
+            "required": false,
+            "schema": { "title": "Hostname", "type": "string", "description": "主机名称" },
+            "name": "hostname",
+            "in": "query"
+          },
+          {
+            "description": "组织名称",
+            "required": false,
+            "schema": { "title": "Reg Name", "type": "string", "description": "组织名称" },
+            "name": "reg_name",
+            "in": "query"
+          },
+          {
+            "description": "ip",
+            "required": false,
+            "schema": { "title": "Ip", "type": "string", "description": "ip" },
+            "name": "ip",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AssetStatusRet" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/assets/assets_security_protection": {
+      "get": {
+        "tags": ["资产管理接口v1.7"],
+        "summary": "资产安全防护",
+        "operationId": "get_assets_status_assets_assets_security_protection_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": { "title": "Limit", "maximum": 100.0, "minimum": 10.0, "type": "integer", "default": 10 },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": { "title": "Offset", "minimum": 1.0, "type": "integer", "default": 1 },
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "description": "状态",
+            "required": false,
+            "schema": { "title": "Online Status", "type": "integer", "description": "状态" },
+            "name": "online_status",
+            "in": "query"
+          },
+          {
+            "description": "主机名称",
+            "required": false,
+            "schema": { "title": "Hostname", "type": "string", "description": "主机名称" },
+            "name": "hostname",
+            "in": "query"
+          },
+          {
+            "description": "组织名称",
+            "required": false,
+            "schema": { "title": "Reg Name", "type": "string", "description": "组织名称" },
+            "name": "reg_name",
+            "in": "query"
+          },
+          {
+            "description": "ip",
+            "required": false,
+            "schema": { "title": "Ip", "type": "string", "description": "ip" },
+            "name": "ip",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/AssetSecurityProtectionRet" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/assets/invite_url": {
+      "get": {
+        "tags": ["资产管理接口v1.7"],
+        "summary": "邀请链接",
+        "operationId": "get_invite_url_assets_invite_url_get",
+        "responses": {
+          "200": { "description": "Successful Response", "content": { "application/json": { "schema": {} } } }
+        }
+      }
+    },
+    "/assets/heartbeat": {
+      "post": {
+        "tags": ["资产管理接口v1.7"],
+        "summary": "心跳",
+        "operationId": "heartbeat_assets_heartbeat_post",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HeartbeatInfo" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Ret" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/assets/dns/status": {
+      "get": {
+        "tags": ["资产管理接口v1.7", "v1.8"],
+        "summary": "获取接入终端数量",
+        "operationId": "get_dns_status_count_assets_dns_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ConnectDnsOut" } } }
+          }
+        }
+      }
+    },
+    "/assets/alarm": {
+      "post": {
+        "tags": ["资产管理接口v1.7", "v1.8"],
+        "summary": "防勒索告警通知",
+        "operationId": "alarm_assets_alarm_post",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AssetAlarm" } } },
+          "required": true
+        },
+        "responses": {
+          "200": { "description": "Successful Response", "content": { "application/json": { "schema": {} } } },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/assets/ips": {
+      "get": {
+        "tags": ["资产管理接口v1.7", "v1.8"],
+        "summary": "获取ip列表",
+        "operationId": "ips_assets_ips_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AssetIpsOut" } } }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AlarmClassifyEnum": {
+        "title": "AlarmClassifyEnum",
+        "enum": [0],
+        "type": "integer",
+        "description": "告警分类枚举\n0 勒索病毒风险"
+      },
+      "AssetAlarm": {
+        "title": "AssetAlarm",
+        "required": ["classify", "detail"],
+        "type": "object",
+        "properties": {
+          "classify": { "allOf": [{ "$ref": "#/components/schemas/AlarmClassifyEnum" }], "description": "分类" },
+          "detail": { "title": "Detail", "type": "string", "description": "事件详情" }
+        }
+      },
+      "AssetEventTypEnum": {
+        "title": "AssetEventTypEnum",
+        "enum": [0, 1, 2, 3, 4, 5],
+        "type": "integer",
+        "description": "资产事件类型\n0 开机\n1 关机\n2 蜜罐风险\n3 上网风险\n4 数据保护开始\n5 数据保护结束"
+      },
+      "AssetIpInfo": {
+        "title": "AssetIpInfo",
+        "required": ["ip", "external_ip", "hostname", "user"],
+        "type": "object",
+        "properties": {
+          "ip": { "title": "Ip", "type": "string", "description": "内网ip地址" },
+          "external_ip": { "title": "External Ip", "type": "string", "description": "外网ip地址" },
+          "hostname": { "title": "Hostname", "type": "string", "description": "主机名称" },
+          "user": { "$ref": "#/components/schemas/UserName" }
+        }
+      },
+      "AssetIpsOut": {
+        "title": "AssetIpsOut",
+        "type": "object",
+        "properties": {
+          "err_no": { "title": "Err No", "type": "integer", "description": "非0代表失败，0为成功！", "default": 0 },
+          "msg": { "title": "Msg", "type": "string", "description": "提示信息", "default": "success" },
+          "data": { "title": "Data", "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "AssetItem": {
+        "title": "AssetItem",
+        "required": [
+          "id",
+          "hostname",
+          "reg_name",
+          "status",
+          "system_name",
+          "system_typ",
+          "ip",
+          "external_ip",
+          "mac",
+          "notes",
+          "power_log",
+          "online_duration",
+          "protection_status",
+          "user",
+          "created_at"
+        ],
+        "type": "object",
+        "properties": {
+          "id": { "title": "Id", "type": "integer" },
+          "hostname": { "title": "Hostname", "type": "string", "description": "主机名称" },
+          "reg_name": { "title": "Reg Name", "type": "string", "description": "组织名称" },
+          "status": { "title": "Status", "type": "integer", "description": "无效字段" },
+          "system_name": { "title": "System Name", "type": "string", "description": "系统名称" },
+          "system_typ": { "title": "System Typ", "type": "integer", "description": "系统类型" },
+          "ip": { "title": "Ip", "type": "string", "description": "内网ip地址" },
+          "external_ip": { "title": "External Ip", "type": "string", "description": "外网ip地址" },
+          "mac": { "title": "Mac", "type": "string", "description": "mac地址" },
+          "notes": { "title": "Notes", "type": "string", "description": "备注" },
+          "power_log": { "title": "Power Log", "type": "object", "description": "电源开关机日志" },
+          "online_duration": { "title": "Online Duration", "type": "integer", "description": "在线时长" },
+          "protection_status": { "title": "Protection Status", "type": "object", "description": "防护状态" },
+          "user": { "$ref": "#/components/schemas/UserBase" },
+          "created_at": { "title": "Created At", "type": "string", "format": "date-time" },
+          "heartbeat": { "title": "Heartbeat", "type": "integer" },
+          "online_status": { "title": "Online Status", "type": "integer", "description": "在线状态" }
+        }
+      },
+      "AssetLogItem": {
+        "title": "AssetLogItem",
+        "required": ["typ", "detail", "asset", "created_at"],
+        "type": "object",
+        "properties": {
+          "typ": { "allOf": [{ "$ref": "#/components/schemas/AssetEventTypEnum" }], "description": "事件类型" },
+          "detail": { "title": "Detail", "type": "string" },
+          "asset": { "$ref": "#/components/schemas/AssetIpInfo" },
+          "created_at": { "title": "Created At", "type": "string", "format": "date-time" }
+        }
+      },
+      "AssetSecurityProtectionInfo": {
+        "title": "AssetSecurityProtectionInfo",
+        "required": ["stats", "list", "total"],
+        "type": "object",
+        "properties": {
+          "stats": { "$ref": "#/components/schemas/AssetSecurityProtectionStats" },
+          "list": {
+            "title": "List",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AssetSecurityProtectionList" }
+          },
+          "total": { "title": "Total", "type": "integer" }
+        }
+      },
+      "AssetSecurityProtectionList": {
+        "title": "AssetSecurityProtectionList",
+        "required": ["id", "attacks_num", "dns_num"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "Id", "type": "integer" },
+          "online_status": { "title": "Online Status", "type": "integer" },
+          "heartbeat": { "title": "Heartbeat", "type": "integer" },
+          "reg_name": { "title": "Reg Name", "type": "string" },
+          "hostname": { "title": "Hostname", "type": "string" },
+          "system_name": { "title": "System Name", "type": "string" },
+          "system_typ": { "title": "System Typ", "type": "integer" },
+          "ip": { "title": "Ip", "type": "string" },
+          "mac": { "title": "Mac", "type": "string" },
+          "status": { "title": "Status", "type": "integer" },
+          "external_ip": { "title": "External Ip", "type": "string" },
+          "protection_status": { "title": "Protection Status", "type": "object" },
+          "attacks_num": { "title": "Attacks Num", "type": "integer" },
+          "dns_num": { "title": "Dns Num", "type": "integer" }
+        }
+      },
+      "AssetSecurityProtectionRet": {
+        "title": "AssetSecurityProtectionRet",
+        "type": "object",
+        "properties": {
+          "err_no": { "title": "Err No", "type": "integer", "description": "非0代表失败，0为成功！", "default": 0 },
+          "msg": { "title": "Msg", "type": "string", "description": "提示信息", "default": "success" },
+          "data": { "$ref": "#/components/schemas/AssetSecurityProtectionInfo" }
+        }
+      },
+      "AssetSecurityProtectionStats": {
+        "title": "AssetSecurityProtectionStats",
+        "required": ["file_num", "attacks_num", "dns_num", "extortion_num"],
+        "type": "object",
+        "properties": {
+          "file_num": { "title": "File Num", "type": "integer" },
+          "attacks_num": { "title": "Attacks Num", "type": "integer" },
+          "dns_num": { "title": "Dns Num", "type": "integer" },
+          "extortion_num": { "title": "Extortion Num", "type": "integer" }
+        }
+      },
+      "AssetStatusInfo": {
+        "title": "AssetStatusInfo",
+        "required": ["id"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "Id", "type": "integer" },
+          "online_status": { "title": "Online Status", "type": "integer" },
+          "heartbeat": { "title": "Heartbeat", "type": "integer" },
+          "reg_name": { "title": "Reg Name", "type": "string" },
+          "hostname": { "title": "Hostname", "type": "string" },
+          "system_name": { "title": "System Name", "type": "string" },
+          "system_typ": { "title": "System Typ", "type": "integer" },
+          "ip": { "title": "Ip", "type": "string" },
+          "mac": { "title": "Mac", "type": "string" },
+          "status": { "title": "Status", "type": "integer" },
+          "updated_at": { "title": "Updated At", "type": "string", "format": "date-time" },
+          "cpu_info": { "title": "Cpu Info", "anyOf": [{ "type": "object" }, { "type": "number" }] },
+          "memory_info": { "title": "Memory Info", "anyOf": [{ "type": "object" }, { "type": "number" }] },
+          "disk_info": { "title": "Disk Info", "anyOf": [{ "type": "array", "items": {} }, { "type": "number" }] },
+          "network_info": { "title": "Network Info", "type": "object" },
+          "system_disk_info": { "title": "System Disk Info", "type": "number" }
+        }
+      },
+      "AssetStatusList": {
+        "title": "AssetStatusList",
+        "required": ["total", "list"],
+        "type": "object",
+        "properties": {
+          "total": { "title": "Total", "type": "integer" },
+          "list": { "title": "List", "type": "array", "items": { "$ref": "#/components/schemas/AssetStatusInfo" } }
+        }
+      },
+      "AssetStatusRet": {
+        "title": "AssetStatusRet",
+        "type": "object",
+        "properties": {
+          "err_no": { "title": "Err No", "type": "integer", "description": "非0代表失败，0为成功！", "default": 0 },
+          "msg": { "title": "Msg", "type": "string", "description": "提示信息", "default": "success" },
+          "data": { "$ref": "#/components/schemas/AssetStatusList" }
+        }
+      },
+      "Body_dns_status_change_assets_dns_status_change_post": {
+        "title": "Body_dns_status_change_assets_dns_status_change_post",
+        "required": ["unique_id", "status"],
+        "type": "object",
+        "properties": {
+          "unique_id": { "title": "Unique Id", "type": "string", "description": "唯一表示" },
+          "status": { "title": "Status", "type": "boolean", "description": "状态" }
+        }
+      },
+      "Body_reset_passwd_account_reset_pwd_put": {
+        "title": "Body_reset_passwd_account_reset_pwd_put",
+        "required": ["uid", "pwd"],
+        "type": "object",
+        "properties": {
+          "uid": { "title": "Uid", "minimum": 1.0, "type": "integer", "description": "用户id" },
+          "pwd": { "title": "Pwd", "maxLength": 50, "minLength": 8, "type": "string", "description": "密码" }
+        }
+      },
+      "Body_reset_user_passwd_account_user_reset_pwd_put": {
+        "title": "Body_reset_user_passwd_account_user_reset_pwd_put",
+        "required": ["old_pwd", "new_pwd"],
+        "type": "object",
+        "properties": {
+          "old_pwd": { "title": "Old Pwd", "maxLength": 50, "minLength": 8, "type": "string", "description": "旧密码" },
+          "new_pwd": { "title": "New Pwd", "maxLength": 50, "minLength": 8, "type": "string", "description": "新密码" }
+        }
+      },
+      "ConnectDns": {
+        "title": "ConnectDns",
+        "required": ["connected", "not_connected"],
+        "type": "object",
+        "properties": {
+          "connected": { "title": "Connected", "type": "integer", "description": "已接入数量" },
+          "not_connected": { "title": "Not Connected", "type": "integer", "description": "未接入数量" }
+        }
+      },
+      "ConnectDnsOut": {
+        "title": "ConnectDnsOut",
+        "required": ["data"],
+        "type": "object",
+        "properties": {
+          "err_no": { "title": "Err No", "type": "integer", "description": "非0代表失败，0为成功！", "default": 0 },
+          "msg": { "title": "Msg", "type": "string", "description": "提示信息", "default": "success" },
+          "data": { "$ref": "#/components/schemas/ConnectDns" }
+        }
+      },
+      "DelAsset": {
+        "title": "DelAsset",
+        "required": ["asset_ids"],
+        "type": "object",
+        "properties": {
+          "asset_ids": {
+            "title": "Asset Ids",
+            "type": "array",
+            "items": { "exclusiveMinimum": 0.0, "type": "integer" },
+            "description": "资产id"
+          }
+        }
+      },
+      "HTTPValidationError": {
+        "title": "HTTPValidationError",
+        "type": "object",
+        "properties": {
+          "detail": { "title": "Detail", "type": "array", "items": { "$ref": "#/components/schemas/ValidationError" } }
+        }
+      },
+      "HeartbeatDiskInfo": {
+        "title": "HeartbeatDiskInfo",
+        "type": "object",
+        "properties": {
+          "disk": { "title": "Disk", "type": "string", "description": "分区" },
+          "total": { "title": "Total", "type": "integer", "description": "总大小" },
+          "used": { "title": "Used", "type": "integer", "description": "已使用大小" }
+        }
+      },
+      "HeartbeatInfo": {
+        "title": "HeartbeatInfo",
+        "type": "object",
+        "properties": {
+          "device_id": { "title": "Device Id", "minLength": 1, "type": "string", "description": "设备ID" },
+          "mac": { "title": "Mac", "pattern": "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$", "type": "string" },
+          "os_name": { "title": "Os Name", "type": "string", "description": "操作系统名称" },
+          "os_type": { "allOf": [{ "$ref": "#/components/schemas/SystemTypEnum" }], "description": "操作类型" },
+          "hostname": { "title": "Hostname", "type": "string", "description": "主机名称" },
+          "external_addr": { "title": "External Addr", "type": "string", "description": "公网IP地址" },
+          "reg_name": { "title": "Reg Name", "maxLength": 255, "type": "string", "description": "登记名称" },
+          "protection_status": {
+            "title": "Protection Status",
+            "type": "object",
+            "description": "防护状态：{'dns': true, ...}"
+          },
+          "power": {
+            "title": "Power",
+            "allOf": [{ "$ref": "#/components/schemas/HeartbeatPowerStats" }],
+            "description": "电源状态"
+          },
+          "cpu_usage": { "title": "Cpu Usage", "type": "number", "description": "CPU使用率" },
+          "memory": {
+            "title": "Memory",
+            "allOf": [{ "$ref": "#/components/schemas/HeartbeatMemoryStats" }],
+            "description": "内存使用情况"
+          },
+          "disk": {
+            "title": "Disk",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/HeartbeatDiskInfo" },
+            "description": "磁盘使用情况"
+          },
+          "network": {
+            "title": "Network",
+            "allOf": [{ "$ref": "#/components/schemas/HeartbeatNetworkStats" }],
+            "description": "网络统计情况"
+          }
+        }
+      },
+      "HeartbeatMemoryStats": {
+        "title": "HeartbeatMemoryStats",
+        "type": "object",
+        "properties": {
+          "total": { "title": "Total", "type": "integer", "description": "总数" },
+          "used": { "title": "Used", "type": "integer", "description": "已使用大小" }
+        }
+      },
+      "HeartbeatNetworkStats": {
+        "title": "HeartbeatNetworkStats",
+        "type": "object",
+        "properties": {
+          "current": {
+            "title": "Current",
+            "allOf": [{ "$ref": "#/components/schemas/NetworkStats" }],
+            "description": "当前"
+          },
+          "today": {
+            "title": "Today",
+            "allOf": [{ "$ref": "#/components/schemas/NetworkStats" }],
+            "description": "当日"
+          }
+        }
+      },
+      "HeartbeatPowerStats": {
+        "title": "HeartbeatPowerStats",
+        "type": "object",
+        "properties": {
+          "on": { "title": "On", "type": "string", "description": "开机时间" },
+          "off": { "title": "Off", "type": "string", "description": "关机时间" }
+        }
+      },
+      "HomePageInfo": {
+        "title": "HomePageInfo",
+        "required": ["username", "days", "dns_status", "version_num"],
+        "type": "object",
+        "properties": {
+          "company_name": { "title": "Company Name", "type": "string" },
+          "logo": { "title": "Logo", "type": "string" },
+          "username": { "title": "Username", "type": "string" },
+          "days": { "title": "Days", "type": "integer" },
+          "dns_status": { "title": "Dns Status", "type": "boolean" },
+          "version_num": { "title": "Version Num", "type": "integer" }
+        }
+      },
+      "HomePageRet": {
+        "title": "HomePageRet",
+        "type": "object",
+        "properties": {
+          "err_no": { "title": "Err No", "type": "integer", "description": "非0代表失败，0为成功！", "default": 0 },
+          "msg": { "title": "Msg", "type": "string", "description": "提示信息", "default": "success" },
+          "data": { "$ref": "#/components/schemas/HomePageInfo" }
+        }
+      },
+      "ListAsset": {
+        "title": "ListAsset",
+        "required": ["total", "data"],
+        "type": "object",
+        "properties": {
+          "total": { "title": "Total", "type": "integer" },
+          "data": { "title": "Data", "type": "array", "items": { "$ref": "#/components/schemas/AssetItem" } }
+        }
+      },
+      "ListAssetLog": {
+        "title": "ListAssetLog",
+        "required": ["total", "data"],
+        "type": "object",
+        "properties": {
+          "total": { "title": "Total", "type": "integer" },
+          "data": { "title": "Data", "type": "array", "items": { "$ref": "#/components/schemas/AssetLogItem" } }
+        }
+      },
+      "ModifyAsset": {
+        "title": "ModifyAsset",
+        "required": ["id"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "Id", "type": "integer", "description": "资产id" },
+          "hostname": { "title": "Hostname", "maxLength": 255, "type": "string", "description": "主机名称" },
+          "reg_name": { "title": "Reg Name", "maxLength": 255, "type": "string", "description": "组织名称" },
+          "notes": { "title": "Notes", "maxLength": 20, "type": "string", "description": "备注" }
+        }
+      },
+      "NetworkStats": {
+        "title": "NetworkStats",
+        "type": "object",
+        "properties": {
+          "up": { "title": "Up", "type": "integer", "description": "上传" },
+          "down": { "title": "Down", "type": "integer", "description": "下载" }
+        }
+      },
+      "NoProtectionList": {
+        "title": "NoProtectionList",
+        "type": "object",
+        "properties": {
+          "err_no": { "title": "Err No", "type": "integer", "description": "非0代表失败，0为成功！", "default": 0 },
+          "msg": { "title": "Msg", "type": "string", "description": "提示信息", "default": "success" },
+          "data": { "title": "Data", "type": "array", "items": { "$ref": "#/components/schemas/ProtectionInfo" } }
+        }
+      },
+      "OnlineStatusEnum": {
+        "title": "OnlineStatusEnum",
+        "enum": [0, 1],
+        "type": "integer",
+        "description": "在线状态\n0 离线\n1 在线"
+      },
+      "ProtectionInfo": {
+        "title": "ProtectionInfo",
+        "required": ["ip", "typ"],
+        "type": "object",
+        "properties": {
+          "ip": { "title": "Ip", "type": "string" },
+          "mac": { "title": "Mac", "type": "string" },
+          "typ": { "title": "Typ", "type": "integer" }
+        }
+      },
+      "QueryListAsset": {
+        "title": "QueryListAsset",
+        "type": "object",
+        "properties": {
+          "err_no": { "title": "Err No", "type": "integer", "description": "非0代表失败，0为成功！", "default": 0 },
+          "msg": { "title": "Msg", "type": "string", "description": "提示信息", "default": "success" },
+          "data": { "$ref": "#/components/schemas/ListAsset" }
+        }
+      },
+      "QueryListAssetLog": {
+        "title": "QueryListAssetLog",
+        "type": "object",
+        "properties": {
+          "err_no": { "title": "Err No", "type": "integer", "description": "非0代表失败，0为成功！", "default": 0 },
+          "msg": { "title": "Msg", "type": "string", "description": "提示信息", "default": "success" },
+          "data": { "$ref": "#/components/schemas/ListAssetLog" }
+        }
+      },
+      "Ret": {
+        "title": "Ret",
+        "type": "object",
+        "properties": {
+          "err_no": { "title": "Err No", "type": "integer", "description": "非0代表失败，0为成功！", "default": 0 },
+          "msg": { "title": "Msg", "type": "string", "description": "提示信息", "default": "success" },
+          "data": { "title": "Data" }
+        }
+      },
+      "RoleAdminPower": {
+        "title": "RoleAdminPower",
+        "enum": [0, 1],
+        "type": "integer",
+        "description": "V1.6版超管下角色"
+      },
+      "RolePower": { "title": "RolePower", "enum": [0, 1], "type": "integer", "description": "V1.2版角色" },
+      "StatsAsset": {
+        "title": "StatsAsset",
+        "type": "object",
+        "properties": {
+          "err_no": { "title": "Err No", "type": "integer", "description": "非0代表失败，0为成功！", "default": 0 },
+          "msg": { "title": "Msg", "type": "string", "description": "提示信息", "default": "success" },
+          "data": { "$ref": "#/components/schemas/StatsAssetInfo" }
+        }
+      },
+      "StatsAssetInfo": {
+        "title": "StatsAssetInfo",
+        "required": ["asset_count", "intranet_device_count"],
+        "type": "object",
+        "properties": {
+          "asset_count": { "title": "Asset Count", "type": "integer", "description": "已部署资产数量" },
+          "intranet_device_count": {
+            "title": "Intranet Device Count",
+            "type": "integer",
+            "description": "内网设备数量"
+          }
+        }
+      },
+      "SystemTypEnum": {
+        "title": "SystemTypEnum",
+        "enum": [0, 1, -1],
+        "type": "integer",
+        "description": "系统类型\n0 windows\n1 linux\n-1 unknown"
+      },
+      "UserBase": {
+        "title": "UserBase",
+        "type": "object",
+        "properties": {
+          "name": { "title": "Name", "maxLength": 15, "minLength": 1, "type": "string" },
+          "role": { "allOf": [{ "$ref": "#/components/schemas/RolePower" }], "description": "角色", "default": 0 },
+          "role_admin": { "allOf": [{ "$ref": "#/components/schemas/RoleAdminPower" }], "description": "超管下角色" },
+          "phone": { "title": "Phone", "pattern": "(|1\\d{10})", "type": "string" }
+        }
+      },
+      "UserCreate": {
+        "title": "UserCreate",
+        "required": ["account", "password"],
+        "type": "object",
+        "properties": {
+          "account": { "title": "Account", "maxLength": 30, "minLength": 2, "type": "string" },
+          "password": { "title": "Password", "maxLength": 50, "minLength": 8, "type": "string" },
+          "name": { "title": "Name", "maxLength": 15, "minLength": 1, "type": "string" },
+          "role": { "allOf": [{ "$ref": "#/components/schemas/RolePower" }], "description": "角色", "default": 0 },
+          "role_admin": { "allOf": [{ "$ref": "#/components/schemas/RoleAdminPower" }], "description": "超管下角色" },
+          "phone": { "title": "Phone", "pattern": "(|1\\d{10})", "type": "string" }
+        }
+      },
+      "UserLogin": {
+        "title": "UserLogin",
+        "required": ["account", "password"],
+        "type": "object",
+        "properties": {
+          "account": { "title": "Account", "maxLength": 30, "minLength": 2, "type": "string" },
+          "password": { "title": "Password", "maxLength": 50, "minLength": 8, "type": "string" }
+        }
+      },
+      "UserName": {
+        "title": "UserName",
+        "type": "object",
+        "properties": { "name": { "title": "Name", "maxLength": 30, "minLength": 2, "type": "string" } }
+      },
+      "UserQuestionResetPwd": {
+        "title": "UserQuestionResetPwd",
+        "required": ["pwd", "security_question"],
+        "type": "object",
+        "properties": {
+          "pwd": { "title": "Pwd", "maxLength": 50, "minLength": 8, "type": "string", "description": "密码" },
+          "security_question": {
+            "title": "Security Question",
+            "type": "object",
+            "additionalProperties": { "type": "string" },
+            "description": "密保问题"
+          }
+        }
+      },
+      "ValidationError": {
+        "title": "ValidationError",
+        "required": ["loc", "msg", "type"],
+        "type": "object",
+        "properties": {
+          "loc": {
+            "title": "Location",
+            "type": "array",
+            "items": { "anyOf": [{ "type": "string" }, { "type": "integer" }] }
+          },
+          "msg": { "title": "Message", "type": "string" },
+          "type": { "title": "Error Type", "type": "string" }
+        }
+      }
+    }
+  }
+}
