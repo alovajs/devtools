@@ -5,6 +5,7 @@ import refresh from './commands/refresh';
 import setup from './commands/setup';
 import showStatusBarIcon from './commands/showStatusBarIcon';
 import Error from './components/error';
+import { log } from './components/message';
 
 const commands = [setup, autocomplete, generateApi, refresh, showStatusBarIcon];
 
@@ -16,18 +17,17 @@ export function activate(context: vscode.ExtensionContext) {
   vscode.commands.executeCommand(setup.commandId);
 }
 process.on('uncaughtException', (err: Error) => {
-  console.log(err, 24);
-
-  // if (err.ERROR_CODE) {
-  vscode.window.showErrorMessage(err.message);
-  // }
+  log(err.message);
+  if (err.ERROR_CODE) {
+    vscode.window.showErrorMessage(err.message);
+  }
 });
 process.on('unhandledRejection', (error: Error) => {
-  console.log(error, 24);
-
-  // if (error.ERROR_CODE) {
-  vscode.window.showErrorMessage(error?.message ?? error ?? 'unhandledRejection');
-  // }
+  const errMsg = error?.message ?? error ?? 'unhandledRejection';
+  log(errMsg);
+  if (error.ERROR_CODE) {
+    vscode.window.showErrorMessage(errMsg);
+  }
 });
 export default {
   activate

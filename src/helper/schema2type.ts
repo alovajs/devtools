@@ -1,6 +1,7 @@
 import { format } from '@/utils';
 import { OpenAPIV3_1 } from 'openapi-types';
 import { findBy$ref, get$refName, isReferenceObject } from './openapi';
+import { isValidJSIdentifier } from './standard';
 
 export interface Schema2TypeOptions {
   deep?: boolean; // 是否递归解析
@@ -179,7 +180,8 @@ function parseObject(
     if (value.deprecated) {
       doc.add('[deprecated]');
     }
-    valueStr = `${doc.end()}${key}${optionalFlag}: ${type};`;
+    const keyValue = key.trim();
+    valueStr = `${doc.end()}${isValidJSIdentifier(keyValue) ? keyValue : `"${keyValue}"`}${optionalFlag}: ${type};`;
     valueStr.split('\n').forEach(line => lines.push(` ${line}`));
   }
   lines.push(`}`);

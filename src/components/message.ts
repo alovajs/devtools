@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
-
+// 创建一个输出通道
+export const outputChannel = vscode.window.createOutputChannel('Alova');
 export function info(message: string, duration?: number) {
   if (!duration) {
     return vscode.window.showInformationMessage(message);
@@ -28,8 +29,14 @@ export function error(message: string) {
 export function warning(message: string) {
   return vscode.window.showWarningMessage(message);
 }
+export function log(message: string) {
+  outputChannel.appendLine(message);
+  outputChannel.show();
+}
 export default {
   info,
   error,
-  warning
+  warning,
+  log,
+  outputChannel
 };

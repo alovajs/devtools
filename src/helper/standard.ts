@@ -103,7 +103,7 @@ const makeIdentifier = (str: string, style: 'camelCas' | 'snakeCase') => {
 
   return identifier;
 };
-const isValidJSIdentifier = (str?: string) =>
+export const isValidJSIdentifier = (str?: string) =>
   !!str && /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(str) && !reservedWords.has(str);
 export function getStandardOperationId(
   pathObject: OpenAPIV3_1.OperationObject,
