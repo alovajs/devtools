@@ -66,31 +66,42 @@ const reservedWords = new Set([
   'with',
   'yield'
 ]);
-const makeCamelCaseIdentifier = (str: string) => {
+const makeIdentifier = (str: string, style: 'camelCas' | 'snakeCase') => {
   // 移除所有非字母、数字、下划线和美元符号的字符，同时拆分单词
   const words = str.split(/[^a-zA-Z0-9_$]+/).filter(Boolean);
 
   // 将单词转换为小驼峰形式
-  let camelCaseStr = words
-    .map((word, index) => {
-      if (index === 0) {
-        return word.toLowerCase();
-      }
-      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-    })
-    .join('');
+  let identifier = '';
+  switch (style) {
+    case 'camelCas':
+      identifier = words
+        .map((word, index) => {
+          if (index === 0) {
+            return word.toLowerCase();
+          }
+          return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+        })
+        .join('');
+      break;
+    case 'snakeCase':
+      identifier = words.join('_').toLowerCase();
+      break;
+    default:
+      identifier = words.join('');
+      break;
+  }
 
   // 如果字符串以数字开头，用下划线替换
-  if (/^[0-9]/.test(camelCaseStr)) {
-    camelCaseStr = `_${camelCaseStr}`;
+  if (/^[0-9]/.test(identifier)) {
+    identifier = `_${identifier}`;
   }
 
   // 如果是保留字，添加一个后缀
-  if (reservedWords.has(camelCaseStr)) {
-    camelCaseStr += '_';
+  if (reservedWords.has(identifier)) {
+    identifier += '_';
   }
 
-  return camelCaseStr;
+  return identifier;
 };
 const isValidJSIdentifier = (str?: string) =>
   !!str && /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(str) && !reservedWords.has(str);
@@ -105,10 +116,10 @@ export function getStandardOperationId(
   }
   let operationId = '';
   if (pathObject.operationId) {
-    operationId = makeCamelCaseIdentifier(pathObject.operationId as string);
+    operationId = makeIdentifier(pathObject.operationId as string, 'camelCas');
   }
   if (!operationId) {
-    operationId = makeCamelCaseIdentifier(`${method}/${url}`);
+    operationId = makeIdentifier(`${method}/${url}`, 'snakeCase');
   }
   if (map.has(operationId)) {
     let num = 1;
@@ -126,16 +137,14 @@ export function getStandardTags(tags?: string[]) {
     return ['general'];
   }
   return tags.map(tag => {
+    tag = tag.trim();
     if (isValidJSIdentifier(tag)) {
       tagsSet.add(tag);
       return tag;
     }
     let newTag = '';
     if (tag) {
-      newTag = makeCamelCaseIdentifier(tag);
-    }
-    if (!newTag) {
-      newTag = 'general';
+      newTag = makeIdentifier(tag, 'camelCas');
     }
     if (tagsSet.has(newTag)) {
       let num = 1;
@@ -144,10 +153,14 @@ export function getStandardTags(tags?: string[]) {
       }
       newTag = `${newTag}${num}`;
     }
+    if (!newTag) {
+      newTag = 'general';
+    }
     tagsSet.add(newTag);
     return newTag;
   });
 }
 export default {
-  getStandardOperationId
+  getStandardOperationId,
+  getStandardTags
 };

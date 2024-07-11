@@ -34,6 +34,7 @@ export function comment(type: 'line' | 'docment') {
     ]
   ];
   const transformeText = (text: string) => {
+    text = text.trim();
     if (type === 'line') {
       return text;
     }
