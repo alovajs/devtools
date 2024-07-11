@@ -32,16 +32,19 @@ const createFunctionalProxy = (
   });
 };
 
-export const createApis = (alovaInstance: Alova<any, any, any, any, any>, configMap: any) =>
-  new Proxy(
-    {},
+export const createApis = (alovaInstance: Alova<any, any, any, any, any>, configMap: any) =>{
+  const Apis = new Proxy(
+    {} as APIS,
     {
       get(_, property) {
         return createFunctionalProxy([property], alovaInstance, configMap);
       }
     }
   );
-
+  // 如果是全局定义
+  (globalThis as any).{{{global}}} = Apis;
+  return Apis;
+}
 type MethodConfig<T> = typeof import('./index')['alovaInstance'] extends Alova<any, any, infer RC, any, infer RH> ? import('alova').AlovaMethodCreateConfig<any, T, RC, RH> : never;
 type APISofParameters<Tag extends string, Url extends string> = Tag extends keyof APIS
   ? Url extends keyof APIS[Tag]

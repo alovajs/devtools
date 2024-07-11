@@ -119,6 +119,7 @@ export default async (isAutoUpdate: boolean = true, isShowError: boolean = true)
   CONFIG_POOL.map(config => config.checkConfig());
   // 读取所有已存在配置的缓存文件
   await Promise.all(CONFIG_POOL.map(config => config.readAlovaJson()));
+  const oldSize = NO_CONFIG_WORKSPACE.size;
   for (const workspaceFolder of workspaceFolders) {
     const workspaceRootPath = `${workspaceFolder.uri.fsPath}/`;
     const { config: alovaConfig } = await readConfig(workspaceRootPath, isShowError);
@@ -137,11 +138,13 @@ export default async (isAutoUpdate: boolean = true, isShowError: boolean = true)
     CONFIG_POOL.push(configuration);
     // 读取新配置的缓存文件
     await configuration.readAlovaJson();
-    if (isAutoUpdate) {
-      // 开启自动更新
-      configuration.autoUpdate();
-    } else {
-      configuration.refreshAutoUpdate();
-    }
+    configuration.refreshAutoUpdate();
+  }
+  if (
+    workspaceFolders.length > 0 &&
+    NO_CONFIG_WORKSPACE.size === workspaceFolders.length &&
+    oldSize === NO_CONFIG_WORKSPACE.size
+  ) {
+    throw new Error(`Expected to create alova.config.js in root directory.`);
   }
 };

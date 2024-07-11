@@ -23,6 +23,7 @@ export interface Api {
   responseComment?: string;
   requestComment?: string;
   name: string;
+  global: string;
   responseName: string;
   requestName?: string;
   defaultValue?: string;
@@ -43,7 +44,7 @@ export const getApiDefultValue = (api: Api) => {
   if (api.requestComment) {
     configStrArr.push(`data: ${generateDefaultValues(api.requestComment.replaceAll('*', ''))}`);
   }
-  return format(`Apis.${api.pathKey}({${configStrArr.join(',\n')}})`, {
+  return format(`${api.global}.${api.pathKey}({${configStrArr.join(',\n')}})`, {
     printWidth: 40, // 缩短printWidth以强制换行
     tabWidth: 2,
     semi: false, // 去掉末尾分号
@@ -65,6 +66,7 @@ export interface TemplateData extends Omit<OpenAPIV3_1.Document, ''> {
   pathsArr: Path[];
   schemas?: string[];
   pathApis: PathApis[];
+  global: string;
   alovaVersion: AlovaVersion;
   commentText: string;
 }
@@ -339,7 +341,8 @@ export default async function openApi2Data(
     pathApis: [],
     commentText: '',
     schemas: [],
-    alovaVersion: 'v2'
+    alovaVersion: 'v2',
+    global: config.global ?? 'Apis'
   };
   const schemasMap = new Map<string, string>();
   const searchMap = new Map<string, string>();
@@ -388,7 +391,7 @@ export default async function openApi2Data(
           );
           const api: Api = {
             method: methodFormat,
-            summary: methodInfo.summary ?? '',
+            summary: methodInfo.summary?.replaceAll('\n', '') ?? '',
             path,
             name: methodInfo.operationId ?? '',
             responseName,
@@ -399,7 +402,8 @@ export default async function openApi2Data(
             pathParameters,
             pathParametersComment,
             responseComment,
-            requestComment
+            requestComment,
+            global: templateData.global
           };
           templateData.pathsArr.push({
             key: pathKey,
