@@ -26,13 +26,7 @@
       }
     ],
     "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "alova",
-          "title": "Alovajs",
-          "icon": "$(alova-icon-id)"
-        }
-      ]
+      "activitybar": []
     },
     "views": {
       "alova": [
