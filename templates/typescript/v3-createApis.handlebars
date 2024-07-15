@@ -34,7 +34,7 @@ const createFunctionalProxy = (
 
 export const createApis = (alovaInstance: Alova<AlovaGenerics>, configMap: any) =>{
   const Apis = new Proxy(
-    {} as APIS,
+    {} as {{{global}}},
     {
       get(_, property) {
         return createFunctionalProxy([property], alovaInstance, configMap);
@@ -46,10 +46,10 @@ export const createApis = (alovaInstance: Alova<AlovaGenerics>, configMap: any) 
   return Apis;
 }
 type MethodConfig<T> = AlovaMethodCreateConfig<typeof import('./index')['alovaInstance'] extends Alova<infer AG> ? AG : any, any, T>;
-type APISofParameters<Tag extends string, Url extends string> = Tag extends keyof APIS
-  ? Url extends keyof APIS[Tag]
-    ? APIS[Tag][Url] extends (...args: any) => any
-      ? Parameters<APIS[Tag][Url]>
+type APISofParameters<Tag extends string, Url extends string> = Tag extends keyof {{{global}}}
+  ? Url extends keyof {{{global}}}[Tag]
+    ? {{{global}}}[Tag][Url] extends (...args: any) => any
+      ? Parameters<{{{global}}}[Tag][Url]>
       : any
     : any
   : any;
