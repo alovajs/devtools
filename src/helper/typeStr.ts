@@ -91,6 +91,7 @@ function valueToNonQuotedKeysJson(value: any): string {
 export function generateDefaultValues(sourceCode: string): any {
   const sourceText = `interface AnonymousType { done: ${sourceCode} }`;
   const sourceFile = ts.createSourceFile('temp.ts', sourceText, ts.ScriptTarget.Latest, true);
+
   const result: any = {};
 
   /**
@@ -102,22 +103,9 @@ export function generateDefaultValues(sourceCode: string): any {
       const typeName = node.name.text;
       const typeResult: any = {};
       node.members.forEach(member => {
-        if (ts.isPropertySignature(member) && member.type && !member.questionToken) {
+        if (ts.isPropertySignature(member) && member.type) {
           const propName = (member.name as ts.Identifier).text;
-          if (ts.isArrayTypeNode(member.type)) {
-            const arrayElementType = member.type.elementType;
-            if (arrayElementType) {
-              if (ts.isTupleTypeNode(arrayElementType)) {
-                typeResult[propName] = getDefaultForTypeNode(arrayElementType);
-              } else if (ts.isTypeLiteralNode(arrayElementType)) {
-                typeResult[propName] = [getDefaultForTypeNode(arrayElementType)];
-              } else {
-                typeResult[propName] = [getDefaultForTypeNode(arrayElementType)];
-              }
-            }
-          } else {
-            typeResult[propName] = getDefaultForTypeNode(member.type);
-          }
+          typeResult[propName] = getDefaultForTypeNode(member.type);
         }
       });
       result[typeName] = typeResult;

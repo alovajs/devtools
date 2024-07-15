@@ -18,15 +18,13 @@ export const alovaInstance = createAlova({
 {{/react}}
   requestAdapter: GlobalFetch(),
   beforeRequest: method => { },
-  responded: res => { return res.json(); }
+  responded: res => { 
+    return res.json(); 
+  }
 });
 
 export const $$userConfigMap = withConfigType({}); 
 
-const Apis = createApis(alovaInstance, $$userConfigMap); 
+const Apis = createApis(alovaInstance, $$userConfigMap);
 
-// 如果是全局定义
-(globalThis as any).Apis = Apis; 
-
-// 如果不是则直接导出
- export default Apis;
+export default Apis;

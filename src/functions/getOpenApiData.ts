@@ -1,8 +1,8 @@
 import Error from '@/components/error';
 import { fetchData } from '@/utils';
+import importFresh from 'import-fresh';
 import YAML from 'js-yaml';
 import fs from 'node:fs';
-import { createRequire } from 'node:module';
 import path from 'node:path';
 import { OpenAPIV2, OpenAPIV3_1 } from 'openapi-types';
 import swagger2openapi from 'swagger2openapi';
@@ -21,9 +21,7 @@ function parseLocalFile(workspaceRootDir: string, filePath: string) {
     }
     // json
     default: {
-      const workspacedRequire = createRequire(workspaceRootDir);
-      const data = workspacedRequire(filePath);
-      delete workspacedRequire.cache[path.resolve(workspaceRootDir, filePath)];
+      const data = importFresh(path.resolve(workspaceRootDir, filePath));
       return data;
     }
   }

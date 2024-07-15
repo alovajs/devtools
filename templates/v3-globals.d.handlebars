@@ -77,7 +77,7 @@ type Alova2Method<
 {{{.}}} 
 {{/schemas}}
 declare global {
-  interface APIS {
+  interface {{{global}}} {
     {{#pathApis}}
     {{{tag}}}: {
      {{#apis}}
@@ -142,5 +142,5 @@ declare global {
     {{/pathApis}}
   }
 
-  var Apis: APIS;
+  var {{{global}}}: {{{global}}};
 }

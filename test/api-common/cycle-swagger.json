@@ -1,0 +1,1317 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "接口文档 公共/第三方",
+    "description": "",
+    "version": "0.0"
+  },
+  "paths": {
+    "/api/Dept/Add": {
+      "post": {
+        "tags": ["Dept"],
+        "summary": "新增",
+        "parameters": [
+          {
+            "name": "api-version",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddDeptParam"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddDeptParam"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddDeptParam"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddDeptParam"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Dept/Delete": {
+      "delete": {
+        "tags": ["Dept"],
+        "summary": "删除",
+        "parameters": [
+          {
+            "name": "api-version",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Dept/Download": {
+      "post": {
+        "tags": ["Dept"],
+        "summary": "导出",
+        "parameters": [
+          {
+            "name": "api-version",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeptParam"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeptParam"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeptParam"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeptParam"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/Dept/GetInfo": {
+      "get": {
+        "tags": ["Dept"],
+        "summary": "查询详情",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "api-version",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeptInfo"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeptInfo"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeptInfo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Dept/GetList": {
+      "get": {
+        "tags": ["Dept"],
+        "summary": "列表",
+        "parameters": [
+          {
+            "name": "KeyWord",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "api-version",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Dept"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Dept"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Dept"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Dept/Select": {
+      "get": {
+        "tags": ["Dept"],
+        "summary": "下拉框",
+        "parameters": [
+          {
+            "name": "parentId",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "api-version",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeptSelect"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeptSelect"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeptSelect"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Dept/Update": {
+      "put": {
+        "tags": ["Dept"],
+        "summary": "编辑",
+        "parameters": [
+          {
+            "name": "api-version",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddDeptParam"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddDeptParam"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddDeptParam"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddDeptParam"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AddDeptParam": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "主键",
+            "format": "int64"
+          },
+          "createBy": {
+            "type": "string",
+            "description": "创建者名称",
+            "nullable": true
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "updateBy": {
+            "type": "string",
+            "description": "更新者名称",
+            "nullable": true
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "最后更新时间",
+            "format": "date-time",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "description": "单位名称",
+            "nullable": true
+          },
+          "easyName": {
+            "type": "string",
+            "description": "简写名称",
+            "nullable": true
+          },
+          "parentId": {
+            "type": "integer",
+            "description": "父级部门ID",
+            "format": "int64",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "description": "地址",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean",
+            "description": "是否删除"
+          },
+          "phone": {
+            "type": "string",
+            "description": "默认联系电话",
+            "nullable": true
+          },
+          "man": {
+            "type": "string",
+            "description": "默认联系人",
+            "nullable": true
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注",
+            "nullable": true
+          },
+          "state": {
+            "type": "boolean",
+            "description": "状态"
+          },
+          "sort": {
+            "type": "integer",
+            "description": "排序",
+            "format": "int32"
+          },
+          "users": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            },
+            "description": "用户集合",
+            "nullable": true
+          },
+          "userDepts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserDept"
+            },
+            "description": "关系集合",
+            "nullable": true
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Dept"
+            },
+            "description": "子菜单集合",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Dept": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "主键",
+            "format": "int64"
+          },
+          "createBy": {
+            "type": "string",
+            "description": "创建者名称",
+            "nullable": true
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "updateBy": {
+            "type": "string",
+            "description": "更新者名称",
+            "nullable": true
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "最后更新时间",
+            "format": "date-time",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "description": "单位名称",
+            "nullable": true
+          },
+          "easyName": {
+            "type": "string",
+            "description": "简写名称",
+            "nullable": true
+          },
+          "parentId": {
+            "type": "integer",
+            "description": "父级部门ID",
+            "format": "int64",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "description": "地址",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean",
+            "description": "是否删除"
+          },
+          "phone": {
+            "type": "string",
+            "description": "默认联系电话",
+            "nullable": true
+          },
+          "man": {
+            "type": "string",
+            "description": "默认联系人",
+            "nullable": true
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注",
+            "nullable": true
+          },
+          "state": {
+            "type": "boolean",
+            "description": "状态"
+          },
+          "sort": {
+            "type": "integer",
+            "description": "排序",
+            "format": "int32"
+          },
+          "users": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            },
+            "description": "用户集合",
+            "nullable": true
+          },
+          "userDepts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserDept"
+            },
+            "description": "关系集合",
+            "nullable": true
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Dept"
+            },
+            "description": "子菜单集合",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "公司"
+      },
+      "DeptInfo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "主键",
+            "format": "int64"
+          },
+          "createBy": {
+            "type": "string",
+            "description": "创建者名称",
+            "nullable": true
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "updateBy": {
+            "type": "string",
+            "description": "更新者名称",
+            "nullable": true
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "最后更新时间",
+            "format": "date-time",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "description": "单位名称",
+            "nullable": true
+          },
+          "easyName": {
+            "type": "string",
+            "description": "简写名称",
+            "nullable": true
+          },
+          "parentId": {
+            "type": "integer",
+            "description": "父级部门ID",
+            "format": "int64",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "description": "地址",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean",
+            "description": "是否删除"
+          },
+          "phone": {
+            "type": "string",
+            "description": "默认联系电话",
+            "nullable": true
+          },
+          "man": {
+            "type": "string",
+            "description": "默认联系人",
+            "nullable": true
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注",
+            "nullable": true
+          },
+          "state": {
+            "type": "boolean",
+            "description": "状态"
+          },
+          "sort": {
+            "type": "integer",
+            "description": "排序",
+            "format": "int32"
+          },
+          "users": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            },
+            "description": "用户集合",
+            "nullable": true
+          },
+          "userDepts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserDept"
+            },
+            "description": "关系集合",
+            "nullable": true
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Dept"
+            },
+            "description": "子菜单集合",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "查询详情"
+      },
+      "DeptParam": {
+        "type": "object",
+        "properties": {
+          "keyWord": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeptSelect": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "主键Id!",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string",
+            "description": "单位名称",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "description": "地址",
+            "nullable": true
+          },
+          "parentId": {
+            "type": "integer",
+            "description": "父级部门ID",
+            "format": "int64",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Menu": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "主键",
+            "format": "int64"
+          },
+          "createBy": {
+            "type": "string",
+            "description": "创建者名称",
+            "nullable": true
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "updateBy": {
+            "type": "string",
+            "description": "更新者名称",
+            "nullable": true
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "最后更新时间",
+            "format": "date-time",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "description": "菜单标题",
+            "nullable": true
+          },
+          "path": {
+            "type": "string",
+            "description": "组件路径",
+            "nullable": true
+          },
+          "perm": {
+            "type": "string",
+            "description": "权限标识符",
+            "nullable": true
+          },
+          "iFrame": {
+            "type": "boolean",
+            "description": "是否iframe"
+          },
+          "component": {
+            "type": "string",
+            "description": "组件",
+            "nullable": true
+          },
+          "componentName": {
+            "type": "string",
+            "description": "组件名称",
+            "nullable": true
+          },
+          "parentId": {
+            "type": "integer",
+            "description": "父级菜单ID",
+            "format": "int64",
+            "nullable": true
+          },
+          "sort": {
+            "type": "integer",
+            "description": "排序",
+            "format": "int32"
+          },
+          "icon": {
+            "type": "string",
+            "description": "icon图标",
+            "nullable": true
+          },
+          "type": {
+            "$ref": "#/components/schemas/MenuType"
+          },
+          "keepAlive": {
+            "type": "boolean",
+            "description": "是否缓存"
+          },
+          "hidden": {
+            "type": "boolean",
+            "description": "是否隐藏"
+          },
+          "redirect": {
+            "type": "string",
+            "description": "跳转路由",
+            "nullable": true
+          },
+          "alwaysShow": {
+            "type": "boolean",
+            "description": "根目录始终显示"
+          },
+          "state": {
+            "type": "boolean",
+            "description": "状态"
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Menu"
+            },
+            "description": "子菜单集合",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean",
+            "description": "是否已删除"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Role"
+            },
+            "description": "菜单集合",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "系统菜单"
+      },
+      "MenuType": {
+        "enum": [1, 2, 3, 4],
+        "type": "integer",
+        "format": "int32"
+      },
+      "Role": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "主键",
+            "format": "int64"
+          },
+          "createBy": {
+            "type": "string",
+            "description": "创建者名称",
+            "nullable": true
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "updateBy": {
+            "type": "string",
+            "description": "更新者名称",
+            "nullable": true
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "最后更新时间",
+            "format": "date-time",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "description": "角色名称",
+            "nullable": true
+          },
+          "type": {
+            "$ref": "#/components/schemas/UserType"
+          },
+          "isDeleted": {
+            "type": "boolean",
+            "description": "是否已删除"
+          },
+          "isSys": {
+            "type": "boolean",
+            "description": "系统默认配置"
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注",
+            "nullable": true
+          },
+          "code": {
+            "type": "string",
+            "description": "角色代码",
+            "nullable": true
+          },
+          "sort": {
+            "type": "integer",
+            "description": "排序",
+            "format": "int32"
+          },
+          "users": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            },
+            "description": "用户",
+            "nullable": true
+          },
+          "menus": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Menu"
+            },
+            "description": "菜单集合",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "角色"
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "主键",
+            "format": "int64"
+          },
+          "createBy": {
+            "type": "string",
+            "description": "创建者名称",
+            "nullable": true
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "updateBy": {
+            "type": "string",
+            "description": "更新者名称",
+            "nullable": true
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "最后更新时间",
+            "format": "date-time",
+            "nullable": true
+          },
+          "account": {
+            "type": "string",
+            "description": "账号",
+            "nullable": true
+          },
+          "nickName": {
+            "type": "string",
+            "description": "昵称",
+            "nullable": true
+          },
+          "state": {
+            "type": "boolean",
+            "description": "状态"
+          },
+          "password": {
+            "type": "string",
+            "description": "密码",
+            "nullable": true
+          },
+          "avatar": {
+            "type": "string",
+            "description": "头像路径",
+            "nullable": true
+          },
+          "passwordReSetTime": {
+            "type": "string",
+            "description": "最后修改密码时间",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean",
+            "description": "是否已删除"
+          },
+          "roleId": {
+            "type": "integer",
+            "description": "客户单位",
+            "format": "int64"
+          },
+          "loginTime": {
+            "type": "string",
+            "description": "登录时间",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastLogin": {
+            "type": "boolean",
+            "description": "登录时间"
+          },
+          "phone": {
+            "type": "string",
+            "description": "电话",
+            "nullable": true
+          },
+          "userThirds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserThird"
+            },
+            "description": "关系集合",
+            "nullable": true
+          },
+          "depts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Dept"
+            },
+            "description": "部门集合",
+            "nullable": true
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role"
+          },
+          "userDepts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserDept"
+            },
+            "description": "关系集合",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "系统用户"
+      },
+      "UserDept": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "description": "用户ID",
+            "format": "int64"
+          },
+          "deptId": {
+            "type": "integer",
+            "description": "部门Id",
+            "format": "int64"
+          },
+          "isSys": {
+            "type": "boolean",
+            "description": "是否单位管理"
+          },
+          "isMsg": {
+            "type": "boolean",
+            "description": "是否接收消息"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          },
+          "dept": {
+            "$ref": "#/components/schemas/Dept"
+          }
+        },
+        "additionalProperties": false,
+        "description": "用户部门关联"
+      },
+      "UserSex": {
+        "enum": [0, 1, 2],
+        "type": "integer",
+        "format": "int32"
+      },
+      "UserThird": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "description": "用户ID",
+            "format": "int64"
+          },
+          "thirdId": {
+            "type": "integer",
+            "description": "菜单ID",
+            "format": "int64"
+          },
+          "type": {
+            "$ref": "#/components/schemas/UserThirdType"
+          },
+          "userWeiXin": {
+            "$ref": "#/components/schemas/UserWeiXin"
+          }
+        },
+        "additionalProperties": false,
+        "description": "用户关系"
+      },
+      "UserThirdType": {
+        "enum": [1, 2],
+        "type": "integer",
+        "format": "int32"
+      },
+      "UserType": {
+        "enum": [1, 20, 80, 90, 100],
+        "type": "integer",
+        "format": "int32"
+      },
+      "UserWeiXin": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "主键",
+            "format": "int64"
+          },
+          "subscribe": {
+            "type": "integer",
+            "description": "用户是否订阅该公众号标识，值为0时，代表此用户没有关注该公众号，拉取不到其余信息。",
+            "format": "int32",
+            "nullable": true
+          },
+          "openId": {
+            "type": "string",
+            "description": "用户的标识，对当前公众号唯一",
+            "nullable": true
+          },
+          "nickName": {
+            "type": "string",
+            "description": "用户的昵称",
+            "nullable": true
+          },
+          "sex": {
+            "$ref": "#/components/schemas/UserSex"
+          },
+          "city": {
+            "type": "string",
+            "description": "用户所在城市",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "description": "用户所在国家",
+            "nullable": true
+          },
+          "province": {
+            "type": "string",
+            "description": "用户所在省份",
+            "nullable": true
+          },
+          "language": {
+            "type": "string",
+            "description": "用户的语言，简体中文为zh_CN",
+            "nullable": true
+          },
+          "headImgUrl": {
+            "type": "string",
+            "description": "用户头像，最后一个数值代表正方形头像大小（有0、46、64、96、132数值可选，0代表640*640正方形头像），用户没有头像时该项为空。若用户更换头像，原有头像URL将失效。",
+            "nullable": true
+          },
+          "subscribeTime": {
+            "type": "integer",
+            "description": "用户关注时间，为时间戳。如果用户曾多次关注，则取最后关注时间",
+            "format": "int64",
+            "nullable": true
+          },
+          "unionId": {
+            "type": "string",
+            "description": "只有在用户将公众号绑定到微信开放平台帐号后，才会出现该字段。",
+            "nullable": true
+          },
+          "remark": {
+            "type": "string",
+            "description": "公众号运营者对粉丝的备注，公众号运营者可在微信公众平台用户管理界面对粉丝添加备注",
+            "nullable": true
+          },
+          "groupId": {
+            "type": "integer",
+            "description": "用户所在的分组ID（兼容旧的用户分组接口）",
+            "format": "int32",
+            "nullable": true
+          },
+          "tagidList": {
+            "type": "string",
+            "description": "用户被打上的标签ID列表",
+            "nullable": true
+          },
+          "subscribeScene": {
+            "type": "string",
+            "description": "返回用户关注的渠道来源，ADD_SCENE_SEARCH 公众号搜索，ADD_SCENE_ACCOUNT_MIGRATION 公众号迁移，ADD_SCENE_PROFILE_CARD 名片分享，ADD_SCENE_QR_CODE 扫描二维码，ADD_SCENE_PROFILE_LINK 图文页内名称点击，ADD_SCENE_PROFILE_ITEM 图文页右上角菜单，ADD_SCENE_PAID 支付后关注，ADD_SCENE_WECHAT_ADVERTISEMENT 微信广告，ADD_SCENE_OTHERS 其他",
+            "nullable": true
+          },
+          "qrScene": {
+            "type": "integer",
+            "description": "二维码扫码场景（开发者自定义）",
+            "format": "int32",
+            "nullable": true
+          },
+          "qrSceneStr": {
+            "type": "string",
+            "description": "二维码扫码场景描述（开发者自定义）",
+            "nullable": true
+          },
+          "appId": {
+            "type": "string",
+            "description": "归属公众号",
+            "nullable": true
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "phone": {
+            "type": "string",
+            "description": "电话",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "description": "地址",
+            "nullable": true
+          },
+          "state": {
+            "type": "boolean",
+            "description": "状态"
+          },
+          "users": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            },
+            "description": "用户集合",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "微信关注"
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "description": "Authorization:Bearer {your JWT token}<br/><b>授权地址:/Test/Login</b>",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [
+    {
+      "Bearer": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Dept",
+      "description": "公司"
+    }
+  ]
+}

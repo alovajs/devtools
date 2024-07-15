@@ -42,8 +42,8 @@ const createFunctionalProxy = (array, alovaInstance, configMap) => {
  * @param {any} configMap
  * @returns
  */
-const createApis = (alovaInstance, configMap) =>
-  new Proxy(
+const createApis = (alovaInstance, configMap) =>{
+  const Apis = new Proxy(
     {},
     {
       get(_, property) {
@@ -51,13 +51,16 @@ const createApis = (alovaInstance, configMap) =>
       }
     }
   );
-
+  // 如果是全局定义
+  globalThis.{{{global}}} = Apis;
+  return Apis;
+}
 /**
  * @template T
  * @typedef {import('alova').AlovaMethodCreateConfig<typeof import('./index')['alovaInstance'] extends import('alova').Alova<infer AG> ? AG : any, any, T>} MethodConfig
  */
 /**
- * @typedef {{#raw "{{ " }}{{/raw}}[P in keyof typeof import('./apiDefinitions')]?: MethodConfig<P extends `${infer Tag}.${infer Url}` ? Parameters<Parameters<APIS[Tag][Url]>[0]['transform']>[0] : any>{{#raw " }}" }}{{/raw}} MethodsConfigMap
+ * @typedef {{#raw "{{ " }}{{/raw}}[P in keyof typeof import('./apiDefinitions')]?: MethodConfig<P extends `${infer Tag}.${infer Url}` ? Parameters<Parameters<{{{global}}}[Tag][Url]>[0]['transform']>[0] : any>{{#raw " }}" }}{{/raw}} MethodsConfigMap
  */
 /**
  * @template {MethodsConfigMap} Config

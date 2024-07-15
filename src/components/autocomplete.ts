@@ -19,6 +19,7 @@ export default vscode.languages.registerCompletionItemProvider(
           // 代码替换位置，查找位置会同步应用
           completionItem.filterText = item.path;
           completionItem.preselect = true;
+          completionItem.insertText = '';
           completionItem.command = {
             command: 'alova.autocomplete',
             title: 'Alova completions...',

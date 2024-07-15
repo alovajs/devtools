@@ -96,27 +96,10 @@ export async function fetchData(url: string) {
 
 export function highPrecisionInterval(callback: () => void, intervalInMilliseconds: number, immediate = false) {
   let isRunning = true;
-
-  const run = () => {
-    if (!isRunning) return;
-
-    const start = Date.now();
-    callback();
-    const duration = Date.now() - start;
-    const nextInterval = intervalInMilliseconds - duration;
-
-    if (nextInterval > 0) {
-      setTimeout(run, nextInterval);
-    } else {
-      setImmediate(run);
-    }
-  };
-
   if (immediate) {
-    setImmediate(run);
-  } else {
-    setTimeout(run, intervalInMilliseconds);
+    callback();
   }
+  const timer = setInterval(callback, intervalInMilliseconds);
 
   return {
     isRunning() {
@@ -124,6 +107,7 @@ export function highPrecisionInterval(callback: () => void, intervalInMillisecon
     },
     clear() {
       isRunning = false;
+      clearInterval(timer);
     },
     time: intervalInMilliseconds,
     immediate
@@ -162,4 +146,7 @@ export function uuid() {
 export function deserialize(serializedJavascript: string) {
   // eslint-disable-next-line no-eval
   return eval(`(${serializedJavascript})`);
+}
+export function isEmpty(value: any) {
+  return value === null || value === undefined || value === '';
 }

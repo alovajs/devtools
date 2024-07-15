@@ -43,6 +43,8 @@ declare type GeneratorConfig = {
   type: ConfigType;
   // 指定alova版本
   version: Number;
+  // 多项目使用global字段
+  global?: string;
   // （具体看下面）过滤或转换生成的api接口函数，返回一个新的apiDescriptor来生成api调用函数
   // 未指定此函数时则不转换apiDescripor对象
   // apiDescriptor的格式与openapi文件的接口对象格式相同

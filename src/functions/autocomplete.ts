@@ -34,11 +34,11 @@ const filterAutoCompleteItem = (text: string, apiArr: Api[]): AutoCompleteItem[]
         method: api.method
       });
     }
-    if (filter(text, api.pathKey)) {
+    if (filter(text, `${api.global}.${api.pathKey}`)) {
       autoCompleteArr.push({
         replaceText,
         summary: api.path,
-        path: api.pathKey,
+        path: `${api.global}.${api.pathKey}`,
         documentation: `${api.summary}\n\`\`\`typescript\n${replaceText}\`\`\``,
         method: api.method
       });

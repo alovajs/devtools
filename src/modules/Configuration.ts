@@ -2,8 +2,10 @@ import generateApi from '@/commands/generateApi';
 import Error from '@/components/error';
 import getAutoTemplateType from '@/functions/getAutoTemplateType';
 import getOpenApiData from '@/functions/getOpenApiData';
+import { isValidJSIdentifier } from '@/helper/standard';
 import { getAlovaJsonPath, readAlovaJson, TEMPLATE_DATA } from '@/modules/TemplateFile';
-import { highPrecisionInterval } from '@/utils';
+import { highPrecisionInterval, isEmpty } from '@/utils';
+import path from 'node:path';
 import * as vscode from 'vscode';
 
 export const CONFIG_POOL: Array<Configuration> = [];
@@ -28,13 +30,32 @@ export class Configuration {
     if (!this.config.generator?.length) {
       throw new Error('No items found in the `config.generator`');
     }
-    this.config.generator.forEach(item => {
+    const globalKeySet = new Set<string>();
+    const outputSet = new Set<string>();
+    this.config.generator.forEach((item, _, arr) => {
       if (!item.input) {
         throw new Error('Field input is required in `config.generator`');
       }
       if (!item.output) {
         throw new Error('Field output is required in `config.generator`');
       }
+      if (!isEmpty(item.global) && !isValidJSIdentifier(item.global)) {
+        throw new Error(`\`${item.global}\` does not match variable specification`);
+      }
+      if (arr.length < 2) {
+        return;
+      }
+      if (outputSet.has(path.join(item.output))) {
+        throw new Error(`output \`${item.output}\` is repated`);
+      }
+      outputSet.add(path.join(item.output));
+      if (!item.global) {
+        throw new Error('Field global is required in `config.generator`');
+      }
+      if (globalKeySet.has(item.global)) {
+        throw new Error(`global \`${item.global}\` is repated`);
+      }
+      globalKeySet.add(item.global);
     });
     if (typeof this.config.autoUpdate === 'object') {
       const { interval } = this.config.autoUpdate;
