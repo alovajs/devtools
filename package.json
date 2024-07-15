@@ -25,17 +25,6 @@
         "title": "alova refresh"
       }
     ],
-    "viewsContainers": {
-      "activitybar": []
-    },
-    "views": {
-      "alova": [
-        {
-          "id": "alova-sidebar",
-          "name": "轻量级请求策略库"
-        }
-      ]
-    },
     "icons": {
       "alova-icon-id": {
         "description": "alova icon",
