@@ -2,7 +2,7 @@
   "name": "alova-vscode-extension",
   "displayName": "Alova",
   "description": "The vscode extension for alova.js",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.89.0",
     "node": ">=18.19.0",
