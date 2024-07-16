@@ -1,4 +1,5 @@
 import Error from '@/components/error';
+import getTypescript from '@/functions/getTypescript';
 import { ALOVA_TEMP_PATH } from '@/globalConfig';
 import { Loader, LoaderSync } from 'cosmiconfig';
 import importFresh from 'import-fresh';
@@ -10,8 +11,12 @@ import { alovaWork } from './work';
 
 let typescript: typeof import('typescript');
 export const loadTs: Loader = async function loadTs(filepath, content) {
-  if (typescript === undefined) {
-    typescript = (await import('typescript')).default;
+  const ts = getTypescript();
+  if (typescript === undefined && ts) {
+    typescript = ts;
+  }
+  if (!typescript) {
+    throw new Error('typescript dependencie is required');
   }
   let transpiledContent;
   try {

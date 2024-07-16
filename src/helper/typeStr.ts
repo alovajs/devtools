@@ -1,123 +1,174 @@
-import ts from 'typescript';
+import { format } from '@/utils';
+// 去除注释
+function removeComments(content: string) {
+  // 去除单行注释
+  content = content.replace(/\/\/.*$/gm, '');
+  // 去除多行注释和文档注释
+  content = content.replace(/\/\*[\s\S]*?\*\//g, '');
+  return content;
+}
+const LEFT_BRACKET = ['(', '<', '{', '['];
+const RIGHT_BRACKET = [')', '>', '}', ']'];
+function parseTypeBody(typeBody: string) {
+  const properties = [];
+  let bracketCount = 0;
+  let currentProperty = '';
 
-/**
- * 获取给定 TypeScript 类型节点的默认值。
- * @param typeNode - TypeScript 类型节点
- * @returns 对应类型的默认值
- */
-function getDefaultForTypeNode(typeNode: ts.TypeNode): any {
-  switch (typeNode.kind) {
-    case ts.SyntaxKind.StringKeyword:
-      return '';
-    case ts.SyntaxKind.NumberKeyword:
-      return 0;
-    case ts.SyntaxKind.BooleanKeyword:
-      return false;
-    case ts.SyntaxKind.LiteralType: {
-      // 处理文字类型，例如 "a" | "b" | "c"
-      const literalTypeNode = typeNode as ts.LiteralTypeNode;
-      if (ts.isLiteralTypeNode(literalTypeNode) && ts.isStringLiteral(literalTypeNode.literal)) {
-        return literalTypeNode.literal.text;
-      }
-      return undefined; // 处理其他类型的文字类型
+  for (let i = 0; i < typeBody.length; i += 1) {
+    const char = typeBody[i];
+    if (LEFT_BRACKET.includes(char)) {
+      bracketCount += 1;
+    } else if (RIGHT_BRACKET.includes(char)) {
+      bracketCount -= 1;
     }
-    case ts.SyntaxKind.ArrayType:
-      return []; // 返回空数组
-    case ts.SyntaxKind.TypeLiteral: {
-      const result: any = {};
-      const { members } = typeNode as ts.TypeLiteralNode;
-      members.forEach(member => {
-        if (ts.isPropertySignature(member) && member.type && !member.questionToken) {
-          const propName = (member.name as ts.Identifier).text;
-          result[propName] = getDefaultForTypeNode(member.type);
+    currentProperty += char;
+    if (currentProperty.trim() && /\n/.test(char) && bracketCount === 0) {
+      properties.push(currentProperty.trim());
+      currentProperty = '';
+    }
+  }
+  if (currentProperty.trim()) {
+    properties.push(currentProperty.trim());
+  }
+  const parsedProperties = properties
+    .map(prop => {
+      const [keyOrigin, ...valueOrigin] = prop.split(':');
+      const key = keyOrigin.trim();
+      const value = valueOrigin.join(':').trim();
+      const isOptional = key.endsWith('?');
+      const defaultValue = getDefaultValue(value);
+      return { key: key.replace('?', ''), value: defaultValue, isOptional };
+    })
+    .filter(prop => !prop.isOptional)
+    .map(prop => `${prop.key}:${prop.value}`)
+    .join(',\n');
+  return `{\n${parsedProperties}\n}`;
+}
+function isSplitType(type: string, c: '&' | '|') {
+  if (!type.includes(c)) {
+    return false;
+  }
+  let bracketCount = 0;
+  for (let i = 0; i < type.length; i += 1) {
+    const char = type[i];
+    if (LEFT_BRACKET.includes(char)) {
+      bracketCount += 1;
+    } else if (RIGHT_BRACKET.includes(char)) {
+      bracketCount -= 1;
+    }
+    if (bracketCount === 0 && char === c) {
+      return true;
+    }
+  }
+  return false;
+}
+function splitTypes(typeStr: string, c: '&' | '|'): string[] {
+  const result: string[] = [];
+  let bracketCount = 0;
+  let currentType = '';
+  for (let i = 0; i < typeStr.length; i += 1) {
+    const char = typeStr[i];
+    if (LEFT_BRACKET.includes(char)) {
+      bracketCount += 1;
+    } else if (RIGHT_BRACKET.includes(char)) {
+      bracketCount -= 1;
+    }
+
+    if (char === c && bracketCount === 0) {
+      result.push(currentType.trim());
+      currentType = '';
+    } else {
+      currentType += char;
+    }
+  }
+  if (currentType.trim()) {
+    result.push(currentType.trim());
+  }
+  return result;
+}
+function isIntersectionType(type: string) {
+  return isSplitType(type, '&');
+}
+function isUnionType(type: string) {
+  return isSplitType(type, '|');
+}
+function getDefaultValue(type: string): string {
+  if (isUnionType(type)) {
+    const types = splitTypes(type, '|');
+    return getDefaultValue(types[0]);
+  }
+  if (isIntersectionType(type)) {
+    const types = splitTypes(type, '&');
+    const mergedDefaults = types.map(t => getDefaultValue(t));
+    return mergedDefaults.reduce((acc, curr) => {
+      if (curr.startsWith('{') && curr.endsWith('}')) {
+        const currProperties = curr.slice(1, -1).trim();
+        if (acc === '{}') {
+          return `{ ${currProperties} }`;
         }
-      });
-      return result;
-    }
-    case ts.SyntaxKind.UnionType: {
-      // 处理联合类型，取第一个类型的默认值
-      const unionType = typeNode as ts.UnionTypeNode;
-      const firstType = unionType.types[0];
-      return getDefaultForTypeNode(firstType);
-    }
-    case ts.SyntaxKind.TupleType: {
-      // 处理元组类型
-      const tupleType = typeNode as ts.TupleTypeNode;
-      return tupleType.elements.map(element => getDefaultForTypeNode(element));
-    }
-    case ts.SyntaxKind.IntersectionType: {
-      // 处理交叉类型
-      const intersectionType = typeNode as ts.IntersectionTypeNode;
-      const intersectionResult: any = {};
-      intersectionType.types.forEach(type => {
-        const typeDefaults = getDefaultForTypeNode(type);
-        Object.assign(intersectionResult, typeDefaults);
-      });
-      return intersectionResult;
-    }
-    case ts.SyntaxKind.TypeReference: {
-      const typeReferenceNode = typeNode as ts.TypeReferenceNode;
-      if (typeReferenceNode.typeName.getText() === 'Array') {
-        return []; // 处理数组类型引用
+        return `${acc.slice(0, -1)}, ${currProperties} }`;
       }
-      return {}; // 其他引用类型，返回空对象
-    }
-    default:
-      return {};
+      return acc;
+    }, '{}');
   }
-}
-function objectToNonQuotedKeysJson(obj: any): string {
-  const entries = Object.entries(obj);
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  const keyValuePairs = entries.map(([key, value]) => ` ${key}: ${valueToNonQuotedKeysJson(value)}`);
-  return `{${keyValuePairs.join(',')}}`;
-}
+  if (type.startsWith('{') && type.endsWith('}')) {
+    return parseTypeBody(type.slice(1, -1));
+  }
+  if (type.endsWith(')[]') && type.startsWith('(')) {
+    return '[]';
+  }
+  if (type.endsWith('[]') || type.startsWith('Array<')) {
+    return '[]';
+  }
 
-function valueToNonQuotedKeysJson(value: any): string {
-  if (Array.isArray(value)) {
-    const elements = value.map(element => valueToNonQuotedKeysJson(element));
-    return `[${elements.join(', ')}]`;
+  if (type.startsWith('[') && type.endsWith(']')) {
+    return parseTuple(type);
   }
-  if (typeof value === 'object' && value !== null) {
-    return objectToNonQuotedKeysJson(value);
+  if ((type.startsWith("'") && type.endsWith("'")) || (type.startsWith('"') && type.endsWith('"'))) {
+    return type;
   }
-  return JSON.stringify(value);
+  if (parseInt(type, 10)) {
+    return type;
+  }
+  switch (type) {
+    case 'string':
+      return '""';
+    case 'number':
+      return '0';
+    case 'boolean':
+      return 'false';
+    case 'null':
+    case 'undefined':
+      return type;
+    default:
+      return '{}';
+  }
+}
+function parseTuple(tupleType: string) {
+  const elements = tupleType
+    .slice(1, -1)
+    .split(',')
+    .map(el => el.trim());
+  const parsedElements = elements.map(el => getDefaultValue(el));
+  return `[${parsedElements.join(', ')}]`;
 }
 /**
  * 从给定的 TypeScript 源代码生成类型和接口的默认值对象。
  * @param sourceCode - TypeScript 源代码字符串
  * @returns 包含类型和接口默认值的对象
  */
-export function generateDefaultValues(sourceCode: string): any {
-  const sourceText = `interface AnonymousType { done: ${sourceCode} }`;
-  const sourceFile = ts.createSourceFile('temp.ts', sourceText, ts.ScriptTarget.Latest, true);
-
-  const result: any = {};
-
-  /**
-   * 遍历节点，查找接口声明并生成其默认值。
-   * @param node - 当前遍历的节点
-   */
-  function visit(node: ts.Node) {
-    if (ts.isInterfaceDeclaration(node)) {
-      const typeName = node.name.text;
-      const typeResult: any = {};
-      node.members.forEach(member => {
-        if (ts.isPropertySignature(member) && member.type) {
-          const propName = (member.name as ts.Identifier).text;
-          typeResult[propName] = getDefaultForTypeNode(member.type);
-        }
-      });
-      result[typeName] = typeResult;
-    } else {
-      ts.forEachChild(node, visit);
-    }
+export function generateDefaultValues<T extends boolean, U = T extends true ? Promise<string> : string>(
+  sourceCode: string,
+  isFormat?: T
+): U {
+  const defaultValue = getDefaultValue(removeComments(sourceCode).trim());
+  if (isFormat) {
+    return format(defaultValue, {
+      parser: 'json'
+    }) as U;
   }
-
-  visit(sourceFile);
-  return valueToNonQuotedKeysJson(result.AnonymousType.done);
+  return defaultValue as U;
 }
-
 export default {
   generateDefaultValues
 };

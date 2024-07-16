@@ -13,3 +13,6 @@ vsc-extension-quickstart.md
 **/.vscode-test.*
 pnpm-lock.yaml
 pnpm-workspace.yaml
+design/**
+test/**
+.husky/**
