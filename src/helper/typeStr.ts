@@ -1,3 +1,4 @@
+import { format } from '@/utils';
 // 去除注释
 function removeComments(content: string) {
   // 去除单行注释
@@ -42,8 +43,8 @@ function parseTypeBody(typeBody: string) {
     .join(',\n');
   return `{\n${parsedProperties}\n}`;
 }
-function isIntersectionType(type: string) {
-  if (!type.includes('&')) {
+function isSplitType(type: string, c: '&' | '|') {
+  if (!type.includes(c)) {
     return false;
   }
   let bracketCount = 0;
@@ -54,37 +55,49 @@ function isIntersectionType(type: string) {
     } else if (['>', '}', ']'].includes(char)) {
       bracketCount -= 1;
     }
-    if (bracketCount === 0 && char === '&') {
+    if (bracketCount === 0 && char === c) {
       return true;
     }
   }
   return false;
 }
-function isUnionType(type: string) {
-  if (!type.includes('|')) {
-    return false;
-  }
+function splitTypes(typeStr: string, c: '&' | '|'): string[] {
+  const result: string[] = [];
   let bracketCount = 0;
-  for (let i = 0; i < type.length; i += 1) {
-    const char = type[i];
+  let currentType = '';
+  for (let i = 0; i < typeStr.length; i += 1) {
+    const char = typeStr[i];
     if (['<', '{', '['].includes(char)) {
       bracketCount += 1;
     } else if (['>', '}', ']'].includes(char)) {
       bracketCount -= 1;
     }
-    if (bracketCount === 0 && char === '|') {
-      return true;
+
+    if (char === c && bracketCount === 0) {
+      result.push(currentType.trim());
+      currentType = '';
+    } else {
+      currentType += char;
     }
   }
-  return false;
+  if (currentType.trim()) {
+    result.push(currentType.trim());
+  }
+  return result;
+}
+function isIntersectionType(type: string) {
+  return isSplitType(type, '&');
+}
+function isUnionType(type: string) {
+  return isSplitType(type, '|');
 }
 function getDefaultValue(type: string): string {
   if (isUnionType(type)) {
-    const types = type.split('|').map(t => t.trim());
+    const types = splitTypes(type, '|');
     return getDefaultValue(types[0]);
   }
   if (isIntersectionType(type)) {
-    const types = type.split('&').map(t => t.trim());
+    const types = splitTypes(type, '&');
     const mergedDefaults = types.map(t => getDefaultValue(t));
     return mergedDefaults.reduce((acc, curr) => {
       if (curr.startsWith('{') && curr.endsWith('}')) {
@@ -143,8 +156,17 @@ function parseTuple(tupleType: string) {
  * @param sourceCode - TypeScript 源代码字符串
  * @returns 包含类型和接口默认值的对象
  */
-export function generateDefaultValues(sourceCode: string): string {
-  return getDefaultValue(removeComments(sourceCode).trim());
+export function generateDefaultValues<T extends boolean, U = T extends true ? Promise<string> : string>(
+  sourceCode: string,
+  isFormat?: T
+): U {
+  const defaultValue = getDefaultValue(removeComments(sourceCode).trim());
+  if (isFormat) {
+    return format(defaultValue, {
+      parser: 'json'
+    }) as U;
+  }
+  return defaultValue as U;
 }
 export default {
   generateDefaultValues
