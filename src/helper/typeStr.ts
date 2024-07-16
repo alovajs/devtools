@@ -7,7 +7,8 @@ function removeComments(content: string) {
   content = content.replace(/\/\*[\s\S]*?\*\//g, '');
   return content;
 }
-
+const LEFT_BRACKET = ['(', '<', '{', '['];
+const RIGHT_BRACKET = [')', '>', '}', ']'];
 function parseTypeBody(typeBody: string) {
   const properties = [];
   let bracketCount = 0;
@@ -15,9 +16,9 @@ function parseTypeBody(typeBody: string) {
 
   for (let i = 0; i < typeBody.length; i += 1) {
     const char = typeBody[i];
-    if (['<', '{', '['].includes(char)) {
+    if (LEFT_BRACKET.includes(char)) {
       bracketCount += 1;
-    } else if (['>', '}', ']'].includes(char)) {
+    } else if (RIGHT_BRACKET.includes(char)) {
       bracketCount -= 1;
     }
     currentProperty += char;
@@ -50,9 +51,9 @@ function isSplitType(type: string, c: '&' | '|') {
   let bracketCount = 0;
   for (let i = 0; i < type.length; i += 1) {
     const char = type[i];
-    if (['<', '{', '['].includes(char)) {
+    if (LEFT_BRACKET.includes(char)) {
       bracketCount += 1;
-    } else if (['>', '}', ']'].includes(char)) {
+    } else if (RIGHT_BRACKET.includes(char)) {
       bracketCount -= 1;
     }
     if (bracketCount === 0 && char === c) {
@@ -67,9 +68,9 @@ function splitTypes(typeStr: string, c: '&' | '|'): string[] {
   let currentType = '';
   for (let i = 0; i < typeStr.length; i += 1) {
     const char = typeStr[i];
-    if (['<', '{', '['].includes(char)) {
+    if (LEFT_BRACKET.includes(char)) {
       bracketCount += 1;
-    } else if (['>', '}', ']'].includes(char)) {
+    } else if (RIGHT_BRACKET.includes(char)) {
       bracketCount -= 1;
     }
 
