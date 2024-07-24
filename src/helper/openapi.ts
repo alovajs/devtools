@@ -10,6 +10,41 @@ export function isReferenceObject(obj: any): obj is OpenAPIV3.ReferenceObject {
 }
 /**
  *
+ * @param target 目标对象
+ * @param obj 比较对象
+ * @param openApi openapi文档
+ * @returns 是否部分相等和查找路径
+ */
+function isEqualWithPart(target: any, obj: any, openApi: OpenAPIV3_1.Document) {
+  const seenObjects = new Map<object, string[]>();
+
+  function helper(obj: any, path: string[]): [boolean, string[][]] {
+    if (obj && typeof obj === 'object') {
+      if (isEqualObject(target, obj, openApi)) {
+        return [true, [path]];
+      }
+      if (seenObjects.has(obj)) {
+        return [false, [path]];
+      }
+      seenObjects.set(obj, path);
+      let equalPaths: string[][] = [];
+      for (const key of Object.keys(obj)) {
+        const [isEqual, euqalPath] = helper(obj[key], [...path, key]);
+        if (isEqual) {
+          equalPaths = equalPaths.concat(euqalPath);
+        }
+      }
+      seenObjects.delete(obj);
+      return [equalPaths.length > 0, equalPaths];
+    }
+    return [false, [path]];
+  }
+
+  const [isEqual, euqalPath] = helper(obj, []);
+  return { isEqual, euqalPath };
+}
+/**
+ *
  * @param path $ref查找路径
  * @param openApi openApi文档对象
  * @param isDeep 是否深拷贝
@@ -181,6 +216,25 @@ export const mergeObject = <T>(objValue: any, srcValue: any, openApi: OpenAPIV3_
     if (isArray(objValue) && isArray(srcValue) && !srcValue.length) {
       return srcValue;
     }
+    // 部分相等
+    const { isEqual, euqalPath } = isEqualWithPart(objValue, srcValue, openApi);
+    if (isEqual) {
+      // 如果相等
+      if (euqalPath.join('') === '') {
+        return objValue;
+      }
+      for (const currPath of euqalPath) {
+        let currObj = srcValue;
+        currPath.forEach((path, idx) => {
+          if (idx + 1 === currPath.length) {
+            currObj[path] = objValue;
+          } else {
+            currObj = currObj[path];
+          }
+        });
+      }
+      return srcValue;
+    }
     // 如果是对象，则递归合并
     if (isObject(objValue) && isObject(srcValue) && !isReferenceObject(objValue) && !isReferenceObject(srcValue)) {
       return mergeWith(objValue, srcValue, customizer);
@@ -188,9 +242,6 @@ export const mergeObject = <T>(objValue: any, srcValue: any, openApi: OpenAPIV3_
     // 处理$ref合并
     if (isReferenceObject(objValue)) {
       if (isReferenceObject(srcValue) && objValue.$ref === srcValue.$ref) {
-        return objValue;
-      }
-      if (isEqualObject(objValue, srcValue, openApi)) {
         return objValue;
       }
       const [path] = map.find(([, item]) => isEqualObject(item, srcValue, openApi)) ?? [];

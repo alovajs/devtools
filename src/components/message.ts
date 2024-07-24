@@ -1,3 +1,4 @@
+import util from 'node:util';
 import * as vscode from 'vscode';
 // 创建一个输出通道
 export const outputChannel = vscode.window.createOutputChannel('Alova');
@@ -29,8 +30,14 @@ export function error(message: string) {
 export function warning(message: string) {
   return vscode.window.showWarningMessage(message);
 }
-export function log(message: string) {
-  outputChannel.appendLine(message);
+export function log(...messageArr: any[]) {
+  messageArr.forEach(message => {
+    if (typeof message === 'object') {
+      message = util.inspect(message, { showHidden: true, depth: null, colors: false });
+    }
+    outputChannel.append(`${message} `);
+  });
+  outputChannel.append('\n');
   outputChannel.show();
 }
 export default {

@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 const triggerCharacters: string[] = [' ', '.', '>', ':', '-'];
 class AutoComplete extends vscode.CompletionItem {}
 export default vscode.languages.registerCompletionItemProvider(
-  ['javascript', 'typescript'],
+  ['javascript', 'typescript', 'vue', 'javascriptreact', 'typescriptreact', 'svelte'],
   {
     provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
       // 支持换行 代码从起始位置到输入位置

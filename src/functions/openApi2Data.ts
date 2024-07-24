@@ -1,3 +1,4 @@
+import { log } from '@/components/message';
 import { findBy$ref, get$refName, isReferenceObject, mergeObject, removeAll$ref } from '@/helper/openapi';
 import { convertToType, jsonSchema2TsStr } from '@/helper/schema2type';
 import { getStandardOperationId, getStandardTags } from '@/helper/standard';
@@ -294,7 +295,7 @@ export const transformPathObj = async (
   let newApiDescriptor = apiDescriptor;
   let handleApiDone = false;
   try {
-    newApiDescriptor = handleApi(apiDescriptor);
+    newApiDescriptor = handleApi(apiDescriptor, log);
     handleApiDone = true;
   } catch (error) {
     handleApiDone = false;
