@@ -49,7 +49,7 @@ declare type GeneratorConfig = {
   // 未指定此函数时则不转换apiDescripor对象
   // apiDescriptor的格式与openapi文件的接口对象格式相同
   // 对类型生成也同样适用
-  handleApi(apiDescriptor: ApiDescriptor): ApiDescriptor;
+  handleApi(apiDescriptor: ApiDescriptor, log: (...args: any[]) => void): ApiDescriptor;
 };
 declare interface AlovaConfig {
   // api生成设置，为数组，每项代表一个自动生成的规则，包含生成的输入输出目录、规范文件地址等等
