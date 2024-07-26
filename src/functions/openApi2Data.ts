@@ -1,5 +1,5 @@
 import { log } from '@/components/message';
-import { findBy$ref, get$refName, isReferenceObject, mergeObject, removeAll$ref } from '@/helper/openapi';
+import { findBy$ref, getStandardRefName, isReferenceObject, mergeObject, removeAll$ref } from '@/helper/openapi';
 import { convertToType, jsonSchema2TsStr } from '@/helper/schema2type';
 import { getStandardOperationId, getStandardTags } from '@/helper/standard';
 import { generateDefaultValues } from '@/helper/typeStr';
@@ -85,7 +85,7 @@ const remove$ref = (
     preText,
     searchMap,
     on$Ref(refOject) {
-      const type = get$refName(refOject.$ref);
+      const type = getStandardRefName(refOject.$ref);
       if (schemasMap && !schemasMap.has(type)) {
         jsonSchema2TsStr(
           refOject,

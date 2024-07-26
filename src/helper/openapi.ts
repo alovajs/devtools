@@ -1,5 +1,7 @@
+import { capitalizeFirstLetter } from '@/utils';
 import { cloneDeep, isArray, isEqualWith, isObject, mergeWith, sortBy } from 'lodash';
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
+import { isValidJSIdentifier, makeIdentifier } from './standard';
 /**
  * 判断是否是$ref对象
  * @param obj 判断对象
@@ -97,11 +99,11 @@ export const setComponentsBy$ref = (path: string, data: any, openApi: OpenAPIV3_
  */
 export const get$refName = (path: string, toUpperCase: boolean = true) => {
   const pathArr = path.split('/');
-  const nameArr = pathArr[pathArr.length - 1].split('');
+  const name = pathArr[pathArr.length - 1];
   if (!toUpperCase) {
-    return nameArr.join('');
+    return name;
   }
-  return (nameArr?.[0]?.toUpperCase?.() ?? '') + nameArr.slice(1).join('');
+  return capitalizeFirstLetter(name);
 };
 /**
  *
@@ -180,12 +182,12 @@ export function isEqualObject(objValue: any, srcValue: any, openApi: OpenAPIV3_1
  */
 export function getNext$refKey(path: string, map: Array<[string, any]> = []) {
   function getNameVersion(path: string) {
-    const name = get$refName(path, false);
+    const name = getStandardRefName(path, false);
     const [, nameVersion = 0] = /(\d+)$/.exec(name) ?? [];
     return Number(nameVersion);
   }
   function getOnlyName(path: string) {
-    const name = get$refName(path, false);
+    const name = getStandardRefName(path, false);
     const [, onlyName] = /(.*?)(\d*)$/.exec(name) ?? [];
     return onlyName;
   }
@@ -265,3 +267,30 @@ export const mergeObject = <T>(objValue: any, srcValue: any, openApi: OpenAPIV3_
   }
   return mergeWith(objValue, srcValue, customizer);
 };
+const refPathMap = new Map<string, string>();
+const refNameSet = new Set<string>();
+export function getStandardRefName(refPath: string, toUpperCase: boolean = true) {
+  if (refPathMap.has(refPath)) {
+    return refPathMap.get(refPath) ?? '';
+  }
+  const refName = get$refName(refPath, toUpperCase);
+  if (isValidJSIdentifier(refName)) {
+    refNameSet.add(refName);
+    refPathMap.set(refPath, refName);
+    return refName;
+  }
+  let newRefName = makeIdentifier(refName, 'camelCas');
+  if (toUpperCase) {
+    newRefName = capitalizeFirstLetter(newRefName);
+  }
+  if (refNameSet.has(newRefName)) {
+    let num = 1;
+    while (refNameSet.has(`${newRefName}${num}`)) {
+      num += 1;
+    }
+    newRefName = `${newRefName}${num}`;
+  }
+  refNameSet.add(newRefName);
+  refPathMap.set(refPath, newRefName);
+  return newRefName;
+}

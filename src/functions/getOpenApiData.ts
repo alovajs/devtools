@@ -54,7 +54,11 @@ async function parseRemoteFile(url: string, platformType?: PlatformType) {
 export async function getPlatformOpenApiData(url: string, platformType: PlatformType) {
   switch (platformType) {
     case 'swagger': {
-      const dataText = (await fetchData(`${url}/openapi.json`).catch(() => fetchData(`${url}/v2/swagger.json`))) ?? '';
+      const dataText =
+        (await fetchData(url)
+          .then(text => JSON.stringify(JSON.parse(text)))
+          .catch(() => fetchData(`${url}/openapi.json`))
+          .catch(() => fetchData(`${url}/v2/swagger.json`))) ?? '';
       return JSON.parse(dataText);
     }
     default:

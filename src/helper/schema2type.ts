@@ -1,6 +1,6 @@
 import { format } from '@/utils';
 import { OpenAPIV3_1 } from 'openapi-types';
-import { findBy$ref, get$refName, isReferenceObject } from './openapi';
+import { findBy$ref, getStandardRefName, isReferenceObject } from './openapi';
 import { isValidJSIdentifier } from './standard';
 
 export interface Schema2TypeOptions {
@@ -60,7 +60,12 @@ export function comment(type: 'line' | 'docment') {
       if (!str) {
         return str;
       }
-      return startText + str + endText;
+      /**
+       * // console.log(str, 63);
+       *
+       */
+
+      return startText + str.replace('*/*', '* / *').replace('/*', '/ *').replace('*/', '* /') + endText;
     }
   };
 }
@@ -80,7 +85,7 @@ function parseSchema(
   let refPath = '';
   if (isReferenceObject(schemaOrigin)) {
     refPath = schemaOrigin.$ref;
-    const nameType = get$refName(schemaOrigin.$ref);
+    const nameType = getStandardRefName(schemaOrigin.$ref);
     if (config.visited?.has(refPath)) {
       return nameType;
     }
@@ -164,7 +169,7 @@ function parseObject(
     }
     let type = parseSchema(valueOrigin, openApi, config);
     if (!config.deep && refPath) {
-      type = get$refName(refPath);
+      type = getStandardRefName(refPath);
     }
     let valueStr = '';
     const doc = comment(config.commentStyle ?? 'line');
@@ -218,7 +223,7 @@ function parseArray(
     }
     const type = parseSchema(schema.items, openApi, config);
     if (!config.deep && refPath) {
-      return `${get$refName(refPath)}[]`;
+      return `${getStandardRefName(refPath)}[]`;
     }
     switch (items.type) {
       case 'object':
@@ -300,7 +305,7 @@ export const jsonSchema2TsStr = async (
     searchMap,
     async on$Ref(refObject) {
       if (options.on$RefTsStr) {
-        const name = get$refName(refObject.$ref);
+        const name = getStandardRefName(refObject.$ref);
         if (map.has(name)) {
           options.on$RefTsStr(name, map.get(name) ?? '');
           return;
