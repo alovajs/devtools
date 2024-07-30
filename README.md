@@ -6,7 +6,7 @@
 2. Embed API documents in the code to experience the effect of checking and using APIs.
 3. Update APIs regularly and actively notify front-end developers, no longer relying on server-side developers to notify.
 
-> [Detailed documentation](https://alova.js.org/next/tutorial/getting-started/extension-integration).
+> [Detailed documentation](https://alova.js.org/tutorial/getting-started/extension-integration).
 
 ## View API completed information
 
