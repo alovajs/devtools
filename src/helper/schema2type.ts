@@ -271,7 +271,7 @@ export async function convertToType(
   const tsStrFormat = await format(`type Ts = ${tsStr}`, {
     semi: false // 去掉分号
   });
-  const resultFormat = /type Ts = (.*)/s.exec(tsStrFormat)?.[1] ?? '';
+  const resultFormat = /type Ts =(.*)/s.exec(tsStrFormat)?.[1] ?? '';
   const tsStrArr = resultFormat.trim().split('\n');
   // 加前缀，便于生成注释
   return tsStrArr.map((line, idx) => (idx ? config.preText : '') + line).join('\n');

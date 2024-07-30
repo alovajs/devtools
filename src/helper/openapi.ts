@@ -274,7 +274,7 @@ export function getStandardRefName(refPath: string, toUpperCase: boolean = true)
     refPathMap.set(refPath, refName);
     return refName;
   }
-  let newRefName = makeIdentifier(refName, 'camelCas');
+  let newRefName = makeIdentifier(refName, 'snakeCase');
   if (toUpperCase) {
     newRefName = capitalizeFirstLetter(newRefName);
   }
