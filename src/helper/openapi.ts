@@ -10,41 +10,10 @@ import { isValidJSIdentifier, makeIdentifier } from './standard';
 export function isReferenceObject(obj: any): obj is OpenAPIV3.ReferenceObject {
   return !!(obj as OpenAPIV3.ReferenceObject)?.$ref;
 }
-/**
- *
- * @param target 目标对象
- * @param obj 比较对象
- * @param openApi openapi文档
- * @returns 是否部分相等和查找路径
- */
-function isEqualWithPart(target: any, obj: any, openApi: OpenAPIV3_1.Document) {
-  const seenObjects = new Map<object, string[]>();
-
-  function helper(obj: any, path: string[]): [boolean, string[][]] {
-    if (obj && typeof obj === 'object') {
-      if (isEqualObject(target, obj, openApi)) {
-        return [true, [path]];
-      }
-      if (seenObjects.has(obj)) {
-        return [false, [path]];
-      }
-      seenObjects.set(obj, path);
-      let equalPaths: string[][] = [];
-      for (const key of Object.keys(obj)) {
-        const [isEqual, euqalPath] = helper(obj[key], [...path, key]);
-        if (isEqual) {
-          equalPaths = equalPaths.concat(euqalPath);
-        }
-      }
-      seenObjects.delete(obj);
-      return [equalPaths.length > 0, equalPaths];
-    }
-    return [false, [path]];
-  }
-
-  const [isEqual, euqalPath] = helper(obj, []);
-  return { isEqual, euqalPath };
+function isBaseReferenceObject(obj: any): obj is { _$ref: string } & Record<string, any> {
+  return !!(obj as { _$ref: string })?._$ref;
 }
+
 /**
  *
  * @param path $ref查找路径
@@ -123,6 +92,8 @@ export const removeAll$ref = <T = OpenAPIV3_1.SchemaObject>(
       return searchMap.get(deepSchemaOrigin.$ref) as T;
     }
     schema = findBy$ref<OpenAPIV3_1.SchemaObject>(deepSchemaOrigin.$ref, openApi, true);
+    // 做标记方便还原
+    schema._$ref = deepSchemaOrigin.$ref;
     searchMap.set(deepSchemaOrigin.$ref, schema);
   } else {
     schema = deepSchemaOrigin;
@@ -143,6 +114,7 @@ export const removeAll$ref = <T = OpenAPIV3_1.SchemaObject>(
  */
 export function isEqualObject(objValue: any, srcValue: any, openApi: OpenAPIV3_1.Document) {
   const visited = new WeakMap();
+  const ignoreKeyArr = ['_$ref'];
   function customizer(objValueOrigin: any, otherValueOrigin: any) {
     if (objValueOrigin === otherValueOrigin) {
       return true;
@@ -159,7 +131,9 @@ export function isEqualObject(objValue: any, srcValue: any, openApi: OpenAPIV3_1
     if (isArray(objValue) && isArray(otherValue)) {
       const sortObjValue = sortBy(objValue);
       const sortOtherValue = sortBy(otherValue);
-      const keys = [...new Set([...Object.keys(sortObjValue), ...Object.keys(sortOtherValue)])];
+      const keys = [...new Set([...Object.keys(sortObjValue), ...Object.keys(sortOtherValue)])].filter(
+        key => !ignoreKeyArr.includes(key)
+      );
       return keys.every(key => isEqualWith((sortObjValue as any)[key], (sortOtherValue as any)[key], customizer));
     }
     // 如果是对象，递归比较
@@ -168,7 +142,9 @@ export function isEqualObject(objValue: any, srcValue: any, openApi: OpenAPIV3_1
         return true;
       }
       visited.set(objValue, otherValue);
-      const keys = [...new Set([...Object.keys(objValue), ...Object.keys(otherValue)])];
+      const keys = [...new Set([...Object.keys(objValue), ...Object.keys(otherValue)])].filter(
+        key => !ignoreKeyArr.includes(key)
+      );
       return keys.every(key => isEqualWith((objValue as any)[key], (otherValue as any)[key], customizer));
     }
   }
@@ -204,6 +180,59 @@ export function getNext$refKey(path: string, map: Array<[string, any]> = []) {
   });
   return `${basePath}/${name}${nameVersion + 1}`;
 }
+function isCircular(obj: any) {
+  const seenObjects = new WeakSet();
+
+  function detect(obj: any) {
+    if (obj && typeof obj === 'object') {
+      if (seenObjects.has(obj)) {
+        return true;
+      }
+      seenObjects.add(obj);
+      for (const key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          if (detect(obj[key])) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  return detect(obj);
+}
+function unCircular(obj: Record<string, any>, openApi: OpenAPIV3_1.Document, map: Array<[string, any]>) {
+  if (isBaseReferenceObject(obj)) {
+    const refObj = { $ref: obj._$ref };
+    if (isEqualObject(obj, refObj, openApi)) {
+      return refObj;
+    }
+    for (const key in obj) {
+      if (isCircular(obj[key])) {
+        obj[key] = unCircular(obj[key], openApi, map);
+      }
+    }
+    const [path] = map.find(([, item]) => isEqualObject(item, obj, openApi)) ?? [];
+    if (path) {
+      return {
+        $ref: path
+      };
+    }
+    const nextPath = getNext$refKey(refObj.$ref, map);
+    map.push([nextPath, obj]);
+    setComponentsBy$ref(nextPath, obj, openApi);
+    return {
+      $ref: nextPath
+    };
+  }
+  for (const key in obj) {
+    if (isCircular(obj[key])) {
+      obj[key] = unCircular(obj[key], openApi, map);
+    }
+  }
+  return obj;
+}
 /**
  * 合并openApi文档对象尽量以srcValue为准
  * @param objValue
@@ -211,57 +240,23 @@ export function getNext$refKey(path: string, map: Array<[string, any]> = []) {
  * @param openApi
  * @returns
  */
-export const mergeObject = <T>(objValue: any, srcValue: any, openApi: OpenAPIV3_1.Document): T => {
-  const map: Array<[string, any]> = [];
+export const mergeObject = <T>(
+  objValue: any,
+  srcValue: any,
+  openApi: OpenAPIV3_1.Document,
+  map: Array<[string, any]> = []
+): T => {
   function customizer(objValue: any, srcValue: any): any {
     // 如果都是数组，并且srcValue为空数组，则直接返回srcValue
     if (isArray(objValue) && isArray(srcValue) && !srcValue.length) {
       return srcValue;
     }
-    // 部分相等
-    const { isEqual, euqalPath } = isEqualWithPart(objValue, srcValue, openApi);
-    if (isEqual) {
-      // 如果相等
-      if (euqalPath.join('') === '') {
-        return objValue;
-      }
-      for (const currPath of euqalPath) {
-        let currObj = srcValue;
-        currPath.forEach((path, idx) => {
-          if (idx + 1 === currPath.length) {
-            currObj[path] = objValue;
-          } else {
-            currObj = currObj[path];
-          }
-        });
-      }
-      return srcValue;
+    if (isEqualObject(objValue, srcValue, openApi)) {
+      return objValue;
     }
-    // 如果是对象，则递归合并
-    if (isObject(objValue) && isObject(srcValue) && !isReferenceObject(objValue) && !isReferenceObject(srcValue)) {
-      return mergeWith(objValue, srcValue, customizer);
-    }
-    // 处理$ref合并
-    if (isReferenceObject(objValue)) {
-      if (isReferenceObject(srcValue) && objValue.$ref === srcValue.$ref) {
-        return objValue;
-      }
-      const [path] = map.find(([, item]) => isEqualObject(item, srcValue, openApi)) ?? [];
-      if (path) {
-        return cloneDeep({
-          ...objValue,
-          $ref: path
-        });
-      }
-      const nextPath = getNext$refKey(objValue.$ref, map);
-      const objValue2 = findBy$ref(objValue.$ref, openApi, true);
-      const nextValue = mergeWith(objValue2, srcValue, customizer);
-      map.push([nextPath, nextValue]);
-      setComponentsBy$ref(nextPath, nextValue, openApi);
-      return cloneDeep({
-        ...objValue,
-        $ref: nextPath
-      });
+    // 处理循环引用
+    if (isCircular(srcValue)) {
+      srcValue = unCircular(srcValue, openApi, map);
     }
     return srcValue;
   }

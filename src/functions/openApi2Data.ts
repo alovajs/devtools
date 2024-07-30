@@ -272,7 +272,7 @@ export const transformPathObj = async (
     apiDescriptor.parameters = [];
     const parametersArray = isReferenceObject(parameters)
       ? findBy$ref<typeof parameters>(parameters.$ref, openApi, true)
-      : (parameters ?? []);
+      : parameters ?? [];
     for (const parameter of parametersArray) {
       const parameterObject = removeAll$ref<OpenAPIV3.ParameterObject>(parameter, openApi);
       apiDescriptor.parameters.push(parameterObject);
