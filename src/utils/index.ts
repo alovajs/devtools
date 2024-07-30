@@ -150,3 +150,7 @@ export function deserialize(serializedJavascript: string) {
 export function isEmpty(value: any) {
   return value === null || value === undefined || value === '';
 }
+export function capitalizeFirstLetter(str: string) {
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}

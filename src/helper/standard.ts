@@ -66,7 +66,7 @@ const reservedWords = new Set([
   'with',
   'yield'
 ]);
-const makeIdentifier = (str: string, style: 'camelCas' | 'snakeCase') => {
+export const makeIdentifier = (str: string, style: 'camelCas' | 'snakeCase') => {
   // 移除所有非字母、数字、下划线和美元符号的字符，同时拆分单词
   const words = str.split(/[^a-zA-Z0-9_$]+/).filter(Boolean);
 
@@ -162,5 +162,6 @@ export function getStandardTags(tags?: string[]) {
 }
 export default {
   getStandardOperationId,
-  getStandardTags
+  getStandardTags,
+  makeIdentifier
 };
