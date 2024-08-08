@@ -82,7 +82,7 @@ export default async function (
     }
     // 如果是swagger2的文件
     if (isSwagger2(data)) {
-      data = (await swagger2openapi.convertObj(data, {})).openapi as OpenAPIV3_1.Document;
+      data = (await swagger2openapi.convertObj(data, { warnOnly: true })).openapi as OpenAPIV3_1.Document;
     }
   } catch (error) {
     throw new Error(`Cannot read file from ${url}`);
