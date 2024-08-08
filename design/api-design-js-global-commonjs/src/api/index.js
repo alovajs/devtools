@@ -24,7 +24,7 @@ const $$userConfigMap = withConfigType({
 
 const Apis = createApis(alovaInstance, $$userConfigMap);
 
-// 如果是全局定义
+// define global variable `Apis`
 global.Apis = Apis;
 
 // 如果不是则直接导出
