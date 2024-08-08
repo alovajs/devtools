@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@alova/adapter-xhr": "2.0.0-beta.8",
-    "alova": "3.0.0-beta.10"
+    "@alova/mock": "^2.0.4",
+    "alova": "3.0.5"
   }
 }
