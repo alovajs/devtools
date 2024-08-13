@@ -70,6 +70,7 @@ export interface TemplateData extends Omit<OpenAPIV3_1.Document, ''> {
   global: string;
   alovaVersion: AlovaVersion;
   commentText: string;
+  useImportType: boolean;
 }
 const remove$ref = (
   originObj: OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject,
@@ -343,7 +344,8 @@ export default async function openApi2Data(
     commentText: '',
     schemas: [],
     alovaVersion: 'v2',
-    global: config.global ?? 'Apis'
+    global: config.global ?? 'Apis',
+    useImportType: config?.useImportType ?? false
   };
   const schemasMap = new Map<string, string>();
   const searchMap = new Map<string, string>();

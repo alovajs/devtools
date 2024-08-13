@@ -1,4 +1,4 @@
-import './globals.d.ts'
+{{#if useImportType}}import './globals.d.ts'{{else}}/// <reference types='./globals.d.ts' />{{/if}}
 {{{commentText}}}
 {{#if (eq moduleType "ESModule")}}export default{{else if (eq moduleType "commonJs")}}module.exports ={{/if}} {
 {{#pathsArr}}
