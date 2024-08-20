@@ -5,6 +5,7 @@ import getOpenApiData from '@/functions/getOpenApiData';
 import { isValidJSIdentifier } from '@/helper/standard';
 import { getAlovaJsonPath, readAlovaJson, TEMPLATE_DATA } from '@/modules/TemplateFile';
 import { highPrecisionInterval, isEmpty } from '@/utils';
+import type { TemplateType } from '@/wormhole';
 import path from 'node:path';
 import * as vscode from 'vscode';
 

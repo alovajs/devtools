@@ -15,6 +15,10 @@ const alovaExplorer = cosmiconfig('alova', {
 });
 export const readConfig = async (projectPath: string) => {
   const searchResult = await alovaExplorer.search(path.resolve(projectPath));
+  alovaExplorer.clearCaches();
+  if (searchResult?.isEmpty) {
+    return null;
+  }
   return searchResult?.config as AlovaConfig | null;
 };
 export default readConfig;

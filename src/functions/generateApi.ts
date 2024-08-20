@@ -1,5 +1,6 @@
 import openApi2Data from '@/functions/openApi2Data';
 import { getAlovaJsonPath, TEMPLATE_DATA, TemplateFile, writeAlovaJson } from '@/modules/TemplateFile';
+import type { TemplateType } from '@/wormhole';
 import { isEqual } from 'lodash';
 import fs from 'node:fs';
 import path from 'node:path';

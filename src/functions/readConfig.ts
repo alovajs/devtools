@@ -1,40 +1,28 @@
 import Error from '@/components/error';
 import message from '@/components/message';
-import { loadJs, loadTs } from '@/helper/lodaders';
 import { CONFIG_POOL, Configuration } from '@/modules/Configuration';
 import { getFileNameByPath } from '@/utils';
+import { readConfig as baseReadConfig } from '@/wormhole';
 import chokidar, { FSWatcher } from 'chokidar';
-import { cosmiconfig } from 'cosmiconfig';
-import path from 'node:path';
 import * as vscode from 'vscode';
 
 const WATCH_CONFIG: Map<string, FSWatcher> = new Map();
 const NO_CONFIG_WORKSPACE = new Set<string>();
-const alovaExplorer = cosmiconfig('alova', {
-  cache: false,
-  loaders: {
-    '.js': loadJs,
-    '.cjs': loadJs,
-    '.mjs': loadJs,
-    '.ts': loadTs,
-    '.mts': loadTs,
-    '.cts': loadTs
-  }
-});
+
 export function createWatcher(workspaceRootPath: string) {
   return chokidar
     .watch(`${workspaceRootPath}/*alova*`, {
       ignored: [/node_modules/]
     })
-    .on('all', async (eventName, watchPath) => {
+    .on('all', async eventName => {
       if (!['add', 'change'].includes(eventName)) {
         return;
       }
       let configItem: Configuration | undefined;
       try {
-        const { config, filepath } = await readConfig(workspaceRootPath, false);
+        const { config } = await readConfig(workspaceRootPath, false);
         // 没有配置文件或者修改的不是当前的配置文件
-        if (!config || filepath !== watchPath) {
+        if (!config) {
           return;
         }
         configItem = CONFIG_POOL.find(config => config.workspaceRootDir === workspaceRootPath);
@@ -64,9 +52,9 @@ export async function readConfig(workspaceRootPath: string, isShowError = true, 
       WATCH_CONFIG.set(workspaceRootPath, watch);
     }
   }
-  const searchResult = await alovaExplorer.search(path.resolve(workspaceRootPath));
+  alovaConfig = await baseReadConfig(workspaceRootPath);
   try {
-    if (!searchResult || searchResult?.isEmpty) {
+    if (!alovaConfig) {
       const idx = CONFIG_POOL.findIndex(config => config.workspaceRootDir === workspaceRootPath);
       if (idx >= 0) {
         // 关闭自动更新
@@ -76,7 +64,6 @@ export async function readConfig(workspaceRootPath: string, isShowError = true, 
       }
       if (NO_CONFIG_WORKSPACE.has(workspaceRootPath)) {
         return {
-          ...searchResult,
           config: alovaConfig
         };
       }
@@ -88,9 +75,6 @@ export async function readConfig(workspaceRootPath: string, isShowError = true, 
         );
       }
     }
-    // 读取文件内容
-    alovaConfig = searchResult?.config;
-    alovaExplorer.clearCaches();
     // 能读到配置文件，则移除没有配置文件的标记
     if (NO_CONFIG_WORKSPACE.has(workspaceRootPath) && alovaConfig) {
       NO_CONFIG_WORKSPACE.delete(workspaceRootPath);
@@ -99,7 +83,6 @@ export async function readConfig(workspaceRootPath: string, isShowError = true, 
     message.error(error.message);
   }
   return {
-    ...searchResult,
     config: alovaConfig
   };
 }

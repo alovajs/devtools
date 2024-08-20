@@ -1,5 +1,6 @@
 import Error from '@/components/error';
 import { fetchData } from '@/utils';
+import type { PlatformType } from '@/wormhole';
 import importFresh from 'import-fresh';
 import YAML from 'js-yaml';
 import fs from 'node:fs';

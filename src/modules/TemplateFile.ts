@@ -3,6 +3,7 @@ import { AlovaVersion } from '@/functions/getAlovaVersion';
 import { TemplateData } from '@/functions/openApi2Data';
 import { ALOVA_TEMP_PATH, TEMPLATE_PATH } from '@/globalConfig';
 import { format, generateFile, readAndRenderTemplate } from '@/utils';
+import type { TemplateType } from '@/wormhole';
 import { cloneDeep, merge } from 'lodash';
 import fs from 'node:fs';
 import path from 'node:path';
