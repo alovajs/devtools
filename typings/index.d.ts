@@ -1,5 +1,3 @@
-declare type GeneratorConfig = import('@/wormhole').GeneratorConfig;
-declare type AlovaConfig = import('@/wormhole').Config;
 declare interface Commonand {
   commandId: string;
   handler: (context: import('vscode').ExtensionContext) => <T = void, U = []>(...args: U) => T | Promise<T>;

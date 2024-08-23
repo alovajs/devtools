@@ -1,8 +1,8 @@
-import { frameworkName } from '@/globalConfig';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { PackageJson } from 'type-fest';
 
+export const frameworkName: ['vue', 'react'] = ['vue', 'react'];
 export default function (workspaceRootDir: string) {
   const workspacedRequire = createRequire(workspaceRootDir);
   const packageJson: PackageJson = workspacedRequire('./package.json');

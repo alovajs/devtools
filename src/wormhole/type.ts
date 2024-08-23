@@ -69,3 +69,6 @@ export type Config = {
         interval: number;
       };
 };
+export type GenerateApiOptions = {
+  force?: boolean;
+};

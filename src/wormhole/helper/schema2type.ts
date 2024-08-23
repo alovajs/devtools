@@ -1,4 +1,4 @@
-import { format } from '@/utils';
+import { format } from '@/wormhole/utils';
 import { OpenAPIV3_1 } from 'openapi-types';
 import { findBy$ref, getStandardRefName, isReferenceObject } from './openapi';
 import { isValidJSIdentifier } from './standard';
@@ -135,8 +135,8 @@ function parseSchema(
       } else {
         result =
           typeof schema.type === 'string'
-            ? ((schema.type || config.defaultType) ?? 'unknown')
-            : (config.defaultType ?? 'unknown');
+            ? (schema.type || config.defaultType) ?? 'unknown'
+            : config.defaultType ?? 'unknown';
       }
   }
   if (refPath) {

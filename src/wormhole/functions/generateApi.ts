@@ -1,6 +1,8 @@
-import openApi2Data from '@/functions/openApi2Data';
-import { getAlovaJsonPath, TEMPLATE_DATA, TemplateFile, writeAlovaJson } from '@/modules/TemplateFile';
-import type { TemplateType } from '@/wormhole';
+import type { GeneratorConfig, TemplateType } from '@/wormhole';
+import { DEFAULT_CONFIG } from '@/wormhole';
+import { getAlovaJsonPath, writeAlovaJson } from '@/wormhole/functions/alovaJson';
+import openApi2Data from '@/wormhole/functions/openApi2Data';
+import TemplateFile from '@/wormhole/modules/TemplateFile';
 import { isEqual } from 'lodash';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -9,12 +11,12 @@ import getAlovaVersion, { AlovaVersion } from './getAlovaVersion';
 import getFrameworkTag from './getFrameworkTag';
 
 export default async function (
-  workspaceRootDir: string,
-  outputPath: string,
-  data: OpenAPIV3_1.Document,
-  config: GeneratorConfig,
-  type: TemplateType,
-  force = false
+  workspaceRootDir: string, // 项目地址
+  outputPath: string, // 输出路径
+  data: OpenAPIV3_1.Document, // openapi数据
+  config: GeneratorConfig, // generator配置
+  type: TemplateType, // 模板类型
+  force: boolean // 是否强制生成
 ) {
   if (!data) {
     return;
@@ -44,11 +46,11 @@ export default async function (
   templateData.alovaVersion = alovaVersion;
   // 是否需要生成api文件
   // 判断是否需要生成api文件
-  if (!force && isEqual(templateData, TEMPLATE_DATA.get(alovaJsonPath))) {
+  if (!force && isEqual(templateData, DEFAULT_CONFIG.templateData.get(alovaJsonPath))) {
     return false;
   }
   // 保存templateData
-  TEMPLATE_DATA.set(alovaJsonPath, templateData);
+  DEFAULT_CONFIG.templateData.set(alovaJsonPath, templateData);
   // 生成alova.json文件
   writeAlovaJson(templateData, alovaJsonPath);
   // 获取是否存在index.ts|index.js

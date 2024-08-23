@@ -1,6 +1,7 @@
-import { loadJs, loadTs } from '@/helper/lodaders';
 import { cosmiconfig } from 'cosmiconfig';
 import path from 'node:path';
+import { loadJs, loadTs } from './helper/lodaders';
+import type { Config } from './type';
 
 const alovaExplorer = cosmiconfig('alova', {
   cache: false,
@@ -19,6 +20,6 @@ export const readConfig = async (projectPath: string) => {
   if (searchResult?.isEmpty) {
     return null;
   }
-  return searchResult?.config as AlovaConfig | null;
+  return searchResult?.config as Config | null;
 };
 export default readConfig;

@@ -1,0 +1,35 @@
+const { createAlova } = require('alova');
+const fetchAdapter = require('alova/fetch');
+{{#vue}}
+const vueHook = require('alova/vue');
+{{/vue}}
+{{#react}}
+const reactHook = require('alova/react');
+{{/react}}
+const { createApis, withConfigType } = require('./createApis'); 
+const alovaInstance = createAlova({ 
+  baseURL: "{{{baseUrl}}}",
+{{#vue}}
+  statesHook: vueHook,
+{{/vue}}
+{{#react}}
+  statesHook: reactHook,
+{{/react}}
+  requestAdapter: fetchAdapter(),
+  beforeRequest: method => {},
+  responded: res => {
+    return res.json();
+  }
+});
+const $$userConfigMap = withConfigType({});
+
+/**
+ * @type {{#raw "{ " }}{{/raw}}{{{global}}}{{#raw " }" }}{{/raw}}
+ */
+const Apis = createApis(alovaInstance, $$userConfigMap);
+
+module.exports = {
+  Apis,
+  alovaInstance,
+  $$userConfigMap
+};

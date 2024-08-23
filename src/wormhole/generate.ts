@@ -1,7 +1,8 @@
-import generateApi from '@/functions/generateApi';
-import { Configuration } from '@/modules/Configuration';
+import generateApi from '@/wormhole/functions/generateApi';
+import Configuration from '@/wormhole/modules/Configuration';
+import type { Config, GenerateApiOptions } from './type';
 
-export const generate = async (projectPath: string, config?: AlovaConfig, options = { force: false }) => {
+export const generate = async (projectPath: string, config: Config, options?: GenerateApiOptions) => {
   if (!config) {
     return;
   }
@@ -21,7 +22,7 @@ export const generate = async (projectPath: string, config?: AlovaConfig, option
         openApiData[idx],
         generatorConfigArr[idx],
         templateTypeArr[idx] ?? 'commonjs',
-        options.force
+        options?.force ?? false
       )
     )
   );

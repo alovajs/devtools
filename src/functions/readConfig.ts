@@ -2,6 +2,7 @@ import Error from '@/components/error';
 import message from '@/components/message';
 import { CONFIG_POOL, Configuration } from '@/modules/Configuration';
 import { getFileNameByPath } from '@/utils';
+import type { Config } from '@/wormhole';
 import { readConfig as baseReadConfig } from '@/wormhole';
 import chokidar, { FSWatcher } from 'chokidar';
 import * as vscode from 'vscode';
@@ -43,7 +44,7 @@ export function createWatcher(workspaceRootPath: string) {
     });
 }
 export async function readConfig(workspaceRootPath: string, isShowError = true, createWatch = true) {
-  let alovaConfig: AlovaConfig | null = null;
+  let alovaConfig: Config | null = null;
   if (createWatch) {
     // 如果监听器存在则先关闭
     if (!WATCH_CONFIG.has(workspaceRootPath)) {

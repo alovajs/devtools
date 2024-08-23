@@ -1,10 +1,16 @@
 import { log } from '@/components/message';
-import { findBy$ref, getStandardRefName, isReferenceObject, mergeObject, removeAll$ref } from '@/helper/openapi';
-import { convertToType, jsonSchema2TsStr } from '@/helper/schema2type';
-import { getStandardOperationId, getStandardTags } from '@/helper/standard';
-import { generateDefaultValues } from '@/helper/typeStr';
-import { format, removeUndefined } from '@/utils';
-import type { ApiDescriptor } from '@/wormhole';
+import type { ApiDescriptor, GeneratorConfig } from '@/wormhole';
+import {
+  findBy$ref,
+  getStandardRefName,
+  isReferenceObject,
+  mergeObject,
+  removeAll$ref
+} from '@/wormhole/helper/openapi';
+import { convertToType, jsonSchema2TsStr } from '@/wormhole/helper/schema2type';
+import { getStandardOperationId, getStandardTags } from '@/wormhole/helper/standard';
+import { generateDefaultValues } from '@/wormhole/helper/typeStr';
+import { format, removeUndefined } from '@/wormhole/utils';
 import { cloneDeep } from 'lodash';
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
 import { AlovaVersion } from './getAlovaVersion';
