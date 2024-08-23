@@ -1,5 +1,11 @@
 {{{commentText}}}
-import { Alova, Method, MethodType, AlovaMethodCreateConfig, AlovaGenerics } from 'alova';
+import type {
+  Alova,
+  MethodType,
+  AlovaGenerics,
+  AlovaMethodCreateConfig,
+} from 'alova';
+import { Method } from 'alova';
 import apiDefinitions from './apiDefinitions';
 
 const createFunctionalProxy = (

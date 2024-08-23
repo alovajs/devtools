@@ -1,5 +1,5 @@
 {{{commentText}}}
-import { Alova, AlovaMethodCreateConfig, AlovaGenerics, Method } from 'alova';
+import type { Alova, AlovaMethodCreateConfig, AlovaGenerics, Method } from 'alova';
 import type { $$userConfigMap, alovaInstance } from '.';
 import type apiDefinitions from './apiDefinitions';
 
@@ -73,8 +73,8 @@ type Alova2Method<
       >
     : never;
 
-{{#schemas}} 
-{{{.}}} 
+{{#schemas}}
+{{{.}}}
 {{/schemas}}
 declare global {
   interface {{{global}}} {
