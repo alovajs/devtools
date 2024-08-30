@@ -71,4 +71,5 @@ export type Config = {
 };
 export type GenerateApiOptions = {
   force?: boolean;
+  projectPath?: string;
 };

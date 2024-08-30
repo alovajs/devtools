@@ -93,29 +93,6 @@ export async function fetchData(url: string) {
   });
 }
 
-export function highPrecisionInterval(callback: () => void, intervalInMilliseconds: number, immediate = false) {
-  let isRunning = true;
-  if (immediate) {
-    callback();
-  }
-  const timer = setInterval(callback, intervalInMilliseconds);
-
-  return {
-    isRunning() {
-      return isRunning;
-    },
-    clear() {
-      isRunning = false;
-      clearInterval(timer);
-    },
-    time: intervalInMilliseconds,
-    immediate
-  };
-}
-export const getFileNameByPath = (path: string) => {
-  const [, name] = /[/\\]([^/\\]+)([/\\])?$/.exec(path) ?? [];
-  return name ?? '';
-};
 // 去掉所有为空的undefined值
 export function removeUndefined<T>(obj: T) {
   const defaultObject = Array.isArray(obj) ? [] : {};
@@ -131,16 +108,6 @@ export function removeUndefined<T>(obj: T) {
   }, defaultObject) as T;
 }
 
-// 生成唯一id
-export function uuid() {
-  let dt = new Date().getTime();
-  const id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-    const r = (dt + Math.random() * 16) % 16 | 0;
-    dt = Math.floor(dt / 16);
-    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
-  });
-  return id;
-}
 // 反序列化
 export function deserialize(serializedJavascript: string) {
   // eslint-disable-next-line no-eval

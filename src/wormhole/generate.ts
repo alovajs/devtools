@@ -2,11 +2,11 @@ import generateApi from '@/wormhole/functions/generateApi';
 import Configuration from '@/wormhole/modules/Configuration';
 import type { Config, GenerateApiOptions } from './type';
 
-export const generate = async (projectPath: string, config: Config, options?: GenerateApiOptions) => {
+export const generate = async (config: Config, options?: GenerateApiOptions) => {
   if (!config) {
     return;
   }
-  const configuration = new Configuration(config, projectPath);
+  const configuration = new Configuration(config, options?.projectPath ?? process.cwd());
   // 检查新配置
   configuration.checkConfig();
   const outputPathArr = configuration.getAllOutputPath();

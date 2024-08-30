@@ -1,6 +1,7 @@
 import autocomplete from '@/components/autocomplete';
 import { outputChannel } from '@/components/message';
 import readConfig from '@/functions/readConfig';
+import { highPrecisionInterval } from '@/utils';
 import * as vscode from 'vscode';
 import showStatusBarIcon from './showStatusBarIcon';
 
@@ -8,15 +9,15 @@ export default {
   commandId: 'alova.setup',
   handler: context => async () => {
     vscode.commands.executeCommand(showStatusBarIcon.commandId);
-    // 读取配置文件
-    readConfig(true, false);
     context.subscriptions.push(autocomplete);
     context.subscriptions.push(outputChannel);
-    vscode.workspace.onDidChangeWorkspaceFolders(event => {
-      event.added.forEach(() => {
-        // 读取配置文件
-        readConfig(true, false);
-      });
-    });
+    // 读取所有配置文件
+    highPrecisionInterval(() => {
+      // 获得所有工作区
+      const workspaceFolders = vscode.workspace.workspaceFolders || [];
+      for (const workspaceFolder of workspaceFolders) {
+        readConfig(`${workspaceFolder.uri.fsPath}/`);
+      }
+    }, 500);
   }
 } as Commonand;

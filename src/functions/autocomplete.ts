@@ -1,4 +1,4 @@
-import { CONFIG_POOL } from '@/modules/Configuration';
+import { CONFIG_POOL } from '@/helper/configuration';
 import { DEFAULT_CONFIG } from '@/wormhole';
 import { getAlovaJsonPath } from '@/wormhole/functions/alovaJson';
 import { Api } from '@/wormhole/functions/openApi2Data';

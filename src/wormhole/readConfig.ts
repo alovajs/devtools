@@ -14,7 +14,7 @@ const alovaExplorer = cosmiconfig('alova', {
     '.cts': loadTs
   }
 });
-export const readConfig = async (projectPath: string) => {
+export const readConfig = async (projectPath: string = process.cwd()) => {
   const searchResult = await alovaExplorer.search(path.resolve(projectPath));
   alovaExplorer.clearCaches();
   if (searchResult?.isEmpty) {

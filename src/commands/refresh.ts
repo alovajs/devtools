@@ -1,8 +1,7 @@
 import Error from '@/components/error';
 import message from '@/components/message';
 import { loading, reset } from '@/components/statusBar';
-import readConfig from '@/functions/readConfig';
-import { CONFIG_POOL } from '@/modules/Configuration';
+import { CONFIG_POOL } from '@/helper/configuration';
 import { getFileNameByPath } from '@/utils';
 import { generate } from '@/wormhole';
 
@@ -11,12 +10,9 @@ export default {
   handler: () => async () => {
     try {
       loading();
-      // 读取配置文件
-      await readConfig();
-
       // 生成api文件
       for (const configuration of CONFIG_POOL) {
-        await generate(configuration.workspaceRootDir, configuration.config, { force: true });
+        await generate(configuration.config, { force: true, projectPath: configuration.workspaceRootDir });
         reset();
         message.info(`[${getFileNameByPath(configuration.workspaceRootDir)}]:Your API is refresh`);
       }
