@@ -6,6 +6,7 @@ import setup from './commands/setup';
 import showStatusBarIcon from './commands/showStatusBarIcon';
 import Error from './components/error';
 import { log } from './components/message';
+import './globalConfig';
 
 const commands = [setup, autocomplete, generateApi, refresh, showStatusBarIcon];
 

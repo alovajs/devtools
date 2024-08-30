@@ -1,17 +1,15 @@
-import Error from '@/components/error';
-import getTypescript from '@/functions/getTypescript';
-import { ALOVA_TEMP_PATH } from '@/globalConfig';
+import { DEFAULT_CONFIG } from '@/wormhole';
+import { loadEsmModule } from '@/wormhole/utils';
 import { Loader, LoaderSync } from 'cosmiconfig';
 import importFresh from 'import-fresh';
 import { existsSync, mkdirSync } from 'node:fs';
 import { rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { alovaWork } from './work';
 
 let typescript: typeof import('typescript');
 export const loadTs: Loader = async function loadTs(filepath, content) {
-  const ts = getTypescript();
+  const ts = await DEFAULT_CONFIG.getTypescript();
   if (typescript === undefined && ts) {
     typescript = ts;
   }
@@ -40,7 +38,7 @@ export const loadJsSync: LoaderSync = importFresh;
 
 export const loadEsModule = async (filepath: string) => {
   const { href } = pathToFileURL(filepath);
-  return (await alovaWork.importEsmModule<any>(`${href}?t=${Date.now()}`)).default;
+  return (await loadEsmModule<any>(`${href}?t=${Date.now()}`)).default;
 };
 export const createTempFile = async <T = any>(
   filepath: string,
@@ -49,7 +47,7 @@ export const createTempFile = async <T = any>(
   callback?: (compiledFilepath: string) => T | Promise<T>
 ) => {
   const parsedPath = path.parse(filepath);
-  const addPath = ALOVA_TEMP_PATH;
+  const addPath = DEFAULT_CONFIG.alovaTempPath;
   const dirPath = path.join(parsedPath.dir, parsedPath.dir.includes(addPath) ? '' : addPath);
   const compiledFilepath = path.join(dirPath, `${Date.now()}-${Math.random().toString(16).slice(2)}.${ext}`);
   if (!existsSync(dirPath)) {

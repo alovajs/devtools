@@ -1,7 +1,8 @@
-import { CONFIG_POOL } from '@/modules/Configuration';
-import { TEMPLATE_DATA, getAlovaJsonPath } from '@/modules/TemplateFile';
+import { CONFIG_POOL } from '@/helper/configuration';
+import { DEFAULT_CONFIG } from '@/wormhole';
+import { getAlovaJsonPath } from '@/wormhole/functions/alovaJson';
+import { Api } from '@/wormhole/functions/openApi2Data';
 import path from 'node:path';
-import { Api } from './openApi2Data';
 
 type AutoCompleteItem = {
   replaceText: string;
@@ -55,7 +56,7 @@ export default (text: string, filePath: string): AutoCompleteItem[] => {
   return outputArr
     .map(output => {
       const apiPath = getAlovaJsonPath(config.workspaceRootDir, output);
-      const templateData = TEMPLATE_DATA.get(apiPath);
+      const templateData = DEFAULT_CONFIG.templateData.get(apiPath);
       if (!templateData) {
         return [];
       }

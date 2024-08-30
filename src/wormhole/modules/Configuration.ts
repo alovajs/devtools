@@ -1,25 +1,18 @@
-import generateApi from '@/commands/generateApi';
-import Error from '@/components/error';
-import getAutoTemplateType from '@/functions/getAutoTemplateType';
-import getOpenApiData from '@/functions/getOpenApiData';
-import { isValidJSIdentifier } from '@/helper/standard';
-import { getAlovaJsonPath, readAlovaJson, TEMPLATE_DATA } from '@/modules/TemplateFile';
-import { highPrecisionInterval, isEmpty } from '@/utils';
+import type { Config, GeneratorConfig, TemplateType } from '@/wormhole';
+import { DEFAULT_CONFIG } from '@/wormhole';
+import { getAlovaJsonPath, readAlovaJson } from '@/wormhole/functions/alovaJson';
+import getAutoTemplateType from '@/wormhole/functions/getAutoTemplateType';
+import getOpenApiData from '@/wormhole/functions/getOpenApiData';
+import { isValidJSIdentifier } from '@/wormhole/helper/standard';
+import { isEmpty } from '@/wormhole/utils';
 import path from 'node:path';
-import * as vscode from 'vscode';
 
-export const CONFIG_POOL: Array<Configuration> = [];
-export class Configuration {
-  config: AlovaConfig;
+export default class Configuration {
+  config: Config;
 
   workspaceRootDir: string;
 
-  autoUpdateControl: ReturnType<typeof highPrecisionInterval>;
-
-  // 是否应该开始更新api
-  shouldUpdate: boolean;
-
-  constructor(config: AlovaConfig, workspaceRootDir: string) {
+  constructor(config: Config, workspaceRootDir: string) {
     // 配置文件
     this.config = config;
     this.workspaceRootDir = workspaceRootDir;
@@ -61,7 +54,6 @@ export class Configuration {
       const { interval } = this.config.autoUpdate;
       const time = Number(interval);
       if (Number.isNaN(time)) {
-        this.closeAutoUpdate();
         throw new Error('autoUpdate.interval must be a number');
       }
       if (time <= 0) {
@@ -71,7 +63,7 @@ export class Configuration {
     }
   }
 
-  getTemplateType(generator: GeneratorConfig): TemplateType {
+  static getTemplateType(workspaceRootDir: string, generator: GeneratorConfig): TemplateType {
     let type: TemplateType;
     const configType = generator.type ?? 'auto';
     // 根据配置文件中的type来判断模板类型
@@ -84,7 +76,7 @@ export class Configuration {
         type = 'module';
         break;
       case 'auto':
-        type = getAutoTemplateType(this.workspaceRootDir);
+        type = getAutoTemplateType(workspaceRootDir);
         break;
       default:
         type = 'commonjs';
@@ -94,7 +86,7 @@ export class Configuration {
   }
 
   getAllTemplateType() {
-    return this.config.generator.map(generator => this.getTemplateType(generator));
+    return this.config.generator.map(generator => Configuration.getTemplateType(this.workspaceRootDir, generator));
   }
 
   getAllOutputPath() {
@@ -102,16 +94,18 @@ export class Configuration {
   }
 
   // 获取openapi数据
-  getOpenApiData(generator: GeneratorConfig) {
-    return getOpenApiData(this.workspaceRootDir, generator.input, generator.platform);
+  static getOpenApiData(workspaceRootDir: string, generator: GeneratorConfig) {
+    return getOpenApiData(workspaceRootDir, generator.input, generator.platform);
   }
 
   // 获取所有openapi数据
   getAllOpenApiData() {
-    return Promise.all(this.config.generator.map(generator => this.getOpenApiData(generator)));
+    return Promise.all(
+      this.config.generator.map(generator => Configuration.getOpenApiData(this.workspaceRootDir, generator))
+    );
   }
 
-  private getAutoUpdateConfig() {
+  getAutoUpdateConfig() {
     const autoUpdateConfig = this.config.autoUpdate;
     let time = 60 * 5; // 默认五分钟
     let immediate = false;
@@ -125,53 +119,16 @@ export class Configuration {
     };
   }
 
-  autoUpdate() {
-    const autoUpdateConfig = this.config.autoUpdate;
-    if (!autoUpdateConfig) {
-      return;
-    }
-    const { time, immediate } = this.getAutoUpdateConfig();
-    this.autoUpdateControl = highPrecisionInterval(
-      () => {
-        vscode.commands.executeCommand(generateApi.commandId);
-        this.shouldUpdate = true;
-      },
-      time * 1000,
-      immediate
-    );
-    this.autoUpdateControl.time = time;
-    return this.autoUpdateControl;
-  }
-
-  closeAutoUpdate() {
-    this.autoUpdateControl?.clear?.();
-  }
-
-  refreshAutoUpdate() {
-    const autoUpdateConfig = this.config.autoUpdate;
-    if (!autoUpdateConfig) {
-      this.closeAutoUpdate();
-      return;
-    }
-    const { time, immediate } = this.getAutoUpdateConfig();
-    const { time: oldTime, immediate: oldImmediate, isRunning } = this.autoUpdateControl || {};
-    if (time === oldTime && oldImmediate === immediate && isRunning()) {
-      return;
-    }
-    this.closeAutoUpdate();
-    this.autoUpdate();
-  }
-
   readAlovaJson() {
     const allAlovaJSon = this.config.generator.map(generator => {
       const alovaJsonPath = getAlovaJsonPath(this.workspaceRootDir, generator.output);
       return readAlovaJson(alovaJsonPath)
         .then(alovaJson => {
-          TEMPLATE_DATA.set(alovaJsonPath, alovaJson);
+          DEFAULT_CONFIG.templateData.set(alovaJsonPath, alovaJson);
           return alovaJson;
         })
         .catch(() => {
-          TEMPLATE_DATA.delete(alovaJsonPath);
+          DEFAULT_CONFIG.templateData.delete(alovaJsonPath);
           return {};
         });
     });

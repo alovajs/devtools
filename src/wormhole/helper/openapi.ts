@@ -1,4 +1,4 @@
-import { capitalizeFirstLetter } from '@/utils';
+import { capitalizeFirstLetter } from '@/wormhole/utils';
 import { cloneDeep, isArray, isEqualWith, isObject, mergeWith, sortBy } from 'lodash';
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
 import { isValidJSIdentifier, makeIdentifier } from './standard';
