@@ -1,4 +1,3 @@
-import { log } from '@/components/message';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import * as vscode from 'vscode';
@@ -13,9 +12,7 @@ export default () => {
       const workspacedRequire = createRequire(workspaceRootPath);
       typescript = workspacedRequire('./node_modules/typescript');
       delete workspacedRequire.cache[path.resolve(workspaceRootPath, './package.json')];
-    } catch (error: any) {
-      log(error.message);
-    }
+    } catch (error: any) {}
   }
   return typescript;
 };
