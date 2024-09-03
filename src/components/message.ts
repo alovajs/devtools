@@ -38,7 +38,6 @@ export function log(...messageArr: any[]) {
     outputChannel.append(`${message} `);
   });
   outputChannel.append('\n');
-  outputChannel.show();
 }
 export default {
   info,
