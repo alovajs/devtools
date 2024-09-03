@@ -1,11 +1,11 @@
-import type { PlatformType } from '@/wormhole';
-import { fetchData } from '@/wormhole/utils';
 import importFresh from 'import-fresh';
 import YAML from 'js-yaml';
 import fs from 'node:fs';
 import path from 'node:path';
 import { OpenAPIV2, OpenAPIV3_1 } from 'openapi-types';
 import swagger2openapi from 'swagger2openapi';
+import type { PlatformType } from '..';
+import { fetchData } from '../utils';
 // 判断是否是swagger2.0
 function isSwagger2(data: any): data is OpenAPIV2.Document {
   return !!data?.swagger;

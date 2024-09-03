@@ -1,11 +1,11 @@
-import type { Config, GeneratorConfig, TemplateType } from '@/wormhole';
-import { DEFAULT_CONFIG } from '@/wormhole';
-import { getAlovaJsonPath, readAlovaJson } from '@/wormhole/functions/alovaJson';
-import getAutoTemplateType from '@/wormhole/functions/getAutoTemplateType';
-import getOpenApiData from '@/wormhole/functions/getOpenApiData';
-import { isValidJSIdentifier } from '@/wormhole/helper/standard';
-import { isEmpty } from '@/wormhole/utils';
 import path from 'node:path';
+import type { Config, GeneratorConfig, TemplateType } from '..';
+import { DEFAULT_CONFIG } from '../config';
+import { getAlovaJsonPath, readAlovaJson } from '../functions/alovaJson';
+import getAutoTemplateType from '../functions/getAutoTemplateType';
+import getOpenApiData from '../functions/getOpenApiData';
+import { isValidJSIdentifier } from '../helper/standard';
+import { isEmpty } from '../utils';
 
 export default class Configuration {
   config: Config;

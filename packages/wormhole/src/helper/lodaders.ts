@@ -1,11 +1,11 @@
-import { DEFAULT_CONFIG } from '@/wormhole';
-import { loadEsmModule } from '@/wormhole/utils';
 import { Loader, LoaderSync } from 'cosmiconfig';
 import importFresh from 'import-fresh';
 import { existsSync, mkdirSync } from 'node:fs';
 import { rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { DEFAULT_CONFIG } from '../config';
+import { loadEsmModule } from '../utils';
 
 let typescript: typeof import('typescript');
 export const loadTs: Loader = async function loadTs(filepath, content) {

@@ -1,8 +1,5 @@
-import { CONFIG_POOL } from '@/helper/configuration';
-import { DEFAULT_CONFIG } from '@/wormhole';
-import { getAlovaJsonPath } from '@/wormhole/functions/alovaJson';
-import { Api } from '@/wormhole/functions/openApi2Data';
-import path from 'node:path';
+import { alovaWork } from '@/helper/work';
+import type { Api } from '@alova/wormhole';
 
 type AutoCompleteItem = {
   replaceText: string;
@@ -47,20 +44,5 @@ const filterAutoCompleteItem = (text: string, apiArr: Api[]): AutoCompleteItem[]
   });
   return autoCompleteArr;
 };
-export default (text: string, filePath: string): AutoCompleteItem[] => {
-  const config = CONFIG_POOL.find(item => filePath.includes(path.resolve(item.workspaceRootDir)));
-  if (!config) {
-    return [];
-  }
-  const outputArr = config?.getAllOutputPath() || [];
-  return outputArr
-    .map(output => {
-      const apiPath = getAlovaJsonPath(config.workspaceRootDir, output);
-      const templateData = DEFAULT_CONFIG.templateData.get(apiPath);
-      if (!templateData) {
-        return [];
-      }
-      return templateData.pathApis.map(item => filterAutoCompleteItem(text, item.apis));
-    })
-    .flat(2);
-};
+export default async (text: string, filePath: string): Promise<AutoCompleteItem[]> =>
+  filterAutoCompleteItem(text, await alovaWork.getApis(filePath));

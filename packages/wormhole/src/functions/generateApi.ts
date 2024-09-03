@@ -1,14 +1,14 @@
-import type { GeneratorConfig, TemplateType } from '@/wormhole';
-import { DEFAULT_CONFIG } from '@/wormhole';
-import { getAlovaJsonPath, writeAlovaJson } from '@/wormhole/functions/alovaJson';
-import openApi2Data from '@/wormhole/functions/openApi2Data';
-import TemplateFile from '@/wormhole/modules/TemplateFile';
 import { isEqual } from 'lodash';
 import fs from 'node:fs';
 import path from 'node:path';
 import { OpenAPIV3_1 } from 'openapi-types';
+import type { GeneratorConfig, TemplateType } from '..';
+import { DEFAULT_CONFIG } from '../config';
+import TemplateFile from '../modules/TemplateFile';
+import { getAlovaJsonPath, writeAlovaJson } from './alovaJson';
 import getAlovaVersion, { AlovaVersion } from './getAlovaVersion';
 import getFrameworkTag from './getFrameworkTag';
+import openApi2Data from './openApi2Data';
 
 export default async function (
   workspaceRootDir: string, // 项目地址

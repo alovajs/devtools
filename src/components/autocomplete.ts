@@ -6,13 +6,13 @@ class AutoComplete extends vscode.CompletionItem {}
 export default vscode.languages.registerCompletionItemProvider(
   ['javascript', 'typescript', 'vue', 'javascriptreact', 'typescriptreact', 'svelte'],
   {
-    provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
+    async provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
       // 支持换行 代码从起始位置到输入位置
       const text = document.lineAt(position).text.slice(0, position.character);
       // const linePrefix = ;
       if (/a->.*/.test(text)) {
         const [, value] = /a->(.*)[\s.>:-]?/.exec(text) || [];
-        return autocomplete(value.trim(), document.uri.fsPath).map(item => {
+        return (await autocomplete(value.trim(), document.uri.fsPath)).map(item => {
           const completionItem = new AutoComplete(item.path, vscode.CompletionItemKind.Function);
           completionItem.detail = `[${item.method}] ${item.summary}`;
           completionItem.documentation = new vscode.MarkdownString(item.documentation ?? item.replaceText);

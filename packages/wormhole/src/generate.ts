@@ -1,5 +1,5 @@
-import generateApi from '@/wormhole/functions/generateApi';
-import Configuration from '@/wormhole/modules/Configuration';
+import generateApi from './functions/generateApi';
+import Configuration from './modules/Configuration';
 import type { Config, GenerateApiOptions } from './type';
 
 export const generate = async (config: Config, options?: GenerateApiOptions) => {

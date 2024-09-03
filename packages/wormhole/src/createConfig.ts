@@ -1,6 +1,6 @@
-import getAlovaVersion, { AlovaVersion } from '@/wormhole/functions/getAlovaVersion';
-import getAutoTemplateType from '@/wormhole/functions/getAutoTemplateType';
-import TemplateFile from '@/wormhole/modules/TemplateFile';
+import getAlovaVersion, { AlovaVersion } from './functions/getAlovaVersion';
+import getAutoTemplateType from './functions/getAutoTemplateType';
+import TemplateFile from './modules/TemplateFile';
 
 export const createConfig = async (projectPath: string) => {
   const type = getAutoTemplateType(projectPath);

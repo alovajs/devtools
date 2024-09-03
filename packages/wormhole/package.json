@@ -1,0 +1,14 @@
+{
+  "name": "@alova/wormhole",
+  "version": "1.0.0",
+  "description": "generate api for alova.js",
+  "homepage": "https://alova.js.org",
+  "main": "src/index.ts",
+  "module": "src/index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

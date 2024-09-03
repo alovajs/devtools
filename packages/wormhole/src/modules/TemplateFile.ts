@@ -1,10 +1,9 @@
-import type { TemplateType } from '@/wormhole';
-import { DEFAULT_CONFIG } from '@/wormhole';
-import type { AlovaVersion } from '@/wormhole/functions/getAlovaVersion';
-import type { TemplateData } from '@/wormhole/functions/openApi2Data';
-import { generateFile, readAndRenderTemplate } from '@/wormhole/utils';
 import { cloneDeep, merge } from 'lodash';
 import path from 'node:path';
+import type { TemplateType } from '..';
+import { DEFAULT_CONFIG } from '../config';
+import type { AlovaVersion } from '../functions/getAlovaVersion';
+import { generateFile, readAndRenderTemplate } from '../utils';
 
 interface RenderTemplateOptions {
   root?: boolean;
@@ -16,7 +15,7 @@ const DEFAULT_OPTIONS = {
   root: false,
   hasVersion: true
 };
-export const TEMPLATE_DATA = new Map<string, TemplateData>();
+
 export default class TemplateFile {
   type: TemplateType;
 

@@ -1,7 +1,7 @@
-import getTypescript from '@/functions/getTypescript';
+import { getTypescript } from '@/utils/work';
+import { DEFAULT_CONFIG } from '@alova/wormhole';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { DEFAULT_CONFIG } from './wormhole';
 // work.js线程路径
 export const WORK_PATH = pathToFileURL(path.join(__dirname, '/work.js'));
 // 渲染模板路径
