@@ -28,13 +28,5 @@
     }
   },
   "exclude": ["design/**", "test/**"],
-  "include": [
-    "src/**/*.ts",
-    "./templates/index.ts",
-    "packages/**/*.ts",
-    "*.*js",
-    "*.*ts",
-    "scripts/**.*",
-    "typings/**/*.d.ts"
-  ]
+  "include": ["src/**/*.ts", "packages/**/*.ts", "*.*js", "*.*ts", "scripts/**.*", "typings/**/*.d.ts"]
 }

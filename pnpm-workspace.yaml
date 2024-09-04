@@ -1,4 +1,3 @@
 packages:
   - 'test/*'
   - 'packages/*'
-  - 'templates'
