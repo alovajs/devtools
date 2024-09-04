@@ -1,0 +1,81 @@
+{
+  "name": "alova-vscode-extension",
+  "displayName": "Alova",
+  "description": "The vscode extension for alova.js",
+  "version": "0.0.9",
+  "engines": {
+    "vscode": "^1.89.0",
+    "node": ">=18.19.0",
+    "pnpm": ">=8.6.12"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "workspaceContains:**/*.ts",
+    "workspaceContains:**/*.js"
+  ],
+  "main": "./out/extension.js",
+  "icon": "resources/icon.png",
+  "contributes": {
+    "commands": [
+      {
+        "command": "alova.refresh",
+        "category": "alova",
+        "title": "alova refresh"
+      },
+      {
+        "command": "alova.create.config",
+        "category": "alova",
+        "title": "create alova config"
+      }
+    ],
+    "icons": {
+      "alova-icon-id": {
+        "description": "alova icon",
+        "default": {
+          "fontPath": "./resources/logo.ttf",
+          "fontCharacter": "\\E900"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "pnpm run package",
+    "compile": "pnpm run check-types && pnpm run lint:fix && tsx esbuild.ts",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "tsx esbuild.ts --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "package": "pnpm run check-types && pnpm run lint:fix && tsx esbuild.ts --production",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint . --ext .js,.ts",
+    "lint:fix": "npm run lint -- --fix",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "test": "vscode-test",
+    "pack:pre": "vsce package --no-dependencies --pre-release",
+    "release:pre": "vsce publish --no-dependencies --pre-release",
+    "pack": "vsce package --no-dependencies",
+    "release": "vsce publish --no-dependencies"
+  },
+  "publisher": "Alova",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alovajs/devtools.git"
+  },
+  "bugs": {
+    "url": "https://github.com/alovajs/devtools/issues"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.89.0",
+    "@vscode/test-cli": "^0.0.9",
+    "@vscode/test-electron": "^2.3.9",
+    "@vscode/vsce": "^2.29.0",
+    "esbuild": "^0.23.0",
+    "esbuild-plugin-alias": "^0.2.1"
+  }
+}

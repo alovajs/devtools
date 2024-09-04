@@ -21,8 +21,6 @@
     "strictNullChecks": true,
     "allowJs": true,
     "paths": {
-      "~/*": ["./typings/*"],
-      "@/*": ["./src/*"],
       "#/*": ["./*"],
       "@alova/*": ["./packages/*"]
     }
