@@ -13,6 +13,10 @@ export const DEFAULT_CONFIG = {
     } catch (error) {}
     return ts;
   },
-  templateData: TEMPLATE_DATA
+  templateData: TEMPLATE_DATA,
+  Error: class extends Error {}
 };
-export default { DEFAULT_CONFIG };
+export function setGlobalConfig(config: Partial<typeof DEFAULT_CONFIG>) {
+  Object.assign(DEFAULT_CONFIG, config);
+}
+export default { DEFAULT_CONFIG, setGlobalConfig };

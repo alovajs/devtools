@@ -1,4 +1,5 @@
 import { commandsMap } from '@/commands';
+import Error from '@/components/error';
 import { log } from '@/components/message';
 import { WORK_PATH } from '@/globalConfig';
 import { uuid } from '@/utils';
@@ -25,6 +26,7 @@ export default class AlovaWork {
       switch (type) {
         case 'readConfig':
         case 'generate':
+        case 'generateConfig':
         case 'getApis': {
           this.doneTask(id, type, payload);
           break;
@@ -123,15 +125,25 @@ export default class AlovaWork {
     }>('generate', () => force);
   }
 
-  readConfig() {
-    return this.setTask<void>('readConfig', () => {
+  async readConfig(isShowError = false) {
+    const hasConfig = await this.setTask<boolean>('readConfig', () => {
       const workspaceFolders = vscode.workspace.workspaceFolders || [];
       return workspaceFolders.map(item => `${item.uri.fsPath}/`);
     });
+    if (!hasConfig && isShowError) {
+      throw new Error('Expected to create alova.config.js in root directory.');
+    }
   }
 
   getApis(filePath: string) {
     return this.setTask<Api[]>('getApis', () => filePath);
+  }
+
+  generateConfig() {
+    return this.setTask<void>('generateConfig', () => {
+      const workspaceFolders = vscode.workspace.workspaceFolders || [];
+      return workspaceFolders.map(item => `${item.uri.fsPath}/`);
+    });
   }
 }
 export const alovaWork = new AlovaWork();

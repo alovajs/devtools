@@ -7,6 +7,13 @@ import { uuid } from '.';
 import { TASK_MAP } from '../work/config';
 
 type MessageCallBack<T> = () => T | Promise<T>;
+export function createError(err: Error) {
+  return {
+    message: err.message,
+    stack: err.stack,
+    ERROR_CODE: (err as any).ERROR_CODE
+  };
+}
 export async function postMessage<T>(id: string | null, type: string, cb: MessageCallBack<T>) {
   let data: any;
   let error: any;

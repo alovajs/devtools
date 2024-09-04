@@ -8,7 +8,7 @@ export default {
   commandId: 'alova.refresh',
   handler: () => async () => {
     try {
-      await alovaWork.readConfig();
+      await alovaWork.readConfig(true);
       loading();
       // 生成api文件
       const { resultArr, errorArr } = await alovaWork.generate(true);
@@ -19,8 +19,6 @@ export default {
         throw error;
       });
     } catch (error: any) {
-      console.log(error, 22);
-
       if ((error as Error)?.ERROR_CODE) {
         message.error(error.message);
       }

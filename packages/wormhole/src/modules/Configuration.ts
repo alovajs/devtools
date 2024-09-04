@@ -21,32 +21,32 @@ export default class Configuration {
   // 检测配置文件
   checkConfig() {
     if (!this.config.generator?.length) {
-      throw new Error('No items found in the `config.generator`');
+      throw new DEFAULT_CONFIG.Error('No items found in the `config.generator`');
     }
     const globalKeySet = new Set<string>();
     const outputSet = new Set<string>();
     this.config.generator.forEach((item, _, arr) => {
       if (!item.input) {
-        throw new Error('Field input is required in `config.generator`');
+        throw new DEFAULT_CONFIG.Error('Field input is required in `config.generator`');
       }
       if (!item.output) {
-        throw new Error('Field output is required in `config.generator`');
+        throw new DEFAULT_CONFIG.Error('Field output is required in `config.generator`');
       }
       if (!isEmpty(item.global) && !isValidJSIdentifier(item.global)) {
-        throw new Error(`\`${item.global}\` does not match variable specification`);
+        throw new DEFAULT_CONFIG.Error(`\`${item.global}\` does not match variable specification`);
       }
       if (arr.length < 2) {
         return;
       }
       if (outputSet.has(path.join(item.output))) {
-        throw new Error(`output \`${item.output}\` is repated`);
+        throw new DEFAULT_CONFIG.Error(`output \`${item.output}\` is repated`);
       }
       outputSet.add(path.join(item.output));
       if (!item.global) {
-        throw new Error('Field global is required in `config.generator`');
+        throw new DEFAULT_CONFIG.Error('Field global is required in `config.generator`');
       }
       if (globalKeySet.has(item.global)) {
-        throw new Error(`global \`${item.global}\` is repated`);
+        throw new DEFAULT_CONFIG.Error(`global \`${item.global}\` is repated`);
       }
       globalKeySet.add(item.global);
     });
@@ -54,11 +54,11 @@ export default class Configuration {
       const { interval } = this.config.autoUpdate;
       const time = Number(interval);
       if (Number.isNaN(time)) {
-        throw new Error('autoUpdate.interval must be a number');
+        throw new DEFAULT_CONFIG.Error('autoUpdate.interval must be a number');
       }
       if (time <= 0) {
         // 最少一秒钟
-        throw new Error('Expected to set number which great than 1 in `config.autoUpdate.interval`');
+        throw new DEFAULT_CONFIG.Error('Expected to set number which great than 1 in `config.autoUpdate.interval`');
       }
     }
   }

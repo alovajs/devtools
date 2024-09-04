@@ -9,6 +9,7 @@ import * as prettierBabel from 'prettier/plugins/babel';
 import * as prettierEsTree from 'prettier/plugins/estree';
 import * as prettierTs from 'prettier/plugins/typescript';
 import * as prettier from 'prettier/standalone';
+import { DEFAULT_CONFIG } from '../config';
 
 export const getType = (obj: any) => Object.prototype.toString.call(obj).slice(8, -1).toLowerCase();
 handlebars.registerHelper('isType', function (this: any, value, type: string, options: HelperOptions) {
@@ -54,7 +55,14 @@ handlebars.registerHelper(
  * @returns 渲染后的内容
  */
 export async function readAndRenderTemplate(templatePath: string, view: any): Promise<string> {
-  const data = await promises.readFile(templatePath, 'utf-8');
+  let data = '';
+  try {
+    data = await promises.readFile(path.resolve(DEFAULT_CONFIG.templatePath, `${templatePath}.handlebars`), 'utf-8');
+  } catch (error) {
+    const importFn = (await import('@alova/templates')).default;
+    data = (await (importFn as any)(templatePath)).default;
+  }
+
   return handlebars.compile(data)(view);
 }
 export async function format(text: string, config?: PrettierConfig) {
@@ -87,7 +95,7 @@ export async function generateFile(distDir: string, fileName: string, content: s
 export async function fetchData(url: string) {
   return fetch(url).then(response => {
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new DEFAULT_CONFIG.Error(`HTTP error! status: ${response.status}`);
     }
     return response.text();
   });
@@ -124,6 +132,3 @@ export function capitalizeFirstLetter(str: string) {
 export function loadEsmModule<T>(modulePath: string | URL): Promise<T> {
   return new Function('modulePath', `return import(modulePath);`)(modulePath) as Promise<T>;
 }
-export default {
-  loadEsmModule
-};

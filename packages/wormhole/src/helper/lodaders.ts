@@ -14,7 +14,7 @@ export const loadTs: Loader = async function loadTs(filepath, content) {
     typescript = ts;
   }
   if (!typescript) {
-    throw new Error('typescript dependencie is required');
+    throw new DEFAULT_CONFIG.Error('typescript dependencie is required');
   }
   let transpiledContent;
   try {
@@ -87,9 +87,9 @@ export const loadJs: Loader = async function loadJs(filepath, content) {
         (requireError instanceof SyntaxError &&
           requireError.toString().includes('Cannot use import statement outside a module'))
       ) {
-        throw new Error(error.toString());
+        throw new DEFAULT_CONFIG.Error(error.toString());
       }
-      throw new Error(requireError.toString());
+      throw new DEFAULT_CONFIG.Error(requireError.toString());
     }
   }
 };
@@ -98,7 +98,7 @@ function resolveTsConfig(directory: string): any {
   if (filePath !== undefined) {
     const { config, error } = typescript.readConfigFile(filePath, path => typescript.sys.readFile(path));
     if (error) {
-      throw new Error(`Error in ${filePath}: ${error.messageText.toString()}`);
+      throw new DEFAULT_CONFIG.Error(`Error in ${filePath}: ${error.messageText.toString()}`);
     }
     return config;
   }

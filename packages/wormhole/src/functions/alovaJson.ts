@@ -27,7 +27,7 @@ export const readAlovaJson = (originPath: string, name = 'api.json') => {
   const filePath = `${originPath}_${name}`;
   return new Promise<TemplateData>((resolve, reject) => {
     if (!fs.existsSync(filePath)) {
-      reject(new Error('alovaJson not exists'));
+      reject(new DEFAULT_CONFIG.Error('alovaJson not exists'));
       return;
     }
     // 使用 fs.readFile 读取 JSON 文件
@@ -35,7 +35,13 @@ export const readAlovaJson = (originPath: string, name = 'api.json') => {
       if (err) {
         reject(err);
       } else {
-        resolve(JSON.parse(data));
+        let jsonData = {};
+        try {
+          jsonData = JSON.parse(data);
+        } catch (error) {
+          jsonData = {};
+        }
+        resolve(jsonData as TemplateData);
       }
     });
   });

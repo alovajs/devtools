@@ -1,4 +1,5 @@
 import generate from '@/work/generate';
+import generateConfig from '@/work/generateConfig';
 import getApis from '@/work/getApis';
 import readConfig from '@/work/readConfig';
 import { parentPort } from 'worker_threads';
@@ -23,6 +24,10 @@ parentPort?.on('message', async ({ id, type, payload }) => {
     }
     case 'workspaceRootPathArr': {
       doneTask(id, type, () => payload);
+      break;
+    }
+    case 'generateConfig': {
+      postMessage(id, type, () => generateConfig(payload));
       break;
     }
     default: {

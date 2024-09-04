@@ -1,4 +1,5 @@
 import { generate } from '@alova/wormhole';
+import { createError } from '../utils/work';
 import { CONFIG_POOL } from './config';
 
 export default async (force: boolean) => {
@@ -11,8 +12,8 @@ export default async (force: boolean) => {
         projectPath: configuration.workspaceRootDir
       });
       resultArr.push([configuration.workspaceRootDir, generateResult?.some(item => !!item)]);
-    } catch (error) {
-      errorArr.push([configuration.workspaceRootDir, error]);
+    } catch (error: any) {
+      errorArr.push([configuration.workspaceRootDir, createError(error)]);
     }
   }
   return {

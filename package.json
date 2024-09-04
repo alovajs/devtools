@@ -23,6 +23,11 @@
         "command": "alova.refresh",
         "category": "alova",
         "title": "alova refresh"
+      },
+      {
+        "command": "alova.create.config",
+        "category": "alova",
+        "title": "create alova config"
       }
     ],
     "icons": {

@@ -15,6 +15,7 @@ function refeshAutoUpdate(configuration: Configuration) {
     return;
   }
   oldTimer?.clear();
+  AUTOUPDATE_CONFIG_MAP.set(configuration, { immediate, time });
   AUTOUPDATE_MAP.set(
     configuration,
     highPrecisionInterval(
@@ -36,11 +37,12 @@ function removeConfiguration(workspaceRootPath: string) {
   }
 }
 export default async (workspaceRootPathArr: string[]) => {
+  let configNum = 0;
   for (const workspaceRootPath of workspaceRootPathArr) {
     const config = await readConfig(workspaceRootPath);
     if (!config) {
       removeConfiguration(workspaceRootPath);
-      return;
+      continue;
     }
     let configuration = CONFIG_POOL.find(item => item.workspaceRootDir === workspaceRootPath);
     if (!configuration) {
@@ -50,5 +52,7 @@ export default async (workspaceRootPathArr: string[]) => {
       configuration.config = config;
     }
     refeshAutoUpdate(configuration);
+    configNum += 1;
   }
+  return configNum > 0;
 };

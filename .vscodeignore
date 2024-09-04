@@ -14,5 +14,7 @@ vsc-extension-quickstart.md
 pnpm-lock.yaml
 pnpm-workspace.yaml
 design/**
+templates/**
+packages/**
 test/**
 .husky/**

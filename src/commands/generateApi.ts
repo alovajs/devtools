@@ -5,8 +5,7 @@ import { getFileNameByPath } from '@/utils';
 export default {
   commandId: 'alova.generateApi',
   handler: () => async () => {
-    console.log(8);
-
+    await alovaWork.readConfig();
     // 生成api文件
     const { resultArr } = await alovaWork.generate();
     for (const [workspaceRootDir, result] of resultArr) {

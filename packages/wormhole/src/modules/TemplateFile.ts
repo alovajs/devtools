@@ -1,7 +1,5 @@
 import { cloneDeep, merge } from 'lodash';
-import path from 'node:path';
 import type { TemplateType } from '..';
-import { DEFAULT_CONFIG } from '../config';
 import type { AlovaVersion } from '../functions/getAlovaVersion';
 import { generateFile, readAndRenderTemplate } from '../utils';
 
@@ -75,7 +73,6 @@ export default class TemplateFile {
     const config = merge(cloneDeep(DEFAULT_OPTIONS), userConfig);
     const fileVersion = config.hasVersion ? this.getVersion() : '';
     const filePath = config?.root ? fileVersion + fileName : `${this.type}/${fileVersion}${fileName}`;
-    const templatePath = path.resolve(DEFAULT_CONFIG.templatePath, `./${filePath}.handlebars`);
-    return readAndRenderTemplate(templatePath, data);
+    return readAndRenderTemplate(filePath, data);
   }
 }

@@ -25,6 +25,9 @@ const esbuildProblemMatcherPlugin: Plugin = {
 async function main() {
   const ctx = await esbuild.context({
     entryPoints: ['src/extension.ts', 'src/work.ts'],
+    loader: {
+      '.handlebars': 'text'
+    },
     bundle: true,
     format: 'cjs',
     minify: production,
