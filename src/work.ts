@@ -3,13 +3,11 @@ import getApis from '@/work/getApis';
 import readConfig from '@/work/readConfig';
 import { parentPort } from 'worker_threads';
 import './globalConfig';
-import type { Task } from './helper/work';
-import { postMessage } from './utils/work';
-import { TASK_MAP } from './work/config';
+import { doneTask, postMessage } from './utils/work';
 /**
  * work子线程，用来处理主线程不能处理的东西，不能引入vscode模块
  */
-parentPort?.on('message', async ({ type, payload, id, taskId }) => {
+parentPort?.on('message', async ({ id, type, payload }) => {
   switch (type) {
     case 'readConfig': {
       postMessage(id, type, () => readConfig(payload));
@@ -24,11 +22,7 @@ parentPort?.on('message', async ({ type, payload, id, taskId }) => {
       break;
     }
     case 'workspaceRootPathArr': {
-      if (TASK_MAP.has(taskId)) {
-        const task = TASK_MAP.get(taskId) as Task;
-        task.payload.resolve(payload);
-        TASK_MAP.delete(taskId);
-      }
+      doneTask(id, type, () => payload);
       break;
     }
     default: {

@@ -1,4 +1,4 @@
-import { getTypescript } from '@/utils/work';
+import { getTypescript, log } from '@/utils/work';
 import { DEFAULT_CONFIG } from '@alova/wormhole';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -10,4 +10,5 @@ export const TEMPLATE_PATH = path.join(__dirname, '../templates');
 export const ALOVA_TEMP_PATH = path.join('node_modules/.alova');
 DEFAULT_CONFIG.alovaTempPath = ALOVA_TEMP_PATH;
 DEFAULT_CONFIG.templatePath = TEMPLATE_PATH;
+DEFAULT_CONFIG.log = log;
 DEFAULT_CONFIG.getTypescript = getTypescript;

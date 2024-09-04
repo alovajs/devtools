@@ -19,7 +19,6 @@ process.on('uncaughtException', (err: Error) => {
 });
 process.on('unhandledRejection', (error: Error) => {
   const errMsg = error?.message ?? error ?? 'unhandledRejection';
-  log(errMsg);
   if (error.ERROR_CODE) {
     vscode.window.showErrorMessage(errMsg);
   }

@@ -268,8 +268,8 @@ export const transformPathObj = async (
   const response200 = responses?.['200'];
   let requestBodyObject = requestBody as OpenAPIV3_1.RequestBodyObject;
   let responseObject = response200 as OpenAPIV3_1.ResponseObject;
-  let requestKey = '';
-  let responseKey = '';
+  let requestKey = 'application/json';
+  let responseKey = 'application/json';
   if (parameters) {
     apiDescriptor.parameters = [];
     const parametersArray = isReferenceObject(parameters)
@@ -309,15 +309,29 @@ export const transformPathObj = async (
     return null;
   }
   apiDescriptor = cloneDeep(newApiDescriptor);
-  if (apiDescriptor.requestBody && requestBody) {
-    pathObj.requestBody = requestBodyObject;
-    pathObj.requestBody.content[requestKey].schema = apiDescriptor.requestBody;
+  if (apiDescriptor.requestBody) {
+    pathObj.requestBody = requestBodyObject || { content: {} };
+    const { content } = pathObj.requestBody;
+    if (!content[requestKey]) {
+      content[requestKey] = {};
+    }
+    content[requestKey].schema = apiDescriptor.requestBody;
   }
-  if (apiDescriptor.responses && pathObj.responses?.['200'] && responseObject.content) {
-    pathObj.responses['200'] = responseObject;
-    responseObject.content[responseKey].schema = apiDescriptor.responses;
+  if (apiDescriptor.responses) {
+    if (!pathObj.responses) {
+      pathObj.responses = {};
+    }
+    pathObj.responses['200'] = responseObject || { content: {} };
+    if (!pathObj.responses['200'].content) {
+      pathObj.responses['200'].content = {};
+    }
+    const { content } = pathObj.responses['200'];
+    if (!content[responseKey]) {
+      content[responseKey] = {};
+    }
+    content[responseKey].schema = apiDescriptor.responses;
   }
-  if (apiDescriptor.parameters && parameters) {
+  if (apiDescriptor.parameters) {
     pathObj.parameters = apiDescriptor.parameters;
   }
   delete apiDescriptor.requestBody;

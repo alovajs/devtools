@@ -60,11 +60,6 @@ export function comment(type: 'line' | 'docment') {
       if (!str) {
         return str;
       }
-      /**
-       * // console.log(str, 63);
-       *
-       */
-
       return startText + str.replace('*/*', '* / *').replace('/*', '/ *').replace('*/', '* /') + endText;
     }
   };
@@ -117,7 +112,13 @@ function parseSchema(
       result = parseArray(schema, openApi, config);
       break;
     case 'string':
-      result = 'string';
+      // 根据 https://swagger.io/docs/specification/data-models/data-types/#string
+      // 针对binary，将类型更改为Blob，其余所有format值均可视为string
+      if (schema.format === 'binary') {
+        result = 'Blob';
+      } else {
+        result = 'string';
+      }
       break;
     case 'number':
     case 'integer':
