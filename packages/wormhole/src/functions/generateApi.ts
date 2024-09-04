@@ -42,6 +42,8 @@ export default async function (
   });
   // 模块类型
   templateData.moduleType = TemplateFile.getModuleType(type);
+  // 模板类型
+  templateData.type = type;
   // alova版本
   templateData.alovaVersion = alovaVersion;
   // 是否需要生成api文件

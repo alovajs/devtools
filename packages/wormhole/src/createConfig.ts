@@ -4,9 +4,10 @@ import TemplateFile from './modules/TemplateFile';
 
 export const createConfig = async (projectPath: string = process.cwd()) => {
   const type = getAutoTemplateType(projectPath);
+  const moduleType = TemplateFile.getModuleType(type);
   const alovaVersion: AlovaVersion = getAlovaVersion(projectPath);
   const templateFile = new TemplateFile(type, alovaVersion);
-  return templateFile.outputFile({}, 'alova.config', projectPath, {
+  return templateFile.outputFile({ type, moduleType }, 'alova.config', projectPath, {
     root: true,
     hasVersion: false
   });

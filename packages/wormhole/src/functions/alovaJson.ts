@@ -6,7 +6,12 @@ import type { TemplateData } from './openApi2Data';
 
 export const writeAlovaJson = async (data: TemplateData, originPath: string, name = 'api.json') => {
   // 将数据转换为 JSON 字符串
-  const jsonData = await format(JSON.stringify(data, null, 2), { parser: 'json' });
+  let jsonData = '';
+  try {
+    jsonData = await format(JSON.stringify(data, null, 2), { parser: 'json' });
+  } catch (error) {
+    console.log(error, 13);
+  }
   // 定义 JSON 文件的路径和名称
   const filePath = `${originPath}_${name}`;
   const dirPath = filePath.split(/\/|\\/).slice(0, -1).join('/');

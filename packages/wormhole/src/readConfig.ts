@@ -35,10 +35,12 @@ export const readAndSaveAlovaJson = (config: Config, projectPath: string = proce
   configuration.getAllOutputPath().forEach(outputPath => {
     // 缓存文件地址
     const alovaJsonPath = getAlovaJsonPath(projectPath, outputPath);
-    readAlovaJson(alovaJsonPath).then(data => {
-      // 保存templateData
-      DEFAULT_CONFIG.templateData.set(alovaJsonPath, data);
-    });
+    readAlovaJson(alovaJsonPath)
+      .then(data => {
+        // 保存templateData
+        DEFAULT_CONFIG.templateData.set(alovaJsonPath, data);
+      })
+      .catch(() => {});
   });
 };
 export default readConfig;

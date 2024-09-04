@@ -1,6 +1,6 @@
 import { cloneDeep } from 'lodash';
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
-import type { ApiDescriptor, GeneratorConfig } from '..';
+import type { ApiDescriptor, GeneratorConfig, TemplateType } from '..';
 import { DEFAULT_CONFIG } from '../config';
 import { findBy$ref, getStandardRefName, isReferenceObject, mergeObject, removeAll$ref } from '../helper/openapi';
 import { convertToType, jsonSchema2TsStr } from '../helper/schema2type';
@@ -72,6 +72,7 @@ export interface TemplateData extends Omit<OpenAPIV3_1.Document, ''> {
   alovaVersion: AlovaVersion;
   commentText: string;
   useImportType: boolean;
+  type: TemplateType;
 }
 const remove$ref = (
   originObj: OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject,
@@ -360,7 +361,8 @@ export default async function openApi2Data(
     schemas: [],
     alovaVersion: 'v2',
     global: config.global ?? 'Apis',
-    useImportType: config?.useImportType ?? false
+    useImportType: config?.useImportType ?? false,
+    type: 'module'
   };
   const schemasMap = new Map<string, string>();
   const searchMap = new Map<string, string>();

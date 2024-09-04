@@ -41,6 +41,7 @@ handlebars.registerHelper('or', function (this: any, ...rest) {
   return result ? options.fn(this) : options.inverse(this);
 });
 handlebars.registerHelper('eq', (a, b) => a === b);
+handlebars.registerHelper('not', (a, b) => a !== b);
 // 注册自定义助手函数 'raw'
 handlebars.registerHelper(
   'raw',
@@ -62,7 +63,6 @@ export async function readAndRenderTemplate(templatePath: string, view: any): Pr
     const importFn = (await import('@alova/templates')).default;
     data = (await (importFn as any)(templatePath)).default;
   }
-
   return handlebars.compile(data)(view);
 }
 export async function format(text: string, config?: PrettierConfig) {

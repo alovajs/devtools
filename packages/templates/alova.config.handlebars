@@ -1,8 +1,12 @@
-import type { Config } from '@alova/wormhole';
+{{#if (eq type "typescript")}}import type { Config } from '@alova/wormhole';
 
-// For more config detailed visit:
+
+{{/if}}// For more config detailed visit:
 // https://alova.js.org/tutorial/getting-started/extension-integration
-export default <Config>{
+{{#if (not type "typescript")}}/** 
+ * @type {{#raw "{ " }}{{/raw}}import('@alova/wormhole').Config{{#raw " }" }}{{/raw}} 
+ */{{/if}}
+ {{#if (eq moduleType "ESModule")}}export default {{#if (eq type "typescript")}}<Config>{{/if}}{{else if (eq moduleType "commonJs")}}module.exports ={{/if}}{{#raw "{ " }}{{/raw}}
   generator: [
     {
       /** 
@@ -64,4 +68,4 @@ export default <Config>{
    * whether to automatically update the interface, enabled by default, check every 5 minutes, closed when set to `false`
    */
   // autoUpdate: true
-};
+{{#raw "};" }}{{/raw}}
