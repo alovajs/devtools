@@ -27,7 +27,7 @@ module.exports = {
   insertPragma: false,
 
   // use lf for line breaks
-  endOfLine: 'lf',
+  endOfLine: 'auto',
 
   // Whether the curly braces of the object literal should start on a new line
   // eslint-disable-next-line no-dupe-keys

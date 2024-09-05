@@ -7,8 +7,8 @@ export const loading = (text: string = '') => {
   delete statusBarItem.command;
 };
 export const reset = () => {
-  statusBarItem.text = `$(alova-icon-id) alova`;
-  statusBarItem.tooltip = 'alova refresh';
+  statusBarItem.text = `$(alova-icon-id) Alova`;
+  statusBarItem.tooltip = 'Generate APIs';
   statusBarItem.command = 'alova.refresh';
 };
 export const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);

@@ -1,8 +1,8 @@
 {
   "name": "alova-vscode-extension",
   "displayName": "Alova",
-  "description": "The vscode extension for alova.js",
-  "version": "0.0.9",
+  "description": "Generate and search APIs without API documentation any more",
+  "version": "0.0.10",
   "engines": {
     "vscode": "^1.89.0",
     "node": ">=18.19.0",
@@ -21,13 +21,13 @@
     "commands": [
       {
         "command": "alova.refresh",
-        "category": "alova",
-        "title": "alova refresh"
+        "category": "Alova",
+        "title": "Generate APIs"
       },
       {
         "command": "alova.create.config",
-        "category": "alova",
-        "title": "create alova config"
+        "category": "Alova",
+        "title": "Create alova config"
       }
     ],
     "icons": {
