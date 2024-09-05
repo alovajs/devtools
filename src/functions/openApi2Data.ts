@@ -308,15 +308,21 @@ export const transformPathObj = async (
     return null;
   }
   apiDescriptor = cloneDeep(newApiDescriptor);
-  if (apiDescriptor.requestBody && requestBody) {
-    pathObj.requestBody = requestBodyObject;
-    pathObj.requestBody.content[requestKey].schema = apiDescriptor.requestBody;
+  if (apiDescriptor.responses) {
+    if (!pathObj.responses) {
+      pathObj.responses = {};
+    }
+    pathObj.responses['200'] = responseObject || { content: {} };
+    if (!pathObj.responses['200'].content) {
+      pathObj.responses['200'].content = {};
+    }
+    const { content } = pathObj.responses['200'];
+    if (!content[responseKey]) {
+      content[responseKey] = {};
+    }
+    content[responseKey].schema = apiDescriptor.responses;
   }
-  if (apiDescriptor.responses && pathObj.responses?.['200'] && responseObject.content) {
-    pathObj.responses['200'] = responseObject;
-    responseObject.content[responseKey].schema = apiDescriptor.responses;
-  }
-  if (apiDescriptor.parameters && parameters) {
+  if (apiDescriptor.parameters) {
     pathObj.parameters = apiDescriptor.parameters;
   }
   delete apiDescriptor.requestBody;
