@@ -20,7 +20,7 @@ const createFunctionalProxy = (
       const apiPathKey = array.join('.') as keyof typeof apiDefinitions;
       const apiItem = apiDefinitions[apiPathKey];
       if (!apiItem) {
-        throw new Error(`the api path of \`${apiItem}\` is not found`);
+        throw new Error(`the api path of \`${apiPathKey}\` is not found`);
       }
       const mergedConfig = {
         ...configMap[apiPathKey],
