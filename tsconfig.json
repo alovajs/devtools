@@ -21,11 +21,10 @@
     "strictNullChecks": true,
     "allowJs": true,
     "paths": {
-      "~/*": ["./typings/*"],
-      "@/*": ["./src/*"],
-      "#/*": ["./*"]
+      "#/*": ["./*"],
+      "@alova/*": ["./packages/*"]
     }
   },
   "exclude": ["design/**", "test/**"],
-  "include": ["src/**/*.ts", "*.*js", "*.*ts", "scripts/**.*", "typings/**/*.d.ts"]
+  "include": ["src/**/*.ts", "packages/**/*.ts", "*.*js", "*.*ts", "scripts/**.*", "typings/**/*.d.ts"]
 }

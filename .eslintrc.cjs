@@ -27,7 +27,7 @@ module.exports = {
     'no-multi-assign': 'off',
     'consistent-return': 'off',
     'no-restricted-exports': 'off',
-    'linebreak-style': ['error', 'unix'],
+    'linebreak-style': 'off',
     'no-unused-vars': 'off',
     'import/order': 'off',
     'import/no-relative-packages': 'off',
