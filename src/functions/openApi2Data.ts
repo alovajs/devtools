@@ -308,6 +308,14 @@ export const transformPathObj = async (
     return null;
   }
   apiDescriptor = cloneDeep(newApiDescriptor);
+  if (apiDescriptor.requestBody) {
+    pathObj.requestBody = requestBodyObject || { content: {} };
+    const { content } = pathObj.requestBody;
+    if (!content[requestKey]) {
+      content[requestKey] = {};
+    }
+    content[requestKey].schema = apiDescriptor.requestBody;
+  }
   if (apiDescriptor.responses) {
     if (!pathObj.responses) {
       pathObj.responses = {};
