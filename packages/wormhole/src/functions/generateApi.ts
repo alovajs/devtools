@@ -1,9 +1,9 @@
+import { DEFAULT_CONFIG } from '@/config';
 import { isEqual } from 'lodash';
 import fs from 'node:fs';
 import path from 'node:path';
 import { OpenAPIV3_1 } from 'openapi-types';
-import type { GeneratorConfig, TemplateType } from '..';
-import { DEFAULT_CONFIG } from '../config';
+import type { GeneratorConfig, TemplateType } from '~/index';
 import TemplateFile from '../modules/TemplateFile';
 import { getAlovaJsonPath, writeAlovaJson } from './alovaJson';
 import getAlovaVersion, { AlovaVersion } from './getAlovaVersion';

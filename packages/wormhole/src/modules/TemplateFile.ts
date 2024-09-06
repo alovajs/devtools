@@ -1,7 +1,7 @@
+import type { AlovaVersion } from '@/functions/getAlovaVersion';
+import { generateFile, readAndRenderTemplate } from '@/utils';
 import { cloneDeep, merge } from 'lodash';
-import type { TemplateType } from '..';
-import type { AlovaVersion } from '../functions/getAlovaVersion';
-import { generateFile, readAndRenderTemplate } from '../utils';
+import type { TemplateType } from '~/index';
 
 interface RenderTemplateOptions {
   root?: boolean;

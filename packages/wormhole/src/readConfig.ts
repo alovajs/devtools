@@ -1,10 +1,10 @@
 import { cosmiconfig } from 'cosmiconfig';
 import path from 'node:path';
+import type { Config } from '~/index';
 import { DEFAULT_CONFIG } from './config';
 import { getAlovaJsonPath, readAlovaJson } from './functions/alovaJson';
 import { loadJs, loadTs } from './helper/lodaders';
 import Configuration from './modules/Configuration';
-import type { Config } from './type';
 
 const alovaExplorer = cosmiconfig('alova', {
   cache: false,

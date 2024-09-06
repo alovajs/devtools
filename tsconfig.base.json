@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
     "resolveJsonModule": true,
     "target": "es2018",
     "module": "esnext",
@@ -18,10 +17,10 @@
     "skipLibCheck": true,
     "allowJs": true,
     "skipDefaultLibCheck": false,
+    "esModuleInterop": true,
     "inlineSourceMap": false,
     "importHelpers": true,
     "removeComments": false,
-    "esModuleInterop": true,
     "jsx": "preserve",
     "paths": {
       "#/*": ["./*"],

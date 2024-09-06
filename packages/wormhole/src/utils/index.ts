@@ -74,8 +74,7 @@ export async function readAndRenderTemplate(templatePath: string, view: any): Pr
   try {
     data = await promises.readFile(path.resolve(DEFAULT_CONFIG.templatePath, `${templatePath}.handlebars`), 'utf-8');
   } catch (error) {
-    const importFn = (await import('../templates/index.js')).default;
-    data = (await (importFn as any)(templatePath)).default;
+    data = (await import(`./templates/${templatePath}.handlebars`)).default;
   }
   return handlebars.compile(data)(view);
 }

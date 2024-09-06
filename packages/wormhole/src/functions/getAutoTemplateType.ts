@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { PackageJson } from 'type-fest';
-import type { TemplateType } from '..';
+import type { TemplateType } from '~/index';
 
 export default (workspaceRootDir: string): TemplateType => {
   const workspacedRequire = createRequire(workspaceRootDir);

@@ -3,12 +3,29 @@
   "version": "1.0.0",
   "description": "generate api for alova.js",
   "homepage": "https://alova.js.org",
-  "main": "src/index.ts",
-  "module": "src/index.ts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "unbuild",
+    "dev": "pnpm run stub",
+    "stub": "unbuild --stub"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "unbuild": "^2.0.0"
+  },
+  "dependencies": {
+    "fs-extra": "^11.2.0"
+  }
 }

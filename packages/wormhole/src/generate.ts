@@ -1,6 +1,6 @@
+import type { Config, GenerateApiOptions } from '~/index';
 import generateApi from './functions/generateApi';
 import Configuration from './modules/Configuration';
-import type { Config, GenerateApiOptions } from './type';
 
 export const generate = async (config: Config, options?: GenerateApiOptions) => {
   if (!config) {

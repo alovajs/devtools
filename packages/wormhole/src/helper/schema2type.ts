@@ -1,5 +1,5 @@
+import { format } from '@/utils';
 import { OpenAPIV3_1 } from 'openapi-types';
-import { format } from '../utils';
 import { findBy$ref, getStandardRefName, isReferenceObject } from './openapi';
 import { isValidJSIdentifier } from './standard';
 

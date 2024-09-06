@@ -1,12 +1,12 @@
+import { DEFAULT_CONFIG } from '@/config';
+import { findBy$ref, getStandardRefName, isReferenceObject, mergeObject, removeAll$ref } from '@/helper/openapi';
+import { convertToType, jsonSchema2TsStr } from '@/helper/schema2type';
+import { getStandardOperationId, getStandardTags } from '@/helper/standard';
+import { generateDefaultValues } from '@/helper/typeStr';
+import { format, removeUndefined } from '@/utils';
 import { cloneDeep } from 'lodash';
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
-import type { ApiDescriptor, GeneratorConfig, TemplateType } from '..';
-import { DEFAULT_CONFIG } from '../config';
-import { findBy$ref, getStandardRefName, isReferenceObject, mergeObject, removeAll$ref } from '../helper/openapi';
-import { convertToType, jsonSchema2TsStr } from '../helper/schema2type';
-import { getStandardOperationId, getStandardTags } from '../helper/standard';
-import { generateDefaultValues } from '../helper/typeStr';
-import { format, removeUndefined } from '../utils';
+import type { ApiDescriptor, GeneratorConfig, TemplateType } from '~/index';
 import { AlovaVersion } from './getAlovaVersion';
 
 type Path = {

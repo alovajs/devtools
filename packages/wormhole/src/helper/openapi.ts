@@ -1,6 +1,6 @@
+import { capitalizeFirstLetter } from '@/utils';
 import { cloneDeep, isArray, isEqualWith, isObject, mergeWith, sortBy } from 'lodash';
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
-import { capitalizeFirstLetter } from '../utils';
 import { isValidJSIdentifier, makeIdentifier } from './standard';
 /**
  * 判断是否是$ref对象

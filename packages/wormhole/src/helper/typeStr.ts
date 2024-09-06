@@ -1,4 +1,4 @@
-import { format } from '../utils';
+import { format } from '@/utils';
 // 去除注释
 function removeComments(content: string) {
   // 去除单行注释

@@ -1,7 +1,7 @@
+import { DEFAULT_CONFIG } from '@/config';
+import { format } from '@/utils';
 import fs from 'node:fs';
 import path from 'node:path';
-import { DEFAULT_CONFIG } from '../config';
-import { format } from '../utils';
 import type { TemplateData } from './openApi2Data';
 
 export const writeAlovaJson = async (data: TemplateData, originPath: string, name = 'api.json') => {
