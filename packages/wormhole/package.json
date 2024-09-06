@@ -10,8 +10,5 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@alova/templates": "workspace:^"
-  }
+  "license": "ISC"
 }

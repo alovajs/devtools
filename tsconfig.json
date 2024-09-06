@@ -1,30 +1,8 @@
 {
-  "compilerOptions": {
-    "resolveJsonModule": true,
-    "module": "Node16",
-    "target": "ES2022",
-    "outDir": "out",
-    "strict": true,
-    "newLine": "LF",
-    "lib": ["ES2022"],
-    "noImplicitAny": true,
-    "noEmitOnError": false,
-    "noUnusedLocals": true,
-    "noUnusedParameters": false,
-    "allowUnreachableCode": false,
-    "allowUnusedLabels": false,
-    "strictPropertyInitialization": false,
-    "noFallthroughCasesInSwitch": false,
-    "skipLibCheck": true,
-    "skipDefaultLibCheck": false,
-    "esModuleInterop": true,
-    "strictNullChecks": true,
-    "allowJs": true,
-    "paths": {
-      "#/*": ["./*"],
-      "@alova/*": ["./packages/*"]
-    }
-  },
+  "extends": "./tsconfig.base.json",
   "exclude": ["design/**", "test/**"],
-  "include": ["src/**/*.ts", "packages/**/*.ts", "*.*js", "*.*ts", "scripts/**.*", "typings/**/*.d.ts"]
+  "compilerOptions": {
+    "outDir": "./dist"
+  },
+  "include": ["packages/**/*.ts", "*.*js", "*.*ts", "scripts/**.*", "typings/**/*.d.ts"]
 }

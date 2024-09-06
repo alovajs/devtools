@@ -38,13 +38,13 @@ interface PathApis {
 export const getApiDefultValue = (api: Api) => {
   const configStrArr: string[] = [];
   if (api.pathParametersComment) {
-    configStrArr.push(`pathParams: ${generateDefaultValues(api.pathParametersComment.replaceAll('*', ''))}`);
+    configStrArr.push(`pathParams: ${generateDefaultValues(api.pathParametersComment.replace(/\*/g, ''))}`);
   }
   if (api.queryParametersComment) {
-    configStrArr.push(`params: ${generateDefaultValues(api.queryParametersComment.replaceAll('*', ''))}`);
+    configStrArr.push(`params: ${generateDefaultValues(api.queryParametersComment.replace(/\*/g, ''))}`);
   }
   if (api.requestComment) {
-    configStrArr.push(`data: ${generateDefaultValues(api.requestComment.replaceAll('*', ''))}`);
+    configStrArr.push(`data: ${generateDefaultValues(api.requestComment.replace(/\*/g, ''))}`);
   }
   return format(`${api.global}.${api.pathKey}({${configStrArr.join(',\n')}})`, {
     printWidth: 40, // 缩短printWidth以强制换行
@@ -411,7 +411,7 @@ export default async function openApi2Data(
           );
           const api: Api = {
             method: methodFormat,
-            summary: methodInfo.summary?.replaceAll('\n', '') ?? '',
+            summary: methodInfo.summary?.replace(/\n/g, '') ?? '',
             path,
             name: methodInfo.operationId ?? '',
             responseName,

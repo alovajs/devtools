@@ -31,7 +31,6 @@ module.exports = {
 
   // Whether the curly braces of the object literal should start on a new line
   // eslint-disable-next-line no-dupe-keys
-  bracketSameLine: true,
 
   // Whether the arrow function parameters use parentheses
   arrowParens: 'avoid',

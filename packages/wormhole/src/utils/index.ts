@@ -1,5 +1,4 @@
 /* eslint-disable no-bitwise */
-import prettierConfig from '#/prettier.config.cjs';
 import handlebars, { HelperOptions } from 'handlebars';
 import fetch from 'node-fetch';
 import fs, { promises } from 'node:fs';
@@ -11,6 +10,21 @@ import * as prettierTs from 'prettier/plugins/typescript';
 import * as prettier from 'prettier/standalone';
 import { DEFAULT_CONFIG } from '../config';
 
+export const prettierConfig: PrettierConfig = {
+  printWidth: 120,
+  tabWidth: 2,
+  useTabs: false,
+  semi: true,
+  singleQuote: true,
+  trailingComma: 'none',
+  bracketSpacing: true,
+  insertPragma: false,
+  endOfLine: 'auto',
+  bracketSameLine: true,
+  arrowParens: 'avoid',
+  vueIndentScriptAndStyle: false,
+  singleAttributePerLine: true
+};
 export const getType = (obj: any) => Object.prototype.toString.call(obj).slice(8, -1).toLowerCase();
 handlebars.registerHelper('isType', function (this: any, value, type: string, options: HelperOptions) {
   if (getType(value) === type) {
@@ -60,7 +74,7 @@ export async function readAndRenderTemplate(templatePath: string, view: any): Pr
   try {
     data = await promises.readFile(path.resolve(DEFAULT_CONFIG.templatePath, `${templatePath}.handlebars`), 'utf-8');
   } catch (error) {
-    const importFn = (await import('@alova/templates')).default;
+    const importFn = (await import('../templates/index.js')).default;
     data = (await (importFn as any)(templatePath)).default;
   }
   return handlebars.compile(data)(view);
