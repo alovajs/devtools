@@ -89,7 +89,7 @@ export default class Configuration {
     return this.config.generator.map(generator => Configuration.getTemplateType(this.workspaceRootDir, generator));
   }
 
-  getAllOutputPath() {
+  getAllOutputPath(): string[] {
     return this.config.generator.map(generator => generator.output);
   }
 

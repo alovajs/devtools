@@ -129,11 +129,6 @@ export function removeUndefined<T>(obj: T) {
   }, defaultObject) as T;
 }
 
-// 反序列化
-export function deserialize(serializedJavascript: string) {
-  // eslint-disable-next-line no-eval
-  return eval(`(${serializedJavascript})`);
-}
 export function isEmpty(value: any) {
   return value === null || value === undefined || value === '';
 }

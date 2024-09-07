@@ -45,7 +45,6 @@
     "compile": "pnpm run check-types && pnpm run lint:fix && tsx esbuild.ts",
     "watch": "npm-run-all -p watch:*",
     "watch:esbuild": "tsx esbuild.ts --watch",
-    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
     "package": "pnpm run check-types && pnpm run lint:fix && tsx esbuild.ts --production",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",

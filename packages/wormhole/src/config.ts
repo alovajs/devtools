@@ -4,7 +4,7 @@ import type { TemplateData } from './functions/openApi2Data';
 export const TEMPLATE_DATA = new Map<string, TemplateData>();
 export const DEFAULT_CONFIG = {
   alovaTempPath: path.join('node_modules/.alova'),
-  templatePath: path.join(__dirname, '../../templates'),
+  templatePath: path.join(__dirname, './templates'),
   log: (...messageArr: any[]) => console.log(...messageArr),
   getTypescript: async () => {
     let ts: typeof import('typescript') | null = null;

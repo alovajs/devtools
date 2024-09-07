@@ -2,7 +2,7 @@ import type { Config, GenerateApiOptions } from '~/index';
 import generateApi from './functions/generateApi';
 import Configuration from './modules/Configuration';
 
-export const generate = async (config: Config, options?: GenerateApiOptions) => {
+export const generate = async (config: Config, options?: GenerateApiOptions): Promise<void | (boolean | void)[]> => {
   if (!config) {
     return;
   }
