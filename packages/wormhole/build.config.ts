@@ -7,7 +7,7 @@ import { defineBuildConfig } from 'unbuild';
 export default defineBuildConfig({
   entries: ['src/index'],
   clean: true,
-  declaration: true,
+  declaration: true, // 直接使用typings
   failOnWarn: false,
   hooks: {
     'build:done': async ctx => {

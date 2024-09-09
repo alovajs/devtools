@@ -77,3 +77,21 @@ export type GenerateApiOptions = {
   force?: boolean;
   projectPath?: string;
 };
+// 生成的api描述信息
+export interface Api {
+  method: string;
+  summary: string;
+  path: string;
+  pathParameters: string;
+  queryParameters: string;
+  pathParametersComment?: string;
+  queryParametersComment?: string;
+  responseComment?: string;
+  requestComment?: string;
+  name: string;
+  global: string;
+  responseName: string;
+  requestName?: string;
+  defaultValue?: string;
+  pathKey: string;
+}

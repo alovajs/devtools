@@ -1,13 +1,15 @@
 import { highPrecisionInterval } from '@/utils';
 import { executeCommand } from '@/utils/work';
-import { Configuration, readConfig } from '@alova/wormhole';
+import { readConfig, getAutoUpdateConfig } from '@alova/wormhole';
 import { CONFIG_POOL } from './config';
+import type { ConfigObject } from './config';
 
-const AUTOUPDATE_CONFIG_MAP = new Map<Configuration, ReturnType<Configuration['getAutoUpdateConfig']>>();
-const AUTOUPDATE_MAP = new Map<Configuration, ReturnType<typeof highPrecisionInterval>>();
+const AUTOUPDATE_CONFIG_MAP = new Map<ConfigObject, { time: number; immediate: boolean }>();
+const AUTOUPDATE_MAP = new Map<ConfigObject, ReturnType<typeof highPrecisionInterval>>();
 
-function refeshAutoUpdate(configuration: Configuration) {
-  const { time, immediate } = configuration.getAutoUpdateConfig();
+function refeshAutoUpdate(configuration: ConfigObject) {
+  const [, config] = configuration;
+  const { time, immediate } = getAutoUpdateConfig(config);
   const oldConfig = AUTOUPDATE_CONFIG_MAP.get(configuration);
   const oldTimer = AUTOUPDATE_MAP.get(configuration);
   // 过滤掉已经配置的定时器
@@ -28,7 +30,7 @@ function refeshAutoUpdate(configuration: Configuration) {
   );
 }
 function removeConfiguration(workspaceRootPath: string) {
-  const idx = CONFIG_POOL.findIndex(item => item.workspaceRootDir === workspaceRootPath);
+  const idx = CONFIG_POOL.findIndex(([projectPath]) => projectPath === workspaceRootPath);
   if (idx >= 0) {
     AUTOUPDATE_MAP.get(CONFIG_POOL[idx])?.clear();
     AUTOUPDATE_MAP.delete(CONFIG_POOL[idx]);
@@ -44,12 +46,12 @@ export default async (workspaceRootPathArr: string[]) => {
       removeConfiguration(workspaceRootPath);
       continue;
     }
-    let configuration = CONFIG_POOL.find(item => item.workspaceRootDir === workspaceRootPath);
+    let configuration = CONFIG_POOL.find(([projectPath]) => projectPath === workspaceRootPath);
     if (!configuration) {
-      configuration = new Configuration(config, workspaceRootPath);
+      configuration = [workspaceRootPath, config];
       CONFIG_POOL.push(configuration);
     } else {
-      configuration.config = config;
+      configuration[1] = config;
     }
     refeshAutoUpdate(configuration);
     configNum += 1;

@@ -6,7 +6,7 @@ import { generateDefaultValues } from '@/helper/typeStr';
 import { format, removeUndefined } from '@/utils';
 import { cloneDeep, isEmpty } from 'lodash';
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
-import type { ApiDescriptor, GeneratorConfig, TemplateType } from '~/index';
+import type { Api, ApiDescriptor, GeneratorConfig, TemplateType } from '~/index';
 import { AlovaVersion } from './getAlovaVersion';
 
 type Path = {
@@ -14,23 +14,6 @@ type Path = {
   method: string;
   path: string;
 };
-export interface Api {
-  method: string;
-  summary: string;
-  path: string;
-  pathParameters: string;
-  queryParameters: string;
-  pathParametersComment?: string;
-  queryParametersComment?: string;
-  responseComment?: string;
-  requestComment?: string;
-  name: string;
-  global: string;
-  responseName: string;
-  requestName?: string;
-  defaultValue?: string;
-  pathKey: string;
-}
 interface PathApis {
   tag: string;
   apis: Api[];
