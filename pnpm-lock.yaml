@@ -90,9 +90,6 @@ importers:
       husky:
         specifier: ^9.0.11
         version: 9.0.11
-      js-yaml:
-        specifier: ^4.1.0
-        version: 4.1.0
       lint-staged:
         specifier: ^15.2.2
         version: 15.2.7

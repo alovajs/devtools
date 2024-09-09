@@ -202,6 +202,52 @@ function isCircular(obj: any) {
 
   return detect(obj);
 }
+function hasBaseReferenceObject(obj: any) {
+  if (obj && typeof obj === 'object') {
+    if (isBaseReferenceObject(obj)) {
+      return true;
+    }
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        if (hasBaseReferenceObject(obj[key])) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+function removeBaseReference(obj: Record<string, any>, openApi: OpenAPIV3_1.Document, map: Array<[string, any]>) {
+  if (isBaseReferenceObject(obj)) {
+    const refObj = { $ref: obj._$ref };
+    if (isEqualObject(obj, refObj, openApi)) {
+      return refObj;
+    }
+    for (const key in obj) {
+      if (hasBaseReferenceObject(obj[key])) {
+        obj[key] = removeBaseReference(obj[key], openApi, map);
+      }
+    }
+    const [path] = map.find(([, item]) => isEqualObject(item, obj, openApi)) ?? [];
+    if (path) {
+      return {
+        $ref: path
+      };
+    }
+    const nextPath = getNext$refKey(refObj.$ref, map);
+    map.push([nextPath, obj]);
+    setComponentsBy$ref(nextPath, obj, openApi);
+    return {
+      $ref: nextPath
+    };
+  }
+  for (const key in obj) {
+    if (hasBaseReferenceObject(obj[key])) {
+      obj[key] = removeBaseReference(obj[key], openApi, map);
+    }
+  }
+  return obj;
+}
 function unCircular(obj: Record<string, any>, openApi: OpenAPIV3_1.Document, map: Array<[string, any]>) {
   if (isBaseReferenceObject(obj)) {
     const refObj = { $ref: obj._$ref };
@@ -258,9 +304,13 @@ export const mergeObject = <T>(
     if (isCircular(srcValue)) {
       srcValue = unCircular(srcValue, openApi, map);
     }
+    // 是否还有_$ref属性
+    if (hasBaseReferenceObject(srcValue)) {
+      return removeBaseReference(srcValue, openApi, map);
+    }
     return srcValue;
   }
-  return mergeWith(objValue, srcValue, customizer);
+  return mergeWith(cloneDeep(objValue), srcValue, customizer);
 };
 const refPathMap = new Map<string, string>();
 const refNameSet = new Set<string>();

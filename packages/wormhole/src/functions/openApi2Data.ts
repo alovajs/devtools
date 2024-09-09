@@ -4,7 +4,7 @@ import { convertToType, jsonSchema2TsStr } from '@/helper/schema2type';
 import { getStandardOperationId, getStandardTags } from '@/helper/standard';
 import { generateDefaultValues } from '@/helper/typeStr';
 import { format, removeUndefined } from '@/utils';
-import { cloneDeep } from 'lodash';
+import { cloneDeep, isEmpty } from 'lodash';
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
 import type { ApiDescriptor, GeneratorConfig, TemplateType } from '~/index';
 import { AlovaVersion } from './getAlovaVersion';
@@ -161,6 +161,7 @@ const parseRequestBody = async (
 };
 const getContentKey = (content: Record<string, any>, requireKey: string, defaultKey = 'application/json') => {
   let key = Object.keys(content ?? {})[0];
+  requireKey = requireKey ?? defaultKey;
   if (requireKey && content?.[requireKey]) {
     key = requireKey;
   }
@@ -250,13 +251,14 @@ export const transformPathObj = async (
   method: string,
   pathObjOrigin: OpenAPIV3_1.OperationObject,
   openApi: OpenAPIV3_1.Document,
-  config: GeneratorConfig
+  config: GeneratorConfig,
+  map: Array<[string, any]>
 ) => {
   const { handleApi } = config;
-  const pathObj = cloneDeep(pathObjOrigin);
   if (!handleApi || typeof handleApi !== 'function') {
     return { ...pathObjOrigin, url, method };
   }
+  const pathObj = cloneDeep(pathObjOrigin);
   const { requestBody, responses, parameters } = pathObj;
   let apiDescriptor: ApiDescriptor = {
     ...pathObj,
@@ -310,7 +312,7 @@ export const transformPathObj = async (
     return null;
   }
   apiDescriptor = cloneDeep(newApiDescriptor);
-  if (apiDescriptor.requestBody) {
+  if (!isEmpty(apiDescriptor.requestBody) || requestBody) {
     pathObj.requestBody = requestBodyObject || { content: {} };
     const { content } = pathObj.requestBody;
     if (!content[requestKey]) {
@@ -318,7 +320,7 @@ export const transformPathObj = async (
     }
     content[requestKey].schema = apiDescriptor.requestBody;
   }
-  if (apiDescriptor.responses) {
+  if (!isEmpty(apiDescriptor.responses) || response200) {
     if (!pathObj.responses) {
       pathObj.responses = {};
     }
@@ -332,7 +334,7 @@ export const transformPathObj = async (
     }
     content[responseKey].schema = apiDescriptor.responses;
   }
-  if (apiDescriptor.parameters) {
+  if (!isEmpty(apiDescriptor.parameters) || parameters) {
     pathObj.parameters = apiDescriptor.parameters;
   }
   delete apiDescriptor.requestBody;
@@ -340,7 +342,7 @@ export const transformPathObj = async (
   delete apiDescriptor.parameters;
   Object.assign(pathObj, apiDescriptor);
   const result = {
-    ...mergeObject<OpenAPIV3_1.OperationObject>(pathObjOrigin, pathObj, openApi),
+    ...mergeObject<OpenAPIV3_1.OperationObject>(pathObjOrigin, pathObj, openApi, map),
     url: apiDescriptor.url,
     method: apiDescriptor.method
   };
@@ -368,6 +370,7 @@ export default async function openApi2Data(
   const searchMap = new Map<string, string>();
   const removeMap = new Map<string, string>();
   const operationIdSet = new Set<string>();
+  const pathMap: Array<[string, any]> = [];
   const paths = openApi.paths || [];
   for (const [url, pathInfo] of Object.entries(paths)) {
     if (!pathInfo) {
@@ -382,7 +385,7 @@ export default async function openApi2Data(
       }
       methodInfoOrigin.operationId = getStandardOperationId(methodInfoOrigin, url, method, operationIdSet);
       methodInfoOrigin.tags = getStandardTags(methodInfoOrigin.tags);
-      const newMethodInfo = await transformPathObj(url, method, methodInfoOrigin, openApi, config);
+      const newMethodInfo = await transformPathObj(url, method, methodInfoOrigin, openApi, config, pathMap);
       if (!newMethodInfo) {
         continue;
       }
