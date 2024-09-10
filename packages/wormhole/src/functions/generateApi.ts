@@ -22,7 +22,7 @@ export default async function (
     return;
   }
   // 输出目录
-  const outputDir = path.join(workspaceRootDir, outputPath);
+  const outputDir = path.resolve(workspaceRootDir, outputPath);
   // 缓存文件地址
   const alovaJsonPath = getAlovaJsonPath(workspaceRootDir, outputPath);
   // 获取alova版本

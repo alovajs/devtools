@@ -16,7 +16,7 @@ function parseLocalFile(workspaceRootDir: string, filePath: string) {
   const [, extname] = /\.([^.]+)$/.exec(filePath) ?? [];
   switch (extname) {
     case 'yaml': {
-      const file = fs.readFileSync(`${workspaceRootDir}${filePath}`, 'utf-8');
+      const file = fs.readFileSync(path.resolve(workspaceRootDir, filePath), 'utf-8');
       const data = YAML.load(file) as any;
       return data;
     }

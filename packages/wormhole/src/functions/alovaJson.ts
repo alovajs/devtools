@@ -23,7 +23,7 @@ export const writeAlovaJson = async (data: TemplateData, originPath: string, nam
     if (err) {
       console.error('Error writing file:', err);
     } else {
-      console.log('JSON file has been saved.');
+      // console.log('JSON file has been saved.');
     }
   });
 };

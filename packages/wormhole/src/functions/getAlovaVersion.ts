@@ -1,13 +1,10 @@
-import { createRequire } from 'node:module';
+import importFresh from 'import-fresh';
 import path from 'node:path';
 import { PackageJson } from 'type-fest';
-
 export type AlovaVersion = `v${number}`;
 
 export default function (workspaceRootDir: string) {
-  const workspacedRequire = createRequire(workspaceRootDir);
-  const packageJson: PackageJson = workspacedRequire('./package.json');
-  delete workspacedRequire.cache[path.resolve(workspaceRootDir, './package.json')];
+  const packageJson: PackageJson = importFresh(path.resolve(workspaceRootDir, './package.json'));
   if (!packageJson) {
     return 'v2';
   }

@@ -152,9 +152,6 @@ function parseSchema(
             : config.defaultType ?? 'unknown';
       }
   }
-  if ((schema as OpenAPIV3.SchemaObject).nullable) {
-    result = `${result} | null`;
-  }
   if (refPath) {
     config.searchMap.set(refPath, result);
   }
@@ -176,7 +173,8 @@ function parseObject(
   const required = new Set(schema.required ?? []);
   const lines: string[] = [`{`];
   for (const [key, valueOrigin] of Object.entries(properties)) {
-    const optionalFlag = required.has(key) || config.defaultRequire ? '' : '?';
+    const optionalFlag =
+      required.has(key) || (config.defaultRequire && !(schema as OpenAPIV3.SchemaObject).nullable) ? '' : '?';
     let refPath = '';
     let value = valueOrigin as OpenAPIV3_1.SchemaObject;
     if (isReferenceObject(valueOrigin)) {

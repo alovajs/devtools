@@ -102,7 +102,7 @@ export async function generateFile(distDir: string, fileName: string, content: s
     if (err) {
       return console.error('Error writing file:', err);
     }
-    console.log('File written successfully at', filePath);
+    // console.log('File written successfully at', filePath);
   });
 }
 export async function fetchData(url: string) {
