@@ -24,7 +24,12 @@ program
   .description('generate api for alova.js')
   .action(option => {
     readConfig()
-      .then(config => generate(config, { force: option.f }))
+      .then(config => {
+        if (!config) {
+          throw Error('Expected to create alova.config.js in root directory.');
+        }
+        return generate(config, { force: option.f });
+      })
       .then(([result]) => {
         if (result) {
           console.log('api文件生成成功！');
