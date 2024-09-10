@@ -60,6 +60,7 @@ export interface TemplateData extends Omit<OpenAPIV3_1.Document, ''> {
 const remove$ref = (
   originObj: OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject,
   openApi: OpenAPIV3_1.Document,
+  config: GeneratorConfig,
   schemasMap?: Map<string, string>,
   preText: string = '',
   searchMap: Map<string, string> = new Map(),
@@ -70,6 +71,7 @@ const remove$ref = (
     commentStyle: 'docment',
     preText,
     searchMap,
+    defaultRequire: config.defaultRequire,
     on$Ref(refOject) {
       const type = getStandardRefName(refOject.$ref);
       if (schemasMap && !schemasMap.has(type)) {
@@ -79,6 +81,7 @@ const remove$ref = (
           openApi,
           {
             export: true,
+            defaultRequire: config.defaultRequire,
             on$RefTsStr(name, tsStr) {
               schemasMap.set(name, tsStr);
             }
@@ -111,10 +114,15 @@ const parseResponse = async (
     : responseInfo;
   const key = getContentKey(responseObject.content ?? {}, config.responseMediaType);
   const responseSchema = responseObject?.content?.[key]?.schema ?? {};
-  const responseName = await remove$ref(responseSchema, openApi, schemasMap, '', removeMap);
+  const responseName = await remove$ref(responseSchema, openApi, config, schemasMap, '', removeMap);
   return {
     responseName,
-    responseComment: await convertToType(responseSchema, openApi, { deep: true, preText: '* ', searchMap })
+    responseComment: await convertToType(responseSchema, openApi, {
+      deep: true,
+      preText: '* ',
+      searchMap,
+      defaultRequire: config.defaultRequire
+    })
   };
 };
 const parseRequestBody = async (
@@ -136,10 +144,15 @@ const parseRequestBody = async (
     : requestBody;
   const key = getContentKey(requestBodyObject.content, config.bodyMediaType);
   const requestBodySchema = requestBodyObject?.content?.[key]?.schema ?? {};
-  const requestName = await remove$ref(requestBodySchema, openApi, schemasMap, '', removeMap);
+  const requestName = await remove$ref(requestBodySchema, openApi, config, schemasMap, '', removeMap);
   return {
     requestName,
-    requestComment: await convertToType(requestBodySchema, openApi, { deep: true, preText: '* ', searchMap })
+    requestComment: await convertToType(requestBodySchema, openApi, {
+      deep: true,
+      preText: '* ',
+      searchMap,
+      defaultRequire: config.defaultRequire
+    })
   };
 };
 const getContentKey = (content: Record<string, any>, requireKey: string, defaultKey = 'application/json') => {
@@ -207,19 +220,21 @@ const parseParameters = async (
   let pathParametersComment = '';
   let queryParametersComment = '';
   if (Object.keys(pathParameters.properties ?? {}).length) {
-    pathParametersStr = await remove$ref(pathParameters, openApi, schemasMap, '', removeMap);
+    pathParametersStr = await remove$ref(pathParameters, openApi, config, schemasMap, '', removeMap);
     pathParametersComment = await convertToType(pathParameters, openApi, {
       deep: true,
       preText: '* ',
-      searchMap
+      searchMap,
+      defaultRequire: config.defaultRequire
     });
   }
   if (Object.keys(queryParameters.properties ?? {}).length) {
-    queryParametersStr = await remove$ref(queryParameters, openApi, schemasMap, '', removeMap);
+    queryParametersStr = await remove$ref(queryParameters, openApi, config, schemasMap, '', removeMap);
     queryParametersComment = await convertToType(queryParameters, openApi, {
       deep: true,
       preText: '* ',
-      searchMap
+      searchMap,
+      defaultRequire: config.defaultRequire
     });
   }
   return {

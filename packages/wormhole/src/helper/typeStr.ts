@@ -111,8 +111,11 @@ function getDefaultValue(type: string): string {
       return acc;
     }, '{}');
   }
+  if (type.startsWith('(') && type.endsWith(')')) {
+    return getDefaultValue(type.slice(1, -1).trim());
+  }
   if (type.startsWith('{') && type.endsWith('}')) {
-    return parseTypeBody(type.slice(1, -1));
+    return parseTypeBody(type.slice(1, -1).trim());
   }
   if (type.endsWith(')[]') && type.startsWith('(')) {
     return '[]';

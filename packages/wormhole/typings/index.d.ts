@@ -52,6 +52,8 @@ export type GeneratorConfig = {
   // 是否使用import来导入类型，默认false
   // 开启此选项后，生成的apiDefinitions.ts文件将使用import语法来导入类型，而不是/// <reference types="..." />
   useImportType: boolean;
+  // 没有require时默认为require,只有nullable生效
+  defaultRequire?: boolean;
   // （具体看下面）过滤或转换生成的api接口函数，返回一个新的apiDescriptor来生成api调用函数
   // 未指定此函数时则不转换apiDescripor对象
   // apiDescriptor的格式与openapi文件的接口对象格式相同

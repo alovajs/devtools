@@ -1,5 +1,6 @@
 import { format } from '@/utils';
-import { OpenAPIV3_1 } from 'openapi-types';
+import { isArray } from 'lodash';
+import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
 import { findBy$ref, getStandardRefName, isReferenceObject } from './openapi';
 import { isValidJSIdentifier } from './standard';
 
@@ -9,6 +10,7 @@ export interface Schema2TypeOptions {
   defaultType?: 'any' | 'unknown'; // 未匹配的时的默认类型
   commentStyle?: 'line' | 'docment'; // 注释风格
   preText?: string; // 注释前缀
+  defaultRequire?: boolean; // 没有nullbale或者require时默认为require
   searchMap: Map<string, string>;
   visited?: Set<string>;
   on$Ref?: (refOject: OpenAPIV3_1.ReferenceObject) => void;
@@ -131,14 +133,27 @@ function parseSchema(
       result = 'null';
       break;
     default:
-      if (schema.oneOf) {
-        result = schema.oneOf.map(item => parseSchema(item, openApi, config)).join(' | ');
+      if (isArray(schema.type)) {
+        result = schema.type
+          .map(
+            nextType => `(${parseSchema({ ...schema, type: nextType as (typeof schema)['type'] }, openApi, config)})`
+          )
+          .join(' | ');
+      } else if (schema.oneOf) {
+        result = schema.oneOf.map(item => `(${parseSchema(item, openApi, config)})`).join(' | ');
+      } else if (schema.anyOf) {
+        result = schema.anyOf.map(item => `(${parseSchema(item, openApi, config)})`).join(' | ');
+      } else if (schema.allOf) {
+        result = schema.allOf.map(item => `(${parseSchema(item, openApi, config)})`).join(' & ');
       } else {
         result =
           typeof schema.type === 'string'
             ? (schema.type || config.defaultType) ?? 'unknown'
             : config.defaultType ?? 'unknown';
       }
+  }
+  if ((schema as OpenAPIV3.SchemaObject).nullable) {
+    result = `${result} | null`;
   }
   if (refPath) {
     config.searchMap.set(refPath, result);
@@ -161,7 +176,7 @@ function parseObject(
   const required = new Set(schema.required ?? []);
   const lines: string[] = [`{`];
   for (const [key, valueOrigin] of Object.entries(properties)) {
-    const optionalFlag = required.has(key) ? '' : '?';
+    const optionalFlag = required.has(key) || config.defaultRequire ? '' : '?';
     let refPath = '';
     let value = valueOrigin as OpenAPIV3_1.SchemaObject;
     if (isReferenceObject(valueOrigin)) {
@@ -279,6 +294,7 @@ export async function convertToType(
 }
 interface JsonSchema2TsOptions {
   export?: boolean;
+  defaultRequire?: boolean; // 没有nullbale或者require时默认为require
   on$RefTsStr?: (name: string, tsStr: string) => void;
 }
 /**
@@ -293,7 +309,10 @@ export const jsonSchema2TsStr = async (
   schema: OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject,
   name: string,
   openApi: OpenAPIV3_1.Document,
-  options: JsonSchema2TsOptions = { export: false },
+  options: JsonSchema2TsOptions = {
+    export: false,
+    defaultRequire: false
+  },
   searchMap: Map<string, string> = new Map(),
   map: Map<string, string> = new Map(),
   visited: Set<string> = new Set()
@@ -304,6 +323,7 @@ export const jsonSchema2TsStr = async (
     commentStyle: 'docment',
     preText: '',
     searchMap,
+    defaultRequire: options.defaultRequire,
     async on$Ref(refObject) {
       if (options.on$RefTsStr) {
         const name = getStandardRefName(refObject.$ref);
