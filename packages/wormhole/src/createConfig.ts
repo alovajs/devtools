@@ -2,7 +2,7 @@ import getAlovaVersion, { AlovaVersion } from './functions/getAlovaVersion';
 import getAutoTemplateType from './functions/getAutoTemplateType';
 import TemplateFile from './modules/TemplateFile';
 
-export const createConfig = async (projectPath: string = process.cwd()) => {
+const createConfig = (projectPath = process.cwd()) => {
   const type = getAutoTemplateType(projectPath);
   const moduleType = TemplateFile.getModuleType(type);
   const alovaVersion: AlovaVersion = getAlovaVersion(projectPath);

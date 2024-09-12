@@ -2,7 +2,7 @@ import { DEFAULT_CONFIG } from '@/config';
 import { fetchData } from '@/utils';
 import importFresh from 'import-fresh';
 import YAML from 'js-yaml';
-import fs from 'node:fs';
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import { OpenAPIV2, OpenAPIV3_1 } from 'openapi-types';
 import swagger2openapi from 'swagger2openapi';
@@ -12,11 +12,11 @@ function isSwagger2(data: any): data is OpenAPIV2.Document {
   return !!data?.swagger;
 }
 // 解析本地openapi文件
-function parseLocalFile(workspaceRootDir: string, filePath: string) {
+async function parseLocalFile(workspaceRootDir: string, filePath: string) {
   const [, extname] = /\.([^.]+)$/.exec(filePath) ?? [];
   switch (extname) {
     case 'yaml': {
-      const file = fs.readFileSync(path.resolve(workspaceRootDir, filePath), 'utf-8');
+      const file = await fs.readFile(path.resolve(workspaceRootDir, filePath), 'utf-8');
       const data = YAML.load(file) as any;
       return data;
     }
@@ -76,7 +76,7 @@ export default async function (
   try {
     if (!/^http(s)?:\/\//.test(url)) {
       // 本地文件
-      data = parseLocalFile(workspaceRootDir, url);
+      data = await parseLocalFile(workspaceRootDir, url);
     } else {
       // 远程文件
       data = await parseRemoteFile(url, platformType);
@@ -86,6 +86,7 @@ export default async function (
       data = (await swagger2openapi.convertObj(data, { warnOnly: true })).openapi as OpenAPIV3_1.Document;
     }
   } catch (error) {
+    console.log(error, '222');
     throw new DEFAULT_CONFIG.Error(`Cannot read file from ${url}`);
   }
   if (!data) {

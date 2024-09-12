@@ -8,6 +8,7 @@
     "pnpm": ">=8.6.12"
   },
   "scripts": {
+    "test": "vitest",
     "lint": "eslint . --ext .js,.ts",
     "lint:fix": "npm run lint -- --fix",
     "format": "prettier --check .",
@@ -57,7 +58,8 @@
     "tslib": "^2.7.0",
     "tsx": "^4.15.8",
     "type-fest": "^4.20.0",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5"
   },
   "config": {
     "commitizen": {
