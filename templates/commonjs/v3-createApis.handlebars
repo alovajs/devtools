@@ -38,7 +38,7 @@ const createFunctionalProxy = (array, alovaInstance, configMap) => {
       });
       delete mergedConfig.pathParams;
       let data = mergedConfig.data;
-      if (typeof data === 'object' && data !== null) {
+      if (Object.prototype.toString.call(data) === '[object Object]') {
         let hasBlobData = false;
         const formData = new FormData();
         for (const key in data) {
