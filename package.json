@@ -1,8 +1,9 @@
 {
   "name": "@alova/devtools",
   "displayName": "Alova",
-  "description": "The devtools for alova.js",
+  "description": "devtool kits for alova.js",
   "version": "0.0.9",
+  "private": true,
   "engines": {
     "node": ">=18.19.0",
     "pnpm": ">=8.6.12"
