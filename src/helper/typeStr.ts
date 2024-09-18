@@ -10,7 +10,7 @@ function removeComments(content: string) {
 const LEFT_BRACKET = ['(', '<', '{', '['];
 const RIGHT_BRACKET = [')', '>', '}', ']'];
 function parseTypeBody(typeBody: string) {
-  const properties = [];
+  let properties = [];
   let bracketCount = 0;
   let currentProperty = '';
 
@@ -30,6 +30,16 @@ function parseTypeBody(typeBody: string) {
   if (currentProperty.trim()) {
     properties.push(currentProperty.trim());
   }
+  let curId = 0;
+  properties.forEach((p, idx, arr) => {
+    if (/^.+:.*$/.test(p)) {
+      curId = idx;
+    } else {
+      arr[curId] += p;
+      arr[idx] = '';
+    }
+  });
+  properties = properties.filter(p => !!p);
   const parsedProperties = properties
     .map(prop => {
       const [keyOrigin, ...valueOrigin] = prop.split(':');
@@ -75,7 +85,9 @@ function splitTypes(typeStr: string, c: '&' | '|'): string[] {
     }
 
     if (char === c && bracketCount === 0) {
-      result.push(currentType.trim());
+      if (currentType) {
+        result.push(currentType.trim());
+      }
       currentType = '';
     } else {
       currentType += char;
