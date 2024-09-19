@@ -119,12 +119,24 @@ const createFunctionalProxy = (
         ...config
       };
       const [method, url] = apiItem;
-      const { pathParams, data } = mergedConfig;
+      const pathParams = mergedConfig.pathParams;
       const urlReplaced = url.replace(/\\{([^}]+)\\}/g, (_, key) => {
         const pathParam = pathParams[key];
         return pathParam;
       });
       delete mergedConfig.pathParams;
+      let data = mergedConfig.data;
+      if (Object.prototype.toString.call(data) === '[object Object]' && typeof FormData !== 'undefined') {
+        let hasBlobData = false;
+        const formData = new FormData();
+        for (const key in data) {
+          formData.append(key, data[key]);
+          if (data[key] instanceof Blob) {
+            hasBlobData = true;
+          }
+        }
+        data = hasBlobData ? formData : data;
+      }
       return new Method(method.toUpperCase() as MethodType, alovaInstance, urlReplaced, mergedConfig, data);
     }
   });
@@ -2936,12 +2948,24 @@ const createFunctionalProxy = (
         ...config
       };
       const [method, url] = apiItem;
-      const { pathParams, data } = mergedConfig;
+      const pathParams = mergedConfig.pathParams;
       const urlReplaced = url.replace(/\\{([^}]+)\\}/g, (_, key) => {
         const pathParam = pathParams[key];
         return pathParam;
       });
       delete mergedConfig.pathParams;
+      let data = mergedConfig.data;
+      if (Object.prototype.toString.call(data) === '[object Object]' && typeof FormData !== 'undefined') {
+        let hasBlobData = false;
+        const formData = new FormData();
+        for (const key in data) {
+          formData.append(key, data[key]);
+          if (data[key] instanceof Blob) {
+            hasBlobData = true;
+          }
+        }
+        data = hasBlobData ? formData : data;
+      }
       return new Method(method.toUpperCase() as MethodType, alovaInstance, urlReplaced, mergedConfig, data);
     }
   });
@@ -4094,12 +4118,24 @@ const createFunctionalProxy = (
         ...config
       };
       const [method, url] = apiItem;
-      const { pathParams, data } = mergedConfig;
+      const pathParams = mergedConfig.pathParams;
       const urlReplaced = url.replace(/\\{([^}]+)\\}/g, (_, key) => {
         const pathParam = pathParams[key];
         return pathParam;
       });
       delete mergedConfig.pathParams;
+      let data = mergedConfig.data;
+      if (Object.prototype.toString.call(data) === '[object Object]' && typeof FormData !== 'undefined') {
+        let hasBlobData = false;
+        const formData = new FormData();
+        for (const key in data) {
+          formData.append(key, data[key]);
+          if (data[key] instanceof Blob) {
+            hasBlobData = true;
+          }
+        }
+        data = hasBlobData ? formData : data;
+      }
       return new Method(method.toUpperCase() as MethodType, alovaInstance, urlReplaced, mergedConfig, data);
     }
   });
@@ -5322,12 +5358,24 @@ const createFunctionalProxy = (
         ...config
       };
       const [method, url] = apiItem;
-      const { pathParams, data } = mergedConfig;
+      const pathParams = mergedConfig.pathParams;
       const urlReplaced = url.replace(/\\{([^}]+)\\}/g, (_, key) => {
         const pathParam = pathParams[key];
         return pathParam;
       });
       delete mergedConfig.pathParams;
+      let data = mergedConfig.data;
+      if (Object.prototype.toString.call(data) === '[object Object]' && typeof FormData !== 'undefined') {
+        let hasBlobData = false;
+        const formData = new FormData();
+        for (const key in data) {
+          formData.append(key, data[key]);
+          if (data[key] instanceof Blob) {
+            hasBlobData = true;
+          }
+        }
+        data = hasBlobData ? formData : data;
+      }
       return new Method(method.toUpperCase() as MethodType, alovaInstance, urlReplaced, mergedConfig, data);
     }
   });
@@ -8081,12 +8129,12 @@ export default {
 
 exports[`generate API > should generate target versioned code 6`] = `
 "import { createAlova } from 'alova';
-import fetchAdapter from 'alova/fetch';
+import GlobalFetch from 'alova/GlobalFetch';
 import { createApis, withConfigType } from './createApis';
 
 export const alovaInstance = createAlova({
   baseURL: '/api1',
-  requestAdapter: fetchAdapter(),
+  requestAdapter: GlobalFetch(),
   beforeRequest: method => {},
   responded: res => {
     return res.json();
@@ -8142,12 +8190,24 @@ const createFunctionalProxy = (array: (string | symbol)[], alovaInstance: Alova<
         ...config
       };
       const [method, url] = apiItem;
-      const { pathParams, data } = mergedConfig;
+      const pathParams = mergedConfig.pathParams;
       const urlReplaced = url.replace(/\\{([^}]+)\\}/g, (_, key) => {
         const pathParam = pathParams[key];
         return pathParam;
       });
       delete mergedConfig.pathParams;
+      let data = mergedConfig.data;
+      if (Object.prototype.toString.call(data) === '[object Object]' && typeof FormData !== 'undefined') {
+        let hasBlobData = false;
+        const formData = new FormData();
+        for (const key in data) {
+          formData.append(key, data[key]);
+          if (data[key] instanceof Blob) {
+            hasBlobData = true;
+          }
+        }
+        data = hasBlobData ? formData : data;
+      }
       return new Method(method.toUpperCase() as MethodType, alovaInstance, urlReplaced, mergedConfig, data);
     }
   });
