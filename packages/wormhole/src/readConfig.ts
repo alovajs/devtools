@@ -17,7 +17,7 @@ const alovaExplorer = cosmiconfig('alova', {
     '.cts': loadTs
   }
 });
-export const readConfig = async (projectPath: string = process.cwd()) => {
+export const readConfig = async (projectPath = process.cwd()) => {
   const searchResult = await alovaExplorer.search(path.resolve(projectPath));
   alovaExplorer.clearCaches();
   if (searchResult?.isEmpty) {
@@ -30,7 +30,7 @@ export const readConfig = async (projectPath: string = process.cwd()) => {
   }
   return config;
 };
-const readAndSaveAlovaJson = (config: Config, projectPath: string = process.cwd()) => {
+const readAndSaveAlovaJson = (config: Config, projectPath = process.cwd()) => {
   const configuration = new Configuration(config, projectPath);
   configuration.getAllOutputPath().forEach(outputPath => {
     // 缓存文件地址
@@ -56,7 +56,7 @@ export const getAutoUpdateConfig = (config: Config) => {
     immediate
   };
 };
-export const getApis = (config: Config, projectPath: string = process.cwd()) => {
+export const getApis = (config: Config, projectPath = process.cwd()) => {
   if (!config || !projectPath) {
     return [];
   }
@@ -73,4 +73,3 @@ export const getApis = (config: Config, projectPath: string = process.cwd()) => 
     })
     .flat(2);
 };
-export default readConfig;

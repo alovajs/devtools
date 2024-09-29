@@ -1,7 +1,7 @@
 {
   "name": "@alova/wormhole",
   "version": "1.0.0",
-  "description": "generate api for alova.js",
+  "description": "More modern openAPI generating solution for alova.js",
   "homepage": "https://alova.js.org",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
@@ -23,10 +23,11 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
     "fs-extra": "^11.2.0",
+    "memfs": "^4.11.1",
     "openapi-types": "^12.1.3",
     "unbuild": "^2.0.0"
   },

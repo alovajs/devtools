@@ -2,9 +2,9 @@ import type { Config, GenerateApiOptions } from '~/index';
 import generateApi from './functions/generateApi';
 import Configuration from './modules/Configuration';
 
-export const generate = async (config: Config, options?: GenerateApiOptions): Promise<(boolean | void)[]> => {
+const generate = async (config: Config, options?: GenerateApiOptions) => {
   if (!config) {
-    return [];
+    return [] as boolean[];
   }
   const configuration = new Configuration(config, options?.projectPath ?? process.cwd());
   // 检查新配置

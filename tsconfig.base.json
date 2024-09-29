@@ -21,10 +21,6 @@
     "inlineSourceMap": false,
     "importHelpers": true,
     "removeComments": false,
-    "jsx": "preserve",
-    "paths": {
-      "#/*": ["./*"],
-      "@alova/*": ["./packages/src/*"]
-    }
+    "types": ["vitest/globals"]
   }
 }

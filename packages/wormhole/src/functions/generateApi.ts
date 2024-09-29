@@ -1,6 +1,6 @@
 import { DEFAULT_CONFIG } from '@/config';
 import { isEqual } from 'lodash';
-import fs from 'node:fs';
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import { OpenAPIV3_1 } from 'openapi-types';
 import type { GeneratorConfig, TemplateType } from '~/index';
@@ -19,7 +19,7 @@ export default async function (
   force: boolean // 是否强制生成
 ) {
   if (!data) {
-    return;
+    return false;
   }
   // 输出目录
   const outputDir = path.resolve(workspaceRootDir, outputPath);
@@ -54,15 +54,22 @@ export default async function (
   // 保存templateData
   DEFAULT_CONFIG.templateData.set(alovaJsonPath, templateData);
   // 生成alova.json文件
-  writeAlovaJson(templateData, alovaJsonPath);
+  await writeAlovaJson(templateData, alovaJsonPath);
   // 获取是否存在index.ts|index.js
-  const indexIsExists = fs.existsSync(path.join(outputDir, `index${templateFile.getExt()}`));
+  let indexIsExists = true;
+  try {
+    await fs.access(path.join(outputDir, `index${templateFile.getExt()}`));
+  } catch (error) {
+    indexIsExists = false;
+  }
   // mustache语法生成
   // 定义模版配置对象
-  [
-    !indexIsExists && {
-      fileName: 'index'
-    },
+  const generatingPromises = [
+    !indexIsExists
+      ? {
+          fileName: 'index'
+        }
+      : null,
     {
       fileName: 'createApis'
     },
@@ -76,12 +83,13 @@ export default async function (
       ext: '.ts',
       root: true
     }
-  ].forEach(item => {
+  ].map(item => {
     if (!item) {
       return;
     }
     const { fileName, ext, root, hasVersion } = item;
-    templateFile.outputFile(templateData, fileName, outputDir, { ext, root, hasVersion });
+    return templateFile.outputFile(templateData, fileName, outputDir, { ext, root, hasVersion });
   });
+  await Promise.all(generatingPromises);
   return true;
 }

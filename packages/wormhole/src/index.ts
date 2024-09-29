@@ -1,5 +1,5 @@
 export type * from '~/index';
-export * from './config';
-export * from './createConfig';
-export * from './generate';
+export { setGlobalConfig } from './config';
+export { default as createConfig } from './createConfig';
+export { default as generate } from './generate';
 export * from './readConfig';

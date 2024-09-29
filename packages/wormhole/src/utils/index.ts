@@ -1,7 +1,7 @@
 /* eslint-disable no-bitwise */
 import handlebars, { HelperOptions } from 'handlebars';
 import fetch from 'node-fetch';
-import fs, { promises } from 'node:fs';
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Config as PrettierConfig } from 'prettier';
 import * as prettierBabel from 'prettier/plugins/babel';
@@ -69,10 +69,10 @@ handlebars.registerHelper(
  * @param view - 渲染模板所需的数据对象
  * @returns 渲染后的内容
  */
-export async function readAndRenderTemplate(templatePath: string, view: any): Promise<string> {
+export async function readAndRenderTemplate(templatePath: string, view: any) {
   let data = '';
   try {
-    data = await promises.readFile(path.resolve(DEFAULT_CONFIG.templatePath, `${templatePath}.handlebars`), 'utf-8');
+    data = await fs.readFile(path.resolve(DEFAULT_CONFIG.templatePath, `${templatePath}.handlebars`), 'utf-8');
   } catch (error) {
     data = (await import(`./templates/${templatePath}.handlebars`)).default;
   }
@@ -93,17 +93,14 @@ export async function format(text: string, config?: PrettierConfig) {
  * @param content 文件内容
  */
 export async function generateFile(distDir: string, fileName: string, content: string) {
-  if (!fs.existsSync(distDir)) {
-    fs.mkdirSync(distDir, { recursive: true });
+  try {
+    await fs.access(distDir, fs.constants.F_OK);
+  } catch (error) {
+    await fs.mkdir(distDir, { recursive: true });
   }
   const filePath = path.join(distDir, fileName);
   const formattedText = await format(content);
-  fs.writeFile(filePath, formattedText, (err: NodeJS.ErrnoException | null) => {
-    if (err) {
-      return console.error('Error writing file:', err);
-    }
-    // console.log('File written successfully at', filePath);
-  });
+  await fs.writeFile(filePath, formattedText);
 }
 export async function fetchData(url: string) {
   return fetch(url).then(response => {
