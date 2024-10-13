@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 
 vi.mock('node:fs');
 vi.mock('node:fs/promises');
+const getSalt = () => `_${Math.random().toString(36).slice(2)}`;
 describe('generate API', () => {
   test('should throw error when necessary items are not specified', async () => {
     await expect(generate({} as any)).rejects.toThrow('No items found in the `config.generator`');
@@ -205,4 +206,287 @@ describe('generate API', () => {
     expect(await fs.readFile(resolve(outputDir2, 'createApis.ts'), 'utf-8')).toMatchSnapshot();
     expect(await fs.readFile(resolve(outputDir2, 'globals.d.ts'), 'utf-8')).toMatchSnapshot();
   });
+
+  test('should auto detect generating module codes if not set `type`', async () => {
+    // default type: auto
+    // generate ts modules
+    const outputDir = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`);
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/openapi_301.json'),
+          output: outputDir
+        }
+      ]
+    });
+    await expect(fs.readFile(resolve(outputDir, 'createApis.ts'), 'utf-8')).resolves.not.toBeUndefined();
+
+    // auto: esm
+    const packageJson = {
+      name: 'test-pkg',
+      type: undefined as string | undefined,
+      version: '1.0.0',
+      devDependencies: {}
+    };
+    const tempPkgFile = resolve(__dirname, './package.json');
+    const { writeFileSync, unlinkSync } = await vi.importActual<typeof import('node:fs')>('node:fs');
+    writeFileSync(tempPkgFile, JSON.stringify(packageJson));
+    const outputDir2 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`);
+    await generate(
+      {
+        generator: [
+          {
+            input: resolve(__dirname, './openapis/openapi_301.json'),
+            output: outputDir2
+          }
+        ]
+      },
+      {
+        projectPath: __dirname
+      }
+    );
+    const fileContentEsm = await fs.readFile(resolve(outputDir2, 'createApis.js'), 'utf-8');
+    expect(fileContentEsm).toMatch('export const createApis');
+
+    // auto: cjs
+    packageJson.type = 'commonjs';
+    writeFileSync(tempPkgFile, JSON.stringify(packageJson));
+    const outputDir3 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`);
+    await generate(
+      {
+        generator: [
+          {
+            input: resolve(__dirname, './openapis/openapi_301.json'),
+            output: outputDir3
+          }
+        ]
+      },
+      {
+        projectPath: __dirname
+      }
+    );
+    const fileContentCjs = await fs.readFile(resolve(outputDir3, 'createApis.js'), 'utf-8');
+    expect(fileContentCjs).toMatch(`module.exports = {
+  createApis,
+  withConfigType
+};`);
+
+    unlinkSync(tempPkgFile);
+  });
+
+  test('should generate corresponding module codes dependent to `type`', async () => {
+    // ts
+    const outputDir = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`);
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/openapi_301.json'),
+          output: outputDir,
+          type: 'typescript'
+        }
+      ]
+    });
+    await expect(fs.readFile(resolve(outputDir, 'createApis.ts'), 'utf-8')).resolves.not.toBeUndefined();
+
+    const outputDirTs = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`);
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/openapi_301.json'),
+          output: outputDirTs,
+          type: 'ts'
+        }
+      ]
+    });
+    await expect(fs.readFile(resolve(outputDirTs, 'createApis.ts'), 'utf-8')).resolves.not.toBeUndefined();
+
+    // esm
+    const outputDir2 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`);
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/openapi_301.json'),
+          output: outputDir2,
+          type: 'module'
+        }
+      ]
+    });
+    const fileContentEsm = await fs.readFile(resolve(outputDir2, 'createApis.js'), 'utf-8');
+    expect(fileContentEsm).toMatch('export const createApis');
+
+    // cjs
+    const outputDir3 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`);
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/openapi_301.json'),
+          output: outputDir3,
+          type: 'commonjs'
+        }
+      ]
+    });
+    const fileContentCjs = await fs.readFile(resolve(outputDir3, 'createApis.js'), 'utf-8');
+    expect(fileContentCjs).toMatch(`module.exports = {
+  createApis,
+  withConfigType
+};`);
+  });
+
+  test('should set the right global variable name', async () => {
+    const outputDir = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`);
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/openapi_301.json'),
+          output: outputDir
+        }
+      ]
+    });
+    const fileContent = await fs.readFile(resolve(outputDir, 'createApis.ts'), 'utf-8');
+    expect(fileContent).toMatch('(globalThis as any).Apis = Apis;');
+
+    const outputDir2 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`);
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/openapi_301.json'),
+          output: outputDir2,
+          type: 'module',
+          global: 'ApisEsm'
+        }
+      ]
+    });
+    const fileContentEsm = await fs.readFile(resolve(outputDir2, 'createApis.js'), 'utf-8');
+    expect(fileContentEsm).toMatch('globalThis.ApisEsm = Apis;');
+
+    const outputDir3 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`);
+    const outputDir4 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`);
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/openapi_301.json'),
+          output: outputDir3,
+          type: 'commonjs',
+          global: 'ApisCjs'
+        },
+        {
+          input: resolve(__dirname, './openapis/openapi_301.json'),
+          output: outputDir4,
+          type: 'module',
+          global: 'ApisEsm2'
+        }
+      ]
+    });
+    const fileContentCjs = await fs.readFile(resolve(outputDir3, 'createApis.js'), 'utf-8');
+    expect(fileContentCjs).toMatch('globalThis.ApisCjs = Apis;');
+    const fileContentEsm2 = await fs.readFile(resolve(outputDir4, 'createApis.js'), 'utf-8');
+    expect(fileContentEsm2).toMatch('globalThis.ApisEsm2 = Apis;');
+  });
+
+  test('should preprocess non-variable-specification characters', async () => {
+    const outputDir = resolve(__dirname, `./mock_output/non_variable_specification_openapi${getSalt()}`);
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/non_variable_specification_openapi.yaml'),
+          output: outputDir
+        }
+      ]
+    });
+    const indexFile = await fs.readFile(resolve(outputDir, 'index.ts'), 'utf-8');
+    expect(indexFile).toMatch("baseURL: ''");
+    const apiDefinitionsFile = await fs.readFile(resolve(outputDir, 'apiDefinitions.ts'), 'utf-8');
+    expect(apiDefinitionsFile).toMatch("'_24pet.pet24': ['POST', '/pet']"); // non-variable specification tag
+    expect(apiDefinitionsFile).toMatch("pet.put_pet': ['PUT', '/pet']"); // `operationId` is not defined
+  });
+
+  test('should classify the apis that have no tags to `general` tag', async () => {
+    const outputDir = resolve(__dirname, `./mock_output/tag_general_openapi${getSalt()}`);
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/tag_general_openapi.yaml'),
+          output: outputDir
+        }
+      ]
+    });
+    const apiDefinitionsFile = await fs.readFile(resolve(outputDir, 'apiDefinitions.ts'), 'utf-8');
+    expect(apiDefinitionsFile).toMatch("'general.addPet': ['POST', '/pet']");
+    expect(apiDefinitionsFile).toMatch("general.updatePet': ['PUT', '/pet']");
+  });
+
+  test('should generate the same api with different tag when has multiple tags', async () => {
+    const outputDir = resolve(__dirname, `./mock_output/multiple_tag_openapi${getSalt()}`);
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/multiple_tag_openapi.yaml'),
+          output: outputDir
+        }
+      ]
+    });
+    const apiDefinitionsFile = await fs.readFile(resolve(outputDir, 'apiDefinitions.ts'), 'utf-8');
+    expect(apiDefinitionsFile).toMatch("'pet.addPet': ['POST', '/pet']");
+    expect(apiDefinitionsFile).toMatch("'store.addPet': ['POST', '/pet']");
+    const globalsFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8');
+    expect(globalsFile).toMatch("Alova2Method<Pet, 'pet.addPet', Config>");
+    expect(globalsFile).toMatch("Alova2Method<Pet, 'store.addPet', Config>");
+  });
+
+  test('should stop endless loop when encounter circular reference in component', async () => {
+    const outputDir = resolve(__dirname, `./mock_output/endless_loop_openapi${getSalt()}`);
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/endless_loop_openapi.yaml'),
+          output: outputDir
+        }
+      ]
+    });
+    const globalsFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8');
+    expect(globalsFile).toMatch(`type Response = {
+       *   id?: number
+       *   // [title] Pet category
+       *   // A category for a pet
+       *   category?: {
+       *     id?: number
+       *     name?: string
+       *     // [title] Pet Tag
+       *     // A tag for a pet
+       *     tag?: {
+       *       id?: number
+       *       name?: string
+       *       // [title] a Pet
+       *       // A pet for sale in the pet store
+       *       pet?: Pet
+       *     }
+       *   }
+       *   // [required]
+       *   name: string
+       *   // [required]
+       *   photoUrls: string[]
+       *   tags?: Array<Tag>
+       *   // pet status in the store
+       *   // [deprecated]
+       *   status?: 'available' | 'pending' | 'sold'
+       * }`);
+  });
+
+  test('should automatically convert object that contains `Blob` to `FormData`', async () => {
+    const outputDir = resolve(__dirname, `./mock_output/file_upload_openapi${getSalt()}`);
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/file_upload_openapi.yaml'),
+          output: outputDir
+        }
+      ]
+    });
+    const globalsFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8');
+    expect(globalsFile).toMatch('file: Blob');
+  });
+
+  test('should `handleApi` handler change all descriptors', async () => {});
+
+  test('should only effect component type of modified descriptor when this component is refered by multiple descriptor', async () => {});
 });
