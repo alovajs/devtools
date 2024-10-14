@@ -16,8 +16,8 @@ export type ApiDescriptor = Omit<OperationObject, 'requestBody' | 'parameters' |
   responses?: SchemaObject;
 };
 export interface HandleApi {
-  (apiDescriptor: ApiDescriptor): ApiDescriptor;
-  (apiDescriptor: ApiDescriptor, log: (...args: any[]) => void): ApiDescriptor;
+  (apiDescriptor: ApiDescriptor): ApiDescriptor | void | undefined | null;
+  (apiDescriptor: ApiDescriptor, log: (...args: any[]) => void): ApiDescriptor | void | undefined | null;
 }
 export type GeneratorConfig = {
   // openapi的json文件url地址

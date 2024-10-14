@@ -6,7 +6,7 @@ export type AlovaVersion = `v${number}`;
 export default function (workspaceRootDir: string) {
   const packageJson: PackageJson = importFresh(path.resolve(workspaceRootDir, './package.json'));
   if (!packageJson) {
-    return 'v2';
+    return 'v3';
   }
   // 依赖中找
   const alovaVersion = packageJson.dependencies?.alova;
@@ -19,5 +19,5 @@ export default function (workspaceRootDir: string) {
 
 export const getVersion = (version?: string): AlovaVersion => {
   const execArr = /(\d+)\./.exec(version ?? '') ?? [];
-  return `v${Number(execArr[1]) || 2}`;
+  return `v${Number(execArr[1]) || 3}`;
 };

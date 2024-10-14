@@ -5,9 +5,6 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { rimraf } from 'rimraf';
 import type { Config } from '~/index';
-import { initExpect } from './util';
-
-initExpect();
 
 const requireResult = new Map<string, Record<string, any> | null | Error>();
 vi.mock('import-fresh', () => ({
@@ -251,20 +248,20 @@ describe('config', () => {
     importResult.set(projectRoot, configMap.ts.expectedConfig); // import()=> return config
     const tsConfig = await readConfig();
 
-    expect(tsConfig).toBeDeepEqual(configMap.ts.expectedConfig);
+    expect(tsConfig).toStrictEqual(configMap.ts.expectedConfig);
 
     // read module config file
     await fs.writeFile(resolve(projectRoot, configMap.module.file), configMap.module.content, 'utf-8');
     requireResult.set(projectRoot, null); // require()=> throw error
     importResult.set(projectRoot, configMap.module.expectedConfig); // import()=> return config
     const moduleConfig = await readConfig();
-    expect(moduleConfig).toBeDeepEqual(configMap.module.expectedConfig);
+    expect(moduleConfig).toStrictEqual(configMap.module.expectedConfig);
     // read commonjs config file
     await fs.writeFile(resolve(projectRoot, configMap.commonjs.file), configMap.commonjs.content, 'utf-8');
     requireResult.set(projectRoot, configMap.commonjs.expectedConfig); // require()=> return config
     importResult.set(projectRoot, null); // import()=> throw error
     const cjsConfig = await readConfig();
-    expect(cjsConfig).toBeDeepEqual(configMap.commonjs.expectedConfig);
+    expect(cjsConfig).toStrictEqual(configMap.commonjs.expectedConfig);
   });
 
   test('should read config file under target path', async () => {

@@ -175,6 +175,37 @@ describe('generate API', () => {
     expect(await fs.readFile(resolve(outputDir3, 'globals.d.ts'), 'utf-8')).toMatchSnapshot();
   });
 
+  test('should generate code from an url', async () => {
+    const outputDir = resolve(__dirname, `./mock_output/swagger_petstore${getSalt()}`);
+    await generate({
+      generator: [
+        {
+          input: 'https://petstore.swagger.io/v2/swagger.json',
+          output: outputDir
+        }
+      ]
+    });
+    expect(await fs.readFile(resolve(outputDir, 'apiDefinitions.ts'), 'utf-8')).toMatchSnapshot();
+    expect(await fs.readFile(resolve(outputDir, 'index.ts'), 'utf-8')).toMatchSnapshot();
+    expect(await fs.readFile(resolve(outputDir, 'createApis.ts'), 'utf-8')).toMatchSnapshot();
+    expect(await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8')).toMatchSnapshot();
+
+    const outputDir2 = resolve(__dirname, `./mock_output/generator_file${getSalt()}`);
+    await generate({
+      generator: [
+        {
+          input: 'https://generator3.swagger.io',
+          platform: 'swagger',
+          output: outputDir2
+        }
+      ]
+    });
+    expect(await fs.readFile(resolve(outputDir2, 'apiDefinitions.ts'), 'utf-8')).toMatchSnapshot();
+    expect(await fs.readFile(resolve(outputDir2, 'index.ts'), 'utf-8')).toMatchSnapshot();
+    expect(await fs.readFile(resolve(outputDir2, 'createApis.ts'), 'utf-8')).toMatchSnapshot();
+    expect(await fs.readFile(resolve(outputDir2, 'globals.d.ts'), 'utf-8')).toMatchSnapshot();
+  });
+
   test('should generate target versioned code', async () => {
     const outputDir = resolve(__dirname, './mock_output/openapi_301');
     await generate({
@@ -205,6 +236,67 @@ describe('generate API', () => {
     expect(await fs.readFile(resolve(outputDir2, 'index.ts'), 'utf-8')).toMatchSnapshot();
     expect(await fs.readFile(resolve(outputDir2, 'createApis.ts'), 'utf-8')).toMatchSnapshot();
     expect(await fs.readFile(resolve(outputDir2, 'globals.d.ts'), 'utf-8')).toMatchSnapshot();
+  });
+
+  test('should generate correspoding `mediaType` parameters', async () => {
+    // default mediaType: application/json
+    const outputDir = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`);
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/openapi_301.json'),
+          output: outputDir
+        }
+      ]
+    });
+
+    let globalsDeclarationFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8');
+    expect(globalsDeclarationFile).toMatch(`generateBundle<
+        Config extends Alova2MethodConfig<GenerationRequest> & {
+          data: GenerationRequest;
+        }
+      >`);
+    expect(globalsDeclarationFile).toMatch(`: Alova2Method<string[], 'documentation.documentationLanguages', Config>;`);
+
+    // custom mediaType: application/json
+    const outputDir2 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`);
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/openapi_301.json'),
+          output: outputDir2,
+          bodyMediaType: 'application/json',
+          responseMediaType: 'application/json'
+        }
+      ]
+    });
+
+    globalsDeclarationFile = await fs.readFile(resolve(outputDir2, 'globals.d.ts'), 'utf-8');
+    expect(globalsDeclarationFile).toMatch(`generateBundle<
+        Config extends Alova2MethodConfig<GenerationRequest> & {
+          data: GenerationRequest;
+        }
+      >`);
+    expect(globalsDeclarationFile).toMatch(`: Alova2Method<string[], 'documentation.documentationLanguages', Config>;`);
+
+    // custom mediaType: application/xml
+    const outputDir3 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`);
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/openapi_301.json'),
+          output: outputDir3,
+          bodyMediaType: 'application/xml',
+          responseMediaType: 'application/xml'
+        }
+      ]
+    });
+
+    globalsDeclarationFile = await fs.readFile(resolve(outputDir3, 'globals.d.ts'), 'utf-8');
+    expect(globalsDeclarationFile).toMatch(`generateBundle<
+        Config extends Alova2MethodConfig<GenerationRequest>
+      >`);
+    expect(globalsDeclarationFile).toMatch(`: Alova2Method<unknown, 'documentation.documentationLanguages', Config>;`);
   });
 
   test('should auto detect generating module codes if not set `type`', async () => {
@@ -486,7 +578,216 @@ describe('generate API', () => {
     expect(globalsFile).toMatch('file: Blob');
   });
 
-  test('should `handleApi` handler change all descriptors', async () => {});
+  test('should generate the right types according to `$ref` type', async () => {
+    const outputDir = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`);
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/openapi_301.json'),
+          output: outputDir
+        }
+      ]
+    });
 
-  test('should only effect component type of modified descriptor when this component is refered by multiple descriptor', async () => {});
+    const globalsFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8');
+    expect(globalsFile).toMatch(`generateBundle<
+        Config extends Alova2MethodConfig<GenerationRequest> & {
+          data: GenerationRequest;
+        }
+      >(
+        config: Config
+      ): Alova2Method<GenerationRequest, 'config.generateBundle', Config>;`);
+    expect(globalsFile).toMatch(`clientLanguages<
+        Config extends Alova2MethodConfig<string[]> & {
+          params: {
+            /**
+             * generator version used by codegen engine
+             */
+            version?: 'V2' | 'V3';
+            /**
+             * flag to only return languages of type \`client\`
+             */
+            clientOnly?: boolean;
+          };
+        }
+      >`);
+  });
+
+  test('should `handleApi` handler change all descriptors', async () => {
+    const outputDir = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`);
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/openapi_301.json'),
+          output: outputDir,
+          handleApi: apiDescriptor => {
+            if (apiDescriptor.url === '/documentation') {
+              apiDescriptor.responses = {
+                type: 'object',
+                properties: {
+                  attr1: {
+                    type: 'string'
+                  },
+                  attr2: {
+                    type: 'number'
+                  }
+                }
+              };
+              return apiDescriptor;
+            }
+            if (apiDescriptor.url === '/clients') {
+              apiDescriptor.operationId = 'customClients';
+              apiDescriptor.parameters?.push(
+                {
+                  name: 'token',
+                  in: 'path',
+                  description: 'client token',
+                  schema: {
+                    type: 'string'
+                  }
+                },
+                {
+                  name: 'id',
+                  in: 'query',
+                  description: 'client id',
+                  required: true,
+                  schema: {
+                    type: 'number'
+                  }
+                }
+              );
+              apiDescriptor.url += '/suffix';
+              return apiDescriptor;
+            }
+            if (apiDescriptor.url === '/model' && apiDescriptor.method.toUpperCase() === 'POST') {
+              apiDescriptor.tags = ['clients'];
+              apiDescriptor.requestBody = {
+                type: 'object',
+                properties: {
+                  attr1: {
+                    type: 'string'
+                  }
+                }
+              };
+              return apiDescriptor;
+            }
+          }
+        }
+      ]
+    });
+    const globalsFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8');
+    // check only generate specified apis
+    expect(globalsFile).toMatch(`documentationLanguages<
+        Config extends Alova2MethodConfig<{
+          attr1?: string;
+          attr2?: number;
+        }>`);
+    expect(globalsFile).toMatch(`customClients<
+        Config extends Alova2MethodConfig<string[]> & {
+          pathParams: {
+            /**
+             * client token
+             */
+            token?: string;
+          };
+          params: {
+            /**
+             * generator version used by codegen engine
+             */
+            version?: 'V2' | 'V3';
+            /**
+             * flag to only return languages of type \`client\`
+             */
+            clientOnly?: boolean;
+            /**
+             * client id
+             * [required]
+             */
+            id: number;
+          };
+        }
+      >`);
+    expect(globalsFile).toMatch(`generateBundle<
+        Config extends Alova2MethodConfig<GenerationRequest> & {
+          data: {
+            attr1?: string;
+          };
+        }
+      >`);
+    expect(globalsFile).not.toMatch('serverLanguages');
+    expect(globalsFile).not.toMatch('listOptions');
+    expect(globalsFile).not.toMatch('generateFromURL');
+
+    const apiDefinitionsFile = await fs.readFile(resolve(outputDir, 'apiDefinitions.ts'), 'utf-8');
+    expect(apiDefinitionsFile).toMatch(`export default {
+  'clients.customClients': ['GET', '/clients/suffix'],
+  'documentation.customClients': ['GET', '/clients/suffix'],
+  'documentation.documentationLanguages': ['GET', '/documentation'],
+  'clients.generateBundle': ['POST', '/model']
+};`);
+  });
+
+  test('should only effect component type of modified descriptor when this component is refered by multiple descriptor', async () => {
+    const outputDir = resolve(__dirname, `./mock_output/openapi_300${getSalt()}`);
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/openapi_300.yaml'),
+          output: outputDir,
+          handleApi: apiDescriptor => {
+            if (apiDescriptor.url === '/pet') {
+              if (apiDescriptor.method.toUpperCase() === 'POST' && apiDescriptor.responses?.properties) {
+                apiDescriptor.responses.properties.customAttr = {
+                  type: 'array',
+                  items: {
+                    type: 'string'
+                  }
+                };
+              } else if (apiDescriptor.method.toUpperCase() === 'PUT' && apiDescriptor.responses?.properties) {
+                apiDescriptor.responses.properties.customAttr2 = {
+                  type: 'string',
+                  description: 'custom test attr 2'
+                };
+              }
+              return apiDescriptor;
+            }
+            return apiDescriptor;
+          }
+        }
+      ]
+    });
+
+    const globalsFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8');
+    // generate separated `Pet1` from `Pet`
+    expect(globalsFile).toMatch(`pet24<
+        Config extends Alova2MethodConfig<Pet1> & {
+          data: Pet;
+        }
+      >(
+        config: Config
+      ): Alova2Method<Pet1, 'tag.pet24', Config>;`);
+    // generate separated `Pet2` from `Pet`
+    expect(globalsFile).toMatch(`updatePet<
+        Config extends Alova2MethodConfig<Pet2> & {
+          data: Pet;
+        }
+      >(
+        config: Config
+      ): Alova2Method<Pet2, 'pet.updatePet', Config>;`);
+    // the unmodified api still reference `Pet`
+    expect(globalsFile).toMatch(`findPetsByStatus<
+        Config extends Alova2MethodConfig<Pet[]> & {
+          params: {
+            /**
+             * Status values that need to be considered for filter
+             * [required]
+             * @deprecated
+             */
+            status: ('available' | 'pending' | 'sold')[];
+          };
+        }
+      >(
+        config: Config
+      ): Alova2Method<Pet[], 'pet.findPetsByStatus', Config>;`);
+  });
 });
