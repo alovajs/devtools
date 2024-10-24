@@ -1,22 +1,23 @@
 import path from 'node:path';
 import type { TemplateData } from './functions/openApi2Data';
 
-export const TEMPLATE_DATA = new Map<string, TemplateData>();
-export const DEFAULT_CONFIG = {
+declare global {
+  // eslint-disable-next-line vars-on-top, no-var
+  var ALOVA_WORMHOLE_CONFIG: typeof DEFAULT_CONFIG;
+}
+
+const DEFAULT_CONFIG = {
   alovaTempPath: path.join('node_modules/.alova'),
   templatePath: path.join(__dirname, './templates'),
   log: (...messageArr: any[]) => console.log(...messageArr),
-  getTypescript: async () => {
-    let ts: typeof import('typescript') | null = null;
-    try {
-      ts = (await import('typescript')).default;
-    } catch {}
-    return ts;
-  },
-  templateData: TEMPLATE_DATA,
+  templateData: new Map<string, TemplateData>(),
   Error
 };
-export function setGlobalConfig(config: Partial<typeof DEFAULT_CONFIG>) {
-  Object.assign(DEFAULT_CONFIG, config);
+global.ALOVA_WORMHOLE_CONFIG = DEFAULT_CONFIG;
+export function getGlobalConfig() {
+  return global.ALOVA_WORMHOLE_CONFIG;
 }
-export default { DEFAULT_CONFIG, setGlobalConfig };
+export function setGlobalConfig(config: Partial<typeof DEFAULT_CONFIG>) {
+  Object.assign(global.ALOVA_WORMHOLE_CONFIG, config);
+}
+export default { getGlobalConfig, setGlobalConfig };

@@ -1,18 +1,17 @@
 import type { CommandKey } from '@/commands';
 import type { Task } from '@/helper/work';
-import importFresh from 'import-fresh';
-import path from 'node:path';
 import { parentPort } from 'worker_threads';
 import { uuid } from '.';
 import { TASK_MAP } from '../work/config';
+import AlovaError from '@/components/error';
 
 type MessageCallBack<T> = () => T | Promise<T>;
-export function createError(err: Error) {
+export function createError(err: AlovaError) {
   return {
     message: err.message,
     stack: err.stack,
-    ERROR_CODE: (err as any).ERROR_CODE
-  };
+    ERROR_CODE: err.ERROR_CODE
+  } as AlovaError;
 }
 export async function postMessage<T>(id: string | null, type: string, cb: MessageCallBack<T>) {
   let data: any;
@@ -55,25 +54,17 @@ export async function setTask<U, T = any>(type: string, cb: MessageCallBack<T>) 
     TASK_MAP.set(taskId, { type, payload: { resolve, reject } });
   });
 }
-export function executeCommand(cmd: CommandKey) {
-  return postMessage(null, 'executeCommand', () => cmd);
+export function executeCommand<T extends any[]>(cmd: CommandKey, ...args: T) {
+  return postMessage(null, 'executeCommand', () => ({
+    cmd,
+    args
+  }));
 }
 
-export const getTypescriptByWorkspace = async (workspaceRootPathArr: string[]) => {
-  let typescript: typeof import('typescript') | null = null;
-  for (const workspaceRootPath of workspaceRootPathArr) {
-    try {
-      typescript = importFresh(path.join(workspaceRootPath, './node_modules/typescript'));
-    } catch (error) {}
-  }
-  return typescript;
-};
 export function getWorkspaceRootPathArr() {
   return setTask<string[]>('workspaceRootPathArr', () => {});
 }
-export async function getTypescript() {
-  return getTypescriptByWorkspace(await getWorkspaceRootPathArr());
-}
+
 export async function log(...args: any[]) {
   return postMessage(null, 'log', () => args);
 }

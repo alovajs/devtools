@@ -8,8 +8,9 @@ import * as prettierBabel from 'prettier/plugins/babel';
 import * as prettierEsTree from 'prettier/plugins/estree';
 import * as prettierTs from 'prettier/plugins/typescript';
 import * as prettier from 'prettier/standalone';
-import { DEFAULT_CONFIG } from '../config';
+import { getGlobalConfig } from '../config';
 
+const DEFAULT_CONFIG = getGlobalConfig();
 export const prettierConfig: PrettierConfig = {
   printWidth: 120,
   tabWidth: 2,
@@ -74,7 +75,7 @@ export async function readAndRenderTemplate(templatePath: string, view: any) {
   try {
     data = await fs.readFile(path.resolve(DEFAULT_CONFIG.templatePath, `${templatePath}.handlebars`), 'utf-8');
   } catch (error) {
-    data = (await import(`./templates/${templatePath}.handlebars`)).default;
+    data = (await import(`../templates/${templatePath}.handlebars`)).default;
   }
   return handlebars.compile(data)(view);
 }

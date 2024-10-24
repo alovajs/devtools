@@ -1,4 +1,4 @@
-import { DEFAULT_CONFIG } from '@/config';
+import { getGlobalConfig } from '@/config';
 import type { PlatformType } from '@/interface.type';
 import { fetchData } from '@/utils';
 import importFresh from 'import-fresh';
@@ -7,6 +7,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { OpenAPIV2, OpenAPIV3_1 } from 'openapi-types';
 import swagger2openapi from 'swagger2openapi';
+
+const DEFAULT_CONFIG = getGlobalConfig();
 // 判断是否是swagger2.0
 function isSwagger2(data: any): data is OpenAPIV2.Document {
   return !!data?.swagger;

@@ -33,9 +33,10 @@ export default class AlovaWork {
         }
         case 'executeCommand': {
           this.doneTask(id, type, payload, data => {
-            const commandId = commandsMap[data as keyof typeof commandsMap]?.commandId;
+            const { cmd, args } = data;
+            const commandId = commandsMap[cmd as keyof typeof commandsMap]?.commandId;
             if (commandId) {
-              vscode.commands.executeCommand(commandId);
+              vscode.commands.executeCommand(commandId, ...args);
             }
           });
           break;

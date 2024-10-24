@@ -1,4 +1,4 @@
-import { DEFAULT_CONFIG } from '@/config';
+import { getGlobalConfig } from '@/config';
 import type { GeneratorConfig, TemplateType } from '@/interface.type';
 import { existsPromise } from '@/utils';
 import { isEqual } from 'lodash';
@@ -10,6 +10,7 @@ import getAlovaVersion, { AlovaVersion } from './getAlovaVersion';
 import getFrameworkTag from './getFrameworkTag';
 import openApi2Data from './openApi2Data';
 
+const DEFAULT_CONFIG = getGlobalConfig();
 export default async function (
   workspaceRootDir: string, // 项目地址
   outputPath: string, // 输出路径

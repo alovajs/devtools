@@ -35,7 +35,7 @@ async function main() {
     sourcesContent: false,
     platform: 'node',
     outdir: 'out',
-    external: ['vscode', 'typescript'],
+    external: ['vscode', 'typescript', 'esbuild'],
     logLevel: 'silent',
     plugins: [
       alias({

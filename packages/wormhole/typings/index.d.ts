@@ -92,7 +92,6 @@ declare const DEFAULT_CONFIG: {
   alovaTempPath: string;
   templatePath: string;
   log: (...messageArr: any[]) => void;
-  getTypescript: () => Promise<typeof import('typescript') | null>;
   templateData: Map<string, TemplateData>;
   Error: ErrorConstructor;
 };

@@ -16,13 +16,15 @@ function refeshAutoUpdate(configuration: ConfigObject) {
   if (oldConfig?.immediate === immediate && oldConfig.time === time && oldTimer?.isRunning()) {
     return;
   }
+  console.log(19, oldConfig, oldTimer?.isRunning());
+
   oldTimer?.clear();
   AUTOUPDATE_CONFIG_MAP.set(configuration, { immediate, time });
   AUTOUPDATE_MAP.set(
     configuration,
     highPrecisionInterval(
       () => {
-        executeCommand('generateApi');
+        executeCommand('generateApi', configuration[0]);
       },
       time * 1000,
       immediate

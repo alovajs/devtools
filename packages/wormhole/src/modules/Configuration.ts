@@ -1,4 +1,4 @@
-import { DEFAULT_CONFIG } from '@/config';
+import { getGlobalConfig } from '@/config';
 import { getAlovaJsonPath, readAlovaJson } from '@/functions/alovaJson';
 import getAutoTemplateType from '@/functions/getAutoTemplateType';
 import getOpenApiData from '@/functions/getOpenApiData';
@@ -7,6 +7,7 @@ import type { Config, GeneratorConfig, TemplateType } from '@/interface.type';
 import { isEmpty } from '@/utils';
 import path from 'node:path';
 
+const DEFAULT_CONFIG = getGlobalConfig();
 export default class Configuration {
   config: Config;
 

@@ -4,7 +4,7 @@
   "description": "More modern openAPI generating solution for alova.js",
   "homepage": "https://alova.js.org",
   "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "types": "./typings/index.d.ts",
   "bin": {
     "alova": "./dist/bin/cli.js"
   },

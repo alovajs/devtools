@@ -4,7 +4,9 @@ import { getFileNameByPath } from '@/utils';
 // 用于自动生成
 export default {
   commandId: 'alova.generateApi',
-  handler: () => async () => {
+  handler: () => async path => {
+    console.log(path);
+
     await alovaWork.readConfig();
     // 生成api文件
     const { resultArr } = await alovaWork.generate();

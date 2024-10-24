@@ -94,6 +94,10 @@ importers:
         version: 2.1.3(@types/node@18.19.59)
 
   packages/vscode-extension:
+    dependencies:
+      '@alova/wormhole':
+        specifier: workspace:^
+        version: link:../wormhole
     devDependencies:
       '@types/vscode':
         specifier: ^1.89.0
@@ -107,6 +111,12 @@ importers:
       '@vscode/vsce':
         specifier: ^2.29.0
         version: 2.32.0
+      esbuild:
+        specifier: ^0.24.0
+        version: 0.24.0
+      esbuild-plugin-alias:
+        specifier: ^0.2.1
+        version: 0.2.1
 
   packages/wormhole:
     dependencies:
@@ -1870,6 +1880,9 @@ packages:
 
   es6-promise@3.3.1:
     resolution: {integrity: sha512-SOp9Phqvqn7jtEUxPWdWfWoLmyt2VaJ6MpvP9Comy1MceMXqE6bxvaTu4iaxpYYPzhny28Lc+M87/c2cPK6lDg==}
+
+  esbuild-plugin-alias@0.2.1:
+    resolution: {integrity: sha512-jyfL/pwPqaFXyKnj8lP8iLk6Z0m099uXR45aSN8Av1XD4vhvQutxxPzgA2bTcAwQpa1zCXDcWOlhFgyP3GKqhQ==}
 
   esbuild@0.21.5:
     resolution: {integrity: sha512-mg3OPMV4hXywwpoDxu3Qda5xCKQi+vCTZq8S9J/EpkhB2HzKXq4SNFZE3+NK93JYxc8VMSep+lOUSC/RVKaBqw==}
@@ -5780,6 +5793,8 @@ snapshots:
       is-symbol: 1.0.4
 
   es6-promise@3.3.1: {}
+
+  esbuild-plugin-alias@0.2.1: {}
 
   esbuild@0.21.5:
     optionalDependencies:
