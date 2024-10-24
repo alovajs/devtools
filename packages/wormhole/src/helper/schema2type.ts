@@ -148,8 +148,8 @@ function parseSchema(
       } else {
         result =
           typeof schema.type === 'string'
-            ? (schema.type || config.defaultType) ?? 'unknown'
-            : config.defaultType ?? 'unknown';
+            ? ((schema.type || config.defaultType) ?? 'unknown')
+            : (config.defaultType ?? 'unknown');
       }
   }
   if (refPath) {
