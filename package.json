@@ -16,7 +16,7 @@
     "format:fix": "prettier --write .",
     "api-test": "tsx scripts/api-test.ts",
     "commit": "git-cz && git push",
-    "prepare": "husky && pnpm api-test"
+    "prepare": "husky"
   },
   "license": "MIT",
   "repository": {
@@ -31,26 +31,22 @@
     "*.js,*.ts": "npm run lint:fix"
   },
   "devDependencies": {
-    "@alova/wormhole": "workspace:^",
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
     "@types/js-yaml": "^4.0.9",
     "@types/lodash": "^4.17.5",
-    "@types/mocha": "^10.0.6",
-    "@types/node": "18.x",
-    "@types/node-fetch": "^2.6.11",
+    "@types/node": "^18.19.0",
     "@types/rimraf": "^4.0.5",
     "@types/serialize-javascript": "^5.0.4",
-    "@types/swagger2openapi": "^7.0.4",
     "@typescript-eslint/eslint-plugin": "^7.13.0",
     "@typescript-eslint/parser": "^7.13.0",
     "commitizen": "^4.3.0",
     "cz-conventional-changelog": "^3.3.0",
+    "dts-bundle-generator": "^9.5.1",
     "eslint": "^8.57.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-typescript": "^18.0.0",
     "eslint-plugin-prettier": "^5.1.3",
-    "fast-glob": "^3.3.2",
     "husky": "^9.0.11",
     "lint-staged": "^15.2.2",
     "npm-run-all": "^4.1.5",
@@ -68,14 +64,5 @@
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
-  },
-  "dependencies": {
-    "cosmiconfig": "^9.0.0",
-    "handlebars": "^4.7.8",
-    "import-fresh": "^3.3.0",
-    "lodash": "^4.17.21",
-    "node-fetch": "^2.7.0",
-    "openapi-types": "^12.1.3",
-    "swagger2openapi": "^7.0.8"
   }
 }

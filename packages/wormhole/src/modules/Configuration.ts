@@ -3,9 +3,9 @@ import { getAlovaJsonPath, readAlovaJson } from '@/functions/alovaJson';
 import getAutoTemplateType from '@/functions/getAutoTemplateType';
 import getOpenApiData from '@/functions/getOpenApiData';
 import { isValidJSIdentifier } from '@/helper/standard';
+import type { Config, GeneratorConfig, TemplateType } from '@/interface.type';
 import { isEmpty } from '@/utils';
 import path from 'node:path';
-import type { Config, GeneratorConfig, TemplateType } from '~/index';
 
 export default class Configuration {
   config: Config;

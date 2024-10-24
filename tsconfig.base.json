@@ -1,9 +1,8 @@
 {
   "compilerOptions": {
     "resolveJsonModule": true,
-    "target": "es2018",
+    "target": "ES2021",
     "module": "esnext",
-    "moduleResolution": "bundler",
     "strict": true,
     "newLine": "LF",
     "noImplicitAny": true,
@@ -15,11 +14,9 @@
     "strictPropertyInitialization": false,
     "noFallthroughCasesInSwitch": false,
     "skipLibCheck": true,
-    "allowJs": true,
     "skipDefaultLibCheck": false,
     "esModuleInterop": true,
     "inlineSourceMap": false,
-    "importHelpers": true,
     "removeComments": false,
     "types": ["vitest/globals"]
   }

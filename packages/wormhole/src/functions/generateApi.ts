@@ -1,9 +1,9 @@
 import { DEFAULT_CONFIG } from '@/config';
+import type { GeneratorConfig, TemplateType } from '@/interface.type';
+import { existsPromise } from '@/utils';
 import { isEqual } from 'lodash';
-import fs from 'node:fs/promises';
 import path from 'node:path';
 import { OpenAPIV3_1 } from 'openapi-types';
-import type { GeneratorConfig, TemplateType } from '~/index';
 import TemplateFile from '../modules/TemplateFile';
 import { getAlovaJsonPath, writeAlovaJson } from './alovaJson';
 import getAlovaVersion, { AlovaVersion } from './getAlovaVersion';
@@ -56,12 +56,7 @@ export default async function (
   // 生成alova.json文件
   await writeAlovaJson(templateData, alovaJsonPath);
   // 获取是否存在index.ts|index.js
-  let indexIsExists = true;
-  try {
-    await fs.access(path.join(outputDir, `index${templateFile.getExt()}`));
-  } catch (error) {
-    indexIsExists = false;
-  }
+  const indexIsExists = await existsPromise(path.join(outputDir, `index${templateFile.getExt()}`));
   // mustache语法生成
   // 定义模版配置对象
   const generatingPromises = [

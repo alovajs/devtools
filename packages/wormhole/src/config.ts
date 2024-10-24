@@ -10,11 +10,11 @@ export const DEFAULT_CONFIG = {
     let ts: typeof import('typescript') | null = null;
     try {
       ts = (await import('typescript')).default;
-    } catch (error) {}
+    } catch {}
     return ts;
   },
   templateData: TEMPLATE_DATA,
-  Error: class extends Error {}
+  Error
 };
 export function setGlobalConfig(config: Partial<typeof DEFAULT_CONFIG>) {
   Object.assign(DEFAULT_CONFIG, config);

@@ -133,7 +133,7 @@ describe('generate API', () => {
 
   test('should generate code with a variant of openapi file formats', async () => {
     const outputDir = resolve(__dirname, './mock_output/openapi_301');
-    await generate({
+    const results = await generate({
       generator: [
         {
           input: resolve(__dirname, './openapis/openapi_301.json'),
@@ -141,6 +141,7 @@ describe('generate API', () => {
         }
       ]
     });
+    expect(results).toStrictEqual([true]);
     expect(await fs.readFile(resolve(outputDir, 'apiDefinitions.ts'), 'utf-8')).toMatchSnapshot();
     expect(await fs.readFile(resolve(outputDir, 'index.ts'), 'utf-8')).toMatchSnapshot();
     expect(await fs.readFile(resolve(outputDir, 'createApis.ts'), 'utf-8')).toMatchSnapshot();
@@ -173,6 +174,51 @@ describe('generate API', () => {
     expect(await fs.readFile(resolve(outputDir3, 'index.ts'), 'utf-8')).toMatchSnapshot();
     expect(await fs.readFile(resolve(outputDir3, 'createApis.ts'), 'utf-8')).toMatchSnapshot();
     expect(await fs.readFile(resolve(outputDir3, 'globals.d.ts'), 'utf-8')).toMatchSnapshot();
+  });
+
+  test("shouldn't replace `index` file if it is generated", async () => {
+    const outputDir = resolve(__dirname, './mock_output/openapi_301');
+    const config = {
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/openapi_301.json'),
+          output: outputDir
+        }
+      ]
+    };
+    const indexOriginalContent = `beforeRequest: method => {}`;
+    const indexReplacingContent = `beforeRequest: method => { method.config.headers.token = '123' }`;
+    const globalsOriginalContent = `type UserMethodConfigMap = typeof $$userConfigMap;`;
+    const globalsReplacingContent = `type UserMethodConfigMap = number`;
+    const indexContent = () => fs.readFile(resolve(outputDir, 'index.ts'), 'utf-8');
+    const globalsContent = () => fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8');
+
+    // generate first time
+    await generate(config);
+    await expect(indexContent()).resolves.toMatch(indexOriginalContent);
+    await expect(globalsContent()).resolves.toMatch(globalsOriginalContent);
+
+    // modify generated files
+    await fs.writeFile(
+      resolve(outputDir, 'index.ts'),
+      (await indexContent()).replace(indexOriginalContent, indexReplacingContent)
+    );
+    await fs.writeFile(
+      resolve(outputDir, 'globals.d.ts'),
+      (await globalsContent()).replace(globalsOriginalContent, globalsReplacingContent)
+    );
+    // generate again
+    await generate(config);
+    // if `force` is false, it will not re-generate when openapi file is not changed
+    await expect(indexContent()).resolves.toMatch(indexReplacingContent);
+    await expect(globalsContent()).resolves.toMatch(globalsReplacingContent);
+
+    // force generate even if openapi file is not changed
+    // but only index.ts will keep modified content
+    await generate(config, { force: true });
+    // if `force` is false, it will not re-generate when openapi file is not changed
+    await expect(indexContent()).resolves.toMatch(indexReplacingContent);
+    await expect(globalsContent()).resolves.toMatch(globalsOriginalContent);
   });
 
   test('should generate code from an url', async () => {
@@ -238,7 +284,7 @@ describe('generate API', () => {
     expect(await fs.readFile(resolve(outputDir2, 'globals.d.ts'), 'utf-8')).toMatchSnapshot();
   });
 
-  test('should generate correspoding `mediaType` parameters', async () => {
+  test('should generate the existing `mediaType` if the target `mediaType` is not matched', async () => {
     // default mediaType: application/json
     const outputDir = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`);
     await generate({
@@ -280,6 +326,7 @@ describe('generate API', () => {
     expect(globalsDeclarationFile).toMatch(`: Alova2Method<string[], 'documentation.documentationLanguages', Config>;`);
 
     // custom mediaType: application/xml
+    // but if there is not `application/xml` in the schema, it will be refer to the first mediaType in the schema, so here will still generate with mediaType `application/json`
     const outputDir3 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`);
     await generate({
       generator: [
@@ -294,9 +341,34 @@ describe('generate API', () => {
 
     globalsDeclarationFile = await fs.readFile(resolve(outputDir3, 'globals.d.ts'), 'utf-8');
     expect(globalsDeclarationFile).toMatch(`generateBundle<
-        Config extends Alova2MethodConfig<GenerationRequest>
+        Config extends Alova2MethodConfig<GenerationRequest> & {
+          data: GenerationRequest;
+        }
       >`);
-    expect(globalsDeclarationFile).toMatch(`: Alova2Method<unknown, 'documentation.documentationLanguages', Config>;`);
+    expect(globalsDeclarationFile).toMatch(`: Alova2Method<string[], 'documentation.documentationLanguages', Config>;`);
+  });
+
+  test('should generate correspoding `mediaType` parameters if matched target `mediaType`', async () => {
+    const outputDir = resolve(__dirname, `./mock_output/multiple_media_type${getSalt()}`);
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/multiple_media_type.yaml'),
+          output: outputDir,
+          bodyMediaType: 'application/xml',
+          responseMediaType: 'application/xml'
+        }
+      ]
+    });
+
+    const globalsDeclarationFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8');
+    expect(globalsDeclarationFile).toMatch(`pet24<
+        Config extends Alova2MethodConfig<Tag> & {
+          data: Category;
+        }
+      >(
+        config: Config
+      ): Alova2Method<Tag, 'pet.pet24', Config>;`);
   });
 
   test('should auto detect generating module codes if not set `type`', async () => {
@@ -453,7 +525,7 @@ describe('generate API', () => {
 
     const outputDir3 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`);
     const outputDir4 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`);
-    await generate({
+    const results = await generate({
       generator: [
         {
           input: resolve(__dirname, './openapis/openapi_301.json'),
@@ -469,6 +541,7 @@ describe('generate API', () => {
         }
       ]
     });
+    expect(results).toStrictEqual([true, true]);
     const fileContentCjs = await fs.readFile(resolve(outputDir3, 'createApis.js'), 'utf-8');
     expect(fileContentCjs).toMatch('globalThis.ApisCjs = Apis;');
     const fileContentEsm2 = await fs.readFile(resolve(outputDir4, 'createApis.js'), 'utf-8');

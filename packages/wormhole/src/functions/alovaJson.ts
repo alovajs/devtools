@@ -1,5 +1,5 @@
 import { DEFAULT_CONFIG } from '@/config';
-import { format } from '@/utils';
+import { existsPromise, format } from '@/utils';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { TemplateData } from './openApi2Data';
@@ -10,9 +10,7 @@ export const writeAlovaJson = async (data: TemplateData, originPath: string, nam
   // 定义 JSON 文件的路径和名称
   const filePath = `${originPath}_${name}`;
   const dirPath = filePath.split(/\/|\\/).slice(0, -1).join('/');
-  try {
-    await fs.access(dirPath);
-  } catch (error) {
+  if (!(await existsPromise(dirPath))) {
     await fs.mkdir(dirPath, { recursive: true });
   }
   // 使用 fs.writeFile 将 JSON 数据写入文件
@@ -21,11 +19,8 @@ export const writeAlovaJson = async (data: TemplateData, originPath: string, nam
 export const readAlovaJson = async (originPath: string, name = 'api.json') => {
   // 定义 JSON 文件的路径和名称
   const filePath = `${originPath}_${name}`;
-
-  try {
-    await fs.access(filePath);
-  } catch (error) {
-    throw new DEFAULT_CONFIG.Error('alovaJson not exists');
+  if (!(await existsPromise(filePath))) {
+    throw new DEFAULT_CONFIG.Error('alovaJson is not exists');
   }
 
   // 使用 fs.readFile 读取 JSON 文件

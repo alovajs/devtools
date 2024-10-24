@@ -1,6 +1,6 @@
-/* eslint-disable no-bitwise */
+import { createAlova } from 'alova';
+import adapterFetch from 'alova/fetch';
 import handlebars, { HelperOptions } from 'handlebars';
-import fetch from 'node-fetch';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Config as PrettierConfig } from 'prettier';
@@ -93,9 +93,7 @@ export async function format(text: string, config?: PrettierConfig) {
  * @param content 文件内容
  */
 export async function generateFile(distDir: string, fileName: string, content: string) {
-  try {
-    await fs.access(distDir, fs.constants.F_OK);
-  } catch (error) {
+  if (!(await existsPromise(distDir))) {
     await fs.mkdir(distDir, { recursive: true });
   }
   const filePath = path.join(distDir, fileName);
@@ -103,12 +101,14 @@ export async function generateFile(distDir: string, fileName: string, content: s
   await fs.writeFile(filePath, formattedText);
 }
 export async function fetchData(url: string) {
-  return fetch(url).then(response => {
-    if (!response.ok) {
-      throw new DEFAULT_CONFIG.Error(`HTTP error! status: ${response.status}`);
-    }
-    return response.text();
-  });
+  return createAlova({ requestAdapter: adapterFetch() })
+    .Get<Response>(url)
+    .then(response => {
+      if (!response.ok) {
+        throw new DEFAULT_CONFIG.Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.text();
+    });
 }
 
 // 去掉所有为空的undefined值
@@ -133,7 +133,23 @@ export function capitalizeFirstLetter(str: string) {
   if (!str) return str;
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
-// 加载ESM 模块
-export function loadEsmModule<T>(modulePath: string | URL): Promise<T> {
-  return new Function('modulePath', `return import(modulePath);`)(modulePath) as Promise<T>;
-}
+
+export const existsPromise = async (path: string, mode?: number) => {
+  try {
+    await fs.access(path, mode);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+export const resolveConfigFile = async (projectPath: string) => {
+  const extensions = ['js', 'cjs', 'mjs', 'ts', 'mts', 'cts'];
+  for (const ext of extensions) {
+    const configFile = path.join(projectPath, `alova.config.${ext}`);
+    if (await existsPromise(configFile)) {
+      return configFile;
+    }
+  }
+  return null;
+};

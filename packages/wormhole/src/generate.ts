@@ -1,12 +1,18 @@
-import type { Config, GenerateApiOptions } from '~/index';
+import type { Config, GenerateApiOptions } from '@/interface.type';
 import generateApi from './functions/generateApi';
 import Configuration from './modules/Configuration';
 
-const generate = async (config: Config, options?: GenerateApiOptions) => {
+/**
+ * generate apis based on config
+ * @param config generating config
+ * @param rules config rules
+ * @returns
+ */
+const generate = async (config: Config, rules?: GenerateApiOptions) => {
   if (!config) {
     return [] as boolean[];
   }
-  const configuration = new Configuration(config, options?.projectPath ?? process.cwd());
+  const configuration = new Configuration(config, rules?.projectPath ?? process.cwd());
   // 检查新配置
   configuration.checkConfig();
   const outputPathArr = configuration.getAllOutputPath();
@@ -22,7 +28,7 @@ const generate = async (config: Config, options?: GenerateApiOptions) => {
         openApiData[idx],
         generatorConfigArr[idx],
         templateTypeArr[idx] ?? 'commonjs',
-        options?.force ?? false
+        rules?.force ?? false
       )
     )
   );

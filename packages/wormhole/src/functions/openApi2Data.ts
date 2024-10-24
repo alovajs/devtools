@@ -3,10 +3,10 @@ import { findBy$ref, getStandardRefName, isReferenceObject, mergeObject, removeA
 import { convertToType, jsonSchema2TsStr } from '@/helper/schema2type';
 import { getStandardOperationId, getStandardTags } from '@/helper/standard';
 import { generateDefaultValues } from '@/helper/typeStr';
+import type { Api, ApiDescriptor, GeneratorConfig, TemplateType } from '@/interface.type';
 import { format, removeUndefined } from '@/utils';
 import { cloneDeep, isEmpty } from 'lodash';
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
-import type { Api, ApiDescriptor, GeneratorConfig, TemplateType } from '~/index';
 import { AlovaVersion } from './getAlovaVersion';
 
 type Path = {
@@ -112,7 +112,7 @@ const parseResponse = async (
   const responseObject: OpenAPIV3_1.ResponseObject = isReferenceObject(responseInfo)
     ? findBy$ref(responseInfo.$ref, openApi)
     : responseInfo;
-  const key = getContentKey(responseObject.content ?? {}, config.responseMediaType);
+  const key = getContentKey(responseObject.content, config.responseMediaType);
   const responseSchema = responseObject?.content?.[key]?.schema ?? {};
   const responseName = await remove$ref(responseSchema, openApi, config, schemasMap, '', removeMap);
   return {
@@ -155,13 +155,11 @@ const parseRequestBody = async (
     })
   };
 };
-const getContentKey = (content: Record<string, any>, requireKey: string, defaultKey = 'application/json') => {
-  let key = Object.keys(content ?? {})[0];
-  requireKey = requireKey ?? defaultKey;
-  if (requireKey && content?.[requireKey]) {
+const getContentKey = (content: Record<string, any> = {}, requireKey = 'application/json') => {
+  let key = Object.keys(content)[0] || requireKey;
+  if (content[requireKey]) {
     key = requireKey;
   }
-  key = key ?? defaultKey;
   return key;
 };
 const parseParameters = async (
@@ -275,7 +273,7 @@ export const transformPathObj = async (
     apiDescriptor.parameters = [];
     const parametersArray = isReferenceObject(parameters)
       ? findBy$ref<typeof parameters>(parameters.$ref, openApi, true)
-      : parameters ?? [];
+      : (parameters ?? []);
     for (const parameter of parametersArray) {
       const parameterObject = removeAll$ref<OpenAPIV3.ParameterObject>(parameter, openApi);
       apiDescriptor.parameters.push(parameterObject);
@@ -283,19 +281,19 @@ export const transformPathObj = async (
   }
   if (requestBody) {
     requestBodyObject = isReferenceObject(requestBody) ? findBy$ref(requestBody.$ref, openApi, true) : requestBody;
-    requestKey = getContentKey(requestBodyObject.content || {}, config.bodyMediaType);
+    requestKey = getContentKey(requestBodyObject.content, config.bodyMediaType);
     const requestBodySchema = requestBodyObject.content?.[requestKey].schema ?? {};
     const requestBodySchemaObj = removeAll$ref<OpenAPIV3_1.SchemaObject>(requestBodySchema, openApi);
     apiDescriptor.requestBody = requestBodySchemaObj;
   }
   if (response200) {
     responseObject = isReferenceObject(response200) ? findBy$ref(response200.$ref, openApi, true) : response200;
-    responseKey = getContentKey(responseObject.content || {}, config.responseMediaType);
+    responseKey = getContentKey(responseObject.content, config.responseMediaType);
     const responseSchema = responseObject.content?.[responseKey].schema ?? {};
     const responseSchemaObj = removeAll$ref<OpenAPIV3_1.SchemaObject>(responseSchema, openApi);
     apiDescriptor.responses = responseSchemaObj;
   }
-  let newApiDescriptor = apiDescriptor;
+  let newApiDescriptor: ApiDescriptor | void | undefined | null = apiDescriptor;
   let handleApiDone = false;
   try {
     newApiDescriptor = handleApi(apiDescriptor, DEFAULT_CONFIG.log);

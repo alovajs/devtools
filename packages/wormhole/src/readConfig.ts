@@ -1,48 +1,35 @@
-import { cosmiconfig } from 'cosmiconfig';
+import type { Config } from '@/interface.type';
+import esbuild from 'esbuild';
+import { unlink } from 'node:fs/promises';
 import path from 'node:path';
-import type { Config } from '~/index';
 import { DEFAULT_CONFIG } from './config';
-import { getAlovaJsonPath, readAlovaJson } from './functions/alovaJson';
-import { loadJs, loadTs } from './helper/lodaders';
+import { getAlovaJsonPath } from './functions/alovaJson';
 import Configuration from './modules/Configuration';
+import { resolveConfigFile } from './utils';
 
-const alovaExplorer = cosmiconfig('alova', {
-  cache: false,
-  loaders: {
-    '.js': loadJs,
-    '.cjs': loadJs,
-    '.mjs': loadJs,
-    '.ts': loadTs,
-    '.mts': loadTs,
-    '.cts': loadTs
-  }
-});
 export const readConfig = async (projectPath = process.cwd()) => {
-  const searchResult = await alovaExplorer.search(path.resolve(projectPath));
-  alovaExplorer.clearCaches();
-  if (searchResult?.isEmpty) {
-    return null;
+  const configFile = await resolveConfigFile(projectPath);
+  if (!configFile) {
+    throw new DEFAULT_CONFIG.Error(`Cannot found config file from path ${projectPath}`);
   }
-  const config = searchResult?.config as Config | null;
-  if (config) {
-    // 缓存文件地址
-    readAndSaveAlovaJson(config, projectPath);
-  }
+  const configTmpFileName = `alova_tmp_${Date.now()}.js`;
+  const outfile = path.join(projectPath, configTmpFileName);
+  await esbuild.build({
+    entryPoints: [configFile],
+    bundle: true,
+    format: 'cjs',
+    platform: 'node',
+    outfile,
+    logLevel: 'silent'
+  });
+
+  const module = require(outfile);
+  const config: Config = module.default || module;
+  await unlink(outfile);
+
   return config;
 };
-const readAndSaveAlovaJson = (config: Config, projectPath = process.cwd()) => {
-  const configuration = new Configuration(config, projectPath);
-  configuration.getAllOutputPath().forEach(outputPath => {
-    // 缓存文件地址
-    const alovaJsonPath = getAlovaJsonPath(projectPath, outputPath);
-    readAlovaJson(alovaJsonPath)
-      .then(data => {
-        // 保存templateData
-        DEFAULT_CONFIG.templateData.set(alovaJsonPath, data);
-      })
-      .catch(() => {});
-  });
-};
+
 export const getAutoUpdateConfig = (config: Config) => {
   const autoUpdateConfig = config.autoUpdate;
   let time = 60 * 5; // 默认五分钟

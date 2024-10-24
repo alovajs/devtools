@@ -3,42 +3,58 @@
   "version": "1.0.0",
   "description": "More modern openAPI generating solution for alova.js",
   "homepage": "https://alova.js.org",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.mjs",
+  "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "alova": "./bin/index.js"
-  },
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
-    }
+    "alova": "./dist/bin/cli.js"
   },
   "scripts": {
-    "build": "unbuild",
-    "dev": "pnpm run stub",
-    "stub": "unbuild --stub"
+    "build": "npm run build:ts && npm run build:dts",
+    "build:ts": "tsc --build tsconfig.build.json",
+    "build:dts": "dts-bundle-generator -o typings/index.d.ts src/index.ts --no-check --no-banner --project tsconfig.build.json"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "openapi",
+    "auto-generating",
+    "api",
+    "apis",
+    "fetch",
+    "axios",
+    "axios",
+    "request",
+    "fetch-api",
+    "superagent",
+    "alova",
+    "wormhole"
+  ],
+  "author": "chenzhilin",
   "license": "MIT",
-  "devDependencies": {
-    "@types/fs-extra": "^11.0.4",
-    "fs-extra": "^11.2.0",
-    "memfs": "^4.11.1",
-    "openapi-types": "^12.1.3",
-    "unbuild": "^2.0.0"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alovajs/devtools.git"
   },
+  "bugs": {
+    "url": "https://github.com/alovajs/devtools/issues"
+  },
+  "files": [
+    "dist",
+    "typings"
+  ],
   "dependencies": {
+    "alova": "^3.1.0",
     "commander": "^12.1.0",
-    "cosmiconfig": "^9.0.0",
+    "esbuild": "^0.24.0",
+    "glob": "^11.0.0",
     "handlebars": "^4.7.8",
     "import-fresh": "^3.3.0",
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
-    "node-fetch": "^2.7.0",
+    "openapi-types": "^12.1.3",
+    "ora": "^8.1.0",
     "swagger2openapi": "^7.0.8"
+  },
+  "devDependencies": {
+    "@types/swagger2openapi": "^7.0.4",
+    "memfs": "^4.11.1"
   }
 }

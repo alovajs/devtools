@@ -1,10 +1,10 @@
 import createConfig from '@/createConfig';
+import type { Config } from '@/interface.type';
 import { readConfig } from '@/readConfig';
+import { existsPromise } from '@/utils';
 import fs from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { rimraf } from 'rimraf';
-import type { Config } from '~/index';
 
 const requireResult = new Map<string, Record<string, any> | null | Error>();
 vi.mock('import-fresh', () => ({
@@ -21,150 +21,113 @@ vi.mock('import-fresh', () => ({
   }
 }));
 
-const importResult = new Map<string, Record<string, any> | null | Error>();
-vi.mock('@/utils', async () => {
-  const utils = await vi.importActual<typeof import('@/utils')>('@/utils');
-  return {
-    ...utils,
-    loadEsmModule(path: string) {
-      path = (/^file:\/\//.test(path) ? fileURLToPath(path) : path).replace(/\?.*$/, '');
-      if (!importResult.get(path)) {
-        return Promise.reject(new Error(`import ${path} not found`));
-      }
-      const result = importResult.get(path);
-      if (result instanceof Error) {
-        return Promise.reject(result);
-      }
-      return Promise.resolve({
-        default: result
-      });
-    }
-  };
-});
-const configMap: Record<
-  'ts' | 'module' | 'commonjs',
-  { file: string; content: string; expectedConfig: Config; transformContent?: string }
-> = {
-  ts: {
-    file: 'alova.config.ts',
-    content: `import type { Config } from '@alova/wormhole';
-export default <Config>{
-generator: [
+const configMap: Record<string, { file: string; content: string; expectedConfig: Config; transformContent?: string }> =
   {
-    input: 'http://localhost:3000',
-    output: 'src/api',
-    type: 'ts',
-    version: 3,
-    handleApi: api =>api 
-  }
-]
+    ts: {
+      file: 'alova.config.ts',
+      content: `import type { Config } from '@alova/wormhole';
+import pkg from './package.json';
+export default <Config>{
+  generator: [
+    {
+      input: 'http://localhost:3000/' + pkg.name,
+      output: 'src/api',
+      type: 'ts',
+      version: 3
+    }
+  ]
 }`,
-    expectedConfig: {
-      generator: [
-        {
-          input: 'http://localhost:3000',
-          output: 'src/api',
-          type: 'ts',
-          version: 3,
-          handleApi: api => api
-        }
-      ]
-    },
-    transformContent: `export default {
-    generator: [
-        {
-            input: 'http://localhost:3000',
+      expectedConfig: {
+        generator: [
+          {
+            input: 'http://localhost:3000/@alova/devtools',
             output: 'src/api',
             type: 'ts',
-            version: 3,
-            handleApi: api => api
-        }
-    ]
-};`
-  },
-  module: {
-    file: 'alova.config.js',
-    content: `export default {
-generator: [
-  {
-    input: 'http://localhost:3000',
-    output: 'src/api',
-    type: 'module',
-    version: 3,
-    handleApi: api => api
-  }
-]        
+            version: 3
+          }
+        ]
+      }
+    },
+    tsWithoutImport: {
+      file: 'alova.config.ts',
+      content: `import type { Config } from '@alova/wormhole';
+export default <Config>{
+  generator: [
+    {
+      input: 'http://localhost:3000/',
+      output: 'src/api',
+      type: 'ts',
+      version: 3
+    }
+  ]
 }`,
-    expectedConfig: {
-      generator: [
-        {
-          input: 'http://localhost:3000',
-          output: 'src/api',
-          type: 'module',
-          version: 3,
-          handleApi: api => api
-        }
-      ]
+      expectedConfig: {
+        generator: [
+          {
+            input: 'http://localhost:3000/',
+            output: 'src/api',
+            type: 'ts',
+            version: 3
+          }
+        ]
+      }
+    },
+    module: {
+      file: 'alova.config.js',
+      content: `import pkg from './package.json';
+export default {
+  generator: [
+    {
+      input: 'http://localhost:3000/' + pkg.name,
+      output: 'src/api',
+      type: 'module',
+      version: 3
     }
-  },
-  commonjs: {
-    file: 'alova.config.js',
-    content: `module.exports = {
-generator: [
-  {
-    input: 'http://localhost:3000',
-    output: 'src/api',
-    type: 'commonjs',
-    version: 3,
-    handleApi: api => api
-  }
-]        
+  ]        
 }`,
-    expectedConfig: {
-      generator: [
-        {
-          input: 'http://localhost:3000',
-          output: 'src/api',
-          type: 'commonjs',
-          version: 3,
-          handleApi: api => api
-        }
-      ]
+      expectedConfig: {
+        generator: [
+          {
+            input: 'http://localhost:3000/@alova/devtools',
+            output: 'src/api',
+            type: 'module',
+            version: 3
+          }
+        ]
+      }
+    },
+    commonjs: {
+      file: 'alova.config.js',
+      content: `const pkg = require('./package.json');
+module.exports = {
+  generator: [
+    {
+      input: 'http://localhost:3000/' + pkg.name,
+      output: 'src/api',
+      type: 'commonjs',
+      version: 3
     }
-  }
-};
-vi.mock('node:fs/promises', async () => {
-  const fs = await vi.importActual<typeof import('node:fs/promises')>('node:fs/promises');
-  function writeFile(filePath: string, content: string, options: any) {
-    const configItem = Object.values(configMap).find(item => item.content === content) ?? configMap.ts;
-    const pureFilePath = filePath.replace(/\?.*$/, '');
-    const isCjs = pureFilePath.endsWith('.cjs') || (pureFilePath.endsWith('.js') && content.includes('module.exports'));
-    const isMjs = pureFilePath.endsWith('.mjs') || (pureFilePath.endsWith('.js') && content.includes('export default'));
-    if (isCjs) {
-      requireResult.set(filePath, configItem.expectedConfig);
-    }
-    if (isMjs) {
-      importResult.set(filePath, configItem.expectedConfig);
-    }
-    return fs.writeFile(filePath, content, options);
-  }
-  return {
-    ...fs,
-    writeFile,
-    default: {
-      ...(fs as any).default,
-      writeFile
+  ]        
+}`,
+      expectedConfig: {
+        generator: [
+          {
+            input: 'http://localhost:3000/@alova/devtools',
+            output: 'src/api',
+            type: 'commonjs',
+            version: 3
+          }
+        ]
+      }
     }
   };
-});
+
 afterEach(async () => {
-  requireResult.clear();
-  importResult.clear();
   await Promise.all([
     rimraf(resolve(process.cwd(), 'alova.config.ts')),
     rimraf(resolve(process.cwd(), 'alova.config.js')),
     rimraf(resolve(process.cwd(), 'node_modules/.alova'))
-  ]);
+  ]).catch(() => {});
 });
 
 describe('config', () => {
@@ -212,9 +175,18 @@ describe('config', () => {
     });
     expect(initialEsmoduleConfig).toMatch(`@type { import('@alova/wormhole').Config }`);
     expect(initialEsmoduleConfig).toMatch(`export default {`);
+
+    // generate file with target type
+    await createConfig({ type: 'typescript' });
+    const initialTypedConfig = await fs.readFile(resolve(process.cwd(), 'alova.config.ts'), {
+      encoding: 'utf-8'
+    });
+    expect(initialTypedConfig).toMatch(`import type { Config } from '@alova/wormhole';`);
+    expect(initialTypedConfig).toMatch(`export default <Config>{`);
+    expect(initialTypedConfig).toMatch(`input: 'http://localhost:3000',`);
   });
 
-  test('should create config file under custom path', async () => {
+  test('should create config file under a custom absolute path', async () => {
     const customPath = '/mockdir_config';
     // 设置package.json 文件
     requireResult.set(resolve(customPath, './package.json'), {
@@ -224,7 +196,7 @@ describe('config', () => {
       }
     });
     try {
-      await createConfig(customPath);
+      await createConfig({ projectPath: customPath });
       const configPath = resolve(customPath, 'alova.config.js');
       const initialConfig = await fs.readFile(configPath, {
         encoding: 'utf-8'
@@ -234,18 +206,37 @@ describe('config', () => {
       await rimraf(resolve(customPath)); // 清除临时目录
     }
   });
+
+  test('should create config file under a custom relative path', async () => {
+    const customPath = './mockdir_config';
+    // 设置package.json 文件
+    requireResult.set(resolve(process.cwd(), customPath, './package.json'), {
+      type: 'commonjs',
+      dependencies: {
+        alova: '3.0.8'
+      }
+    });
+    try {
+      await createConfig({ projectPath: customPath });
+      const configPath = resolve(process.cwd(), customPath, 'alova.config.js');
+      const initialConfig = await fs.readFile(configPath, {
+        encoding: 'utf-8'
+      });
+      expect(!!initialConfig).toBeTruthy();
+    } finally {
+      await rimraf(resolve(process.cwd(), customPath)); // 清除临时目录
+    }
+  });
+
   test('should read config file under project root path', async () => {
     // write mock config file
     const projectRoot = process.cwd();
-    try {
-      await fs.access(projectRoot);
-    } catch (error) {
+    if (!(await existsPromise(projectRoot))) {
       await fs.mkdir(projectRoot, { recursive: true });
     }
     // read ts file
     await fs.writeFile(resolve(projectRoot, configMap.ts.file), configMap.ts.content, 'utf-8');
     requireResult.set(projectRoot, null); // require()=> throw error
-    importResult.set(projectRoot, configMap.ts.expectedConfig); // import()=> return config
     const tsConfig = await readConfig();
 
     expect(tsConfig).toStrictEqual(configMap.ts.expectedConfig);
@@ -253,13 +244,11 @@ describe('config', () => {
     // read module config file
     await fs.writeFile(resolve(projectRoot, configMap.module.file), configMap.module.content, 'utf-8');
     requireResult.set(projectRoot, null); // require()=> throw error
-    importResult.set(projectRoot, configMap.module.expectedConfig); // import()=> return config
     const moduleConfig = await readConfig();
-    expect(moduleConfig).toStrictEqual(configMap.module.expectedConfig);
+    expect(moduleConfig).toEqual(configMap.module.expectedConfig);
     // read commonjs config file
     await fs.writeFile(resolve(projectRoot, configMap.commonjs.file), configMap.commonjs.content, 'utf-8');
     requireResult.set(projectRoot, configMap.commonjs.expectedConfig); // require()=> return config
-    importResult.set(projectRoot, null); // import()=> throw error
     const cjsConfig = await readConfig();
     expect(cjsConfig).toStrictEqual(configMap.commonjs.expectedConfig);
   });
@@ -267,17 +256,14 @@ describe('config', () => {
   test('should read config file under target path', async () => {
     // read ts file
     const customPath = resolve(__dirname, './mockdir_config2');
-    try {
-      await fs.access(customPath);
-    } catch (error) {
+    if (!(await existsPromise(customPath))) {
       await fs.mkdir(customPath, { recursive: true });
     }
-    await fs.writeFile(resolve(customPath, configMap.ts.file), configMap.ts.content, 'utf-8');
+    await fs.writeFile(resolve(customPath, configMap.tsWithoutImport.file), configMap.tsWithoutImport.content, 'utf-8');
     requireResult.set(customPath, null); // require()=> throw error
-    importResult.set(customPath, configMap.ts.expectedConfig); // import()=> return config
     try {
       const tsConfig = await readConfig(customPath);
-      expect(tsConfig).toMatchObject(configMap.ts.expectedConfig);
+      expect(tsConfig).toStrictEqual(configMap.tsWithoutImport.expectedConfig);
     } finally {
       await rimraf(customPath); // 清除临时目录
     }
