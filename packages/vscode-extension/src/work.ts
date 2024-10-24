@@ -4,7 +4,7 @@ import getApis from '@/work/getApis';
 import readConfig from '@/work/readConfig';
 import { parentPort } from 'worker_threads';
 import './globalConfig';
-import { doneTask, postMessage } from './utils/work';
+import { postMessage } from './utils/work';
 /**
  * work子线程，用来处理主线程不能处理的东西，不能引入vscode模块
  */
@@ -20,10 +20,6 @@ parentPort?.on('message', async ({ id, type, payload }) => {
     }
     case 'getApis': {
       postMessage(id, type, () => getApis(payload));
-      break;
-    }
-    case 'workspaceRootPathArr': {
-      doneTask(id, type, () => payload);
       break;
     }
     case 'generateConfig': {

@@ -1,6 +1,6 @@
 import { highPrecisionInterval } from '@/utils';
-import { executeCommand } from '@/utils/work';
-import { readConfig, getAutoUpdateConfig } from '@alova/wormhole';
+import { executeCommand, log } from '@/utils/work';
+import { readConfig, getAutoUpdateConfig, Config } from '@alova/wormhole';
 import { CONFIG_POOL } from './config';
 import type { ConfigObject } from './config';
 
@@ -16,8 +16,6 @@ function refeshAutoUpdate(configuration: ConfigObject) {
   if (oldConfig?.immediate === immediate && oldConfig.time === time && oldTimer?.isRunning()) {
     return;
   }
-  console.log(19, oldConfig, oldTimer?.isRunning());
-
   oldTimer?.clear();
   AUTOUPDATE_CONFIG_MAP.set(configuration, { immediate, time });
   AUTOUPDATE_MAP.set(
@@ -43,7 +41,12 @@ function removeConfiguration(workspaceRootPath: string) {
 export default async (workspaceRootPathArr: string[]) => {
   let configNum = 0;
   for (const workspaceRootPath of workspaceRootPathArr) {
-    const config = await readConfig(workspaceRootPath);
+    let config: Config | null = null;
+    try {
+      config = await readConfig(workspaceRootPath);
+    } catch (error: any) {
+      log(error.message);
+    }
     if (!config) {
       removeConfiguration(workspaceRootPath);
       continue;

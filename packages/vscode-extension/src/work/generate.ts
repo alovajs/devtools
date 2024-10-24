@@ -2,10 +2,18 @@ import { generate } from '@alova/wormhole';
 import { createError } from '@/utils/work';
 import { CONFIG_POOL } from './config';
 
-export default async (force: boolean) => {
+interface GenerateOption {
+  force?: boolean;
+  projectPath?: string;
+}
+export default async (option?: GenerateOption) => {
   const resultArr = [];
   const errorArr = [];
+  const { force = false, projectPath: projectPathValue } = option ?? {};
   for (const [projectPath, config] of CONFIG_POOL) {
+    if (projectPathValue && projectPathValue !== projectPath) {
+      continue;
+    }
     try {
       const generateResult = await generate(config, {
         force,

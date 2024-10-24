@@ -9,20 +9,16 @@ import { resolveConfigFile } from './utils';
 
 const DEFAULT_CONFIG = getGlobalConfig();
 export const readConfig = async (projectPath = process.cwd()) => {
-  const time = Date.now();
-  console.log(time, 13);
-
   const configFile = await resolveConfigFile(projectPath);
   if (!configFile) {
     throw new DEFAULT_CONFIG.Error(`Cannot found config file from path ${projectPath}`);
   }
-  const configTmpFileName = `alova_tmp_${time}.js`;
+  const configTmpFileName = `alova_tmp_${Date.now()}.js`;
   const outfile = path.join(projectPath, configTmpFileName);
   await esbuild.build({
     entryPoints: [configFile],
     bundle: true,
     format: 'cjs',
-    external: ['esbuild'],
     platform: 'node',
     outfile,
     logLevel: 'silent'
@@ -31,7 +27,7 @@ export const readConfig = async (projectPath = process.cwd()) => {
   const module = require(outfile);
 
   const config: Config = module.default || module;
-  unlink(outfile);
+  await unlink(outfile);
   // 读取缓存文件并保存
   const configuration = new Configuration(config, projectPath);
   configuration.readAlovaJson();

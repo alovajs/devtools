@@ -70,12 +70,15 @@
     "url": "https://github.com/alovajs/devtools/issues"
   },
   "devDependencies": {
+    "@esbuild/linux-x64": "^0.24.0",
+    "@esbuild/win32-x64": "^0.24.0",
     "@types/vscode": "^1.89.0",
     "@vscode/test-cli": "^0.0.9",
     "@vscode/test-electron": "^2.3.9",
     "@vscode/vsce": "^2.29.0",
     "esbuild": "^0.24.0",
-    "esbuild-plugin-alias": "^0.2.1"
+    "esbuild-plugin-alias": "^0.2.1",
+    "esbuild-plugin-copy": "^2.1.1"
   },
   "dependencies": {
     "@alova/wormhole": "workspace:^"

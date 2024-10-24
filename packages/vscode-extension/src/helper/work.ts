@@ -1,10 +1,9 @@
-import { commandsMap } from '@/commands';
 import Error from '@/components/error';
 import { log } from '@/components/message';
 import { WORK_PATH } from '@/globalConfig';
 import { uuid } from '@/utils';
+import { getWorkspacePaths, executeCommand } from '@/utils/vscode';
 import type { Api } from '@alova/wormhole';
-import * as vscode from 'vscode';
 import { Worker } from 'worker_threads';
 
 type MessageCallBack<T> = (data?: any) => T | Promise<T>;
@@ -33,18 +32,8 @@ export default class AlovaWork {
         }
         case 'executeCommand': {
           this.doneTask(id, type, payload, data => {
-            const { cmd, args } = data;
-            const commandId = commandsMap[cmd as keyof typeof commandsMap]?.commandId;
-            if (commandId) {
-              vscode.commands.executeCommand(commandId, ...args);
-            }
-          });
-          break;
-        }
-        case 'workspaceRootPathArr': {
-          this.postMessage(id, type, () => {
-            const workspaceFolders = vscode.workspace.workspaceFolders || [];
-            return workspaceFolders.map(item => `${item.uri.fsPath}/`);
+            const { cmd = '', args = [] } = data ?? {};
+            executeCommand(cmd, ...args);
           });
           break;
         }
@@ -119,18 +108,18 @@ export default class AlovaWork {
     });
   }
 
-  generate(force = false) {
+  generate(force = false, projectPath?: string) {
     return this.setTask<{
       resultArr: Array<[string, boolean]>;
       errorArr: Array<[string, any]>;
-    }>('generate', () => force);
+    }>('generate', () => ({
+      force,
+      projectPath
+    }));
   }
 
-  async readConfig(isShowError = false) {
-    const hasConfig = await this.setTask<boolean>('readConfig', () => {
-      const workspaceFolders = vscode.workspace.workspaceFolders || [];
-      return workspaceFolders.map(item => `${item.uri.fsPath}/`);
-    });
+  async readConfig(isShowError = false, projectPath?: string | string[]) {
+    const hasConfig = await this.setTask<boolean>('readConfig', () => [projectPath ?? getWorkspacePaths()].flat());
     if (!hasConfig && isShowError) {
       throw new Error('Expected to create alova.config.js in root directory.');
     }
@@ -141,10 +130,7 @@ export default class AlovaWork {
   }
 
   generateConfig() {
-    return this.setTask<void>('generateConfig', () => {
-      const workspaceFolders = vscode.workspace.workspaceFolders || [];
-      return workspaceFolders.map(item => `${item.uri.fsPath}/`);
-    });
+    return this.setTask<void>('generateConfig', () => getWorkspacePaths());
   }
 }
 export const alovaWork = new AlovaWork();

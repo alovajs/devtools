@@ -18,8 +18,9 @@ export default {
       errorArr.forEach(([, error]) => {
         throw error;
       });
-    } catch (error: any) {
-      if ((error as Error)?.ERROR_CODE) {
+    } catch (err) {
+      const error = err as Error;
+      if (error?.ERROR_CODE) {
         message.error(error.message);
       }
     } finally {
