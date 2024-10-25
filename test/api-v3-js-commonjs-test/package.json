@@ -15,5 +15,8 @@
     "@alova/adapter-xhr": "2.0.0-beta.8",
     "alova": "3.0.0-beta.10",
     "vue": "^3.4.27"
+  },
+  "devDependencies": {
+    "@alova/wormhole": "workspace:^"
   }
 }

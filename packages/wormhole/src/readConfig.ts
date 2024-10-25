@@ -38,12 +38,14 @@ export const getAutoUpdateConfig = (config: Config) => {
   const autoUpdateConfig = config.autoUpdate;
   let time = 60 * 5; // 默认五分钟
   let immediate = false;
+  const isStop = !autoUpdateConfig;
   if (typeof autoUpdateConfig === 'object') {
     time = Number(autoUpdateConfig.interval);
     immediate = !!autoUpdateConfig.launchEditor;
   }
   return {
     time,
+    isStop,
     immediate
   };
 };

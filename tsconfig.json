@@ -2,7 +2,9 @@
   "extends": "./tsconfig.base.json",
   "exclude": ["design/**", "test/**"],
   "compilerOptions": {
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "moduleResolution": "node",
+    "resolveJsonModule": true
   },
   "include": ["*.*js", "packages/**/*.ts", "*.*ts", "scripts/**.*", "typings/**/*.d.ts"]
 }

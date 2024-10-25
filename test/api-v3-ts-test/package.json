@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@alova/wormhole": "workspace:^",
     "typescript": "^5.4.5"
   },
   "dependencies": {

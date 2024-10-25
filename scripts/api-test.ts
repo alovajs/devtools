@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { projectPath } from '../path';
+
+const projectPath = path.resolve(__dirname, '../');
 
 const DESIGN_NO_DIR = ['api-common'];
 /**

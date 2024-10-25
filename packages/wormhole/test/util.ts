@@ -25,6 +25,6 @@ export const initExpect = () => {
   });
 };
 export const createStrReg = (str: string) => {
-  str = str.replace(/([[\](){}.*+|\\/^$?])/g, '\\$1').replace(/\s/g, '\\s+');
+  str = str.replace(/([[\](){}.*+|\\/^$?])/g, '\\$1').replace(/\s+/g, '\\s+');
   return new RegExp(str);
 };

@@ -1,14 +1,14 @@
-import { generate } from '@alova/wormhole';
-import { createError } from '@/utils/work';
-import { CONFIG_POOL } from './config';
+import { generate } from '@/helper/wormhole';
+import { CONFIG_POOL } from '@/helper/config';
+import AlovaError from '@/components/error';
 
 interface GenerateOption {
   force?: boolean;
   projectPath?: string;
 }
 export default async (option?: GenerateOption) => {
-  const resultArr = [];
-  const errorArr = [];
+  const resultArr: Array<[string, boolean]> = [];
+  const errorArr: Array<[string, AlovaError]> = [];
   const { force = false, projectPath: projectPathValue } = option ?? {};
   for (const [projectPath, config] of CONFIG_POOL) {
     if (projectPathValue && projectPathValue !== projectPath) {
@@ -21,7 +21,7 @@ export default async (option?: GenerateOption) => {
       });
       resultArr.push([projectPath, generateResult?.some(item => !!item)]);
     } catch (error: any) {
-      errorArr.push([projectPath, createError(error)]);
+      errorArr.push([projectPath, error]);
     }
   }
   return {

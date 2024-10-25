@@ -1,5 +1,5 @@
-import { alovaWork } from '@/helper/work';
 import type { Api } from '@alova/wormhole';
+import getApis from './getApis';
 
 type AutoCompleteItem = {
   replaceText: string;
@@ -45,4 +45,4 @@ const filterAutoCompleteItem = (text: string, apiArr: Api[]): AutoCompleteItem[]
   return autoCompleteArr;
 };
 export default async (text: string, filePath: string): Promise<AutoCompleteItem[]> =>
-  filterAutoCompleteItem(text, await alovaWork.getApis(filePath));
+  filterAutoCompleteItem(text, getApis(filePath));

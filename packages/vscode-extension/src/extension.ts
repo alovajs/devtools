@@ -1,3 +1,4 @@
+import './globalConfig';
 import { commands } from '@/commands';
 import setup from '@/commands/setup';
 import * as vscode from 'vscode';

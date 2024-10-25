@@ -111,6 +111,7 @@ export declare const generate: (config: Config, rules?: GenerateApiOptions) => P
 export declare const readConfig: (projectPath?: string) => Promise<Config>;
 export declare const getAutoUpdateConfig: (config: Config) => {
   time: number;
+  isStop: boolean;
   immediate: boolean;
 };
 export declare const getApis: (config: Config, projectPath?: string) => Api[];

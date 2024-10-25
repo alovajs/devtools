@@ -9,8 +9,9 @@
     "alova": "./dist/bin/cli.js"
   },
   "scripts": {
-    "build": "npm run build:ts && npm run build:dts",
-    "build:ts": "tsc --build tsconfig.build.json",
+    "build": "npm run build:ts && npm run build:dts && npm run build:copy",
+    "build:copy": "tsx ./scripts/build-copy.ts",
+    "build:ts": "tsc --build tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "build:dts": "dts-bundle-generator -o typings/index.d.ts src/index.ts --no-check --no-banner --project tsconfig.build.json"
   },
   "keywords": [
@@ -54,7 +55,10 @@
     "swagger2openapi": "^7.0.8"
   },
   "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
     "@types/swagger2openapi": "^7.0.4",
-    "memfs": "^4.11.1"
+    "fs-extra": "^11.2.0",
+    "memfs": "^4.11.1",
+    "tsc-alias": "^1.8.10"
   }
 }
