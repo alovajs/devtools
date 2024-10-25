@@ -1,9 +1,10 @@
-import { DEFAULT_CONFIG } from '@/config';
+import { getGlobalConfig } from '@/config';
 import { existsPromise, format } from '@/utils';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { TemplateData } from './openApi2Data';
 
+const DEFAULT_CONFIG = getGlobalConfig();
 export const writeAlovaJson = async (data: TemplateData, originPath: string, name = 'api.json') => {
   // 将数据转换为 JSON 字符串
   const jsonData = await format(JSON.stringify(data, null, 2), { parser: 'json' });

@@ -1,4 +1,4 @@
-import { DEFAULT_CONFIG } from '@/config';
+import { getGlobalConfig } from '@/config';
 import { findBy$ref, getStandardRefName, isReferenceObject, mergeObject, removeAll$ref } from '@/helper/openapi';
 import { convertToType, jsonSchema2TsStr } from '@/helper/schema2type';
 import { getStandardOperationId, getStandardTags } from '@/helper/standard';
@@ -9,6 +9,7 @@ import { cloneDeep, isEmpty } from 'lodash';
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
 import { AlovaVersion } from './getAlovaVersion';
 
+const DEFAULT_CONFIG = getGlobalConfig();
 type Path = {
   key: string;
   method: string;

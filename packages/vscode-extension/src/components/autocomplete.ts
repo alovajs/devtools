@@ -1,5 +1,6 @@
 import autocomplete from '@/functions/autocomplete';
 import * as vscode from 'vscode';
+import autocompleteCommand from '@/commands/autocomplete';
 
 const triggerCharacters: string[] = [' ', '.', '>', ':', '-'];
 class AutoComplete extends vscode.CompletionItem {}
@@ -21,7 +22,7 @@ export default vscode.languages.registerCompletionItemProvider(
           completionItem.preselect = true;
           completionItem.insertText = '';
           completionItem.command = {
-            command: 'alova.autocomplete',
+            command: autocompleteCommand.commandId,
             title: 'Alova completions...',
             arguments: [item.replaceText]
           };
