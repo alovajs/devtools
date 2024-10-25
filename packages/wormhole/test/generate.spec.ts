@@ -1,6 +1,7 @@
 import generate from '@/generate';
 import fs from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { createStrReg } from './util';
 
 vi.mock('node:fs');
 vi.mock('node:fs/promises');
@@ -297,11 +298,13 @@ describe('generate API', () => {
     });
 
     let globalsDeclarationFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8');
-    expect(globalsDeclarationFile).toMatch(`generateBundle<
+    expect(globalsDeclarationFile).toMatch(
+      createStrReg(`generateBundle<
         Config extends Alova2MethodConfig<GenerationRequest> & {
           data: GenerationRequest;
         }
-      >`);
+      >`)
+    );
     expect(globalsDeclarationFile).toMatch(`: Alova2Method<string[], 'documentation.documentationLanguages', Config>;`);
 
     // custom mediaType: application/json
@@ -318,11 +321,13 @@ describe('generate API', () => {
     });
 
     globalsDeclarationFile = await fs.readFile(resolve(outputDir2, 'globals.d.ts'), 'utf-8');
-    expect(globalsDeclarationFile).toMatch(`generateBundle<
+    expect(globalsDeclarationFile).toMatch(
+      createStrReg(`generateBundle<
         Config extends Alova2MethodConfig<GenerationRequest> & {
           data: GenerationRequest;
         }
-      >`);
+      >`)
+    );
     expect(globalsDeclarationFile).toMatch(`: Alova2Method<string[], 'documentation.documentationLanguages', Config>;`);
 
     // custom mediaType: application/xml
@@ -340,11 +345,13 @@ describe('generate API', () => {
     });
 
     globalsDeclarationFile = await fs.readFile(resolve(outputDir3, 'globals.d.ts'), 'utf-8');
-    expect(globalsDeclarationFile).toMatch(`generateBundle<
+    expect(globalsDeclarationFile).toMatch(
+      createStrReg(`generateBundle<
         Config extends Alova2MethodConfig<GenerationRequest> & {
           data: GenerationRequest;
         }
-      >`);
+      >`)
+    );
     expect(globalsDeclarationFile).toMatch(`: Alova2Method<string[], 'documentation.documentationLanguages', Config>;`);
   });
 
@@ -362,13 +369,15 @@ describe('generate API', () => {
     });
 
     const globalsDeclarationFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8');
-    expect(globalsDeclarationFile).toMatch(`pet24<
+    expect(globalsDeclarationFile).toMatch(
+      createStrReg(`pet24<
         Config extends Alova2MethodConfig<Tag> & {
           data: Category;
         }
       >(
         config: Config
-      ): Alova2Method<Tag, 'pet.pet24', Config>;`);
+      ): Alova2Method<Tag, 'pet.pet24', Config>;`)
+    );
   });
 
   test('should auto detect generating module codes if not set `type`', async () => {
@@ -430,10 +439,12 @@ describe('generate API', () => {
       }
     );
     const fileContentCjs = await fs.readFile(resolve(outputDir3, 'createApis.js'), 'utf-8');
-    expect(fileContentCjs).toMatch(`module.exports = {
+    expect(fileContentCjs).toMatch(
+      createStrReg(`module.exports = {
   createApis,
   withConfigType
-};`);
+};`)
+    );
 
     unlinkSync(tempPkgFile);
   });
@@ -490,10 +501,12 @@ describe('generate API', () => {
       ]
     });
     const fileContentCjs = await fs.readFile(resolve(outputDir3, 'createApis.js'), 'utf-8');
-    expect(fileContentCjs).toMatch(`module.exports = {
+    expect(fileContentCjs).toMatch(
+      createStrReg(`module.exports = {
   createApis,
   withConfigType
-};`);
+};`)
+    );
   });
 
   test('should set the right global variable name', async () => {
@@ -609,7 +622,8 @@ describe('generate API', () => {
       ]
     });
     const globalsFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8');
-    expect(globalsFile).toMatch(`type Response = {
+    expect(globalsFile).toMatch(
+      createStrReg(`type Response = {
        *   id?: number
        *   // [title] Pet category
        *   // A category for a pet
@@ -634,7 +648,8 @@ describe('generate API', () => {
        *   // pet status in the store
        *   // [deprecated]
        *   status?: 'available' | 'pending' | 'sold'
-       * }`);
+       * }`)
+    );
   });
 
   test('should automatically convert object that contains `Blob` to `FormData`', async () => {
@@ -663,14 +678,17 @@ describe('generate API', () => {
     });
 
     const globalsFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8');
-    expect(globalsFile).toMatch(`generateBundle<
+    expect(globalsFile).toMatch(
+      createStrReg(`generateBundle<
         Config extends Alova2MethodConfig<GenerationRequest> & {
           data: GenerationRequest;
         }
       >(
         config: Config
-      ): Alova2Method<GenerationRequest, 'config.generateBundle', Config>;`);
-    expect(globalsFile).toMatch(`clientLanguages<
+      ): Alova2Method<GenerationRequest, 'config.generateBundle', Config>;`)
+    );
+    expect(globalsFile).toMatch(
+      createStrReg(`clientLanguages<
         Config extends Alova2MethodConfig<string[]> & {
           params: {
             /**
@@ -683,7 +701,8 @@ describe('generate API', () => {
             clientOnly?: boolean;
           };
         }
-      >`);
+      >`)
+    );
   });
 
   test('should `handleApi` handler change all descriptors', async () => {
@@ -750,12 +769,15 @@ describe('generate API', () => {
     });
     const globalsFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8');
     // check only generate specified apis
-    expect(globalsFile).toMatch(`documentationLanguages<
+    expect(globalsFile).toMatch(
+      createStrReg(`documentationLanguages<
         Config extends Alova2MethodConfig<{
           attr1?: string;
           attr2?: number;
-        }>`);
-    expect(globalsFile).toMatch(`customClients<
+        }>`)
+    );
+    expect(globalsFile).toMatch(
+      createStrReg(`customClients<
         Config extends Alova2MethodConfig<string[]> & {
           pathParams: {
             /**
@@ -779,25 +801,30 @@ describe('generate API', () => {
             id: number;
           };
         }
-      >`);
-    expect(globalsFile).toMatch(`generateBundle<
+      >`)
+    );
+    expect(globalsFile).toMatch(
+      createStrReg(`generateBundle<
         Config extends Alova2MethodConfig<GenerationRequest> & {
           data: {
             attr1?: string;
           };
         }
-      >`);
+      >`)
+    );
     expect(globalsFile).not.toMatch('serverLanguages');
     expect(globalsFile).not.toMatch('listOptions');
     expect(globalsFile).not.toMatch('generateFromURL');
 
     const apiDefinitionsFile = await fs.readFile(resolve(outputDir, 'apiDefinitions.ts'), 'utf-8');
-    expect(apiDefinitionsFile).toMatch(`export default {
+    expect(apiDefinitionsFile).toMatch(
+      createStrReg(`export default {
   'clients.customClients': ['GET', '/clients/suffix'],
   'documentation.customClients': ['GET', '/clients/suffix'],
   'documentation.documentationLanguages': ['GET', '/documentation'],
   'clients.generateBundle': ['POST', '/model']
-};`);
+};`)
+    );
   });
 
   test('should only effect component type of modified descriptor when this component is refered by multiple descriptor', async () => {
@@ -832,23 +859,28 @@ describe('generate API', () => {
 
     const globalsFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8');
     // generate separated `Pet1` from `Pet`
-    expect(globalsFile).toMatch(`pet24<
+    expect(globalsFile).toMatch(
+      createStrReg(`pet24<
         Config extends Alova2MethodConfig<Pet1> & {
           data: Pet;
         }
       >(
         config: Config
-      ): Alova2Method<Pet1, 'tag.pet24', Config>;`);
+      ): Alova2Method<Pet1, 'tag.pet24', Config>;`)
+    );
     // generate separated `Pet2` from `Pet`
-    expect(globalsFile).toMatch(`updatePet<
+    expect(globalsFile).toMatch(
+      createStrReg(`updatePet<
         Config extends Alova2MethodConfig<Pet2> & {
           data: Pet;
         }
       >(
         config: Config
-      ): Alova2Method<Pet2, 'pet.updatePet', Config>;`);
+      ): Alova2Method<Pet2, 'pet.updatePet', Config>;`)
+    );
     // the unmodified api still reference `Pet`
-    expect(globalsFile).toMatch(`findPetsByStatus<
+    expect(globalsFile).toMatch(
+      createStrReg(`findPetsByStatus<
         Config extends Alova2MethodConfig<Pet[]> & {
           params: {
             /**
@@ -861,6 +893,7 @@ describe('generate API', () => {
         }
       >(
         config: Config
-      ): Alova2Method<Pet[], 'pet.findPetsByStatus', Config>;`);
+      ): Alova2Method<Pet[], 'pet.findPetsByStatus', Config>;`)
+    );
   });
 });
