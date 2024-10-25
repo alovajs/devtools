@@ -154,3 +154,8 @@ export const resolveConfigFile = async (projectPath: string) => {
   }
   return null;
 };
+
+// 加载ESM 模块
+export function loadEsmModule<T>(modulePath: string | URL): Promise<T> {
+  return new Function('modulePath', `return import(modulePath);`)(modulePath) as Promise<T>;
+}

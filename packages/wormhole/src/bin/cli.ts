@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import { actionGen, actionInit } from './actions';
+
 const pkg = require('../../package.json');
 
 const program = new Command();

@@ -1,8 +1,10 @@
 import { createConfig, generate, readConfig, resolveWorkspaces } from '@/index';
 import { TemplateType } from '@/interface.type';
-import ora from 'ora';
+import { loadEsmModule } from '@/utils';
 
+const getOra = () => loadEsmModule<typeof import('ora')>('ora');
 export const actionInit = async ({ type, path: projectPath }: { type?: TemplateType; path?: string }) => {
+  const ora = (await getOra()).default;
   const spinner = ora('Initializing configuration file...').start();
   await createConfig({ type, projectPath });
   spinner.succeed('alova configuration file is initialized!');
@@ -21,6 +23,7 @@ export const actionGen = async ({
   if (workspace) {
     workspacePaths = await resolveWorkspaces(projectPath);
   }
+  const ora = (await getOra()).default;
   for (const dir of workspacePaths) {
     const spinner = ora(`Generating...`).start();
     const config = await readConfig(dir);
