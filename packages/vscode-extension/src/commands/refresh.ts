@@ -1,6 +1,6 @@
 import Error from '@/components/error';
 import message from '@/components/message';
-import { loading, reset } from '@/components/statusBar';
+import { loading, enable } from '@/components/statusBar';
 import generate from '@/functions/generate';
 import readConfig, { updatedConfigPool } from '@/functions/readConfig';
 import { getFileNameByPath } from '@/utils';
@@ -24,7 +24,7 @@ export default {
         throw error;
       });
     } finally {
-      reset();
+      enable();
     }
   }
 } as Commonand;

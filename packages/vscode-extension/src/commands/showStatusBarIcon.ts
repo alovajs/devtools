@@ -3,7 +3,7 @@ import * as statusBar from '@/components/statusBar';
 export default {
   commandId: 'alova.showStatusBarIcon',
   handler: context => async () => {
-    statusBar.reset();
+    statusBar.enable();
     statusBar.statusBarItem.show();
     context.subscriptions.push(statusBar.statusBarItem);
   }

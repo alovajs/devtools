@@ -12,3 +12,20 @@ export const executeCommand = <T extends any[]>(cmd: CommandKey, ...args: T) => 
     vscode.commands.executeCommand(commandId, ...args);
   }
 };
+// 获取当前workspacePath
+export const getCurrentWorkspacePath = () => {
+  // 获取当前活动编辑器
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) {
+    return getWorkspacePaths()[0];
+  }
+  // 获取当前打开文件的路径
+  const filePath = editor.document.uri.fsPath;
+
+  // 获取当前文件所在的工作区根目录
+  const workspaceFolder = vscode.workspace.getWorkspaceFolder(editor.document.uri);
+  if (!workspaceFolder) {
+    return filePath;
+  }
+  return `${workspaceFolder.uri.fsPath}/`;
+};
