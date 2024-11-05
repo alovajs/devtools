@@ -1,4 +1,4 @@
-import { createConfig } from '@/helper/wormhole';
+import womhole from '@/helper/wormhole';
 
 export default async (workspaceRootPathArr: string[]) =>
-  Promise.all(workspaceRootPathArr.map(workspaceRootPath => createConfig({ projectPath: workspaceRootPath })));
+  Promise.all(workspaceRootPathArr.map(workspaceRootPath => womhole.createConfig({ projectPath: workspaceRootPath })));

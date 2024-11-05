@@ -1,4 +1,4 @@
-import { getApis } from '@/helper/wormhole';
+import wormhole from '@/helper/wormhole';
 import path from 'node:path';
 import { CONFIG_POOL } from '@/helper/config';
 
@@ -7,5 +7,5 @@ export default (filePath: string) => {
   if (!config) {
     return [];
   }
-  return getApis(config, projectPath);
+  return wormhole.getApis(config, projectPath);
 };

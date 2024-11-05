@@ -1,4 +1,4 @@
-import { generate } from '@/helper/wormhole';
+import wormhole from '@/helper/wormhole';
 import { CONFIG_POOL } from '@/helper/config';
 import AlovaError from '@/components/error';
 
@@ -15,7 +15,7 @@ export default async (option?: GenerateOption) => {
       continue;
     }
     try {
-      const generateResult = await generate(config, {
+      const generateResult = await wormhole.generate(config, {
         force,
         projectPath
       });

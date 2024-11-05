@@ -1,10 +1,11 @@
 import { highPrecisionInterval } from '@/utils';
 import { log } from '@/components/message';
 import { executeCommand, getWorkspacePaths } from '@/utils/vscode';
-import { readConfig, getAutoUpdateConfig } from '@/helper/wormhole';
+import wormhole from '@/helper/wormhole';
 import type { Config } from '@alova/wormhole';
 import { CONFIG_POOL } from '@/helper/config';
 import type { ConfigObject } from '@/helper/config';
+import Error from '@/components/error';
 
 const AUTOUPDATE_MAP = new Map<
   string,
@@ -13,7 +14,7 @@ const AUTOUPDATE_MAP = new Map<
 
 function refeshAutoUpdate(configuration: ConfigObject) {
   const [, config] = configuration;
-  const { time, immediate, isStop } = getAutoUpdateConfig(config);
+  const { time, immediate, isStop } = wormhole.getAutoUpdateConfig(config);
   const oldConfig = AUTOUPDATE_MAP.get(configuration[0]);
   // 过滤掉已经配置的定时器
   if (oldConfig?.immediate === immediate && oldConfig?.time === time && oldConfig?.timer?.isRunning()) {
@@ -54,8 +55,12 @@ export default async (workspaceRootPathArr: string | string[]) => {
   for (const workspaceRootPath of workspaceRootPaths) {
     let config: Config | null = null;
     try {
-      config = await readConfig(workspaceRootPath);
-    } catch (error: any) {
+      config = await wormhole.readConfig(workspaceRootPath);
+    } catch (err) {
+      const error = err as Error;
+      if (error.force) {
+        throw error;
+      }
       log(error.message);
     }
     if (!config) {

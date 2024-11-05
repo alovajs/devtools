@@ -1,20 +1,36 @@
 import path from 'node:path';
 import importFresh from 'import-fresh';
 import { getWorkspacePaths } from '@/utils/vscode';
-import message from '@/components/message';
+import Error from '@/components/error';
 
-export default () => {
-  let wormhole: typeof import('@alova/wormhole') | null = null;
+type Wormhole = typeof import('@alova/wormhole');
+const NO_ERROR_KEYS: Array<keyof Wormhole> = ['setGlobalConfig'];
+
+const getWormhole = () => {
+  let wormhole: Wormhole | null = null;
   for (const workspaceRootPath of getWorkspacePaths()) {
     try {
       wormhole = importFresh(path.join(workspaceRootPath, './node_modules/@alova/wormhole'));
+      break;
     } catch (error) {}
-  }
-  if (!wormhole) {
-    const errorText = '@alova/wormhole is not found, please install it first.';
-    message.log(errorText);
-    message.error(errorText);
-    throw new Error(errorText);
   }
   return wormhole;
 };
+
+export default () =>
+  new Proxy(
+    {},
+    {
+      get(_, key: keyof Wormhole) {
+        const wormhole = getWormhole();
+        if (wormhole) {
+          return wormhole[key];
+        }
+        return () => {
+          if (!NO_ERROR_KEYS.includes(key)) {
+            throw new Error('@alova/wormhole is not found, please install it first.', true);
+          }
+        };
+      }
+    }
+  ) as Wormhole;

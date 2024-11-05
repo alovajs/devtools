@@ -1,8 +1,8 @@
 import { AlovaErrorConstructor } from '@/components/error';
 import { log } from '@/components/message';
-import { setGlobalConfig } from '@/helper/wormhole';
+import wormhole from '@/helper/wormhole';
 // 全局配置
-setGlobalConfig({
+wormhole.setGlobalConfig({
   log,
   Error: AlovaErrorConstructor
 });
