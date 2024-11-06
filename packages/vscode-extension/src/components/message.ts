@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import util from 'node:util';
 import * as vscode from 'vscode';
 // 创建一个输出通道
@@ -30,7 +31,21 @@ export function error(message: string) {
 export function warning(message: string) {
   return vscode.window.showWarningMessage(message);
 }
-export function log(...messageArr: any[]) {
+
+export function output(type: 'log' | 'warn' | 'error', ...messageArr: any[]) {
+  switch (type) {
+    case 'log':
+      outputChannel.append(`🟢 [LOG] `);
+      break;
+    case 'warn':
+      outputChannel.append(`🟡 [WARN] `);
+      break;
+    case 'error':
+      outputChannel.append(`🔴 [ERROR] `);
+      break;
+    default:
+      break;
+  }
   messageArr.forEach(message => {
     if (typeof message === 'object') {
       message = util.inspect(message, { showHidden: true, depth: null, colors: false });
@@ -39,10 +54,50 @@ export function log(...messageArr: any[]) {
   });
   outputChannel.append('\n');
 }
+
+export function log(...messageArr: any[]) {
+  output('log', ...messageArr);
+}
+
+export function logError(...messageArr: any[]) {
+  output('error', ...messageArr);
+}
+export function logWarn(...messageArr: any[]) {
+  output('warn', ...messageArr);
+}
+
+const consoleLog = console.log;
+const consoleWarn = console.warn;
+const consoleError = console.error;
+
+Object.defineProperties(console, {
+  log: {
+    value: (...messageArr: any[]) => {
+      log(...messageArr);
+      consoleLog(...messageArr);
+    }
+  },
+  warn: {
+    value: (...messageArr: any[]) => {
+      logWarn(...messageArr);
+      consoleWarn(...messageArr);
+    }
+  },
+  error: {
+    value: (...messageArr: any[]) => {
+      logError(...messageArr);
+      consoleError(...messageArr);
+    }
+  }
+});
+
 export default {
   info,
   error,
+  output,
   warning,
   log,
+  logError,
+  logWarn,
   outputChannel
 };

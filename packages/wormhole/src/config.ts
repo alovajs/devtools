@@ -9,7 +9,6 @@ declare global {
 const DEFAULT_CONFIG = {
   alovaTempPath: path.join('node_modules/.alova'),
   templatePath: path.join(__dirname, './templates'),
-  log: (...messageArr: any[]) => console.log(...messageArr),
   templateData: new Map<string, TemplateData>(),
   Error
 };

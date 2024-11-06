@@ -1,9 +1,6 @@
-import './globalConfig';
 import { commands } from '@/commands';
 import setup from '@/commands/setup';
 import * as vscode from 'vscode';
-import Error from './components/error';
-import { log } from './components/message';
 
 export function activate(context: vscode.ExtensionContext) {
   // 插件注册
@@ -12,19 +9,7 @@ export function activate(context: vscode.ExtensionContext) {
   });
   vscode.commands.executeCommand(setup.commandId);
 }
-process.on('uncaughtException', (err: Error) => {
-  log(err.message);
-  if (err.ERROR_CODE) {
-    vscode.window.showErrorMessage(err.message);
-  }
-});
-process.on('unhandledRejection', (error: Error) => {
-  const errMsg = error?.message ?? error ?? 'unhandledRejection';
-  log(errMsg);
-  if (error.ERROR_CODE) {
-    vscode.window.showErrorMessage(errMsg);
-  }
-});
+
 export default {
   activate
 };

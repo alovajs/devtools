@@ -101,6 +101,9 @@ importers:
       '@alova/wormhole':
         specifier: workspace:^
         version: link:../wormhole
+      glob:
+        specifier: ^11.0.0
+        version: 11.0.0
       import-fresh:
         specifier: ^3.3.0
         version: 3.3.0

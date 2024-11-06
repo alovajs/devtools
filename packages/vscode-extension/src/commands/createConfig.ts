@@ -1,10 +1,10 @@
-// 用于自动生成alova.config.js
+// 用于生成alova.config.js
 import generateConfig from '@/functions/generateConfig';
-import { getCurrentWorkspacePath } from '@/utils/vscode';
+import { getCurrentDirectory } from '@/utils/vscode';
 
 export default {
   commandId: 'alova.create.config',
   handler: () => async () => {
-    generateConfig(getCurrentWorkspacePath());
+    generateConfig(getCurrentDirectory());
   }
 } as Commonand;

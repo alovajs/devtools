@@ -1,4 +1,3 @@
-import { getGlobalConfig } from '@/config';
 import { findBy$ref, getStandardRefName, isReferenceObject, mergeObject, removeAll$ref } from '@/helper/openapi';
 import { convertToType, jsonSchema2TsStr } from '@/helper/schema2type';
 import { getStandardOperationId, getStandardTags } from '@/helper/standard';
@@ -9,7 +8,6 @@ import { cloneDeep, isEmpty } from 'lodash';
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
 import { AlovaVersion } from './getAlovaVersion';
 
-const DEFAULT_CONFIG = getGlobalConfig();
 type Path = {
   key: string;
   method: string;
@@ -297,7 +295,7 @@ export const transformPathObj = async (
   let newApiDescriptor: ApiDescriptor | void | undefined | null = apiDescriptor;
   let handleApiDone = false;
   try {
-    newApiDescriptor = handleApi(apiDescriptor, DEFAULT_CONFIG.log);
+    newApiDescriptor = handleApi(apiDescriptor);
     handleApiDone = true;
   } catch (error) {
     handleApiDone = false;

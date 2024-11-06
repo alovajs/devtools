@@ -32,3 +32,18 @@ export function uuid() {
   });
   return id;
 }
+export function debounce<T extends (...args: any) => any>(func: T, delay: number) {
+  let timeout: NodeJS.Timeout;
+
+  return function (...args: Parameters<T>) {
+    // 清除上一个计时器
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+
+    // 设置新的计时器，延迟执行传入的函数
+    timeout = setTimeout(() => {
+      func(...args);
+    }, delay);
+  } as T;
+}

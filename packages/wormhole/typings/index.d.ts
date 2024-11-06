@@ -15,7 +15,6 @@ export type ApiDescriptor = Omit<OperationObject, 'requestBody' | 'parameters' |
 };
 export interface HandleApi {
   (apiDescriptor: ApiDescriptor): ApiDescriptor | void | undefined | null;
-  (apiDescriptor: ApiDescriptor, log: (...args: any[]) => void): ApiDescriptor | void | undefined | null;
 }
 export type GeneratorConfig = {
   input: string;
@@ -91,7 +90,6 @@ export interface TemplateData extends Omit<OpenAPIV3_1.Document, ''> {
 declare const DEFAULT_CONFIG: {
   alovaTempPath: string;
   templatePath: string;
-  log: (...messageArr: any[]) => void;
   templateData: Map<string, TemplateData>;
   Error: ErrorConstructor;
 };
