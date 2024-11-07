@@ -22,7 +22,7 @@ export const getFileNameByPath = (path: string) => {
   const [, name] = /[/\\]([^/\\]+)([/\\])?$/.exec(path) ?? [];
   return name ?? '';
 };
-// 生成唯一id
+// Generate unique id
 export function uuid() {
   let dt = new Date().getTime();
   const id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
@@ -36,12 +36,12 @@ export function debounce<T extends (...args: any) => any>(func: T, delay: number
   let timeout: NodeJS.Timeout;
 
   return function (...args: Parameters<T>) {
-    // 清除上一个计时器
+    // Clear previous timer
     if (timeout) {
       clearTimeout(timeout);
     }
 
-    // 设置新的计时器，延迟执行传入的函数
+    // Set a new timer to delay execution of the passed function
     timeout = setTimeout(() => {
       func(...args);
     }, delay);

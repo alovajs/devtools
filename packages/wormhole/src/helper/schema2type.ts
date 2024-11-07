@@ -5,20 +5,26 @@ import { findBy$ref, getStandardRefName, isReferenceObject } from './openapi';
 import { isValidJSIdentifier } from './standard';
 
 export interface Schema2TypeOptions {
-  deep?: boolean; // 是否递归解析
-  shallowDeep?: boolean; // 只有最外层是解析的
-  defaultType?: 'any' | 'unknown'; // 未匹配的时的默认类型
-  commentStyle?: 'line' | 'docment'; // 注释风格
-  preText?: string; // 注释前缀
-  defaultRequire?: boolean; // 没有nullbale或者require时默认为require
+  deep?: boolean; // Whether to parse recursively
+
+  shallowDeep?: boolean; // Only the outermost layer is analytic
+
+  defaultType?: 'any' | 'unknown'; // Default type when not matched
+
+  commentStyle?: 'line' | 'docment'; // Comment style
+
+  preText?: string; // annotation prefix
+
+  defaultRequire?: boolean; // If there is no nullbale or require, the default is require.
+
   searchMap: Map<string, string>;
   visited?: Set<string>;
   on$Ref?: (refOject: OpenAPIV3_1.ReferenceObject) => void;
 }
 /**
- * 生成注释字符串
- * @param type 注释风格
- * @returns 注释对象
+ * Generate comment string
+ * @param type Comment style
+ * @returns annotation object
  */
 export function comment(type: 'line' | 'docment') {
   const startText = type === 'docment' ? '/**\n' : '';
@@ -67,11 +73,11 @@ export function comment(type: 'line' | 'docment') {
   };
 }
 /**
- * 将schema解析为ts类型字符串
- * @param schemaOrigin schema对象
- * @param openApi openApi对象
- * @param config 配置项
- * @returns ts类型字符串
+ * Parse schema into ts type string
+ * @param schemaOrigin schema object
+ * @param openApi openApi object
+ * @param config Configuration items
+ * @returns ts type string
  */
 function parseSchema(
   schemaOrigin: OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject,
@@ -114,8 +120,9 @@ function parseSchema(
       result = parseArray(schema, openApi, config);
       break;
     case 'string':
-      // 根据 https://swagger.io/docs/specification/data-models/data-types/#string
-      // 针对binary，将类型更改为Blob，其余所有format值均可视为string
+      // According to https://swagger.io/docs/specification/data-models/data-types/#string
+      // For binary, change the type to Blob, all other format values can be treated as string
+
       if (schema.format === 'binary') {
         result = 'Blob';
       } else {
@@ -158,11 +165,11 @@ function parseSchema(
   return result;
 }
 /**
- *将object类型的schema解析为ts类型字符串
- * @param schema schema对象
- * @param openApi openApi对象
- * @param config 配置项
- * @returns  ts类型字符串
+ *Parse object type schema into ts type string
+ * @param schema schema object
+ * @param openApi openApi object
+ * @param config Configuration items
+ * @returns  ts type string
  */
 function parseObject(
   schema: OpenAPIV3_1.SchemaObject,
@@ -213,11 +220,11 @@ function parseObject(
   return 'object';
 }
 /**
- * 将array类型的schema解析为ts类型字符串
- * @param schema schema对象
- * @param openApi openApi对象
- * @param config 配置项
- * @returns ts类型字符串
+ * Parse array type schema into ts type string
+ * @param schema schema object
+ * @param openApi openApi object
+ * @param config Configuration items
+ * @returns ts type string
  */
 function parseArray(
   schema: OpenAPIV3_1.ArraySchemaObject,
@@ -255,19 +262,19 @@ function parseArray(
   return '[]';
 }
 /**
- * 将enum类型的schema解析为ts类型字符串
- * @param schema schema对象
- * @returns ts类型字符串
+ * Parse enum type schema into ts type string
+ * @param schema schema object
+ * @returns ts type string
  */
 function parseEnum(schema: OpenAPIV3_1.SchemaObject): string {
   return schema.enum?.map?.((value: any) => JSON.stringify(value))?.join?.(' | ') || '';
 }
 /**
- * 将schema解析为格式化后的ts类型字符串
- * @param schemaOrigin schema对象
- * @param openApi openapi文档对象
- * @param config 配置项
- * @returns 格式化后的ts类型字符串
+ * Parse the schema into a formatted ts type string
+ * @param schemaOrigin schema object
+ * @param openApi openapi document object
+ * @param config Configuration items
+ * @returns Formatted ts type string
  */
 export async function convertToType(
   schemaOrigin: OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject,
@@ -281,27 +288,30 @@ export async function convertToType(
     config.visited = new Set();
   }
   const tsStr = parseSchema(schemaOrigin, openApi, config);
-  // 格式化ts类型
+  // Format ts type
+
   const tsStrFormat = await format(`type Ts = ${tsStr}`, {
-    semi: false // 去掉分号
+    semi: false // remove semicolon
   });
   const resultFormat = /type Ts =(.*)/s.exec(tsStrFormat)?.[1] ?? '';
   const tsStrArr = resultFormat.trim().split('\n');
-  // 加前缀，便于生成注释
+  // Add prefix to facilitate generating comments
+
   return tsStrArr.map((line, idx) => (idx ? config.preText : '') + line).join('\n');
 }
 interface JsonSchema2TsOptions {
   export?: boolean;
-  defaultRequire?: boolean; // 没有nullbale或者require时默认为require
+  defaultRequire?: boolean; // If there is no nullbale or require, the default is require.
+
   on$RefTsStr?: (name: string, tsStr: string) => void;
 }
 /**
- * 将schema对象解析为ts类型字符串
- * @param schema schema对象
- * @param name 类型名称
- * @param openApi openapi文档对象
- * @param options 配置项
- * @returns interface Ts字符串
+ * Parse the schema object into a ts type string
+ * @param schema schema object
+ * @param name Type name
+ * @param openApi openapi document object
+ * @param options Configuration items
+ * @returns interface Ts string
  */
 export const jsonSchema2TsStr = async (
   schema: OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject,

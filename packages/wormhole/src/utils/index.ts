@@ -57,18 +57,20 @@ handlebars.registerHelper('or', function (this: any, ...rest) {
 });
 handlebars.registerHelper('eq', (a, b) => a === b);
 handlebars.registerHelper('not', (a, b) => a !== b);
-// 注册自定义助手函数 'raw'
+// Register custom helper function 'raw'
+
 handlebars.registerHelper(
   'raw',
   text =>
-    // 返回原始字符串，不进行 HTML 转义
+    // Returns the original string without HTML escaping
+
     new handlebars.SafeString(text)
 );
 /**
- * 读取并渲染 handlebars 文件
- * @param templatePath 模板文件路径
- * @param view - 渲染模板所需的数据对象
- * @returns 渲染后的内容
+ * Read and render the handlebars file
+ * @param templatePath Template file path
+ * @param view -Data objects required to render the template
+ * @returns Rendered content
  */
 export async function readAndRenderTemplate(templatePath: string, view: any) {
   let data = '';
@@ -82,16 +84,17 @@ export async function readAndRenderTemplate(templatePath: string, view: any) {
 export async function format(text: string, config?: PrettierConfig) {
   return prettier.format(text, {
     ...(prettierConfig as PrettierConfig),
-    parser: 'typescript', // 指定使用 babel 解析器
+    parser: 'typescript', // Specify to use babel parser
+
     ...(config ?? {}),
     plugins: [prettierTs, prettierEsTree, prettierBabel]
   });
 }
 /**
- * 传入文本内容，在指定目录下生成自定义文件
- * @param distDir 待生成文件所在目录
- * @param fileName 待生成文件名
- * @param content 文件内容
+ * Pass in text content and generate a custom file in the specified directory
+ * @param distDir The directory where the file to be generated is located
+ * @param fileName File name to be generated
+ * @param content File content
  */
 export async function generateFile(distDir: string, fileName: string, content: string) {
   if (!(await existsPromise(distDir))) {
@@ -112,7 +115,8 @@ export async function fetchData(url: string) {
     });
 }
 
-// 去掉所有为空的undefined值
+// Remove all empty undefined values
+
 export function removeUndefined<T>(obj: T) {
   const defaultObject = Array.isArray(obj) ? [] : {};
   if (typeof obj !== 'object' || !obj) {

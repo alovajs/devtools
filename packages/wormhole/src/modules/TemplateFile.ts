@@ -20,7 +20,8 @@ export default class TemplateFile {
   alovaVersion: AlovaVersion;
 
   constructor(type: TemplateType, alovaVersion: AlovaVersion) {
-    // 根据type确定使用哪个模板文件夹下的模板
+    // Determine which template folder to use based on type.
+
     this.type = type;
     this.alovaVersion = alovaVersion;
   }
@@ -34,12 +35,14 @@ export default class TemplateFile {
     }
   }
 
-  // 获取生成文件的后缀名
+  // Get the suffix name of the generated file
+
   getExt() {
     return TemplateFile.getExt(this.type);
   }
 
-  // 获取模块类型
+  // Get module type
+
   getModuleType() {
     return TemplateFile.getModuleType(this.type);
   }
@@ -64,7 +67,8 @@ export default class TemplateFile {
   }
 
   async outputFile(data: Record<string, any>, fileName: string, ouput: string, config?: RenderTemplateOptions) {
-    // 这里实现模板文件渲染工作，例如返回文件内容和文件名，然后再写入output的文件夹
+    // Here, the template file rendering work is implemented, such as returning the file content and file name, and then writing it to the output folder.
+
     const renderContent = await this.readAndRenderTemplate(fileName, data, config);
     await generateFile(ouput, `${config?.outFileName ?? fileName}${config?.ext ?? this.getExt()}`, renderContent);
   }

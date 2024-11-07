@@ -34,7 +34,7 @@
         "description": "alova icon",
         "default": {
           "fontPath": "./resources/logo.ttf",
-          "fontCharacter": "\\E900"
+          "fontCharacter": "\\E64B"
         }
       }
     }

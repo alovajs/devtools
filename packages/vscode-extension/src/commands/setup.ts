@@ -13,7 +13,7 @@ export default {
     context.subscriptions.push(autocomplete);
     context.subscriptions.push(outputChannel);
     registerEvent();
-    // 读取所有配置文件
+    // Read all configuration files
     readConfig(getWorkspacePaths());
   }
 } as Commonand;

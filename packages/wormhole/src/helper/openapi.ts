@@ -3,9 +3,9 @@ import { cloneDeep, isArray, isEqualWith, isObject, mergeWith, sortBy } from 'lo
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
 import { isValidJSIdentifier, makeIdentifier } from './standard';
 /**
- * 判断是否是$ref对象
- * @param obj 判断对象
- * @returns 是否是$ref对象
+ * Determine whether it is a $ref object
+ * @param obj Judgment object
+ * @returns Whether it is a $ref object
  */
 export function isReferenceObject(obj: any): obj is OpenAPIV3.ReferenceObject {
   return !!(obj as OpenAPIV3.ReferenceObject)?.$ref;
@@ -16,10 +16,10 @@ function isBaseReferenceObject(obj: any): obj is { _$ref: string } & Record<stri
 
 /**
  *
- * @param path $ref查找路径
- * @param openApi openApi文档对象
- * @param isDeep 是否深拷贝
- * @returns 查找到的SchemaObject
+ * @param path $ref search path
+ * @param openApi openApi document object
+ * @param isDeep Whether to deep copy
+ * @returns SchemaObject found
  */
 export const findBy$ref = <T = OpenAPIV3_1.SchemaObject>(
   path: string,
@@ -39,9 +39,9 @@ export const findBy$ref = <T = OpenAPIV3_1.SchemaObject>(
 };
 /**
  *
- * @param path $ref路径
- * @param data 复用对象
- * @param openApi 插入的openapi文档对象
+ * @param path $ref path
+ * @param data Reuse object
+ * @param openApi Inserted openapi document object
  */
 export const setComponentsBy$ref = (path: string, data: any, openApi: OpenAPIV3_1.Document) => {
   const pathArr = path.split('/');
@@ -62,9 +62,9 @@ export const setComponentsBy$ref = (path: string, data: any, openApi: OpenAPIV3_
 };
 /**
  *
- * @param path $ref路径
- * @param toUpperCase 是否首字母大小
- * @returns 引用对象名称
+ * @param path $ref path
+ * @param toUpperCase Whether the initial letter size
+ * @returns Reference object name
  */
 export const get$refName = (path: string, toUpperCase: boolean = true) => {
   const pathArr = path.split('/');
@@ -76,9 +76,9 @@ export const get$refName = (path: string, toUpperCase: boolean = true) => {
 };
 /**
  *
- * @param schemaOrigin 含$ref的对象
- * @param openApi openApi文档对象
- * @returns 去除了$ref的对象
+ * @param schemaOrigin Object with $ref
+ * @param openApi openApi document object
+ * @returns Removed $ref object
  */
 export const removeAll$ref = <T = OpenAPIV3_1.SchemaObject>(
   schemaOrigin: any,
@@ -92,7 +92,8 @@ export const removeAll$ref = <T = OpenAPIV3_1.SchemaObject>(
       return searchMap.get(deepSchemaOrigin.$ref) as T;
     }
     schema = findBy$ref<OpenAPIV3_1.SchemaObject>(deepSchemaOrigin.$ref, openApi, true);
-    // 做标记方便还原
+    // Mark for easy restoration
+
     schema._$ref = deepSchemaOrigin.$ref;
     searchMap.set(deepSchemaOrigin.$ref, schema);
   } else {
@@ -107,10 +108,10 @@ export const removeAll$ref = <T = OpenAPIV3_1.SchemaObject>(
 };
 /**
  *
- * @param objValue 待比较的对象
- * @param srcValue 源对象
- * @param openApi openApi文档对象
- * @returns 是否相等
+ * @param objValue object to be compared
+ * @param srcValue source object
+ * @param openApi openApi document object
+ * @returns Are they equal?
  */
 export function isEqualObject(objValue: any, srcValue: any, openApi: OpenAPIV3_1.Document) {
   const visited = new WeakMap();
@@ -127,7 +128,8 @@ export function isEqualObject(objValue: any, srcValue: any, openApi: OpenAPIV3_1
     if (isReferenceObject(otherValueOrigin)) {
       otherValue = findBy$ref(otherValueOrigin.$ref, openApi);
     }
-    // 忽略数组顺序的影响
+    // Ignore the effect of array order
+
     if (isArray(objValue) && isArray(otherValue)) {
       const sortObjValue = sortBy(objValue);
       const sortOtherValue = sortBy(otherValue);
@@ -136,7 +138,8 @@ export function isEqualObject(objValue: any, srcValue: any, openApi: OpenAPIV3_1
       );
       return keys.every(key => isEqualWith((sortObjValue as any)[key], (sortOtherValue as any)[key], customizer));
     }
-    // 如果是对象，递归比较
+    // If it is an object, compare recursively
+
     if (isObject(objValue) && isObject(otherValue)) {
       if (visited.has(objValue) && visited.get(objValue) === otherValue) {
         return true;
@@ -152,9 +155,9 @@ export function isEqualObject(objValue: any, srcValue: any, openApi: OpenAPIV3_1
 }
 /**
  *
- * @param path $ref路径
- * @param map 已存在的$ref路径
- * @returns 另一个版本的$ref路径
+ * @param path $ref path
+ * @param map Existing $ref path
+ * @returns Another version of the $ref path
  */
 export function getNext$refKey(path: string, map: Array<[string, any]> = []) {
   function getNameVersion(path: string) {
@@ -280,7 +283,7 @@ function unCircular(obj: Record<string, any>, openApi: OpenAPIV3_1.Document, map
   return obj;
 }
 /**
- * 合并openApi文档对象尽量以srcValue为准
+ * When merging openApi document objects, try to use srcValue as the standard.
  * @param objValue
  * @param srcValue
  * @param openApi
@@ -293,18 +296,21 @@ export const mergeObject = <T>(
   map: Array<[string, any]> = []
 ): T => {
   function customizer(objValue: any, srcValue: any): any {
-    // 如果都是数组，并且srcValue为空数组，则直接返回srcValue
+    // If they are all arrays and the src value is an empty array, the src value will be returned directly.
+
     if (isArray(objValue) && isArray(srcValue) && !srcValue.length) {
       return srcValue;
     }
     if (isEqualObject(objValue, srcValue, openApi)) {
       return objValue;
     }
-    // 处理循环引用
+    // Handle circular references
+
     if (isCircular(srcValue)) {
       srcValue = unCircular(srcValue, openApi, map);
     }
-    // 是否还有_$ref属性
+    // Is there also a $ref attribute?
+
     if (hasBaseReferenceObject(srcValue)) {
       return removeBaseReference(srcValue, openApi, map);
     }

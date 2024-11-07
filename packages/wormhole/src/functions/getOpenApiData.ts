@@ -9,11 +9,13 @@ import { OpenAPIV2, OpenAPIV3_1 } from 'openapi-types';
 import swagger2openapi from 'swagger2openapi';
 
 const DEFAULT_CONFIG = getGlobalConfig();
-// 判断是否是swagger2.0
+// Determine whether it is swagger2.0
+
 function isSwagger2(data: any): data is OpenAPIV2.Document {
   return !!data?.swagger;
 }
-// 解析本地openapi文件
+// Parse local openapi files
+
 async function parseLocalFile(workspaceRootDir: string, filePath: string) {
   const [, extname] = /\.([^.]+)$/.exec(filePath) ?? [];
   switch (extname) {
@@ -22,38 +24,45 @@ async function parseLocalFile(workspaceRootDir: string, filePath: string) {
       const data = YAML.load(file) as any;
       return data;
     }
-    // json
+    // Json
+
     default: {
       const data = importFresh(path.resolve(workspaceRootDir, filePath));
       return data;
     }
   }
 }
-// 解析远程openapi文件
+// Parse remote openapi files
+
 async function parseRemoteFile(url: string, platformType?: PlatformType) {
   const [, , extname] = /^http(s)?:\/\/.+\/.+\.([^.]+)$/.exec(url) ?? [];
-  // 没有扩展名并且有平台类型
+  // no extension and platform type
+
   if (!extname && platformType) {
     return getPlatformOpenApiData(url, platformType);
   }
-  // 没有平台类型并且没有扩展名
+  // No platform type and no extension
+
   if (!platformType && !extname) {
     return;
   }
-  // 没有平台类型并且有扩展名
+  // There is no platform type and there is an extension
+
   const dataText = (await fetchData(url)) ?? '';
   switch (extname) {
     case 'yaml': {
       const data = YAML.load(dataText) as any;
       return data;
     }
-    // json
+    // Json
+
     default: {
       return JSON.parse(dataText);
     }
   }
 }
-// 解析平台openapi文件
+// Parse platform openapi files
+
 export async function getPlatformOpenApiData(url: string, platformType: PlatformType) {
   switch (platformType) {
     case 'swagger': {
@@ -68,7 +77,8 @@ export async function getPlatformOpenApiData(url: string, platformType: Platform
       break;
   }
 }
-// 解析openapi文件
+// Parse openapi files
+
 export default async function (
   workspaceRootDir: string,
   url: string,
@@ -77,13 +87,16 @@ export default async function (
   let data: OpenAPIV3_1.Document | null = null;
   try {
     if (!/^http(s)?:\/\//.test(url)) {
-      // 本地文件
+      // local file
+
       data = await parseLocalFile(workspaceRootDir, url);
     } else {
-      // 远程文件
+      // remote file
+
       data = await parseRemoteFile(url, platformType);
     }
-    // 如果是swagger2的文件
+    // If it is a swagger2 file
+
     if (isSwagger2(data)) {
       data = (await swagger2openapi.convertObj(data, { warnOnly: true })).openapi as OpenAPIV3_1.Document;
     }

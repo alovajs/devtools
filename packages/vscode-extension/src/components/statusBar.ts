@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-// 创建状态栏项
+// Create status bar item
 type StatusBarItemType = 'loading' | 'enable' | 'disable';
 export const loading = (text: string = '') => {
   BAR_STATE.value = 'loading';
@@ -18,7 +18,7 @@ export const disable = () => {
   BAR_STATE.value = 'disable';
   statusBarItem.text = `$(alova-icon-id) Alova`;
   statusBarItem.tooltip = 'module `@alova/wormhole` not found';
-  statusBarItem.color = '#808080'; // 设置颜色为灰色
+  statusBarItem.color = '#808080'; // Set color to gray
   statusBarItem.command = undefined;
 };
 export const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);

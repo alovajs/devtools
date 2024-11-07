@@ -4,17 +4,17 @@ import sinon from 'sinon';
 import * as vscode from 'vscode';
 
 suite('alova.create.config command', function () {
-  this.timeout(1000000); // 设置超时时间，避免 VSCode 启动超时
+  this.timeout(1000000); // Set a timeout to avoid VSCode startup timeout
   vscode.window.showInformationMessage('Start all tests.');
 
   let mockCreateConfig: sinon.SinonStub;
   this.beforeEach(() => {
-    // 创建 spy 和 stub
+    // Create spies and stubs
     mockCreateConfig = sinon.stub(wormhole, 'createConfig');
   });
 
   this.afterEach(() => {
-    // 恢复所有 stub
+    // Restore all stubs
     sinon.restore();
   });
 
@@ -22,19 +22,19 @@ suite('alova.create.config command', function () {
     // await new Promise(resolve => {
     //   setTimeout(resolve, 10000);
     // });
-    // 模拟 getWorkspacePaths 返回的路径
+    // Mock the paths returned by getWorkspacePaths
     // const mockPaths = ['/path/to/project'];
     mockCreateConfig.returns(Promise.resolve(undefined));
 
-    // 执行命令
+    // execute command
     await vscode.commands.executeCommand('alova.create.config');
 
-    // 验证 generateConfig 是否被正确调用
+    // Verify that generateConfig is called correctly
     assert.ok(mockCreateConfig.calledOnce);
   });
 
   // test('should handle empty workspace paths gracefully', async () => {
-  //   // 模拟 getWorkspacePaths 返回空数组
+  //   //Mock getWorkspacePaths to return an empty array
   //   mockReadConfig.returns([]);
 
   //   await vscode.commands.executeCommand('alova.create.config');

@@ -34,7 +34,8 @@ export const getWormhole = () => {
     enable();
   }
   if (wormhole) {
-    // 全局配置
+    // Global configuration
+
     wormhole.setGlobalConfig({
       Error: AlovaErrorConstructor,
       templateData: TEMPLATE_DATA

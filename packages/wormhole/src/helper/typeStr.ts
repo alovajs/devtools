@@ -1,9 +1,12 @@
 import { format } from '@/utils';
-// 去除注释
+// Remove comments
+
 function removeComments(content: string) {
-  // 去除单行注释
+  // Remove single line comments
+
   content = content.replace(/\/\/.*$/gm, '');
-  // 去除多行注释和文档注释
+  // Remove multi-line comments and documentation comments
+
   content = content.replace(/\/\*[\s\S]*?\*\//g, '');
   return content;
 }
@@ -156,9 +159,9 @@ function parseTuple(tupleType: string) {
   return `[${parsedElements.join(', ')}]`;
 }
 /**
- * 从给定的 TypeScript 源代码生成类型和接口的默认值对象。
- * @param sourceCode - TypeScript 源代码字符串
- * @returns 包含类型和接口默认值的对象
+ * Generates default value objects for types and interfaces from the given TypeScript source code.
+ * @param sourceCode -TypeScript source code string
+ * @returns Object containing type and interface default values
  */
 export function generateDefaultValues<T extends boolean, U = T extends true ? Promise<string> : string>(
   sourceCode: string,

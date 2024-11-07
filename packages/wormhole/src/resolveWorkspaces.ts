@@ -6,26 +6,29 @@ import path from 'node:path';
 import { existsPromise, resolveConfigFile } from './utils';
 
 /**
- * 查找所有包含 alova.config.js 文件的目录
- * @param rootPath 根目录
- * @returns 包含 alova.config.js 文件的目录数组
+ * Find all directories containing alova.config.js files
+ * @param rootPath root directory
+ * @returns Array of directories containing alova.config.js files
  */
 export default async function resolveWorkspaces(rootPath = process.cwd()) {
   const resultDirs: string[] = [];
 
-  // 检查根目录是否有 alova.config.js
+  // Check if there is alova.config.js in the root directory
+
   const rootConfigPath = await resolveConfigFile(rootPath);
   if (rootConfigPath) {
     resultDirs.push(rootPath);
   }
 
-  // 根据 package.json 的 workspaces 或 pnpm-workspace.yaml 来查找子包
+  // Find subpackages based on workspaces in package.json or pnpm-workspace.yaml
+
   const packageJsonPath = path.join(rootPath, 'package.json');
   const pnpmWorkspacePathYaml = path.join(rootPath, 'pnpm-workspace.yaml');
   const pnpmWorkspacePathYml = path.join(rootPath, 'pnpm-workspace.yml');
 
   let workspaces: string[] = [];
-  // 如果存在 package.json，读取 workspaces
+  // If package.json exists, read workspaces
+
   if (await existsPromise(packageJsonPath)) {
     const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'));
     if (packageJson.workspaces) {
@@ -33,7 +36,8 @@ export default async function resolveWorkspaces(rootPath = process.cwd()) {
     }
   }
 
-  // 如果存在 pnpm-workspace.yaml，读取其中的路径
+  // If pnpm-workspace.yaml exists, read the path in it
+
   const pnpmWorkspacePath = (await existsPromise(pnpmWorkspacePathYaml))
     ? pnpmWorkspacePathYaml
     : (await existsPromise(pnpmWorkspacePathYml))
@@ -46,10 +50,12 @@ export default async function resolveWorkspaces(rootPath = process.cwd()) {
     }
   }
 
-  // 去重处理
+  // Deduplication
+
   workspaces = [...new Set(workspaces)];
 
-  // 遍历每个子包，检查是否存在 alova.config.js
+  // Iterate through each sub-package and check if alova.config.js exists
+
   for (const workspace of workspaces) {
     const workspaceDirs = await globPaths(rootPath, workspace);
     for (const dir of workspaceDirs) {
@@ -64,10 +70,10 @@ export default async function resolveWorkspaces(rootPath = process.cwd()) {
 }
 
 /**
- * 解析 workspace 路径
- * @param {string} rootPath 根目录
- * @param {string} workspacePattern workspace 定义的路径模式
- * @returns {Promise<string[]>} 解析后的路径列表
+ * Parse workspace path
+ * @param {string} rootPath root directory
+ * @param {string} workspacePattern Path pattern defined by workspace
+ * @returns {Promise<string[]>} Parsed path list
  */
 async function globPaths(rootPath: string, workspacePattern: string): Promise<string[]> {
   const resolvedPaths: string[] = [];
@@ -78,7 +84,8 @@ async function globPaths(rootPath: string, workspacePattern: string): Promise<st
       ...nodefs,
       promises: fs
     }
-  }); // 使用 glob 模块处理通配符
+  }); // Using the glob module to handle wildcards
+
   for (const dir of dirs) {
     const absDir = path.resolve(rootPath, dir);
     resolvedPaths.push(absDir);
