@@ -187,7 +187,7 @@ describe('config', () => {
   });
 
   test('should create config file under a custom absolute path', async () => {
-    const customPath = '/mockdir_config';
+    const customPath = './mockdir_config_0';
     // 设置package.json 文件
     requireResult.set(resolve(customPath, './package.json'), {
       type: 'commonjs',
