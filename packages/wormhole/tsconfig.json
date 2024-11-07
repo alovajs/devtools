@@ -4,6 +4,8 @@
     "baseUrl": ".",
     "module": "CommonJS",
     "resolveJsonModule": false,
+    "esModuleInterop": true,
+    "types": ["vitest/globals"],
     "paths": {
       "~/*": ["./typings/*"],
       "@/*": ["./src/*"],

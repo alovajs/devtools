@@ -17,7 +17,6 @@
     "skipDefaultLibCheck": false,
     "esModuleInterop": true,
     "inlineSourceMap": false,
-    "removeComments": false,
-    "types": ["vitest/globals"]
+    "removeComments": false
   }
 }

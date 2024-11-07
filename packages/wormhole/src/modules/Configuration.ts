@@ -33,8 +33,9 @@ export default class Configuration {
       if (!item.output) {
         throw new DEFAULT_CONFIG.Error('Field output is required in `config.generator`');
       }
-      if (!isEmpty(item.global) && !isValidJSIdentifier(item.global)) {
-        throw new DEFAULT_CONFIG.Error(`\`${item.global}\` does not match variable specification`);
+      const { global } = item;
+      if (!isEmpty(global) && !isValidJSIdentifier(global)) {
+        throw new DEFAULT_CONFIG.Error(`\`${global}\` does not match variable specification`);
       }
       if (arr.length < 2) {
         return;
@@ -43,13 +44,13 @@ export default class Configuration {
         throw new DEFAULT_CONFIG.Error(`output \`${item.output}\` is repated`);
       }
       outputSet.add(path.join(item.output));
-      if (!item.global) {
+      if (!global) {
         throw new DEFAULT_CONFIG.Error('Field global is required in `config.generator`');
       }
-      if (globalKeySet.has(item.global)) {
-        throw new DEFAULT_CONFIG.Error(`global \`${item.global}\` is repated`);
+      if (globalKeySet.has(global)) {
+        throw new DEFAULT_CONFIG.Error(`global \`${global}\` is repated`);
       }
-      globalKeySet.add(item.global);
+      globalKeySet.add(global);
     });
     if (typeof this.config.autoUpdate === 'object') {
       const { interval } = this.config.autoUpdate;

@@ -87,7 +87,7 @@ export default async function (
     if (isSwagger2(data)) {
       data = (await swagger2openapi.convertObj(data, { warnOnly: true })).openapi as OpenAPIV3_1.Document;
     }
-  } catch (error) {
+  } catch {
     throw new DEFAULT_CONFIG.Error(`Cannot read file from ${url}`);
   }
   if (!data) {

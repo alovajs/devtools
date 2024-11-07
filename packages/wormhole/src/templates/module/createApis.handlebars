@@ -66,7 +66,7 @@ export const createApis = (alovaInstance, configMap) => {
     }
   );
   // define global variable `Apis`
-  globalThis.{{{global}}} = Apis;
+  ({{{globalHost}}}).{{{global}}} = Apis;
   return Apis;
 }
 

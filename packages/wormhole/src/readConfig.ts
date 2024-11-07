@@ -13,7 +13,7 @@ export const readConfig = async (projectPath = process.cwd()) => {
   if (!configFile) {
     throw new DEFAULT_CONFIG.Error(`Cannot found config file from path ${projectPath}`);
   }
-  const configTmpFileName = `alova_tmp_${Date.now()}.js`;
+  const configTmpFileName = `alova_tmp_${Date.now()}.cjs`;
   const outfile = path.join(projectPath, configTmpFileName);
   await esbuild.build({
     entryPoints: [configFile],

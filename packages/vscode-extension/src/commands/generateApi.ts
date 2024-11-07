@@ -2,6 +2,7 @@ import message from '@/components/message';
 import readConfig from '@/functions/readConfig';
 import generate from '@/functions/generate';
 import { getFileNameByPath } from '@/utils';
+
 // 用于自动生成
 export default {
   commandId: 'alova.generateApi',

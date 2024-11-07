@@ -29,7 +29,7 @@ export const readAlovaJson = async (originPath: string, name = 'api.json') => {
   let jsonData = {} as TemplateData;
   try {
     jsonData = JSON.parse(data);
-  } catch (error) {
+  } catch {
     jsonData = DEFAULT_CONFIG.templateData.get(originPath) ?? jsonData;
   }
   return jsonData;

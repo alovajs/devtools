@@ -50,6 +50,7 @@ export interface TemplateData extends Omit<OpenAPIV3_1.Document, ''> {
   pathsArr: Path[];
   schemas?: string[];
   pathApis: PathApis[];
+  globalHost: string;
   global: string;
   alovaVersion: AlovaVersion;
   commentText: string;
@@ -297,7 +298,7 @@ export const transformPathObj = async (
   try {
     newApiDescriptor = handleApi(apiDescriptor);
     handleApiDone = true;
-  } catch (error) {
+  } catch {
     handleApiDone = false;
   }
   if (!handleApiDone) {
@@ -358,6 +359,7 @@ export default async function openApi2Data(
     schemas: [],
     alovaVersion: 'v2',
     global: config.global ?? 'Apis',
+    globalHost: config.globalHost ?? 'globalThis',
     useImportType: config?.useImportType ?? false,
     type: 'module'
   };

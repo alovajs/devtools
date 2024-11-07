@@ -40,7 +40,7 @@ export default <Config>{
       expectedConfig: {
         generator: [
           {
-            input: 'http://localhost:3000/@alova/devtools',
+            input: 'http://localhost:3000/alova-devtools',
             output: 'src/api',
             type: 'ts',
             version: 3
@@ -88,7 +88,7 @@ export default {
       expectedConfig: {
         generator: [
           {
-            input: 'http://localhost:3000/@alova/devtools',
+            input: 'http://localhost:3000/alova-devtools',
             output: 'src/api',
             type: 'module',
             version: 3
@@ -112,7 +112,7 @@ module.exports = {
       expectedConfig: {
         generator: [
           {
-            input: 'http://localhost:3000/@alova/devtools',
+            input: 'http://localhost:3000/alova-devtools',
             output: 'src/api',
             type: 'commonjs',
             version: 3

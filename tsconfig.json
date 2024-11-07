@@ -1,6 +1,6 @@
 {
   "extends": "./tsconfig.base.json",
-  "exclude": ["design/**", "test/**"],
+  "exclude": ["design/**"],
   "compilerOptions": {
     "outDir": "./dist",
     "moduleResolution": "node",

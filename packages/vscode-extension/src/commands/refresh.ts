@@ -18,7 +18,7 @@ export default {
       // 生成api文件
       const { resultArr, errorArr } = await generate({ force: true });
       for (const [workspaceRootDir] of resultArr) {
-        message.info(`[${getFileNameByPath(workspaceRootDir)}]:Your API is refresh`);
+        message.info(`[${getFileNameByPath(workspaceRootDir)}]: Your API is updated`);
       }
       errorArr.forEach(([, error]) => {
         throw error;

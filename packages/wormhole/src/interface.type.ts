@@ -49,6 +49,8 @@ export type GeneratorConfig = {
   version?: number;
   // 多项目使用global字段
   global?: string;
+  // global挂载的父级对象，默认为globalThis
+  globalHost?: string;
   // 是否使用import来导入类型，默认false
   // 开启此选项后，生成的apiDefinitions.ts文件将使用import语法来导入类型，而不是/// <reference types="..." />
   useImportType?: boolean;

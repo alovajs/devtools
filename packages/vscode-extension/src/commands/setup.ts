@@ -1,10 +1,10 @@
 import autocomplete from '@/components/autocomplete';
+import { registerEvent } from '@/components/event';
 import { outputChannel } from '@/components/message';
 import readConfig from '@/functions/readConfig';
+import { getWorkspacePaths } from '@/utils/vscode';
 import * as vscode from 'vscode';
 import showStatusBarIcon from './showStatusBarIcon';
-import { getWorkspacePaths } from '@/utils/vscode';
-import { registerEvent } from '@/components/event';
 
 export default {
   commandId: 'alova.setup',

@@ -1,3 +1,4 @@
+import { getGlobalConfig } from '@/config';
 import { createAlova } from 'alova';
 import adapterFetch from 'alova/fetch';
 import handlebars, { HelperOptions } from 'handlebars';
@@ -8,7 +9,6 @@ import * as prettierBabel from 'prettier/plugins/babel';
 import * as prettierEsTree from 'prettier/plugins/estree';
 import * as prettierTs from 'prettier/plugins/typescript';
 import * as prettier from 'prettier/standalone';
-import { getGlobalConfig } from '../config';
 
 const DEFAULT_CONFIG = getGlobalConfig();
 export const prettierConfig: PrettierConfig = {
@@ -74,7 +74,7 @@ export async function readAndRenderTemplate(templatePath: string, view: any) {
   let data = '';
   try {
     data = await fs.readFile(path.resolve(DEFAULT_CONFIG.templatePath, `${templatePath}.handlebars`), 'utf-8');
-  } catch (error) {
+  } catch {
     data = (await import(`../templates/${templatePath}.handlebars`)).default;
   }
   return handlebars.compile(data)(view);
@@ -154,8 +154,3 @@ export const resolveConfigFile = async (projectPath: string) => {
   }
   return null;
 };
-
-// 加载ESM 模块
-export function loadEsmModule<T>(modulePath: string | URL): Promise<T> {
-  return new Function('modulePath', `return import(modulePath);`)(modulePath) as Promise<T>;
-}

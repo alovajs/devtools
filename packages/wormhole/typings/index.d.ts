@@ -25,6 +25,7 @@ export type GeneratorConfig = {
   type?: ConfigType;
   version?: number;
   global?: string;
+  globalHost?: string;
   useImportType?: boolean;
   defaultRequire?: boolean;
   handleApi?: HandleApi;
@@ -81,6 +82,7 @@ export interface TemplateData extends Omit<OpenAPIV3_1.Document, ''> {
   pathsArr: Path[];
   schemas?: string[];
   pathApis: PathApis[];
+  globalHost: string;
   global: string;
   alovaVersion: AlovaVersion;
   commentText: string;
