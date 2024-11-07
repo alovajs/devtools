@@ -11,4 +11,7 @@ dist
 *.vsix
 .vscode-test/
 
+# testing
+/coverage
+
 alova_tmp_*

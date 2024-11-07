@@ -6,18 +6,26 @@
   "private": true,
   "engines": {
     "node": ">=18.19.0",
-    "pnpm": ">=8.6.12"
+    "pnpm": ">=9.1.0"
   },
+  "packageManager": "pnpm@9.1.0",
   "scripts": {
-    "test": "vitest",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "lint": "eslint",
     "lint:fix": "npm run lint -- --fix",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
     "api-test": "tsx scripts/api-test.ts",
-    "commit": "git-cz && git push",
+    "commit": "tsx scripts/bump-version.ts && git-cz && git push",
     "prepare": "husky",
-    "watch:extension": "pnpm --filter=alova-vscode-extension watch:esbuild"
+    "coveralls": "pnpm run test:coverage && coveralls < coverage/lcov.info",
+    "changeset": "changeset",
+    "changeset:alpha": "changeset pre enter alpha",
+    "changeset:beta": "changeset pre enter beta",
+    "changeset:pre.exit": "changeset pre exit",
+    "changeset:version": "changeset version",
+    "release": "pnpm run coveralls && changeset publish && pnpm --filter=alova-vscode-extension release"
   },
   "license": "MIT",
   "repository": {
@@ -32,6 +40,8 @@
     "*.js,*.ts": "npm run lint:fix"
   },
   "devDependencies": {
+    "@changesets/changelog-github": "^0.5.0",
+    "@changesets/cli": "^2.27.9",
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
     "@types/js-yaml": "^4.0.9",
@@ -41,7 +51,7 @@
     "@types/serialize-javascript": "^5.0.4",
     "@typescript-eslint/eslint-plugin": "^8.13.0",
     "@typescript-eslint/parser": "^8.13.0",
-    "changeset": "^0.2.6",
+    "@vitest/coverage-v8": "^2.1.4",
     "commitizen": "^4.3.0",
     "cz-conventional-changelog": "^3.3.0",
     "dts-bundle-generator": "^9.5.1",

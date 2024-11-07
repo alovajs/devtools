@@ -21,7 +21,7 @@ export default [
       '*.{js,mjs,cjs}',
       'packages/wormhole/typings',
       'design',
-      'test-demos/**/*'
+      'test/**/*'
     ]
   },
   ...compat.extends('airbnb', 'airbnb-typescript', 'prettier'),
