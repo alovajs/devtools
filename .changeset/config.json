@@ -4,7 +4,15 @@
   "commit": false,
   "fixed": [],
   "linked": [],
-  "ignore": ["alova-vscode-extension"],
+  "ignore": [
+    "api-v3-js-commonjs-test",
+    "api-js-commonjs-test",
+    "api-v3-js-test",
+    "api-v3-ts-test",
+    "api-js-test",
+    "api-ts-test",
+    "api-common"
+  ],
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "minor",

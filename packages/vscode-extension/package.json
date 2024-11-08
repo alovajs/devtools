@@ -3,6 +3,7 @@
   "displayName": "Alova",
   "description": "Generate and search APIs without API documentation any more",
   "version": "0.1.0",
+  "private": true,
   "engines": {
     "vscode": "^1.89.0",
     "node": ">=18.19.0",
@@ -40,8 +41,8 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "pnpm run check-types && pnpm run lint:fix && tsx esbuild.ts --production",
-    "compile": "pnpm run check-types && pnpm run lint:fix && tsx esbuild.ts",
+    "vscode:prepublish": "pnpm run check-types && tsx esbuild.ts --production",
+    "compile": "pnpm run check-types && tsx esbuild.ts",
     "watch": "npm-run-all -p watch:*",
     "watch:esbuild": "tsx esbuild.ts --watch",
     "pretest": "tsc -p . --outDir out && tsx esbuild.ts",
