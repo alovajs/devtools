@@ -1204,7 +1204,7 @@ exports[`generate API > should generate code from an url 5`] = `
 /* tslint:disable */
 /* eslint-disable */
 /**
- * Swagger Generator - version 3.0.63
+ * Swagger Generator - version 3.0.64
  *
  * This is an online swagger codegen server.  You can find out more at https://github.com/swagger-api/swagger-codegen or on [irc.freenode.net, #swagger](http://swagger.io/irc/).
  *
@@ -1277,7 +1277,7 @@ exports[`generate API > should generate code from an url 7`] = `
 "/* tslint:disable */
 /* eslint-disable */
 /**
- * Swagger Generator - version 3.0.63
+ * Swagger Generator - version 3.0.64
  *
  * This is an online swagger codegen server.  You can find out more at https://github.com/swagger-api/swagger-codegen or on [irc.freenode.net, #swagger](http://swagger.io/irc/).
  *
@@ -1372,7 +1372,7 @@ exports[`generate API > should generate code from an url 8`] = `
 "/* tslint:disable */
 /* eslint-disable */
 /**
- * Swagger Generator - version 3.0.63
+ * Swagger Generator - version 3.0.64
  *
  * This is an online swagger codegen server.  You can find out more at https://github.com/swagger-api/swagger-codegen or on [irc.freenode.net, #swagger](http://swagger.io/irc/).
  *
@@ -8939,7 +8939,7 @@ exports[`generate API > should generate correspoding \`mediaType\` parameters if
 /* tslint:disable */
 /* eslint-disable */
 /**
- * Swagger Generator - version 3.0.63
+ * Swagger Generator - version 3.0.64
  *
  * This is an online swagger codegen server.  You can find out more at https://github.com/swagger-api/swagger-codegen or on [irc.freenode.net, #swagger](http://swagger.io/irc/).
  *
@@ -9012,7 +9012,7 @@ exports[`generate API > should generate correspoding \`mediaType\` parameters if
 "/* tslint:disable */
 /* eslint-disable */
 /**
- * Swagger Generator - version 3.0.63
+ * Swagger Generator - version 3.0.64
  *
  * This is an online swagger codegen server.  You can find out more at https://github.com/swagger-api/swagger-codegen or on [irc.freenode.net, #swagger](http://swagger.io/irc/).
  *
@@ -9107,7 +9107,7 @@ exports[`generate API > should generate correspoding \`mediaType\` parameters if
 "/* tslint:disable */
 /* eslint-disable */
 /**
- * Swagger Generator - version 3.0.63
+ * Swagger Generator - version 3.0.64
  *
  * This is an online swagger codegen server.  You can find out more at https://github.com/swagger-api/swagger-codegen or on [irc.freenode.net, #swagger](http://swagger.io/irc/).
  *
@@ -11348,7 +11348,7 @@ exports[`generate API > should generate corresponding module codes dependent to 
 /* tslint:disable */
 /* eslint-disable */
 /**
- * Swagger Generator - version 3.0.63
+ * Swagger Generator - version 3.0.64
  *
  * This is an online swagger codegen server.  You can find out more at https://github.com/swagger-api/swagger-codegen or on [irc.freenode.net, #swagger](http://swagger.io/irc/).
  *
@@ -11421,7 +11421,7 @@ exports[`generate API > should generate corresponding module codes dependent to 
 "/* tslint:disable */
 /* eslint-disable */
 /**
- * Swagger Generator - version 3.0.63
+ * Swagger Generator - version 3.0.64
  *
  * This is an online swagger codegen server.  You can find out more at https://github.com/swagger-api/swagger-codegen or on [irc.freenode.net, #swagger](http://swagger.io/irc/).
  *
@@ -11516,7 +11516,7 @@ exports[`generate API > should generate corresponding module codes dependent to 
 "/* tslint:disable */
 /* eslint-disable */
 /**
- * Swagger Generator - version 3.0.63
+ * Swagger Generator - version 3.0.64
  *
  * This is an online swagger codegen server.  You can find out more at https://github.com/swagger-api/swagger-codegen or on [irc.freenode.net, #swagger](http://swagger.io/irc/).
  *
@@ -22154,7 +22154,7 @@ exports[`generate API > should generate the existing \`mediaType\` if the target
 /* tslint:disable */
 /* eslint-disable */
 /**
- * Swagger Generator - version 3.0.63
+ * Swagger Generator - version 3.0.64
  *
  * This is an online swagger codegen server.  You can find out more at https://github.com/swagger-api/swagger-codegen or on [irc.freenode.net, #swagger](http://swagger.io/irc/).
  *
@@ -22227,7 +22227,7 @@ exports[`generate API > should generate the existing \`mediaType\` if the target
 "/* tslint:disable */
 /* eslint-disable */
 /**
- * Swagger Generator - version 3.0.63
+ * Swagger Generator - version 3.0.64
  *
  * This is an online swagger codegen server.  You can find out more at https://github.com/swagger-api/swagger-codegen or on [irc.freenode.net, #swagger](http://swagger.io/irc/).
  *
@@ -22322,7 +22322,7 @@ exports[`generate API > should generate the existing \`mediaType\` if the target
 "/* tslint:disable */
 /* eslint-disable */
 /**
- * Swagger Generator - version 3.0.63
+ * Swagger Generator - version 3.0.64
  *
  * This is an online swagger codegen server.  You can find out more at https://github.com/swagger-api/swagger-codegen or on [irc.freenode.net, #swagger](http://swagger.io/irc/).
  *
