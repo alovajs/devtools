@@ -40,7 +40,7 @@ export default <Config>{
       expectedConfig: {
         generator: [
           {
-            input: 'http://localhost:3000/@alova/devtools',
+            input: 'http://localhost:3000/alova-devtools',
             output: 'src/api',
             type: 'ts',
             version: 3
@@ -88,7 +88,7 @@ export default {
       expectedConfig: {
         generator: [
           {
-            input: 'http://localhost:3000/@alova/devtools',
+            input: 'http://localhost:3000/alova-devtools',
             output: 'src/api',
             type: 'module',
             version: 3
@@ -112,7 +112,7 @@ module.exports = {
       expectedConfig: {
         generator: [
           {
-            input: 'http://localhost:3000/@alova/devtools',
+            input: 'http://localhost:3000/alova-devtools',
             output: 'src/api',
             type: 'commonjs',
             version: 3
@@ -133,6 +133,7 @@ afterEach(async () => {
 describe('config', () => {
   test('should create config file under project root path', async () => {
     // generate typescript file
+
     requireResult.set(resolve(process.cwd(), './package.json'), {
       devDependencies: {
         typescript: '^5.4.5'
@@ -150,6 +151,7 @@ describe('config', () => {
     expect(initialTsConfig).toMatch(`export default <Config>{`);
     expect(initialTsConfig).toMatch(`input: 'http://localhost:3000',`);
     // generate commonjs file
+
     requireResult.set(resolve(process.cwd(), './package.json'), {
       type: 'commonjs',
       dependencies: {
@@ -164,6 +166,7 @@ describe('config', () => {
     expect(initialCjsConfig).toMatch(`module.exports = {`);
 
     // generate module file
+
     requireResult.set(resolve(process.cwd(), './package.json'), {
       dependencies: {
         alova: '3.0.5'
@@ -177,6 +180,7 @@ describe('config', () => {
     expect(initialEsmoduleConfig).toMatch(`export default {`);
 
     // generate file with target type
+
     await createConfig({ type: 'typescript' });
     const initialTypedConfig = await fs.readFile(resolve(process.cwd(), 'alova.config.ts'), {
       encoding: 'utf-8'
@@ -187,8 +191,9 @@ describe('config', () => {
   });
 
   test('should create config file under a custom absolute path', async () => {
-    const customPath = '/mockdir_config';
-    // 设置package.json 文件
+    const customPath = './mockdir_config_0';
+    // Set up package.json file
+
     requireResult.set(resolve(customPath, './package.json'), {
       type: 'commonjs',
       dependencies: {
@@ -203,13 +208,14 @@ describe('config', () => {
       });
       expect(!!initialConfig).toBeTruthy();
     } finally {
-      await rimraf(resolve(customPath)); // 清除临时目录
+      await rimraf(resolve(customPath)); // clear temporary directory
     }
   });
 
   test('should create config file under a custom relative path', async () => {
     const customPath = './mockdir_config';
-    // 设置package.json 文件
+    // Set up package.json file
+
     requireResult.set(resolve(process.cwd(), customPath, './package.json'), {
       type: 'commonjs',
       dependencies: {
@@ -224,48 +230,57 @@ describe('config', () => {
       });
       expect(!!initialConfig).toBeTruthy();
     } finally {
-      await rimraf(resolve(process.cwd(), customPath)); // 清除临时目录
+      await rimraf(resolve(process.cwd(), customPath)); // clear temporary directory
     }
   });
 
   test('should read config file under project root path', async () => {
     // write mock config file
+
     const projectRoot = process.cwd();
     if (!(await existsPromise(projectRoot))) {
       await fs.mkdir(projectRoot, { recursive: true });
     }
     // read ts file
+
     await fs.writeFile(resolve(projectRoot, configMap.ts.file), configMap.ts.content, 'utf-8');
     requireResult.set(projectRoot, null); // require()=> throw error
+
     const tsConfig = await readConfig();
 
     expect(tsConfig).toStrictEqual(configMap.ts.expectedConfig);
 
     // read module config file
+
     await fs.writeFile(resolve(projectRoot, configMap.module.file), configMap.module.content, 'utf-8');
     requireResult.set(projectRoot, null); // require()=> throw error
+
     const moduleConfig = await readConfig();
     expect(moduleConfig).toEqual(configMap.module.expectedConfig);
     // read commonjs config file
+
     await fs.writeFile(resolve(projectRoot, configMap.commonjs.file), configMap.commonjs.content, 'utf-8');
     requireResult.set(projectRoot, configMap.commonjs.expectedConfig); // require()=> return config
+
     const cjsConfig = await readConfig();
     expect(cjsConfig).toStrictEqual(configMap.commonjs.expectedConfig);
   });
 
   test('should read config file under target path', async () => {
     // read ts file
+
     const customPath = resolve(__dirname, './mockdir_config2');
     if (!(await existsPromise(customPath))) {
       await fs.mkdir(customPath, { recursive: true });
     }
     await fs.writeFile(resolve(customPath, configMap.tsWithoutImport.file), configMap.tsWithoutImport.content, 'utf-8');
     requireResult.set(customPath, null); // require()=> throw error
+
     try {
       const tsConfig = await readConfig(customPath);
       expect(tsConfig).toStrictEqual(configMap.tsWithoutImport.expectedConfig);
     } finally {
-      await rimraf(customPath); // 清除临时目录
+      await rimraf(customPath); // clear temporary directory
     }
   });
 });

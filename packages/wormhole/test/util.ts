@@ -1,9 +1,10 @@
 import isEqualWith from 'lodash/isEqualWith';
 import { expect } from 'vitest';
-// 自定义比较器函数，忽略函数的比较
+
+// Customize the comparator function and ignore the comparison of the function
 function customizer(objValue: any, othValue: any) {
   if (typeof objValue === 'function' && typeof othValue === 'function') {
-    return objValue.toString() === othValue.toString(); // 比较函数内容
+    return objValue.toString() === othValue.toString(); // Compare function content
   }
 }
 export const isEqualObject = (objValue: any, othValue: any) => isEqualWith(objValue, othValue, customizer);

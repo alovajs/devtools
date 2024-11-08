@@ -25,6 +25,7 @@ export type GeneratorConfig = {
   type?: ConfigType;
   version?: number;
   global?: string;
+  globalHost?: string;
   useImportType?: boolean;
   defaultRequire?: boolean;
   handleApi?: HandleApi;
@@ -43,7 +44,7 @@ export type GenerateApiOptions = {
   projectPath?: string;
 };
 /**
- * 生成的api描述信息
+ * Generated api description information
  */
 export interface Api {
   method: string;
@@ -81,6 +82,7 @@ export interface TemplateData extends Omit<OpenAPIV3_1.Document, ''> {
   pathsArr: Path[];
   schemas?: string[];
   pathApis: PathApis[];
+  globalHost: string;
   global: string;
   alovaVersion: AlovaVersion;
   commentText: string;
@@ -114,9 +116,9 @@ export declare const getAutoUpdateConfig: (config: Config) => {
 };
 export declare const getApis: (config: Config, projectPath?: string) => Api[];
 /**
- * 查找所有包含 alova.config.js 文件的目录
- * @param rootPath 根目录
- * @returns 包含 alova.config.js 文件的目录数组
+ * Find all directories containing alova.config.js files
+ * @param rootPath root directory
+ * @returns Array of directories containing alova.config.js files
  */
 export function resolveWorkspaces(rootPath?: string): Promise<string[]>;
 

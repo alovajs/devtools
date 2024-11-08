@@ -12,10 +12,9 @@
     "Other"
   ],
   "activationEvents": [
-    "workspaceContains:**/*.ts",
-    "workspaceContains:**/*.js"
+    "workspaceContains:package.json"
   ],
-  "main": "./out/extension.js",
+  "main": "out/extension.js",
   "icon": "resources/icon.png",
   "contributes": {
     "commands": [
@@ -35,25 +34,19 @@
         "description": "alova icon",
         "default": {
           "fontPath": "./resources/logo.ttf",
-          "fontCharacter": "\\E900"
+          "fontCharacter": "\\E64B"
         }
       }
     }
   },
   "scripts": {
-    "vscode:prepublish": "pnpm run package",
+    "vscode:prepublish": "pnpm run check-types && pnpm run lint:fix && tsx esbuild.ts --production",
     "compile": "pnpm run check-types && pnpm run lint:fix && tsx esbuild.ts",
     "watch": "npm-run-all -p watch:*",
     "watch:esbuild": "tsx esbuild.ts --watch",
-    "package": "pnpm run check-types && pnpm run lint:fix && tsx esbuild.ts --production",
-    "compile-tests": "tsc -p . --outDir out",
+    "pretest": "tsc -p . --outDir out && tsx esbuild.ts",
     "watch-tests": "tsc -p . -w --outDir out",
-    "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
     "check-types": "tsc --noEmit",
-    "lint": "eslint . --ext .js,.ts",
-    "lint:fix": "npm run lint -- --fix",
-    "format": "prettier --check .",
-    "format:fix": "prettier --write .",
     "test": "vscode-test",
     "pack:pre": "vsce package --no-dependencies --pre-release",
     "release:pre": "vsce publish --no-dependencies --pre-release",
@@ -70,15 +63,18 @@
     "url": "https://github.com/alovajs/devtools/issues"
   },
   "devDependencies": {
+    "@types/mocha": "^10.0.9",
+    "@types/sinon": "^17.0.3",
     "@types/vscode": "^1.89.0",
     "@vscode/test-cli": "^0.0.9",
     "@vscode/test-electron": "^2.3.9",
     "@vscode/vsce": "^2.29.0",
     "esbuild": "^0.24.0",
-    "esbuild-plugin-alias": "^0.2.1"
+    "esbuild-plugin-alias": "^0.2.1",
+    "sinon": "^19.0.2"
   },
   "dependencies": {
-    "@alova/wormhole": "workspace:^",
+    "@alova/wormhole": "workspace:*",
     "glob": "^11.0.0",
     "import-fresh": "^3.3.0"
   }

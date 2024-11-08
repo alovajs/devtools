@@ -13,7 +13,7 @@ export const readConfig = async (projectPath = process.cwd()) => {
   if (!configFile) {
     throw new DEFAULT_CONFIG.Error(`Cannot found config file from path ${projectPath}`);
   }
-  const configTmpFileName = `alova_tmp_${Date.now()}.js`;
+  const configTmpFileName = `alova_tmp_${Date.now()}.cjs`;
   const outfile = path.join(projectPath, configTmpFileName);
   await esbuild.build({
     entryPoints: [configFile],
@@ -28,7 +28,8 @@ export const readConfig = async (projectPath = process.cwd()) => {
 
   const config: Config = module.default || module;
   await unlink(outfile);
-  // 读取缓存文件并保存
+  // Read the cache file and save it
+
   const configuration = new Configuration(config, projectPath);
   configuration.readAlovaJson();
   return config;
@@ -36,7 +37,8 @@ export const readConfig = async (projectPath = process.cwd()) => {
 
 export const getAutoUpdateConfig = (config: Config) => {
   const autoUpdateConfig = config.autoUpdate;
-  let time = 60 * 5; // 默认五分钟
+  let time = 60 * 5; // Default five minutes
+
   let immediate = false;
   const isStop = !autoUpdateConfig;
   if (typeof autoUpdateConfig === 'object') {

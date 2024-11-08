@@ -1,12 +1,12 @@
-import path from 'node:path';
-import importFresh from 'import-fresh';
-import { getWorkspacePaths } from '@/utils/vscode';
 import Error, { AlovaErrorConstructor } from '@/components/error';
-import { enable, disable, BAR_STATE } from '@/components/statusBar';
-import { TEMPLATE_DATA } from '@/helper/config';
-import { existsSync } from 'node:fs';
+import { BAR_STATE, disable, enable } from '@/components/statusBar';
 import { removeConfiguration } from '@/helper/autoUpdate';
+import { TEMPLATE_DATA } from '@/helper/config';
+import { getWorkspacePaths } from '@/utils/vscode';
 import { globSync } from 'glob';
+import importFresh from 'import-fresh';
+import { existsSync } from 'node:fs';
+import path from 'node:path';
 
 type Wormhole = typeof import('@alova/wormhole');
 export const getWormhole = () => {
@@ -28,13 +28,14 @@ export const getWormhole = () => {
           break;
         }
       }
-    } catch (error) {}
+    } catch {}
   }
   if (wormhole && BAR_STATE.value !== 'loading') {
     enable();
   }
   if (wormhole) {
-    // 全局配置
+    // Global configuration
+
     wormhole.setGlobalConfig({
       Error: AlovaErrorConstructor,
       templateData: TEMPLATE_DATA

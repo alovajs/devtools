@@ -1,8 +1,8 @@
+import type { ConfigObject } from '@/helper/config';
+import { CONFIG_POOL } from '@/helper/config';
+import wormhole from '@/helper/wormhole';
 import { highPrecisionInterval } from '@/utils';
 import { executeCommand } from '@/utils/vscode';
-import wormhole from '@/helper/wormhole';
-import { CONFIG_POOL } from '@/helper/config';
-import type { ConfigObject } from '@/helper/config';
 
 const AUTOUPDATE_MAP = new Map<
   string,
@@ -13,12 +13,14 @@ export function refeshAutoUpdate(configuration: ConfigObject) {
   const [, config] = configuration;
   const { time, immediate, isStop } = wormhole.getAutoUpdateConfig(config);
   const oldConfig = AUTOUPDATE_MAP.get(configuration[0]);
-  // 过滤掉已经配置的定时器
+  // Filter out configured timers
+
   if (oldConfig?.immediate === immediate && oldConfig?.time === time && oldConfig?.timer?.isRunning()) {
     return;
   }
   if (!isStop) {
-    // 设置定时器
+    // Set timer
+
     AUTOUPDATE_MAP.set(configuration[0], {
       time,
       immediate,
@@ -31,10 +33,12 @@ export function refeshAutoUpdate(configuration: ConfigObject) {
       )
     });
   } else {
-    // 移除定时器
+    // Remove timer
+
     AUTOUPDATE_MAP.delete(configuration[0]);
   }
-  // 关闭之前的定时器
+  // Close previous timer
+
   oldConfig?.timer?.clear?.();
 }
 export function removeConfiguration(dir?: string | string[]) {
@@ -42,7 +46,8 @@ export function removeConfiguration(dir?: string | string[]) {
   for (const dir of dirs) {
     const idx = CONFIG_POOL.findIndex(([projectPath]) => projectPath === dir);
     if (idx >= 0) {
-      // 关闭定时器
+      // off timer
+
       AUTOUPDATE_MAP.get(CONFIG_POOL[idx][0])?.timer?.clear();
       AUTOUPDATE_MAP.delete(CONFIG_POOL[idx][0]);
       CONFIG_POOL.splice(idx, 1);

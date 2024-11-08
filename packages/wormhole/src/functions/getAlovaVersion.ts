@@ -8,12 +8,12 @@ export default function (workspaceRootDir: string) {
   if (!packageJson) {
     return 'v3';
   }
-  // 依赖中找
+  // Find in dependencies
   const alovaVersion = packageJson.dependencies?.alova;
-  // dev依赖中找
-  // 优先级： 生产依赖 > 开发依赖
+  // Find in dev dependencies
+  // Priority: Production dependencies > Development dependencies
   const alovaDevVersion = packageJson.devDependencies?.alova;
-  // 框架技术栈标签  vue | react
+  // Framework technology stack tag vue | react
   return getVersion(alovaVersion ?? alovaDevVersion);
 }
 

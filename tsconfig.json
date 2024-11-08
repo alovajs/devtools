@@ -1,10 +1,17 @@
 {
   "extends": "./tsconfig.base.json",
-  "exclude": ["design/**", "test/**"],
+  "exclude": ["design/**"],
   "compilerOptions": {
     "outDir": "./dist",
     "moduleResolution": "node",
     "resolveJsonModule": true
   },
-  "include": ["*.*js", "packages/**/*.ts", "*.*ts", "scripts/**.*", "typings/**/*.d.ts"]
+  "include": [
+    "*.*js",
+    "packages/**/*.ts",
+    "*.*ts",
+    "scripts/**.*",
+    "typings/**/*.d.ts",
+    "packages/wormhole/vitest.config.mts"
+  ]
 }

@@ -6,11 +6,11 @@
   "main": "./dist/index.js",
   "types": "./typings/index.d.ts",
   "bin": {
-    "alova": "./dist/bin/cli.js"
+    "alova": "dist/bin/cli.js"
   },
   "scripts": {
     "build": "npm run build:ts && npm run build:dts && npm run build:copy",
-    "build:copy": "tsx ./scripts/build-copy.ts",
+    "build:copy": "ncp ./src/templates ./dist/templates",
     "build:ts": "tsc --build tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "build:dts": "dts-bundle-generator -o typings/index.d.ts src/index.ts --no-check --no-banner --project tsconfig.build.json"
   },
@@ -32,7 +32,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/alovajs/devtools.git"
+    "url": "git+https://github.com/alovajs/devtools.git"
   },
   "bugs": {
     "url": "https://github.com/alovajs/devtools/issues"
@@ -41,6 +41,9 @@
     "dist",
     "typings"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "alova": "^3.1.0",
     "commander": "^12.1.0",
@@ -51,7 +54,7 @@
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
     "openapi-types": "^12.1.3",
-    "ora": "^8.1.0",
+    "ora": "^5.4.1",
     "swagger2openapi": "^7.0.8"
   },
   "devDependencies": {

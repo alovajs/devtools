@@ -29,9 +29,11 @@ export const getApiDefultValue = (api: Api) => {
     configStrArr.push(`data: ${generateDefaultValues(api.requestComment.replace(/\*/g, ''))}`);
   }
   return format(`${api.global}.${api.pathKey}({${configStrArr.join(',\n')}})`, {
-    printWidth: 40, // 缩短printWidth以强制换行
+    printWidth: 40, // Shorten print width to force line breaks
+
     tabWidth: 2,
-    semi: false, // 去掉末尾分号
+    semi: false, // Remove the trailing semicolon
+
     useTabs: false,
     trailingComma: 'none',
     endOfLine: 'lf',
@@ -40,8 +42,9 @@ export const getApiDefultValue = (api: Api) => {
   });
 };
 export interface TemplateData extends Omit<OpenAPIV3_1.Document, ''> {
-  // 定义模板数据类型
+  // Define template data types
   // ...
+
   vue?: boolean;
   react?: boolean;
   moduleType?: 'commonJs' | 'ESModule';
@@ -50,6 +53,7 @@ export interface TemplateData extends Omit<OpenAPIV3_1.Document, ''> {
   pathsArr: Path[];
   schemas?: string[];
   pathApis: PathApis[];
+  globalHost: string;
   global: string;
   alovaVersion: AlovaVersion;
   commentText: string;
@@ -297,7 +301,7 @@ export const transformPathObj = async (
   try {
     newApiDescriptor = handleApi(apiDescriptor);
     handleApiDone = true;
-  } catch (error) {
+  } catch {
     handleApiDone = false;
   }
   if (!handleApiDone) {
@@ -347,8 +351,9 @@ export default async function openApi2Data(
   openApi: OpenAPIV3_1.Document,
   config: GeneratorConfig
 ): Promise<TemplateData> {
-  // 处理openApi中的数据
+  // Processing data in openApi
   // ...
+
   const templateData: TemplateData = {
     ...openApi,
     baseUrl: '',
@@ -358,6 +363,7 @@ export default async function openApi2Data(
     schemas: [],
     alovaVersion: 'v2',
     global: config.global ?? 'Apis',
+    globalHost: config.globalHost ?? 'globalThis',
     useImportType: config?.useImportType ?? false,
     type: 'module'
   };

@@ -12,54 +12,73 @@ import openApi2Data from './openApi2Data';
 
 const DEFAULT_CONFIG = getGlobalConfig();
 export default async function (
-  workspaceRootDir: string, // 项目地址
-  outputPath: string, // 输出路径
-  data: OpenAPIV3_1.Document, // openapi数据
-  config: GeneratorConfig, // generator配置
-  type: TemplateType, // 模板类型
-  force: boolean // 是否强制生成
+  workspaceRootDir: string, // Project address
+
+  outputPath: string, // Output path
+
+  data: OpenAPIV3_1.Document, // Openapidata
+
+  config: GeneratorConfig, // Generator configuration
+
+  type: TemplateType, // template type
+
+  force: boolean // Whether to force generation
 ) {
   if (!data) {
     return false;
   }
-  // 输出目录
+  // Output directory
+
   const outputDir = path.resolve(workspaceRootDir, outputPath);
-  // 缓存文件地址
+  // Cache file address
+
   const alovaJsonPath = getAlovaJsonPath(workspaceRootDir, outputPath);
-  // 获取alova版本
+  // Get alova version
+
   const configVersion = Number(config.version);
   const alovaVersion: AlovaVersion = Number.isNaN(configVersion)
     ? getAlovaVersion(workspaceRootDir)
     : `v${configVersion}`;
   const templateFile = new TemplateFile(type, alovaVersion);
-  // 将openApi对象转成template对象
+  // Convert open api object to template object
+
   const templateData = await openApi2Data(data, config);
-  // 框架技术栈标签  vue | react
+  // Framework technology stack tag vue | react
+
   templateData[getFrameworkTag(workspaceRootDir)] = true;
-  // 头部注释部分
+  // Header annotation section
+
   templateData.commentText = await templateFile.readAndRenderTemplate('comment', data, {
     root: true,
     hasVersion: false
   });
-  // 模块类型
+  // module type
+
   templateData.moduleType = TemplateFile.getModuleType(type);
-  // 模板类型
+  // template type
+
   templateData.type = type;
-  // alova版本
+  // Alova version
+
   templateData.alovaVersion = alovaVersion;
-  // 是否需要生成api文件
-  // 判断是否需要生成api文件
+  // Do you need to generate api files?
+  // Determine whether api files need to be generated
+
   if (!force && isEqual(templateData, DEFAULT_CONFIG.templateData.get(alovaJsonPath))) {
     return false;
   }
-  // 保存templateData
+  // Save template data
+
   DEFAULT_CONFIG.templateData.set(alovaJsonPath, templateData);
-  // 生成alova.json文件
+  // Generate alova.json file
+
   await writeAlovaJson(templateData, alovaJsonPath);
-  // 获取是否存在index.ts|index.js
+  // Get whether index.ts|index.js exists
+
   const indexIsExists = await existsPromise(path.join(outputDir, `index${templateFile.getExt()}`));
-  // mustache语法生成
-  // 定义模版配置对象
+  // mustache grammar generation
+  // Define template configuration objects
+
   const generatingPromises = [
     !indexIsExists
       ? {

@@ -6,24 +6,26 @@ import path from 'node:path';
 vi.mock('node:fs');
 vi.mock('node:fs/promises');
 /**
- * 根据给定的文件结构对象创建文件和目录
- * @param {string} rootPath 根路径
- * @param {Record<string, any>} structure 文件结构对象
+ * Create files and directories based on the given file structure object
+ * @param {string} rootPath root path
+ * @param {Record<string, any>} structure file structure object
  */
 async function createProjectStructure(structure: Record<string, any>, rootPath = process.cwd()) {
   if (!(await existsPromise(rootPath))) {
     await fs.mkdir(rootPath, { recursive: true });
   }
-  // 遍历文件结构
+
+  // Traverse the file structure
   for (const key in structure) {
     const item = structure[key];
     const itemPath = path.join(rootPath, key);
 
     if (typeof item === 'string') {
-      // 如果是字符串，创建文件并写入内容
+      // If it is a string, create the file and write the content
       await fs.writeFile(itemPath, item);
     } else if (typeof item === 'object' && item !== null) {
-      // 如果是对象，创建目录并递归处理其内容
+      // If an object, create the directory and process its contents recursively
+
       if (!(await existsPromise(itemPath))) {
         await fs.mkdir(itemPath);
       }

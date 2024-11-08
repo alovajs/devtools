@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* c8 ignore start */
 import { Command } from 'commander';
 import { actionGen, actionInit } from './actions';
 
@@ -22,3 +23,4 @@ program
   .action(actionGen);
 
 program.parse(process.argv);
+/* c8 ignore stop */

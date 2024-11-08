@@ -8,11 +8,11 @@ export default function (workspaceRootDir: string) {
   if (!packageJson) {
     return 'defaultKey';
   }
-  // 框架技术栈标签  vue | react
-  // 依赖中找
+  // Framework technology stack tag vue | react
+  // Find in dependencies
   const frameTag = frameworkName.find(framework => packageJson.dependencies?.[framework]);
-  // dev依赖中找
-  // 优先级： 生产依赖 > 开发依赖
+  // Find in dev dependencies
+  // Priority: Production dependencies > Development dependencies
   const devFrameTag = frameworkName.find(framework => packageJson.devDependencies?.[framework]);
   return frameTag ?? devFrameTag ?? 'defaultKey';
 }

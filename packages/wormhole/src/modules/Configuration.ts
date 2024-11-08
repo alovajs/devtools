@@ -14,12 +14,14 @@ export default class Configuration {
   workspaceRootDir: string;
 
   constructor(config: Config, workspaceRootDir: string) {
-    // 配置文件
+    // Configuration file
+
     this.config = config;
     this.workspaceRootDir = workspaceRootDir;
   }
 
-  // 检测配置文件
+  // Detect configuration file
+
   checkConfig() {
     if (!this.config.generator?.length) {
       throw new DEFAULT_CONFIG.Error('No items found in the `config.generator`');
@@ -33,8 +35,9 @@ export default class Configuration {
       if (!item.output) {
         throw new DEFAULT_CONFIG.Error('Field output is required in `config.generator`');
       }
-      if (!isEmpty(item.global) && !isValidJSIdentifier(item.global)) {
-        throw new DEFAULT_CONFIG.Error(`\`${item.global}\` does not match variable specification`);
+      const { global } = item;
+      if (!isEmpty(global) && !isValidJSIdentifier(global)) {
+        throw new DEFAULT_CONFIG.Error(`\`${global}\` does not match variable specification`);
       }
       if (arr.length < 2) {
         return;
@@ -43,13 +46,13 @@ export default class Configuration {
         throw new DEFAULT_CONFIG.Error(`output \`${item.output}\` is repated`);
       }
       outputSet.add(path.join(item.output));
-      if (!item.global) {
+      if (!global) {
         throw new DEFAULT_CONFIG.Error('Field global is required in `config.generator`');
       }
-      if (globalKeySet.has(item.global)) {
-        throw new DEFAULT_CONFIG.Error(`global \`${item.global}\` is repated`);
+      if (globalKeySet.has(global)) {
+        throw new DEFAULT_CONFIG.Error(`global \`${global}\` is repated`);
       }
-      globalKeySet.add(item.global);
+      globalKeySet.add(global);
     });
     if (typeof this.config.autoUpdate === 'object') {
       const { interval } = this.config.autoUpdate;
@@ -58,7 +61,8 @@ export default class Configuration {
         throw new DEFAULT_CONFIG.Error('autoUpdate.interval must be a number');
       }
       if (time <= 0) {
-        // 最少一秒钟
+        // at least one second
+
         throw new DEFAULT_CONFIG.Error('Expected to set number which great than 1 in `config.autoUpdate.interval`');
       }
     }
@@ -67,7 +71,8 @@ export default class Configuration {
   static getTemplateType(workspaceRootDir: string, generator: GeneratorConfig): TemplateType {
     let type: TemplateType;
     const configType = generator.type ?? 'auto';
-    // 根据配置文件中的type来判断模板类型
+    // Determine the template type based on the type in the configuration file
+
     switch (configType) {
       case 'ts':
       case 'typescript':
@@ -94,12 +99,14 @@ export default class Configuration {
     return this.config.generator.map(generator => generator.output);
   }
 
-  // 获取openapi数据
+  // Get openapi data
+
   static getOpenApiData(workspaceRootDir: string, generator: GeneratorConfig) {
     return getOpenApiData(workspaceRootDir, generator.input, generator.platform);
   }
 
-  // 获取所有openapi数据
+  // Get all openapi data
+
   getAllOpenApiData() {
     return Promise.all(
       this.config.generator.map(generator => Configuration.getOpenApiData(this.workspaceRootDir, generator))
@@ -108,7 +115,8 @@ export default class Configuration {
 
   getAutoUpdateConfig() {
     const autoUpdateConfig = this.config.autoUpdate;
-    let time = 60 * 5; // 默认五分钟
+    let time = 60 * 5; // Default five minutes
+
     let immediate = false;
     if (typeof autoUpdateConfig === 'object') {
       time = Number(autoUpdateConfig.interval);

@@ -4,11 +4,13 @@
     "baseUrl": ".",
     "module": "CommonJS",
     "resolveJsonModule": false,
+    "esModuleInterop": true,
+    "types": ["vitest/globals"],
     "paths": {
       "~/*": ["./typings/*"],
       "@/*": ["./src/*"],
       "#/*": ["./*"]
     }
   },
-  "include": ["src/**/*.ts", "test/**/*", "./*.ts", "typings/**/*.d.ts", "./scripts/**/*"]
+  "include": ["src/**/*.ts", "test/**/*", "./*.ts", "typings/**/*.d.ts", "./scripts/**/*", "vitest.config.mts"]
 }

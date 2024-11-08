@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { createAlova } from 'alova';
 import GlobalFetch from 'alova/GlobalFetch';
 import { createApis, withConfigType } from './createApis';

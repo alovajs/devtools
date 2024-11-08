@@ -1,5 +1,5 @@
 import * as statusBar from '@/components/statusBar';
-// 显示状态栏项
+// Show status bar items
 export default {
   commandId: 'alova.showStatusBarIcon',
   handler: context => async () => {

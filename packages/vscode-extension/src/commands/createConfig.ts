@@ -1,4 +1,4 @@
-// 用于生成alova.config.js
+// Used to generate alova.config.js
 import generateConfig from '@/functions/generateConfig';
 import { getCurrentDirectory } from '@/utils/vscode';
 

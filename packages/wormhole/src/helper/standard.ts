@@ -67,10 +67,10 @@ const reservedWords = new Set([
   'yield'
 ]);
 export const makeIdentifier = (str: string, style: 'camelCas' | 'snakeCase') => {
-  // 移除所有非字母、数字、下划线和美元符号的字符，同时拆分单词
+  // Removes all characters that are not letters, numbers, underscores, and dollar signs while splitting words
   const words = str.split(/[^a-zA-Z0-9_$]+/).filter(Boolean);
 
-  // 将单词转换为小驼峰形式
+  // Convert words to camelCase form
   let identifier = '';
   switch (style) {
     case 'camelCas':
@@ -91,12 +91,12 @@ export const makeIdentifier = (str: string, style: 'camelCas' | 'snakeCase') => 
       break;
   }
 
-  // 如果字符串以数字开头，用下划线替换
+  // If the string starts with a number, replace it with an underscore
   if (/^[0-9]/.test(identifier)) {
     identifier = `_${identifier}`;
   }
 
-  // 如果是保留字，添加一个后缀
+  // If it is a reserved word, add a suffix
   if (reservedWords.has(identifier)) {
     identifier += '_';
   }

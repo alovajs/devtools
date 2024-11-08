@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import util from 'node:util';
 import * as vscode from 'vscode';
-// 创建一个输出通道
+// Create an output channel
 export const outputChannel = vscode.window.createOutputChannel('Alova');
 export function info(message: string, duration?: number) {
   if (!duration) {
@@ -17,7 +17,7 @@ export function info(message: string, duration?: number) {
       new Promise(resolve => {
         const timeout = setTimeout(() => {
           resolve(message);
-        }, duration); // 自动关闭时间（毫秒）
+        }, duration); // Automatic shutdown time (milliseconds)
         token.onCancellationRequested(() => {
           clearTimeout(timeout);
           resolve(message);

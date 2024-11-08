@@ -561,6 +561,48 @@ describe('generate API', () => {
     expect(fileContentEsm2).toMatch('globalThis.ApisEsm2 = Apis;');
   });
 
+  test('should set the right globalHost variable name', async () => {
+    const outputDir = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`);
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/openapi_301.json'),
+          output: outputDir,
+          type: 'module',
+          globalHost: 'globalHost'
+        }
+      ]
+    });
+    const fileContentEsm = await fs.readFile(resolve(outputDir, 'createApis.js'), 'utf-8');
+    expect(fileContentEsm).toMatch('globalHost.Apis = Apis;');
+
+    const outputDir3 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`);
+    const outputDir4 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`);
+    const results = await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/openapi_301.json'),
+          output: outputDir3,
+          type: 'commonjs',
+          global: 'ApisCjs',
+          globalHost: 'parentCjs'
+        },
+        {
+          input: resolve(__dirname, './openapis/openapi_301.json'),
+          output: outputDir4,
+          type: 'ts',
+          global: 'ApisEsm',
+          globalHost: 'globalThis ? globalThis : parentTs'
+        }
+      ]
+    });
+    expect(results).toStrictEqual([true, true]);
+    const fileContentCjs = await fs.readFile(resolve(outputDir3, 'createApis.js'), 'utf-8');
+    expect(fileContentCjs).toMatch('parentCjs.ApisCjs = Apis;');
+    const fileContentEsm2 = await fs.readFile(resolve(outputDir4, 'createApis.ts'), 'utf-8');
+    expect(fileContentEsm2).toMatch('((globalThis ? globalThis : parentTs) as any).ApisEsm = Apis;');
+  });
+
   test('should preprocess non-variable-specification characters', async () => {
     const outputDir = resolve(__dirname, `./mock_output/non_variable_specification_openapi${getSalt()}`);
     await generate({

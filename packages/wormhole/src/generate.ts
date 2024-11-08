@@ -13,7 +13,8 @@ const generate = async (config: Config, rules?: GenerateApiOptions) => {
     return [] as boolean[];
   }
   const configuration = new Configuration(config, rules?.projectPath ?? process.cwd());
-  // 检查新配置
+
+  // Check new configuration
   configuration.checkConfig();
   const outputPathArr = configuration.getAllOutputPath();
   const templateTypeArr = configuration.getAllTemplateType();
@@ -21,7 +22,7 @@ const generate = async (config: Config, rules?: GenerateApiOptions) => {
   const generatorConfigArr = configuration.config.generator;
   const result = await Promise.all(
     outputPathArr.map((outputPath, idx) =>
-      // 生成api文件
+      // Generate api file
       generateApi(
         configuration.workspaceRootDir,
         outputPath,

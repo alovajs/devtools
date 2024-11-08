@@ -32,7 +32,7 @@ async function main() {
     sourcesContent: false,
     platform: 'node',
     outdir: 'out',
-    external: ['vscode'],
+    external: ['vscode', '@alova/wormhole'],
     logLevel: 'silent',
     plugins: [
       alias({

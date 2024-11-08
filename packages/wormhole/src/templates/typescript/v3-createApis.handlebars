@@ -65,7 +65,7 @@ export const createApis = (alovaInstance: Alova<AlovaGenerics>, configMap: any) 
     }
   );
   // define global variable `Apis`
-  (globalThis as any).{{{global}}} = Apis;
+  (({{{globalHost}}}) as any).{{{global}}} = Apis;
   return Apis;
 }
 type MethodConfig<T> = AlovaMethodCreateConfig<typeof import('./index')['alovaInstance'] extends Alova<infer AG> ? AG : any, any, T>;
