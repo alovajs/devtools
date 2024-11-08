@@ -24,7 +24,7 @@ describe('cli', () => {
     await actionInit({ type: 'commonjs' });
     expect(createConfig).toBeCalledWith({ type: 'commonjs' });
 
-    await actionInit({ path: '/mock_path' });
+    await actionInit({ cwd: '/mock_path' });
     expect(createConfig).toBeCalledWith({ projectPath: '/mock_path' });
   });
 
@@ -46,7 +46,7 @@ describe('cli', () => {
     });
 
     vi.clearAllMocks();
-    await actionGen({ workspace: false, path: '/mock_path', force: true });
+    await actionGen({ workspace: false, cwd: '/mock_path', force: true });
     expect(resolveWorkspaces).not.toHaveBeenCalled();
     expect(readConfig).toHaveBeenCalledTimes(1);
     expect(readConfig).toHaveBeenNthCalledWith(1, undefined);

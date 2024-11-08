@@ -2,7 +2,7 @@
   "name": "alova-vscode-extension",
   "displayName": "Alova",
   "description": "Generate and search APIs without API documentation any more",
-  "version": "0.0.10",
+  "version": "0.1.0",
   "engines": {
     "vscode": "^1.89.0",
     "node": ">=18.19.0",

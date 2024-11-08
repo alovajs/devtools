@@ -6,25 +6,25 @@ import path from 'node:path';
 import { existsPromise, resolveConfigFile } from './utils';
 
 /**
- * Find all directories containing alova.config.js files
- * @param rootPath root directory
- * @returns Array of directories containing alova.config.js files
+ * Search for all directories containing alova.config configuration files under the monorepo project. It will search for configuration files based on `workspaces` in `package.json` or subpackages defined in `pnpm-workspace.yaml`
+ * @param projectPath The project path to search, defaults to `process.cwd()`.
+ * @returns An array of relative paths to directories containing alova.config configuration files.
  */
-export default async function resolveWorkspaces(rootPath = process.cwd()) {
+export default async function resolveWorkspaces(projectPath = process.cwd()) {
   const resultDirs: string[] = [];
 
   // Check if there is alova.config.js in the root directory
 
-  const rootConfigPath = await resolveConfigFile(rootPath);
+  const rootConfigPath = await resolveConfigFile(projectPath);
   if (rootConfigPath) {
-    resultDirs.push(rootPath);
+    resultDirs.push(projectPath);
   }
 
   // Find subpackages based on workspaces in package.json or pnpm-workspace.yaml
 
-  const packageJsonPath = path.join(rootPath, 'package.json');
-  const pnpmWorkspacePathYaml = path.join(rootPath, 'pnpm-workspace.yaml');
-  const pnpmWorkspacePathYml = path.join(rootPath, 'pnpm-workspace.yml');
+  const packageJsonPath = path.join(projectPath, 'package.json');
+  const pnpmWorkspacePathYaml = path.join(projectPath, 'pnpm-workspace.yaml');
+  const pnpmWorkspacePathYml = path.join(projectPath, 'pnpm-workspace.yml');
 
   let workspaces: string[] = [];
   // If package.json exists, read workspaces
@@ -57,7 +57,7 @@ export default async function resolveWorkspaces(rootPath = process.cwd()) {
   // Iterate through each sub-package and check if alova.config.js exists
 
   for (const workspace of workspaces) {
-    const workspaceDirs = await globPaths(rootPath, workspace);
+    const workspaceDirs = await globPaths(projectPath, workspace);
     for (const dir of workspaceDirs) {
       const configFile = await resolveConfigFile(dir);
       if (configFile) {

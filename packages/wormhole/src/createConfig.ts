@@ -9,6 +9,11 @@ interface ConfigCreationOptions {
   type?: TemplateType;
 }
 
+/**
+ * create a templated configuration file
+ * @param options config file create options
+ * @returns Promise<void>
+ */
 const createConfig = ({ projectPath = '', type }: ConfigCreationOptions = {}) => {
   projectPath = path.isAbsolute(projectPath) ? projectPath : path.resolve(process.cwd(), projectPath);
   type = type || getAutoTemplateType(projectPath);

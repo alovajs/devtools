@@ -1,6 +1,5 @@
-import createConfig from '@/createConfig';
+import { createConfig, readConfig } from '@/index';
 import type { Config } from '@/interface.type';
-import { readConfig } from '@/readConfig';
 import { existsPromise } from '@/utils';
 import fs from 'node:fs/promises';
 import { resolve } from 'node:path';

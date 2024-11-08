@@ -8,6 +8,12 @@ import Configuration from './modules/Configuration';
 import { resolveConfigFile } from './utils';
 
 const DEFAULT_CONFIG = getGlobalConfig();
+
+/**
+ * Read the alova.config configuration file and return the parsed configuration object.
+ * @param projectPath The project path where the configuration file is located. The default value is `process.cwd()`.
+ * @returns a promise instance that contains configuration object.
+ */
 export const readConfig = async (projectPath = process.cwd()) => {
   const configFile = await resolveConfigFile(projectPath);
   if (!configFile) {

@@ -35,7 +35,6 @@ export const getWormhole = () => {
   }
   if (wormhole) {
     // Global configuration
-
     wormhole.setGlobalConfig({
       Error: AlovaErrorConstructor,
       templateData: TEMPLATE_DATA
@@ -58,7 +57,7 @@ export default () =>
         }
         return () => {
           removeConfiguration();
-          throw new Error('module `@alova/wormhole` is not found, please install it first.', true);
+          throw new Error('module `@alova/wormhole` is not found, please install by `npm i @alova/wormhole`', true);
         };
       }
     }

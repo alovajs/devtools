@@ -3,10 +3,10 @@ import generateApi from './functions/generateApi';
 import Configuration from './modules/Configuration';
 
 /**
- * generate apis based on config
+ * Generate relevant API information based on the configuration object. Generally, it needs to be used with `readConfig()`.
  * @param config generating config
- * @param rules config rules
- * @returns
+ * @param rules config rules that contains `force`, `projectPath`
+ * @returns An array that contains the result of `generator` items in configuration whether generation is successful.
  */
 const generate = async (config: Config, rules?: GenerateApiOptions) => {
   if (!config) {
