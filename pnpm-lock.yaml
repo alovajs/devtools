@@ -207,6 +207,22 @@ importers:
         specifier: ^1.8.10
         version: 1.8.10
 
+  test/api-common:
+    dependencies:
+      '@alova/mock':
+        specifier: ^1.5.2
+        version: 1.5.2
+      alova:
+        specifier: ^2.21.3
+        version: 2.21.5
+      vue:
+        specifier: ^3.4.27
+        version: 3.5.12(typescript@5.6.3)
+    devDependencies:
+      '@alova/wormhole':
+        specifier: workspace:^
+        version: link:../../packages/wormhole
+
   test/api-js-commonjs-test:
     dependencies:
       '@alova/mock':
