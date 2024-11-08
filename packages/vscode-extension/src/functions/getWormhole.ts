@@ -33,15 +33,16 @@ export const getWormhole = () => {
   if (wormhole && BAR_STATE.value !== 'loading') {
     enable();
   }
+  if (!wormhole) {
+    disable();
+    removeConfiguration();
+  }
   if (wormhole) {
     // Global configuration
     wormhole.setGlobalConfig({
       Error: AlovaErrorConstructor,
       templateData: TEMPLATE_DATA
     });
-  }
-  if (!wormhole) {
-    disable();
   }
   return wormhole;
 };
@@ -57,7 +58,7 @@ export default () =>
         }
         return () => {
           removeConfiguration();
-          throw new Error('module `@alova/wormhole` is not found, please install by `npm i @alova/wormhole`', true);
+          throw new Error('module `@alova/wormhole` is not found, please install via `npm i @alova/wormhole`', true);
         };
       }
     }

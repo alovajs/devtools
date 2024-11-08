@@ -10,11 +10,15 @@ export function registerEvent() {
   // listener workspace directory changes
   vscode.workspace.onDidChangeWorkspaceFolders(event => {
     event.added.forEach(workspacePath => {
-      readConfig(`${workspacePath.uri.fsPath}/`);
+      if (getWormhole()) {
+        readConfig(`${workspacePath.uri.fsPath}/`);
+      }
     });
     event.removed.forEach(() => {
-      readConfig(getWorkspacePaths());
-      updatedConfigPool();
+      if (getWormhole()) {
+        readConfig(getWorkspacePaths());
+        updatedConfigPool();
+      }
     });
   });
   // listener package.json file changes
@@ -27,7 +31,6 @@ export function registerEvent() {
       }
       if (/package\.json$/.test(filePath) && getWormhole()) {
         readConfig(getCurrentWorkspacePath(filePath));
-        updatedConfigPool();
       }
     }, 1000)
   );
@@ -35,9 +38,8 @@ export function registerEvent() {
 
   vscode.workspace.onDidSaveTextDocument(event => {
     const filePath = event.uri.fsPath;
-    if (/alova\.config\.[cm]?[jt]s$/.test(filePath)) {
+    if (/alova\.config\.[cm]?[jt]s$/.test(filePath) && getWormhole()) {
       readConfig(getCurrentWorkspacePath(filePath));
-      updatedConfigPool();
     }
   });
   // Listen for errors
