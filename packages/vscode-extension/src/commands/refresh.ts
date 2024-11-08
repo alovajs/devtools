@@ -2,6 +2,7 @@ import Error from '@/components/error';
 import message from '@/components/message';
 import { enable, loading } from '@/components/statusBar';
 import generate from '@/functions/generate';
+import { getWormhole } from '@/functions/getWormhole';
 import readConfig, { updatedConfigPool } from '@/functions/readConfig';
 import { getFileNameByPath } from '@/utils';
 import { getWorkspacePaths } from '@/utils/vscode';
@@ -24,7 +25,9 @@ export default {
         throw error;
       });
     } finally {
-      enable();
+      if (getWormhole()) {
+        enable();
+      }
     }
   }
 } as Commonand;
