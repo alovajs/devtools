@@ -190,6 +190,9 @@ importers:
       ora:
         specifier: ^5.4.1
         version: 5.4.1
+      prettier:
+        specifier: ^3.3.3
+        version: 3.3.3
       swagger2openapi:
         specifier: ^7.0.8
         version: 7.0.8
