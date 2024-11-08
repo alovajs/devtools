@@ -54,6 +54,7 @@
     "@typescript-eslint/parser": "^8.13.0",
     "@vitest/coverage-v8": "^2.1.4",
     "commitizen": "^4.3.0",
+    "coveralls": "^3.1.1",
     "cz-conventional-changelog": "^3.3.0",
     "dts-bundle-generator": "^9.5.1",
     "eslint": "^9.14.0",
