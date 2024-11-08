@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "gen": "openapi --input ./openapi.yaml --output ./src/api"
@@ -13,5 +14,8 @@
   "dependencies": {
     "alova": "3.0.0-beta.10",
     "vue": "^3.4.27"
+  },
+  "devDependencies": {
+    "@alova/wormhole": "workspace:^"
   }
 }

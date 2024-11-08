@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "type": "commonjs",
+  "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "gen": "openapi --input ./openapi.yaml --output ./src/api"
@@ -15,5 +16,8 @@
     "@alova/mock": "^1.5.2",
     "alova": "^2.21.3",
     "vue": "^3.4.27"
+  },
+  "devDependencies": {
+    "@alova/wormhole": "workspace:^"
   }
 }

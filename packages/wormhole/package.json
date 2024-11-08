@@ -1,0 +1,67 @@
+{
+  "name": "@alova/wormhole",
+  "version": "1.0.0",
+  "description": "More modern openAPI generating solution for alova.js",
+  "homepage": "https://alova.js.org",
+  "main": "./dist/index.js",
+  "types": "./typings/index.d.ts",
+  "bin": {
+    "alova": "dist/bin/cli.js"
+  },
+  "scripts": {
+    "build": "npm run build:ts && npm run build:dts && npm run build:copy",
+    "build:copy": "ncp ./src/templates ./dist/templates",
+    "build:ts": "tsc --build tsconfig.build.json && tsc-alias -p tsconfig.build.json",
+    "build:dts": "dts-bundle-generator -o typings/index.d.ts src/index.ts --no-check --no-banner --project tsconfig.build.json"
+  },
+  "keywords": [
+    "openapi",
+    "auto-generating",
+    "api",
+    "apis",
+    "fetch",
+    "axios",
+    "axios",
+    "request",
+    "fetch-api",
+    "superagent",
+    "alova",
+    "wormhole"
+  ],
+  "author": "chenzhilin",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alovajs/devtools.git"
+  },
+  "bugs": {
+    "url": "https://github.com/alovajs/devtools/issues"
+  },
+  "files": [
+    "dist",
+    "typings"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "alova": "^3.1.0",
+    "commander": "^12.1.0",
+    "esbuild": "^0.24.0",
+    "glob": "^11.0.0",
+    "handlebars": "^4.7.8",
+    "import-fresh": "^3.3.0",
+    "js-yaml": "^4.1.0",
+    "lodash": "^4.17.21",
+    "openapi-types": "^12.1.3",
+    "ora": "^5.4.1",
+    "swagger2openapi": "^7.0.8"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/swagger2openapi": "^7.0.4",
+    "fs-extra": "^11.2.0",
+    "memfs": "^4.11.1",
+    "tsc-alias": "^1.8.10"
+  }
+}

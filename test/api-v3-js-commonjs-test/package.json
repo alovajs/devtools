@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "type": "commonjs",
+  "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "gen": "openapi --input ./openapi.yaml --output ./src/api"
@@ -15,5 +16,8 @@
     "@alova/adapter-xhr": "2.0.0-beta.8",
     "alova": "3.0.0-beta.10",
     "vue": "^3.4.27"
+  },
+  "devDependencies": {
+    "@alova/wormhole": "workspace:^"
   }
 }

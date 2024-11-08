@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "resolveJsonModule": true,
+    "target": "ES2021",
+    "module": "esnext",
+    "strict": true,
+    "newLine": "LF",
+    "noImplicitAny": true,
+    "noEmitOnError": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": false,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "strictPropertyInitialization": false,
+    "noFallthroughCasesInSwitch": false,
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": false,
+    "esModuleInterop": true,
+    "inlineSourceMap": false,
+    "removeComments": false
+  }
+}

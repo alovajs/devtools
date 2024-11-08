@@ -1,6 +1,0 @@
-test/api-*/src/*
-test/api-*/openapi*.*
-test/api-*/swagger*.*
-test/api-*/alova.config.*
-!test/api-*/src/.gitkeep
-design/**/*
