@@ -345,3 +345,14 @@ export function getStandardRefName(refPath: string, toUpperCase: boolean = true)
   refPathMap.set(refPath, newRefName);
   return newRefName;
 }
+
+export function getResponseSuccessKey(responsesObject?: OpenAPIV3_1.ResponsesObject) {
+  if (!responsesObject) {
+    return 200;
+  }
+  const successKeys = Object.keys(responsesObject)
+    .map(key => Number(key))
+    .filter(key => !Number.isNaN(key) && key >= 200 && key < 300)
+    .sort((a, b) => a - b);
+  return successKeys[0] ?? 200;
+}
