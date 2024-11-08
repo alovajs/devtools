@@ -938,4 +938,102 @@ describe('generate API', () => {
       ): Alova2Method<Pet[], 'pet.findPetsByStatus', Config>;`)
     );
   });
+
+  test('the response data type starting with 2xx in the openapi file should be used as the generation source', async () => {
+    const outputDir = resolve(__dirname, `./mock_output/openapi_success_key${getSalt()}`);
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/openapi_success_key.json'),
+          output: outputDir
+        }
+      ]
+    });
+
+    const globalsFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8');
+    // generate 200 `Blob` from Response
+    expect(globalsFile).toMatch(
+      createStrReg(`
+       * **Response**
+       * \`\`\`ts
+       * type Response = Blob
+       * \`\`\`
+       */
+      generateCase1<
+        Config extends Alova2MethodConfig<Blob> & {
+          params: {
+            /**
+             * [required]
+             */
+            codegenOptionsURL: string;
+          };
+        }
+      >(
+        config: Config
+      ): Alova2Method<Blob, 'clients.generateCase1', Config>;`)
+    );
+    // generate 201 `string` from Response
+    expect(globalsFile).toMatch(
+      createStrReg(`
+       * **Response**
+       * \`\`\`ts
+       * type Response = string
+       * \`\`\`
+       */
+      generateCase2<
+        Config extends Alova2MethodConfig<string> & {
+          params: {
+            /**
+             * [required]
+             */
+            codegenOptionsURL: string;
+          };
+        }
+      >(
+        config: Config
+      ): Alova2Method<string, 'clients.generateCase2', Config>;`)
+    );
+    // generate 299 `string[]` from Response
+    expect(globalsFile).toMatch(
+      createStrReg(`
+       * **Response**
+       * \`\`\`ts
+       * type Response = string[]
+       * \`\`\`
+       */
+      generateCase3<
+        Config extends Alova2MethodConfig<string[]> & {
+          params: {
+            /**
+             * [required]
+             */
+            codegenOptionsURL: string;
+          };
+        }
+      >(
+        config: Config
+      ): Alova2Method<string[], 'clients.generateCase3', Config>;`)
+    );
+    // generate 200 `string[]` from Response 200、201、299
+    expect(globalsFile).toMatch(
+      createStrReg(`
+       * **Response**
+       * \`\`\`ts
+       * type Response = string[]
+       * \`\`\`
+       */
+      generateCase4<
+        Config extends Alova2MethodConfig<string[]> & {
+          params: {
+            /**
+             * [required]
+             */
+            codegenOptionsURL: string;
+          };
+        }
+      >(
+        config: Config
+      ): Alova2Method<string[], 'clients.generateCase4', Config>;`)
+    );
+  });
 });

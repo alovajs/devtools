@@ -1,4 +1,11 @@
-import { findBy$ref, getStandardRefName, isReferenceObject, mergeObject, removeAll$ref } from '@/helper/openapi';
+import {
+  findBy$ref,
+  getResponseSuccessKey,
+  getStandardRefName,
+  isReferenceObject,
+  mergeObject,
+  removeAll$ref
+} from '@/helper/openapi';
 import { convertToType, jsonSchema2TsStr } from '@/helper/schema2type';
 import { getStandardOperationId, getStandardTags } from '@/helper/standard';
 import { generateDefaultValues } from '@/helper/typeStr';
@@ -105,7 +112,8 @@ const parseResponse = async (
   searchMap: Map<string, string>,
   removeMap: Map<string, string>
 ) => {
-  const responseInfo = responses?.['200'];
+  const successKey = getResponseSuccessKey(responses);
+  const responseInfo = responses?.[successKey];
   if (!responseInfo) {
     return {
       responseName: 'unknown',
@@ -267,7 +275,8 @@ export const transformPathObj = async (
     url,
     method
   };
-  const response200 = responses?.['200'];
+  const successKey = getResponseSuccessKey(responses);
+  const response200 = responses?.[successKey];
   let requestBodyObject = requestBody as OpenAPIV3_1.RequestBodyObject;
   let responseObject = response200 as OpenAPIV3_1.ResponseObject;
   let requestKey = 'application/json';
@@ -323,11 +332,11 @@ export const transformPathObj = async (
     if (!pathObj.responses) {
       pathObj.responses = {};
     }
-    pathObj.responses['200'] = responseObject || { content: {} };
-    if (!pathObj.responses['200'].content) {
-      pathObj.responses['200'].content = {};
+    pathObj.responses[successKey] = responseObject || { content: {} };
+    if (!pathObj.responses[successKey].content) {
+      pathObj.responses[successKey].content = {};
     }
-    const { content } = pathObj.responses['200'];
+    const { content } = pathObj.responses[successKey];
     if (!content[responseKey]) {
       content[responseKey] = {};
     }
