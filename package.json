@@ -26,7 +26,7 @@
     "changeset:pre.exit": "changeset pre exit",
     "changeset:version": "changeset version",
     "build": "pnpm --filter=./packages/* build",
-    "release": "pnpm run test:coveralls && pnpm build && changeset publish && pnpm --filter=alova-vscode-extension release"
+    "release": "pnpm run coveralls && pnpm build && changeset publish && pnpm --filter=alova-vscode-extension release"
   },
   "license": "MIT",
   "repository": {
