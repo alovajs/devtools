@@ -1,3 +1,4 @@
+import { getGlobalConfig } from '@/config';
 import { capitalizeFirstLetter } from '@/utils';
 import { cloneDeep, isArray, isEqualWith, isObject, mergeWith, sortBy } from 'lodash';
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
@@ -35,6 +36,10 @@ export const findBy$ref = <T = OpenAPIV3_1.SchemaObject>(
       find = find[key];
     }
   });
+  if (!find) {
+    const DEFAULT_CONFIG = getGlobalConfig();
+    throw new DEFAULT_CONFIG.Error(`cannot find $ref '${path}'`);
+  }
   return (isDeep ? cloneDeep(find) : find) as T;
 };
 /**
@@ -330,7 +335,7 @@ export function getStandardRefName(refPath: string, toUpperCase: boolean = true)
     refPathMap.set(refPath, refName);
     return refName;
   }
-  let newRefName = makeIdentifier(refName, 'snakeCase');
+  let newRefName = makeIdentifier(refName, 'snakeCase') || getRandomVariable();
   if (toUpperCase) {
     newRefName = capitalizeFirstLetter(newRefName);
   }
@@ -355,4 +360,8 @@ export function getResponseSuccessKey(responsesObject?: OpenAPIV3_1.ResponsesObj
     .filter(key => !Number.isNaN(key) && key >= 200 && key < 300)
     .sort((a, b) => a - b);
   return successKeys[0] ?? 200;
+}
+
+export function getRandomVariable() {
+  return `_${Math.random().toString(36).slice(2)}`;
 }
