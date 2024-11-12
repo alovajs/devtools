@@ -402,61 +402,57 @@ export default async function openApi2Data(
       const { url: path, method: newMethod, ...methodInfo } = newMethodInfo;
       const methodFormat = newMethod.toUpperCase();
       const allPromise = methodInfo.tags?.map(async tag => {
-        try {
-          const pathKey = `${tag}.${methodInfo.operationId}`;
-          const { queryParameters, queryParametersComment, pathParameters, pathParametersComment } =
-            await parseParameters(methodInfo.parameters, openApi, config, schemasMap, searchMap, removeMap);
-          const { responseName, responseComment } = await parseResponse(
-            methodInfo.responses,
-            openApi,
-            config,
-            schemasMap,
-            searchMap,
-            removeMap
+        const pathKey = `${tag}.${methodInfo.operationId}`;
+        const { queryParameters, queryParametersComment, pathParameters, pathParametersComment } =
+          await parseParameters(methodInfo.parameters, openApi, config, schemasMap, searchMap, removeMap);
+        const { responseName, responseComment } = await parseResponse(
+          methodInfo.responses,
+          openApi,
+          config,
+          schemasMap,
+          searchMap,
+          removeMap
+        );
+        const { requestName, requestComment } = await parseRequestBody(
+          methodInfo.requestBody,
+          openApi,
+          config,
+          schemasMap,
+          searchMap,
+          removeMap
+        );
+        const api: Api = {
+          method: methodFormat,
+          summary: methodInfo.summary?.replace(/\n/g, '') ?? '',
+          path,
+          name: methodInfo.operationId ?? '',
+          responseName,
+          requestName,
+          pathKey,
+          queryParameters,
+          queryParametersComment,
+          pathParameters,
+          pathParametersComment,
+          responseComment,
+          requestComment,
+          global: templateData.global
+        };
+        templateData.pathsArr.push({
+          key: pathKey,
+          method: methodFormat,
+          path
+        });
+        let tagApis = templateData.pathApis.find(item => item.tag === tag);
+        if (!tagApis) {
+          templateData.pathApis.push(
+            (tagApis = {
+              tag,
+              apis: []
+            })
           );
-          const { requestName, requestComment } = await parseRequestBody(
-            methodInfo.requestBody,
-            openApi,
-            config,
-            schemasMap,
-            searchMap,
-            removeMap
-          );
-          const api: Api = {
-            method: methodFormat,
-            summary: methodInfo.summary?.replace(/\n/g, '') ?? '',
-            path,
-            name: methodInfo.operationId ?? '',
-            responseName,
-            requestName,
-            pathKey,
-            queryParameters,
-            queryParametersComment,
-            pathParameters,
-            pathParametersComment,
-            responseComment,
-            requestComment,
-            global: templateData.global
-          };
-          templateData.pathsArr.push({
-            key: pathKey,
-            method: methodFormat,
-            path
-          });
-          let tagApis = templateData.pathApis.find(item => item.tag === tag);
-          if (!tagApis) {
-            templateData.pathApis.push(
-              (tagApis = {
-                tag,
-                apis: []
-              })
-            );
-          }
-          api.defaultValue = await getApiDefultValue(api);
-          tagApis.apis.push(api);
-        } catch (error) {
-          console.log(error);
         }
+        api.defaultValue = await getApiDefultValue(api);
+        tagApis.apis.push(api);
       });
       if (allPromise) {
         await Promise.all(allPromise);

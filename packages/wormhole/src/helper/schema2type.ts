@@ -1,9 +1,11 @@
+import { getGlobalConfig } from '@/config';
 import { format } from '@/utils';
 import { isArray } from 'lodash';
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
 import { findBy$ref, getStandardRefName, isReferenceObject } from './openapi';
 import { isValidJSIdentifier } from './standard';
 
+const DEFAULT_CONFIG = getGlobalConfig();
 export interface Schema2TypeOptions {
   deep?: boolean; // Whether to parse recursively
 
@@ -288,8 +290,14 @@ export async function convertToType(
     config.visited = new Set();
   }
   const tsStr = parseSchema(schemaOrigin, openApi, config);
-  // Format ts type
 
+  if (!tsStr) {
+    // eslint-disable-next-line
+    console.error(`went wrong with schemaOrigin: `, schemaOrigin);
+    throw new DEFAULT_CONFIG.Error('schema2type went wrong');
+  }
+
+  // Format ts type
   const tsStrFormat = await format(`type Ts = ${tsStr}`, {
     semi: false // remove semicolon
   });
