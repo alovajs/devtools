@@ -1,5 +1,12 @@
 # Change Log
 
+## 1.0.2
+
+### Patch Changes
+
+- Updated dependencies [[`ca3c497`](https://github.com/alovajs/devtools/commit/ca3c497a808ee6ab927942a04d698d765ee6fec7)]:
+  - @alova/wormhole@1.0.3
+
 ## 1.0.1
 
 ### Patch Changes

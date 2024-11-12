@@ -1,5 +1,11 @@
 # @alova/wormhole
 
+## 1.0.3
+
+### Patch Changes
+
+- [#47](https://github.com/alovajs/devtools/pull/47) [`ca3c497`](https://github.com/alovajs/devtools/commit/ca3c497a808ee6ab927942a04d698d765ee6fec7) Thanks [@JOU-amjs](https://github.com/JOU-amjs)! - a random characters as replacement of non-characters $ref
+
 ## 1.0.2
 
 ### Patch Changes
