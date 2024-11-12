@@ -227,7 +227,7 @@ describe('generate API', () => {
     await generate({
       generator: [
         {
-          input: 'https://petstore.swagger.io/v2/swagger.json',
+          input: 'https://generator3.swagger.io/openapi.json',
           output: outputDir
         }
       ]
