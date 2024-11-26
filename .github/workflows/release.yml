@@ -74,3 +74,5 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_ALOVA_PUBLISH_TOKEN }}
           # publish vscode extension to marketplace
           VSCE_PAT: ${{ secrets.VSCODE_EXTENSION_TOKEN }}
+          # publish vscode extension to open-vsc
+          OVSX_PAT: ${{ secrets.OVSX_TOKEN }}

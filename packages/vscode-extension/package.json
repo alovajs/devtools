@@ -52,7 +52,7 @@
     "pack:pre": "vsce package --no-dependencies --pre-release",
     "release:pre": "vsce publish --no-dependencies --pre-release",
     "pack": "vsce package --no-dependencies",
-    "release": "vsce publish --no-dependencies"
+    "release": "vsce publish --no-dependencies && ovsx publish --no-dependencies"
   },
   "publisher": "Alova",
   "license": "MIT",
@@ -72,6 +72,7 @@
     "@vscode/vsce": "^2.29.0",
     "esbuild": "^0.24.0",
     "esbuild-plugin-alias": "^0.2.1",
+    "ovsx": "^0.10.1",
     "sinon": "^19.0.2"
   },
   "dependencies": {
