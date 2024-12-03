@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 const triggerCharacters: string[] = [' ', '.', '>', '》', ':', '-'];
 class AutoComplete extends vscode.CompletionItem {}
 export default vscode.languages.registerCompletionItemProvider(
-  ['javascript', 'typescript', 'vue', 'javascriptreact', 'typescriptreact', 'svelte', 'plaintext'],
+  ['javascript', 'typescript', 'vue', 'javascriptreact', 'typescriptreact', 'svelte'],
   {
     async provideCompletionItems(
       document: vscode.TextDocument,
