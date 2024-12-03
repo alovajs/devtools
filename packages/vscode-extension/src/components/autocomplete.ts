@@ -2,17 +2,23 @@ import autocompleteCommand from '@/commands/autocomplete';
 import autocomplete from '@/functions/autocomplete';
 import * as vscode from 'vscode';
 
-const triggerCharacters: string[] = [' ', '.', '>', ':', '-'];
+const triggerCharacters: string[] = [' ', '.', '>', '》', ':', '-'];
 class AutoComplete extends vscode.CompletionItem {}
 export default vscode.languages.registerCompletionItemProvider(
   ['javascript', 'typescript', 'vue', 'javascriptreact', 'typescriptreact', 'svelte'],
   {
-    async provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
+    async provideCompletionItems(
+      document: vscode.TextDocument,
+      position: vscode.Position,
+      _,
+      context: vscode.CompletionContext
+    ) {
       // Support newline code from starting position to input position
       const text = document.lineAt(position).text.slice(0, position.character);
+      console.log('Trigger character:', context.triggerCharacter);
       // const linePrefix = ;
-      if (/a->.*/.test(text)) {
-        const [, value] = /a->(.*)[\s.>:-]?/.exec(text) || [];
+      if (/a-(>|》).*/.test(text)) {
+        const [, , value] = /a-(>|》)(.*)[\s.>:-]?/.exec(text) || [];
         return (await autocomplete(value.trim(), document.uri.fsPath)).map(item => {
           const completionItem = new AutoComplete(item.path, vscode.CompletionItemKind.Function);
           completionItem.detail = `[${item.method}] ${item.summary}`;

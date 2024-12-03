@@ -15,3 +15,13 @@ dist
 /coverage
 
 alova_tmp_*
+
+# test files
+test/api-*/src/*
+test/api-*/*openapi*.*
+test/api-*/*swagger*.*
+test/api-*/alova.config.*
+!test/api-*/src/.gitkeep
+!test/api-common/*openapi*.*
+!test/api-common/*swagger*.*
+!test/api-common/alova.config.*
