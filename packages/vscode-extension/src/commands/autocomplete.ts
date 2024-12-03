@@ -20,7 +20,7 @@ export default {
       .map((line, idx) => `${idx > 0 ? preText : ''}${line}`)
       .join('\n')
       .trim();
-    const result = /(a->)(.*)/.exec(text);
+    const result = /(a-(>|》))(.*)/.exec(text);
     editor.edit(editBuilder => {
       editBuilder.replace(
         new vscode.Range(new vscode.Position(position.line, result?.index ?? 0), position),
