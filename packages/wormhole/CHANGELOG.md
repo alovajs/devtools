@@ -1,5 +1,11 @@
 # @alova/wormhole
 
+## 1.0.4
+
+### Patch Changes
+
+- [#51](https://github.com/alovajs/devtools/pull/51) [`6495c77`](https://github.com/alovajs/devtools/commit/6495c77d9885dbf04008c40ddefaa526be88e130) Thanks [@czhlin](https://github.com/czhlin)! - fix defaut values union and intersection issue
+
 ## 1.0.3
 
 ### Patch Changes
