@@ -1,5 +1,4 @@
 ---
-'api-common': 1.0.1
 '@alova/wormhole': 1.0.4
 ---
 
