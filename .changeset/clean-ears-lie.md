@@ -1,5 +1,5 @@
 ---
-'@alova/wormhole': 1.0.4
+'@alova/wormhole': patch
 ---
 
-fix(wormhole): fix defaut values union and intersection issue
+fix defaut values union and intersection issue
