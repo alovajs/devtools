@@ -11,7 +11,7 @@
   },
   "servers": [
     {
-      "url": "/api1"
+      "url": "/api"
     }
   ],
   "tags": [
@@ -96,6 +96,55 @@
           }
         },
         "x-swagger-router-controller": "io.swagger.v3.generator.online.GeneratorController"
+      }
+    },
+    "/dictionary/option/{typeEnum}": {
+      "get": {
+        "tags": ["clients"],
+        "summary": "获取指定列表（存证处，作品类型等）",
+        "description": "传入dictionaryDTO",
+        "operationId": "optionUsingGET_2",
+        "parameters": [
+          {
+            "name": "typeEnum",
+            "in": "path",
+            "description": "typeEnum",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CERT_TYPE",
+                "COLLECTION_TYPE",
+                "MONITOR_TASK_TYPE",
+                "NOTARY_OFFICE_TYPE",
+                "SCREEN_AREA",
+                "SCREEN_RECORD_TYPE"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result«List«Option«string»»»"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
       }
     },
     "/clients": {
@@ -353,6 +402,42 @@
   },
   "components": {
     "schemas": {
+      "Result«List«Option«string»»»": {
+        "title": "Result«List«Option«string»»»",
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Option«string»"
+            }
+          },
+          "msg": {
+            "type": "string"
+          },
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Option«string»": {
+        "title": "Option«string»",
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "传递的选择框Id"
+          },
+          "value": {
+            "type": "string",
+            "description": "展示的选择框名称"
+          }
+        }
+      },
       "GenerationRequest": {
         "required": ["lang"],
         "type": "object",

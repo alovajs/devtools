@@ -13,12 +13,17 @@ function removeComments(content: string) {
 const LEFT_BRACKET = ['(', '<', '{', '['];
 const RIGHT_BRACKET = [')', '>', '}', ']'];
 function parseTypeBody(typeBody: string) {
+  const processedTypeBody = typeBody
+    .replace(/:\s*\n\s*\|/g, ':') // Handle union type after colon
+    .replace(/:\s*\n\s*&/g, ':') // Handle intersection type after colon
+    .replace(/\n\s*\|/g, '|') // Handle union type line breaks
+    .replace(/\n\s*&/g, '&'); // Handle intersection type line breaks
   const properties = [];
   let bracketCount = 0;
   let currentProperty = '';
 
-  for (let i = 0; i < typeBody.length; i += 1) {
-    const char = typeBody[i];
+  for (let i = 0; i < processedTypeBody.length; i += 1) {
+    const char = processedTypeBody[i];
     if (LEFT_BRACKET.includes(char)) {
       bracketCount += 1;
     } else if (RIGHT_BRACKET.includes(char)) {
@@ -43,7 +48,7 @@ function parseTypeBody(typeBody: string) {
       return { key: key.replace('?', ''), value: defaultValue, isOptional };
     })
     .filter(prop => !prop.isOptional)
-    .map(prop => `${prop.key}:${prop.value}`)
+    .map(prop => `${prop.key}: ${prop.value}`)
     .join(',\n');
   return `{\n${parsedProperties}\n}`;
 }
@@ -96,6 +101,8 @@ function isUnionType(type: string) {
   return isSplitType(type, '|');
 }
 function getDefaultValue(type: string): string {
+  // Remove trailing semicolon
+  type = type.replace(/;$/, '');
   if (isUnionType(type)) {
     const types = splitTypes(type, '|');
     return getDefaultValue(types[0]);
@@ -106,13 +113,13 @@ function getDefaultValue(type: string): string {
     return mergedDefaults.reduce((acc, curr) => {
       if (curr.startsWith('{') && curr.endsWith('}')) {
         const currProperties = curr.slice(1, -1).trim();
-        if (acc === '{}') {
-          return `{ ${currProperties} }`;
+        if (acc === '{ }') {
+          return `{\n ${currProperties} \n}`;
         }
-        return `${acc.slice(0, -1)}, ${currProperties} }`;
+        return `${acc.slice(0, -2)},\n ${currProperties} \n}`;
       }
       return acc;
-    }, '{}');
+    }, '{ }');
   }
   if (type.startsWith('(') && type.endsWith(')')) {
     return getDefaultValue(type.slice(1, -1).trim());
@@ -147,7 +154,7 @@ function getDefaultValue(type: string): string {
     case 'undefined':
       return type;
     default:
-      return '{}';
+      return '{ }';
   }
 }
 function parseTuple(tupleType: string) {
