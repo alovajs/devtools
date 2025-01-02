@@ -1,3 +1,4 @@
+import { strHashCode } from '@/utils';
 import { OpenAPIV3_1 } from 'openapi-types';
 
 const reservedWords = new Set([
@@ -100,7 +101,6 @@ export const makeIdentifier = (str: string, style: 'camelCas' | 'snakeCase') => 
   if (reservedWords.has(identifier)) {
     identifier += '_';
   }
-
   return identifier;
 };
 export const isValidJSIdentifier = (str?: string) =>
@@ -160,8 +160,19 @@ export function getStandardTags(tags?: string[]) {
     return newTag;
   });
 }
+export function getRandomVariable(value: string) {
+  return `${strHashCode(value)}`
+    .split('')
+    .map(code => {
+      let numberCode = Number(code);
+      numberCode = Number.isNaN(numberCode) ? 10 : numberCode;
+      return String.fromCharCode(numberCode + 97);
+    })
+    .join('');
+}
 export default {
   getStandardOperationId,
   getStandardTags,
-  makeIdentifier
+  makeIdentifier,
+  getRandomVariable
 };
