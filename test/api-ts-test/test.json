@@ -1,0 +1,3274 @@
+{
+  "openapi": "3.0.1",
+  "info": { "title": "OpenAPI definition", "version": "v0" },
+  "servers": [{ "url": "http://localhost:8080", "description": "Generated server url" }],
+  "tags": [
+    { "name": "🛒 产品模块", "description": "添加、修改、查询产品" },
+    { "name": "👤 用户模块", "description": "登录、注册、查询个人信息" },
+    { "name": "📅 任务模块", "description": "管理自身相关的任务，实现任务审批" },
+    { "name": "📂 文件模块", "description": "上传、读取系统中的文件" },
+    { "name": "🏷 标签模块", "description": "管理标签及其关系绑定" },
+    { "name": "📞 客户模块", "description": "添加、修改、查询、删除及锁定客户" },
+    { "name": "📝 日志模块", "description": "查询日志" },
+    { "name": "👋 邀请码模块", "description": "上传、读取系统中的文件" },
+    { "name": "📃 合同模块", "description": "添加、删除、查询合同" },
+    { "name": "🔍 客户线索模块", "description": "添加、删除、查询客户线索" },
+    { "name": "📈 锁定线索模块", "description": "管理锁定申请、取消申请" },
+    { "name": "🔄 流程模块", "description": "获取/取消已发起的流程实例" }
+  ],
+  "paths": {
+    "/api/user/profile": {
+      "get": {
+        "tags": ["👤 用户模块"],
+        "summary": "获取个人信息",
+        "operationId": "getProfile",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseUserProfileResponse" } } }
+          }
+        }
+      },
+      "put": {
+        "tags": ["👤 用户模块"],
+        "summary": "修改个人信息",
+        "operationId": "updateProfile",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SaveProfileRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    },
+    "/api/user/phoneNumber": {
+      "put": {
+        "tags": ["👤 用户模块"],
+        "summary": "修改手机号",
+        "operationId": "updatePhoneNumber",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdatePhoneNumberRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    },
+    "/api/user/password": {
+      "put": {
+        "tags": ["👤 用户模块"],
+        "summary": "修改密码",
+        "description": "需要先发送验证码进行验证",
+        "operationId": "updatePassword",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdatePasswordRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/product/update": {
+      "put": {
+        "tags": ["🛒 产品模块"],
+        "summary": "修改产品信息",
+        "description": "需要 product.update 权限",
+        "operationId": "updateProduct",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdateProductRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseCrmProductResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/customer/update": {
+      "put": {
+        "tags": ["📞 客户模块"],
+        "summary": "更新客户",
+        "description": "需要 customer.update 权限",
+        "operationId": "updateCustomer",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdateCustomerRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseObject" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/customer/updateComment": {
+      "put": {
+        "tags": ["📞 客户模块"],
+        "summary": "修改客户留言",
+        "operationId": "updateComment",
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/UpdateCustomerCommentRequest" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseCrmCustomerCommentResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/contract/update": {
+      "put": {
+        "tags": ["📃 合同模块"],
+        "summary": "更新合同",
+        "description": "需要 contract.update 权限",
+        "operationId": "updateContract",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "query",
+            "required": true,
+            "schema": { "title": "合同id", "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SaveContractRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseCrmContractResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/contract/amount/update": {
+      "put": {
+        "tags": ["📃 合同模块"],
+        "summary": "更新合同金额记录",
+        "description": "需要 contract.amount.update 权限",
+        "operationId": "updateAmount",
+        "parameters": [
+          {
+            "name": "amountId",
+            "in": "query",
+            "required": true,
+            "schema": { "title": "金额记录id", "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SaveAmountRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseCrmContractAmountResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/clue/update": {
+      "put": {
+        "tags": ["🔍 客户线索模块"],
+        "summary": "修改线索",
+        "description": "需要 clue.update 权限",
+        "operationId": "updateClue",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdateClueRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseCrmClueResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/clue/updateNote": {
+      "put": {
+        "tags": ["🔍 客户线索模块"],
+        "summary": "修改销售记录",
+        "operationId": "updateNote",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdateClueNoteRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseCrmClueNoteResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/clue/unlock": {
+      "put": {
+        "tags": ["🔍 客户线索模块"],
+        "summary": "解锁线索",
+        "description": "解锁某个线索锁定，要求该锁定状态有效，且未过期",
+        "operationId": "unlockLock",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UnlockClueRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/clue/transfer": {
+      "put": {
+        "tags": ["🔍 客户线索模块"],
+        "summary": "转移线索",
+        "description": "转移已经锁定的线索给他人，该操作同时还会转移锁定的客户。需要 clue.transfer 权限",
+        "operationId": "userTransferClue",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TransferClueRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/clue/release": {
+      "put": {
+        "tags": ["🔍 客户线索模块"],
+        "summary": "释放线索",
+        "description": "将线索的 owner 设置为空，成为公海线索",
+        "operationId": "release",
+        "parameters": [{ "name": "clueId", "in": "query", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/clue/occupy": {
+      "put": {
+        "tags": ["🔍 客户线索模块"],
+        "summary": "认领线索",
+        "description": "认领某个无 owner 的线索",
+        "operationId": "occupy",
+        "parameters": [{ "name": "clueId", "in": "query", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    },
+    "/api/bpm/process/cancelMyProcessInstance": {
+      "put": {
+        "tags": ["🔄 流程模块"],
+        "summary": "取消我发起的流程",
+        "description": "取消自身发起的正在运行的流程实例",
+        "operationId": "cancelMyProcessInstance",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/BpmProcessCancelRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    },
+    "/api/bpm/clue/cancelMyLockRequest": {
+      "put": {
+        "tags": ["📈 锁定线索模块"],
+        "summary": "取消我的锁定申请",
+        "description": "取消某个锁定申请",
+        "operationId": "cancelMyLockRequest",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/BpmClueLockCancelRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    },
+    "/api/user/validateSMSCode": {
+      "post": {
+        "tags": ["👤 用户模块"],
+        "summary": "验证验证码",
+        "description": "需要在 param 中提供租户Id",
+        "operationId": "validateSMSCode",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ValidateSmsCodeRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    },
+    "/api/user/uploadAvatar": {
+      "post": {
+        "tags": ["👤 用户模块"],
+        "summary": "上传用户个人头像",
+        "operationId": "uploadAvatar",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": ["avatar"],
+                "type": "object",
+                "properties": { "avatar": { "type": "string", "format": "binary" } }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseSaveFileResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/user/sendSMS": {
+      "post": {
+        "tags": ["👤 用户模块"],
+        "summary": "发送验证码",
+        "description": "需要在 param 中提供租户Id",
+        "operationId": "sendSmsCode",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SendSmsCodeRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    },
+    "/api/user/register": {
+      "post": {
+        "tags": ["👤 用户模块"],
+        "summary": "用户注册",
+        "description": "需要在 param 中提供租户Id",
+        "operationId": "register",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "query",
+            "description": "租户Id。需要先通过商户名称等方式查询出Id",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RegisterRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    },
+    "/api/user/login": {
+      "post": {
+        "tags": ["👤 用户模块"],
+        "summary": "登录",
+        "description": "需要在 param 中提供租户Id。登录后 token 会放置在 cookie 内，无需手动操作。",
+        "operationId": "login",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "query",
+            "description": "租户Id",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LoginRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    },
+    "/api/user/loginBySMS": {
+      "post": {
+        "tags": ["👤 用户模块"],
+        "summary": "手机验证码登录",
+        "description": "需要在 param 中提供租户Id；需要先发送手机验证码",
+        "operationId": "smsLogin",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SmsLoginRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    },
+    "/api/user/landing": {
+      "post": {
+        "tags": ["👤 用户模块"],
+        "summary": "登录可选账号",
+        "description": "用户选择目标账号后调用此接口登录",
+        "operationId": "landing",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LandingRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    },
+    "/api/tag/update": {
+      "post": {
+        "tags": ["🏷 标签模块"],
+        "summary": "修改标签",
+        "operationId": "updateTag",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdateTagRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseTagResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/tag/query": {
+      "post": {
+        "tags": ["🏷 标签模块"],
+        "summary": "查询所有标签",
+        "operationId": "queryTagPage",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "One-based page index (1..N)",
+            "required": false,
+            "schema": { "minimum": 0, "type": "integer", "default": 0 }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page to be returned",
+            "required": false,
+            "schema": { "minimum": 1, "type": "integer", "default": 10 }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          }
+        ],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/QueryTagPageRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponsePageResultTagResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/tag/create": {
+      "post": {
+        "tags": ["🏷 标签模块"],
+        "summary": "创建标签",
+        "operationId": "createTag",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AddTagRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseTagResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/tag/createBinding": {
+      "post": {
+        "tags": ["🏷 标签模块"],
+        "summary": "绑定标签到对象",
+        "operationId": "createTagBinding",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AddTagBindingRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    },
+    "/api/log/query": {
+      "post": {
+        "tags": ["📝 日志模块"],
+        "summary": "查询日志",
+        "operationId": "queryLog",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "One-based page index (1..N)",
+            "required": false,
+            "schema": { "minimum": 0, "type": "integer", "default": 0 }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page to be returned",
+            "required": false,
+            "schema": { "minimum": 1, "type": "integer", "default": 10 }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          }
+        ],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/QueryLogRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponsePageResultLogSimpleResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/invitation/create": {
+      "post": {
+        "tags": ["👋 邀请码模块"],
+        "summary": "创建邀请码",
+        "operationId": "createCode",
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CreateInvitationCodeRequest" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseInvitationCodeResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/product/getByIds": {
+      "post": {
+        "tags": ["🛒 产品模块"],
+        "summary": "根据 ID 查询产品",
+        "operationId": "getProductById",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/QueryProductRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseListCrmProductResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/product/create": {
+      "post": {
+        "tags": ["🛒 产品模块"],
+        "summary": "创建产品",
+        "description": "需要 product.add 权限",
+        "operationId": "createProduct",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateProductRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseCrmProductResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/product/assignTarget": {
+      "post": {
+        "tags": ["🛒 产品模块"],
+        "summary": "分配产品目标",
+        "description": "需要 product.assignment.update 权限",
+        "operationId": "assignProductTarget",
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/AssignProductTargetRequest" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/customer/queryMyCustomerPage": {
+      "post": {
+        "tags": ["📞 客户模块"],
+        "summary": "查询我的所有客户",
+        "operationId": "queryMyCustomerPage",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "One-based page index (1..N)",
+            "required": false,
+            "schema": { "minimum": 0, "type": "integer", "default": 0 }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page to be returned",
+            "required": false,
+            "schema": { "minimum": 1, "type": "integer", "default": 10 }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          }
+        ],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/QueryCustomerPageRequest" } } }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/ResponsePageResultCrmCustomerSimpleResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/api/crm/customer/create": {
+      "post": {
+        "tags": ["📞 客户模块"],
+        "summary": "新增客户",
+        "description": "需要 customer.add 权限",
+        "operationId": "createCustomer",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateCustomerRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseObject" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/customer/addComment": {
+      "post": {
+        "tags": ["📞 客户模块"],
+        "summary": "添加客户留言",
+        "operationId": "addComment",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AddCustomerCommentRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseCrmCustomerCommentResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/contract/create": {
+      "post": {
+        "tags": ["📃 合同模块"],
+        "summary": "创建合同",
+        "description": "需要 contract.add 权限",
+        "operationId": "createContract",
+        "parameters": [
+          {
+            "name": "clueId",
+            "in": "query",
+            "required": true,
+            "schema": { "title": "线索id", "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SaveContractRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseCrmContractResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/contract/amount/add": {
+      "post": {
+        "tags": ["📃 合同模块"],
+        "summary": "添加合同金额记录",
+        "description": "需要 contract.amount.add 权限",
+        "operationId": "addAmount",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "query",
+            "required": true,
+            "schema": { "title": "合同id", "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SaveAmountRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseCrmContractAmountResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/clue/queryPublicCluePage": {
+      "post": {
+        "tags": ["🔍 客户线索模块"],
+        "summary": "查询公海线索",
+        "description": "需要 clue.read 权限",
+        "operationId": "queryPublicCluePage",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "One-based page index (1..N)",
+            "required": false,
+            "schema": { "minimum": 0, "type": "integer", "default": 0 }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page to be returned",
+            "required": false,
+            "schema": { "minimum": 1, "type": "integer", "default": 10 }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          }
+        ],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/QueryCluePageRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/ResponsePageResultCrmClueSimpleResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/api/crm/clue/queryCluePage": {
+      "post": {
+        "tags": ["🔍 客户线索模块"],
+        "summary": "查询我的所有线索",
+        "description": "需要 clue.read 权限",
+        "operationId": "queryCluePage",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "One-based page index (1..N)",
+            "required": false,
+            "schema": { "minimum": 0, "type": "integer", "default": 0 }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page to be returned",
+            "required": false,
+            "schema": { "minimum": 1, "type": "integer", "default": 10 }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          }
+        ],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/QueryCluePageRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/ResponsePageResultCrmClueSimpleResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/api/crm/clue/create": {
+      "post": {
+        "tags": ["🔍 客户线索模块"],
+        "summary": "创建线索",
+        "description": "需要 clue.add 权限",
+        "operationId": "createClue",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateClueRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseCrmClueResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/clue/addNote": {
+      "post": {
+        "tags": ["🔍 客户线索模块"],
+        "summary": "添加销售记录",
+        "operationId": "addNote",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AddClueNoteRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseCrmClueNoteResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/bpm/task/reject": {
+      "post": {
+        "tags": ["📅 任务模块"],
+        "summary": "不通过任务审批",
+        "description": "不通过某项任务的审批。需要 task.update 权限",
+        "operationId": "rejectTask",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/BpmTaskRejectRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    },
+    "/api/bpm/task/getTaskPage": {
+      "post": {
+        "tags": ["📅 任务模块"],
+        "summary": "获取分配任务",
+        "description": "分页获取被分配的任务。需要 task.read 权限",
+        "operationId": "getTaskPage",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "One-based page index (1..N)",
+            "required": false,
+            "schema": { "minimum": 0, "type": "integer", "default": 0 }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page to be returned",
+            "required": false,
+            "schema": { "minimum": 1, "type": "integer", "default": 10 }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          }
+        ],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/BpmTaskQueryRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponsePageResultBpmTaskResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/bpm/task/approve": {
+      "post": {
+        "tags": ["📅 任务模块"],
+        "summary": "通过任务审批",
+        "description": "通过某项任务的审批。需要 task.update 权限",
+        "operationId": "approveTask",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/BpmTaskApproveRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    },
+    "/api/bpm/process/getMyProcessInstancePage": {
+      "post": {
+        "tags": ["🔄 流程模块"],
+        "summary": "查看我发起的流程",
+        "description": "分页自身发起的获取流程实例",
+        "operationId": "getMyProcessPage",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "One-based page index (1..N)",
+            "required": false,
+            "schema": { "minimum": 0, "type": "integer", "default": 0 }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page to be returned",
+            "required": false,
+            "schema": { "minimum": 1, "type": "integer", "default": 10 }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          }
+        ],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/BpmProcessQueryRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/ResponsePageResultBpmProcessSimpleResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/api/bpm/clue/requestLock": {
+      "post": {
+        "tags": ["📈 锁定线索模块"],
+        "summary": "申请锁定线索",
+        "description": "提交线索锁定申请",
+        "operationId": "createLock",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/BpmClueLockCreateRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    },
+    "/api/bpm/clue/requestChangeStatus": {
+      "post": {
+        "tags": ["📈 锁定线索模块"],
+        "summary": "请求修改线索状态",
+        "operationId": "changeStatus",
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/BpmClueChangeStatusRequest" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    },
+    "/api/user/logout": {
+      "get": {
+        "tags": ["👤 用户模块"],
+        "summary": "登出",
+        "operationId": "logout",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    },
+    "/api/user/getLandingAccounts": {
+      "get": {
+        "tags": ["👤 用户模块"],
+        "summary": "获取所有可选账号",
+        "description": "在 SMS 登录时获得提示后调用",
+        "operationId": "getAccountForLanding",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/ResponseListUserIdentifiableWithTenantResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/api/user/checkToken": {
+      "get": {
+        "tags": ["👤 用户模块"],
+        "summary": "检查 token 是否有效",
+        "operationId": "getToken",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    },
+    "/api/tag/getEntityTagBindings": {
+      "get": {
+        "tags": ["🏷 标签模块"],
+        "summary": "获取某个实体相关的标签绑定",
+        "operationId": "getEntityTagBindings",
+        "parameters": [
+          {
+            "name": "dataField",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["USER", "DEPT", "CRM_CONTACT", "CRM_CUSTOMER", "CRM_CLUE", "CRM_PRODUCT"]
+            }
+          },
+          { "name": "entityId", "in": "query", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseListTagBindingResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/invitation/validate": {
+      "get": {
+        "tags": ["👋 邀请码模块"],
+        "summary": "验证邀请码",
+        "description": "验证邀请码是否有效",
+        "operationId": "validateCode",
+        "parameters": [{ "name": "code", "in": "query", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    },
+    "/api/invitation/myCodes": {
+      "get": {
+        "tags": ["👋 邀请码模块"],
+        "summary": "获取我的邀请码",
+        "operationId": "getMyInvitationCode",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseListInvitationCodeResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/invitation/myCodeUsagePage": {
+      "get": {
+        "tags": ["👋 邀请码模块"],
+        "summary": "获取我的验证码使用分页",
+        "operationId": "getMyInvitationCodeUsagePage",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "One-based page index (1..N)",
+            "required": false,
+            "schema": { "minimum": 0, "type": "integer", "default": 0 }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page to be returned",
+            "required": false,
+            "schema": { "minimum": 1, "type": "integer", "default": 10 }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/ResponsePageResultInvitationCodeUsageResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/api/file/{storage}/hash/**": {
+      "get": {
+        "tags": ["📂 文件模块"],
+        "operationId": "getFileContentByHash",
+        "parameters": [
+          { "name": "storage", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/file/{storage}/**": {
+      "get": {
+        "tags": ["📂 文件模块"],
+        "operationId": "getFileContentById",
+        "parameters": [
+          { "name": "storage", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/crm/product/match": {
+      "get": {
+        "tags": ["🛒 产品模块"],
+        "summary": "模糊搜索产品",
+        "operationId": "matchProduct",
+        "parameters": [{ "name": "keyword", "in": "query", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseListCrmProductResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/product/getProductPage": {
+      "get": {
+        "tags": ["🛒 产品模块"],
+        "summary": "获取产品分页",
+        "operationId": "getProductPage",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "One-based page index (1..N)",
+            "required": false,
+            "schema": { "minimum": 0, "type": "integer", "default": 0 }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page to be returned",
+            "required": false,
+            "schema": { "minimum": 1, "type": "integer", "default": 10 }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponsePageResultCrmProductResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/product/getFromTarget": {
+      "get": {
+        "tags": ["🛒 产品模块"],
+        "summary": "获取目标的相关产品",
+        "operationId": "getTargetProduct",
+        "parameters": [
+          { "name": "target", "in": "query", "required": true, "schema": { "type": "string", "enum": ["DEPT"] } },
+          { "name": "targetId", "in": "query", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseListCrmProductResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/product/getDepartmentOfProduct": {
+      "get": {
+        "tags": ["🛒 产品模块"],
+        "summary": "获取某一产品关联的部门",
+        "operationId": "getDepartmentOfProduct",
+        "parameters": [{ "name": "productId", "in": "query", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/ResponseListDepartmentIdentifiableResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/api/crm/product/getAvailableProduct": {
+      "get": {
+        "tags": ["🛒 产品模块"],
+        "summary": "获取所有可用产品",
+        "operationId": "getAvailableProduct",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ResponseListCrmProductWithUserAssociatedDepartmentResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/crm/customer/match": {
+      "get": {
+        "tags": ["📞 客户模块"],
+        "summary": "模糊搜索客户",
+        "description": "通过关键词模糊搜索客户，搜索范围包括名称、地址和备注等。需要 customer.read 权限",
+        "operationId": "matchCustomer",
+        "parameters": [{ "name": "keyword", "in": "query", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseListCrmCustomerSimpleResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/customer/get": {
+      "get": {
+        "tags": ["📞 客户模块"],
+        "summary": "获取某个客户信息",
+        "description": "需要 customer.read 权限",
+        "operationId": "getCustomer",
+        "parameters": [
+          {
+            "name": "customerId",
+            "in": "query",
+            "required": true,
+            "schema": { "title": "客户主键ID", "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseCrmCustomerResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/customer/getMyCustomerPage": {
+      "get": {
+        "tags": ["📞 客户模块"],
+        "summary": "获取我的所有客户",
+        "operationId": "getMyCustomerPage",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "One-based page index (1..N)",
+            "required": false,
+            "schema": { "minimum": 0, "type": "integer", "default": 0 }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page to be returned",
+            "required": false,
+            "schema": { "minimum": 1, "type": "integer", "default": 10 }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/ResponsePageResultCrmCustomerSimpleResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/api/crm/customer/getComment": {
+      "get": {
+        "tags": ["📞 客户模块"],
+        "summary": "获取客户留言",
+        "operationId": "getCustomerComment",
+        "parameters": [{ "name": "customerId", "in": "query", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/ResponseListCrmCustomerCommentResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/api/crm/contract/amount/get": {
+      "get": {
+        "tags": ["📃 合同模块"],
+        "summary": "获取合同金额记录",
+        "description": "需要 contract.amount.read 权限",
+        "operationId": "getAmountList",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "query",
+            "required": true,
+            "schema": { "title": "合同id", "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseListCrmContractAmountResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/clue/get": {
+      "get": {
+        "tags": ["🔍 客户线索模块"],
+        "summary": "获取某个线索详细信息",
+        "description": "需要 clue.read 权限",
+        "operationId": "getClueDetail",
+        "parameters": [{ "name": "clueId", "in": "query", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseCrmClueResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/clue/getMyCluePage": {
+      "get": {
+        "tags": ["🔍 客户线索模块"],
+        "summary": "获取我的所有线索",
+        "description": "需要 clue.read 权限",
+        "operationId": "getMyCluePage",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "One-based page index (1..N)",
+            "required": false,
+            "schema": { "minimum": 0, "type": "integer", "default": 0 }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page to be returned",
+            "required": false,
+            "schema": { "minimum": 1, "type": "integer", "default": 10 }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/ResponsePageResultCrmClueSimpleResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/api/bpm/task/getTaskListByProcessInstanceId": {
+      "get": {
+        "tags": ["📅 任务模块"],
+        "summary": "获取流程实例任务列表",
+        "description": "获取某一个流程实例中所有任务的列表。需要 task.read 权限",
+        "operationId": "getTaskListByProcessInstanceId",
+        "parameters": [
+          { "name": "processInstanceId", "in": "query", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseListBpmTaskResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/bpm/clue/getMyLockRequestPage": {
+      "get": {
+        "tags": ["📈 锁定线索模块"],
+        "summary": "查看我的锁定申请",
+        "description": "查看当前用户提交的锁定线索申请分页",
+        "operationId": "getMyLockRequestPage",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "One-based page index (1..N)",
+            "required": false,
+            "schema": { "minimum": 0, "type": "integer", "default": 0 }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page to be returned",
+            "required": false,
+            "schema": { "minimum": 1, "type": "integer", "default": 10 }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponsePageResultCrmClueLockResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/tag/delete": {
+      "delete": {
+        "tags": ["🏷 标签模块"],
+        "summary": "删除标签",
+        "operationId": "deleteTag",
+        "parameters": [{ "name": "tagId", "in": "query", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    },
+    "/api/tag/deleteBinding": {
+      "delete": {
+        "tags": ["🏷 标签模块"],
+        "summary": "删除某个标签绑定",
+        "operationId": "deleteTagBinding",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteTagBindingRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/customer/deleteComment": {
+      "delete": {
+        "tags": ["📞 客户模块"],
+        "summary": "删除客户留言",
+        "operationId": "deleteComment",
+        "parameters": [{ "name": "commentId", "in": "query", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    },
+    "/api/crm/contract/amount/delete": {
+      "delete": {
+        "tags": ["📃 合同模块"],
+        "summary": "删除合同金额记录",
+        "description": "需要 contract.amount.delete 权限",
+        "operationId": "deleteAmount",
+        "parameters": [
+          {
+            "name": "amountId",
+            "in": "query",
+            "required": true,
+            "schema": { "title": "金额记录id", "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ResponseNullData" } } }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SaveProfileRequest": {
+        "required": ["name"],
+        "type": "object",
+        "properties": {
+          "name": { "title": "姓名", "type": "string" },
+          "gender": { "title": "性别", "type": "string", "enum": ["MALE", "FEMALE", "OTHER"] },
+          "info": {
+            "title": "其他个人信息，请传json",
+            "type": "object",
+            "additionalProperties": { "title": "其他个人信息，请传json", "type": "object", "example": "{ age: 22 }" },
+            "example": "{ age: 22 }"
+          }
+        }
+      },
+      "NullData": { "title": "数据值", "type": "object" },
+      "ResponseNullData": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": { "$ref": "#/components/schemas/NullData" }
+        }
+      },
+      "UpdatePhoneNumberRequest": {
+        "required": ["phoneNumber"],
+        "type": "object",
+        "properties": { "phoneNumber": { "title": "手机号", "type": "string" } }
+      },
+      "UpdatePasswordRequest": {
+        "required": ["password"],
+        "type": "object",
+        "properties": { "password": { "title": "密码", "type": "string" } }
+      },
+      "UpdateProductRequest": {
+        "required": ["id", "name"],
+        "type": "object",
+        "properties": {
+          "name": { "title": "产品名称", "type": "string" },
+          "description": { "title": "产品描述", "type": "string" },
+          "id": { "title": "产品id", "type": "string" },
+          "newOwnerId": {
+            "title": "新的产品所有人",
+            "type": "string",
+            "description": "当不需要改变时，可以传入原 owner id 或设置为 null",
+            "nullable": true
+          }
+        }
+      },
+      "CrmProductResponse": {
+        "title": "数据值",
+        "required": ["createTime", "id", "name"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "产品id", "type": "string", "format": "uuid" },
+          "name": { "title": "产品名称", "type": "string" },
+          "description": { "title": "产品描述", "type": "string" },
+          "owner": { "$ref": "#/components/schemas/UserIdentifiableResponse" },
+          "createTime": { "type": "string", "description": "创建时间", "format": "date-time" }
+        }
+      },
+      "ResponseCrmProductResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": { "$ref": "#/components/schemas/CrmProductResponse" }
+        }
+      },
+      "UserIdentifiableResponse": {
+        "title": "所有人",
+        "required": ["gender", "id", "name", "username"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "用户id", "type": "string", "format": "uuid" },
+          "username": { "title": "账号名", "type": "string" },
+          "name": { "title": "姓名", "type": "string" },
+          "gender": { "title": "性别", "type": "string", "enum": ["MALE", "FEMALE", "OTHER"] },
+          "avatarUrl": { "title": "头像地址", "type": "string", "nullable": true }
+        },
+        "description": "用户识别信息"
+      },
+      "UpdateCustomerRequest": {
+        "required": ["ignoreCustomerCheck"],
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "description": "客户主键ID", "format": "uuid" },
+          "companyName": { "title": "公司名称", "type": "string", "description": "客户所属公司名称", "nullable": true },
+          "departmentName": {
+            "title": "部门名称",
+            "type": "string",
+            "description": "所在部门/团队/项目名称",
+            "nullable": true
+          },
+          "departmentSize": { "title": "部门规模", "type": "integer", "format": "int32", "nullable": true },
+          "region": { "title": "地区", "type": "string", "nullable": true },
+          "address": { "title": "详细地址", "type": "string", "nullable": true },
+          "leadSource": {
+            "title": "来源",
+            "type": "string",
+            "description": "如：主动咨询、老客户介绍",
+            "nullable": true
+          },
+          "contactsId": {
+            "title": "联系人列表",
+            "maxItems": 10,
+            "minItems": 0,
+            "type": "array",
+            "description": "需要先创建联系人，应传入联系人id",
+            "nullable": true,
+            "items": {
+              "title": "联系人列表",
+              "type": "string",
+              "description": "需要先创建联系人，应传入联系人id",
+              "nullable": true
+            }
+          },
+          "remark": { "title": "备注", "type": "string", "nullable": true },
+          "extra": { "title": "额外信息", "type": "string", "description": "需要时可以存放 JSON", "nullable": true },
+          "ignoreCustomerCheck": { "title": "忽略客户检查", "type": "boolean" }
+        }
+      },
+      "ResponseObject": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": { "title": "数据值", "type": "object" }
+        }
+      },
+      "UpdateCustomerCommentRequest": {
+        "title": "编辑客户留言请求",
+        "required": ["commentId", "content"],
+        "type": "object",
+        "properties": {
+          "commentId": { "title": "留言ID", "type": "string", "format": "uuid" },
+          "content": { "title": "留言内容", "type": "string" }
+        }
+      },
+      "CrmCustomerCommentResponse": {
+        "title": "数据值",
+        "required": ["content", "createTime", "id", "updateTime"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "留言id", "type": "string", "format": "uuid" },
+          "content": { "title": "内容", "type": "string" },
+          "owner": { "$ref": "#/components/schemas/UserIdentifiableResponse" },
+          "edited": { "title": "是否已经编辑", "type": "boolean" },
+          "createTime": { "type": "string", "description": "创建时间", "format": "date-time" },
+          "updateTime": { "type": "string", "description": "修改时间", "format": "date-time" }
+        }
+      },
+      "ResponseCrmCustomerCommentResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": { "$ref": "#/components/schemas/CrmCustomerCommentResponse" }
+        }
+      },
+      "SaveContractRequest": {
+        "type": "object",
+        "properties": {
+          "contractTotalAmount": { "title": "合同签订总金额", "type": "number" },
+          "contractSigningDate": { "title": "合同签订日期", "type": "string", "format": "date-time" },
+          "specialBudgetAmount": { "title": "特殊预算金额", "type": "number" },
+          "specialBudgetRemark": { "title": "特殊预算备注", "type": "string" },
+          "deliveryDate": { "title": "交付日期", "type": "string", "format": "date-time" },
+          "acceptanceDate": { "title": "验收日期", "type": "string", "format": "date-time" },
+          "originalServiceValidityTo": { "title": "原始服务有效日期至", "type": "string", "format": "date-time" },
+          "serviceValidityTo": { "title": "服务有效日期至", "type": "string", "format": "date-time" },
+          "serviceValidityTo2": { "title": "服务有效日期至", "type": "string", "format": "date-time" }
+        }
+      },
+      "CrmContractAmountResponse": {
+        "title": "合同金额记录",
+        "required": ["id"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "id", "type": "string", "format": "uuid" },
+          "invoiceAmount": { "title": "开票金额", "type": "number" },
+          "invoiceDate": { "title": "开票日期", "type": "string", "format": "date-time" },
+          "collectionAmount": { "title": "收款金额", "type": "number", "nullable": true },
+          "collectionDate": { "title": "收款日期", "type": "string", "format": "date-time", "nullable": true },
+          "remark": { "title": "备注", "type": "string", "nullable": true }
+        }
+      },
+      "CrmContractResponse": {
+        "title": "数据值",
+        "required": ["id"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "id", "type": "string", "format": "uuid" },
+          "contractTotalAmount": { "title": "合同签订总金额", "type": "number" },
+          "contractSigningDate": { "title": "合同签订日期", "type": "string", "format": "date-time" },
+          "amounts": {
+            "title": "合同金额记录",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CrmContractAmountResponse" }
+          },
+          "specialBudgetAmount": { "title": "特殊预算金额", "type": "number" },
+          "specialBudgetRemark": { "title": "特殊预算备注", "type": "string" },
+          "deliveryDate": { "title": "交付日期", "type": "string", "format": "date-time" },
+          "acceptanceDate": { "title": "验收日期", "type": "string", "format": "date-time" },
+          "originalServiceValidityTo": { "title": "原始服务有效日期至", "type": "string", "format": "date-time" },
+          "serviceValidityTo": { "title": "服务有效日期至", "type": "string", "format": "date-time" },
+          "serviceValidityTo2": { "title": "服务有效日期至", "type": "string", "format": "date-time" }
+        }
+      },
+      "ResponseCrmContractResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": { "$ref": "#/components/schemas/CrmContractResponse" }
+        }
+      },
+      "SaveAmountRequest": {
+        "type": "object",
+        "properties": {
+          "invoiceAmount": { "title": "开票金额", "type": "number" },
+          "invoiceDate": { "title": "开票日期", "type": "string", "format": "date-time" },
+          "collectionAmount": { "title": "收款金额", "type": "number" },
+          "collectionDate": { "title": "收款日期", "type": "string", "format": "date-time" },
+          "remark": { "title": "备注", "type": "string" }
+        }
+      },
+      "ResponseCrmContractAmountResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": { "$ref": "#/components/schemas/CrmContractAmountResponse" }
+        }
+      },
+      "ClueParticipant": {
+        "title": "参与人员 Id",
+        "required": ["type", "userId"],
+        "type": "object",
+        "properties": {
+          "userId": { "title": "人员 id", "type": "string" },
+          "type": { "title": "人员类型", "type": "string", "enum": ["SALE", "TECHNICAL_PERSON", "OBSERVER"] }
+        },
+        "nullable": true
+      },
+      "UpdateClueRequest": {
+        "title": "编辑线索请求",
+        "required": ["clueId"],
+        "type": "object",
+        "properties": {
+          "clueId": { "title": "线索ID", "type": "string", "format": "uuid" },
+          "participant": {
+            "title": "参与人员 Id",
+            "maxItems": 10,
+            "minItems": 0,
+            "type": "array",
+            "nullable": true,
+            "items": { "$ref": "#/components/schemas/ClueParticipant" }
+          }
+        }
+      },
+      "ContactInfoResponse": {
+        "title": "联系方式列表",
+        "required": ["expired", "toBusiness", "type", "value"],
+        "type": "object",
+        "properties": {
+          "type": {
+            "title": "联系方式类型",
+            "type": "string",
+            "enum": ["EMAIL", "MOBILE_PHONE", "LANDLINE_PHONE", "WECHAT", "DINGTALK"]
+          },
+          "value": { "title": "联系方式的值", "type": "string", "description": "最大长度 90 字符" },
+          "toBusiness": {
+            "title": "是否对公",
+            "type": "boolean",
+            "description": "是否为对公联系方式，默认为 false",
+            "default": false
+          },
+          "expired": { "title": "是否已过期", "type": "boolean" }
+        }
+      },
+      "CrmClueLockSimpleResponse": {
+        "title": "锁定",
+        "required": ["createTime", "id", "lockStatus", "updateTime"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "锁定编号", "type": "string", "format": "uuid" },
+          "requirement": { "title": "需求描述", "type": "string" },
+          "owner": { "$ref": "#/components/schemas/UserIdentifiableResponse" },
+          "lockStatus": {
+            "title": "锁定状态",
+            "type": "string",
+            "enum": ["PENDING", "APPROVED", "REJECTED", "CANCELLED", "EXPIRED"]
+          },
+          "createTime": { "type": "string", "description": "创建时间", "format": "date-time" },
+          "updateTime": { "type": "string", "description": "更新时间", "format": "date-time" }
+        },
+        "description": "锁定客户申请"
+      },
+      "CrmClueNoteResponse": {
+        "title": "销售记录",
+        "required": ["content", "createTime", "id", "updateTime"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "销售记录id", "type": "string", "format": "uuid" },
+          "content": { "title": "内容", "type": "string" },
+          "owner": { "$ref": "#/components/schemas/UserIdentifiableResponse" },
+          "edited": { "title": "是否已经编辑", "type": "boolean" },
+          "createTime": { "type": "string", "description": "创建时间", "format": "date-time" },
+          "updateTime": { "type": "string", "description": "修改时间", "format": "date-time" }
+        }
+      },
+      "CrmClueResponse": {
+        "title": "数据值",
+        "required": ["customer", "id", "product"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "线索id", "type": "string", "format": "uuid" },
+          "customer": { "$ref": "#/components/schemas/CrmCustomerSimpleResponse" },
+          "product": { "$ref": "#/components/schemas/CrmProductResponse" },
+          "locker": { "$ref": "#/components/schemas/CrmClueLockSimpleResponse" },
+          "statusName": { "title": "状态文本", "type": "string" },
+          "closed": { "title": "是否已关闭", "type": "boolean" },
+          "owner": { "$ref": "#/components/schemas/UserIdentifiableResponse" },
+          "participants": {
+            "title": "参与人员列表",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Participant" }
+          },
+          "contacts": {
+            "title": "联系人列表",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CrmContactResponse" }
+          },
+          "notes": {
+            "title": "销售记录",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CrmClueNoteResponse" }
+          },
+          "department": { "$ref": "#/components/schemas/DepartmentIdentifiableResponse" },
+          "logs": {
+            "title": "操作日志",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/LogSimpleResponse" }
+          },
+          "contract": { "$ref": "#/components/schemas/CrmContractResponse" },
+          "remark": { "title": "备注", "type": "string" },
+          "locked": { "title": "是否已经锁定", "type": "boolean" }
+        }
+      },
+      "CrmContactResponse": {
+        "title": "联系人列表",
+        "required": ["contactInfo", "id", "name"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "联系人id，唯一", "type": "string", "format": "uuid" },
+          "name": { "title": "姓名", "type": "string" },
+          "customer": {
+            "title": "所属客户名称列表",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CrmCustomerIdentifiableResponse" }
+          },
+          "contactInfo": {
+            "title": "联系方式列表",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ContactInfoResponse" }
+          },
+          "remark": { "title": "备注", "type": "string" },
+          "extra": { "title": "额外信息", "type": "string" }
+        }
+      },
+      "CrmCustomerIdentifiableResponse": {
+        "title": "所属客户名称列表",
+        "required": ["companyName", "departmentName", "id"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "客户id，唯一", "type": "string", "format": "uuid" },
+          "companyName": { "title": "公司名称", "type": "string", "description": "客户所属公司名称" },
+          "departmentName": { "title": "部门名称", "type": "string", "description": "所在部门/团队/项目名称" }
+        }
+      },
+      "CrmCustomerSimpleResponse": {
+        "title": "客户名称",
+        "required": ["companyName", "departmentName", "id"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "客户id，唯一", "type": "string", "format": "uuid" },
+          "companyName": { "title": "公司名称", "type": "string", "description": "客户所属公司名称" },
+          "departmentName": { "title": "部门名称", "type": "string", "description": "所在部门/团队/项目名称" },
+          "departmentSize": { "title": "部门规模", "type": "integer", "format": "int32" },
+          "region": { "title": "地区", "type": "string" },
+          "leadSource": { "title": "来源", "type": "string", "description": "如：主动咨询、老客户介绍" },
+          "hasComment": { "title": "是否有留言", "type": "boolean" },
+          "remark": { "title": "备注", "type": "string" },
+          "extra": { "title": "额外信息", "type": "string" }
+        }
+      },
+      "DepartmentIdentifiableResponse": {
+        "title": "所属部门",
+        "required": ["hasChild", "id", "name"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "主键 id", "type": "string", "format": "uuid" },
+          "name": { "title": "部门名称", "type": "string" },
+          "hasChild": { "title": "是否包含子部门", "type": "boolean" }
+        }
+      },
+      "LogSimpleResponse": {
+        "title": "操作日志",
+        "required": ["action", "createTime", "type", "user"],
+        "type": "object",
+        "properties": {
+          "type": { "title": "业务类别", "type": "string" },
+          "user": { "$ref": "#/components/schemas/UserIdentifiableResponse" },
+          "action": { "title": "日志内容", "type": "string" },
+          "businessNo": { "title": "业务id", "type": "string" },
+          "ipAddress": { "title": "操作 ip 地址", "type": "string" },
+          "createTime": { "title": "操作时间", "type": "string", "format": "date-time" }
+        }
+      },
+      "Participant": {
+        "title": "参与人员列表",
+        "required": ["type", "user"],
+        "type": "object",
+        "properties": {
+          "user": { "$ref": "#/components/schemas/UserIdentifiableResponse" },
+          "type": { "title": "人员类型", "type": "string", "enum": ["SALE", "TECHNICAL_PERSON", "OBSERVER"] }
+        }
+      },
+      "ResponseCrmClueResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": { "$ref": "#/components/schemas/CrmClueResponse" }
+        }
+      },
+      "UpdateClueNoteRequest": {
+        "title": "编辑线索请求",
+        "required": ["content", "noteId"],
+        "type": "object",
+        "properties": {
+          "noteId": { "title": "销售记录ID", "type": "string", "format": "uuid" },
+          "content": { "title": "记录内容", "type": "string" }
+        }
+      },
+      "ResponseCrmClueNoteResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": { "$ref": "#/components/schemas/CrmClueNoteResponse" }
+        }
+      },
+      "UnlockClueRequest": {
+        "type": "object",
+        "properties": { "lockId": { "title": "锁定ID", "type": "string", "format": "uuid" } }
+      },
+      "TransferClueRequest": {
+        "title": "转移线索请求",
+        "required": ["clueId", "keepOwnerInSales", "newOwnerId"],
+        "type": "object",
+        "properties": {
+          "clueId": { "title": "线索ID", "type": "string", "format": "uuid" },
+          "newOwnerId": {
+            "title": "用户ID",
+            "type": "string",
+            "description": "新 owner 的用户主键ID",
+            "format": "uuid"
+          },
+          "keepOwnerInSales": {
+            "title": "保留到团队中",
+            "type": "boolean",
+            "description": "是否保留当前 owner 在 sales 团队中"
+          }
+        }
+      },
+      "BpmProcessCancelRequest": {
+        "required": ["reason"],
+        "type": "object",
+        "properties": {
+          "processInstanceId": { "title": "流程实例ID", "type": "string" },
+          "reason": { "title": "取消原因", "type": "string" }
+        },
+        "description": "取消流程请求"
+      },
+      "BpmClueLockCancelRequest": {
+        "required": ["reason"],
+        "type": "object",
+        "properties": {
+          "lockId": { "title": "锁定ID", "type": "string", "format": "uuid" },
+          "reason": { "title": "取消原因", "type": "string" }
+        }
+      },
+      "ValidateSmsCodeRequest": {
+        "required": ["code", "phoneNumber", "scene"],
+        "type": "object",
+        "properties": {
+          "phoneNumber": { "title": "手机号", "type": "string" },
+          "code": { "title": "验证码", "type": "string" },
+          "scene": {
+            "title": "发送场景",
+            "type": "string",
+            "enum": ["LOGIN", "REGISTER", "CHANGE_PHONE_NUMBER", "CHANGE_PHONE_NUMBER_CONFIRM", "CHANGE_PASSWORD"]
+          }
+        }
+      },
+      "ResponseSaveFileResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": { "$ref": "#/components/schemas/SaveFileResponse" }
+        }
+      },
+      "SaveFileResponse": {
+        "title": "数据值",
+        "type": "object",
+        "properties": {
+          "url": { "title": "文件url", "type": "string", "description": "可用于直接访问该文件" },
+          "fileName": { "title": "文件名", "type": "string" },
+          "fileSize": { "title": "文件大小", "type": "integer", "description": "单位为 Byte", "format": "int32" }
+        },
+        "description": "上传文件后的成功响应结果"
+      },
+      "SendSmsCodeRequest": {
+        "required": ["scene"],
+        "type": "object",
+        "properties": {
+          "phoneNumber": { "title": "手机号", "type": "string", "nullable": true },
+          "scene": {
+            "title": "发送场景",
+            "type": "string",
+            "enum": ["LOGIN", "REGISTER", "CHANGE_PHONE_NUMBER", "CHANGE_PHONE_NUMBER_CONFIRM", "CHANGE_PASSWORD"]
+          }
+        }
+      },
+      "RegisterRequest": {
+        "required": ["name", "password", "username"],
+        "type": "object",
+        "properties": {
+          "username": { "title": "用户名", "type": "string" },
+          "password": { "title": "密码", "type": "string" },
+          "name": { "title": "姓名", "type": "string" },
+          "gender": { "title": "性别", "type": "string", "enum": ["MALE", "FEMALE", "OTHER"] },
+          "invitationCode": { "title": "邀请码", "type": "string" },
+          "info": { "type": "object", "additionalProperties": { "type": "object" } }
+        }
+      },
+      "LoginRequest": {
+        "required": ["password", "username"],
+        "type": "object",
+        "properties": {
+          "username": { "title": "用户名", "type": "string" },
+          "password": { "title": "密码", "type": "string" }
+        }
+      },
+      "SmsLoginRequest": {
+        "required": ["code", "phoneNumber"],
+        "type": "object",
+        "properties": {
+          "phoneNumber": { "title": "手机号", "type": "string" },
+          "code": { "title": "验证码", "type": "string" }
+        }
+      },
+      "LandingRequest": {
+        "type": "object",
+        "properties": { "userId": { "title": "用户主键ID", "type": "string", "format": "uuid" } }
+      },
+      "UpdateTagRequest": {
+        "required": ["id", "name"],
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "title": "标签名称", "type": "string" },
+          "tag": { "title": "标签内容", "type": "string", "description": "可以为空，如无必要请勿填写或修改" },
+          "remark": { "title": "标签备注", "type": "string" }
+        },
+        "description": "修改标签请求"
+      },
+      "ResponseTagResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": { "$ref": "#/components/schemas/TagResponse" }
+        }
+      },
+      "TagResponse": {
+        "title": "数据值",
+        "required": ["id", "name", "readonly", "type"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "标签 id", "type": "string", "format": "uuid" },
+          "dataField": {
+            "title": "数据类型",
+            "type": "string",
+            "description": "如果为 null，代表与具体的数据类型无关，为通用标签",
+            "nullable": true,
+            "enum": ["USER", "DEPT", "CRM_CONTACT", "CRM_CUSTOMER", "CRM_CLUE", "CRM_PRODUCT"]
+          },
+          "type": { "title": "标签类型", "type": "string", "description": "标签类型", "enum": ["SYSTEM", "USER"] },
+          "name": { "title": "标签名称", "type": "string" },
+          "tag": { "title": "标签内容", "type": "string" },
+          "readonly": { "title": "是否只读", "type": "boolean" },
+          "remark": { "title": "备注", "type": "string" }
+        }
+      },
+      "BooleanQueryCondition": {
+        "title": "是否只读",
+        "required": ["value"],
+        "type": "object",
+        "properties": { "value": { "title": "查询值", "type": "boolean" } },
+        "description": "Boolean 查询条件",
+        "nullable": true
+      },
+      "EnumQueryConditionDataFieldEnum": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "title": "查询值",
+            "type": "string",
+            "enum": ["USER", "DEPT", "CRM_CONTACT", "CRM_CUSTOMER", "CRM_CLUE", "CRM_PRODUCT"]
+          }
+        },
+        "description": "Enum 查询条件",
+        "nullable": true
+      },
+      "EnumQueryConditionTagTypeEnum": {
+        "title": "标签类型",
+        "type": "object",
+        "properties": {
+          "value": { "title": "查询值", "type": "string", "description": "标签类型", "enum": ["SYSTEM", "USER"] }
+        },
+        "description": "Enum 查询条件",
+        "nullable": true
+      },
+      "OrderField": {
+        "required": ["field", "order"],
+        "type": "object",
+        "properties": {
+          "field": { "title": "字段名称", "type": "string" },
+          "order": {
+            "title": "排序方向",
+            "type": "string",
+            "description": "默认为 ASC",
+            "default": "Fuzzy",
+            "enum": ["DESC", "ASC"]
+          }
+        },
+        "description": "排序字段",
+        "nullable": true
+      },
+      "PrimaryKeyQueryCondition": {
+        "title": "标签 id",
+        "required": ["value"],
+        "type": "object",
+        "properties": { "value": { "title": "查询值", "type": "string", "format": "uuid" } },
+        "description": "主键查询条件",
+        "nullable": true
+      },
+      "QueryTagPageRequest": {
+        "type": "object",
+        "properties": {
+          "id": { "$ref": "#/components/schemas/PrimaryKeyQueryCondition" },
+          "dataField": { "$ref": "#/components/schemas/EnumQueryConditionDataFieldEnum" },
+          "name": { "$ref": "#/components/schemas/StringQueryCondition" },
+          "type": { "$ref": "#/components/schemas/EnumQueryConditionTagTypeEnum" },
+          "readonly": { "$ref": "#/components/schemas/BooleanQueryCondition" },
+          "sort": { "type": "array", "nullable": true, "items": { "$ref": "#/components/schemas/OrderField" } }
+        }
+      },
+      "StringQueryCondition": {
+        "title": "标签名称",
+        "required": ["motion", "value"],
+        "type": "object",
+        "properties": {
+          "motion": {
+            "title": "查询动作",
+            "type": "string",
+            "description": "默认为Fuzzy",
+            "default": "Fuzzy",
+            "enum": ["Fuzzy", "Exact"]
+          },
+          "value": { "title": "查询值", "type": "string" }
+        },
+        "description": "String 查询条件",
+        "nullable": true
+      },
+      "PageResultTagResponse": {
+        "title": "数据值",
+        "type": "object",
+        "properties": {
+          "list": { "type": "array", "items": { "$ref": "#/components/schemas/TagResponse" } },
+          "total": { "type": "integer", "format": "int64" }
+        }
+      },
+      "ResponsePageResultTagResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": { "$ref": "#/components/schemas/PageResultTagResponse" }
+        }
+      },
+      "AddTagRequest": {
+        "required": ["name"],
+        "type": "object",
+        "properties": {
+          "dataField": {
+            "title": "应用业务",
+            "type": "string",
+            "description": "如果设置 null，则代表 tag 是一个通用标签，与某个数据类型无关",
+            "nullable": true,
+            "enum": ["USER", "DEPT", "CRM_CONTACT", "CRM_CUSTOMER", "CRM_CLUE", "CRM_PRODUCT"]
+          },
+          "name": { "title": "标签显示名", "type": "string" },
+          "tag": { "title": "标签内容", "type": "string" },
+          "remark": { "title": "备注", "type": "string" }
+        },
+        "description": "新增标签请求"
+      },
+      "AddTagBindingRequest": {
+        "required": ["dataField", "entityId", "tagId"],
+        "type": "object",
+        "properties": {
+          "tagId": { "title": "标签 id", "type": "string" },
+          "dataField": {
+            "title": "应用业务",
+            "type": "string",
+            "enum": ["USER", "DEPT", "CRM_CONTACT", "CRM_CUSTOMER", "CRM_CLUE", "CRM_PRODUCT"]
+          },
+          "entityId": { "title": "目标 id", "type": "string" },
+          "remark": { "title": "备注", "type": "string" }
+        }
+      },
+      "DateTimeQueryCondition": {
+        "title": "操作时间",
+        "type": "object",
+        "properties": {
+          "start": {
+            "title": "开始时间",
+            "type": "string",
+            "description": "格式为 yyyy-MM-ddTHH:mm:ssZ",
+            "format": "date-time"
+          },
+          "end": {
+            "title": "结束时间",
+            "type": "string",
+            "description": "格式为 yyyy-MM-ddTHH:mm:ssZ",
+            "format": "date-time"
+          }
+        },
+        "description": "DateTime 查询条件",
+        "nullable": true
+      },
+      "QueryLogRequest": {
+        "type": "object",
+        "properties": {
+          "type": { "$ref": "#/components/schemas/StringQueryCondition" },
+          "user": { "$ref": "#/components/schemas/StringQueryCondition" },
+          "businessNo": { "$ref": "#/components/schemas/StringQueryCondition" },
+          "ipAddress": { "$ref": "#/components/schemas/StringQueryCondition" },
+          "createTime": { "$ref": "#/components/schemas/DateTimeQueryCondition" },
+          "sort": { "type": "array", "nullable": true, "items": { "$ref": "#/components/schemas/OrderField" } }
+        },
+        "description": "查询日志分页请求"
+      },
+      "PageResultLogSimpleResponse": {
+        "title": "数据值",
+        "type": "object",
+        "properties": {
+          "list": { "type": "array", "items": { "$ref": "#/components/schemas/LogSimpleResponse" } },
+          "total": { "type": "integer", "format": "int64" }
+        }
+      },
+      "ResponsePageResultLogSimpleResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": { "$ref": "#/components/schemas/PageResultLogSimpleResponse" }
+        }
+      },
+      "CreateInvitationCodeRequest": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "邀请码", "type": "string" },
+          "remark": { "title": "备注", "type": "string" }
+        }
+      },
+      "InvitationCodeResponse": {
+        "title": "数据值",
+        "required": ["code"],
+        "type": "object",
+        "properties": {
+          "code": { "title": "邀请码", "type": "string" },
+          "remark": { "title": "备注", "type": "string", "nullable": true }
+        }
+      },
+      "ResponseInvitationCodeResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": { "$ref": "#/components/schemas/InvitationCodeResponse" }
+        }
+      },
+      "QueryProductRequest": {
+        "required": ["productIds"],
+        "type": "object",
+        "properties": {
+          "productIds": {
+            "title": "产品 id 列表",
+            "uniqueItems": true,
+            "type": "array",
+            "items": { "title": "产品 id 列表", "type": "string" }
+          }
+        }
+      },
+      "ResponseListCrmProductResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": { "title": "数据值", "type": "array", "items": { "$ref": "#/components/schemas/CrmProductResponse" } }
+        }
+      },
+      "CreateProductRequest": {
+        "required": ["name"],
+        "type": "object",
+        "properties": {
+          "name": { "title": "产品名称", "type": "string" },
+          "description": { "title": "产品描述", "type": "string" }
+        }
+      },
+      "AssignProductTargetRequest": {
+        "required": ["productId", "target", "targetId"],
+        "type": "object",
+        "properties": {
+          "productId": { "title": "产品 id", "type": "string" },
+          "target": {
+            "title": "目标",
+            "type": "string",
+            "description": "产品要分配到什么类型的目标",
+            "enum": ["DEPT"]
+          },
+          "targetId": {
+            "title": "目标 id 列表",
+            "type": "array",
+            "items": { "title": "目标 id 列表", "type": "string" }
+          }
+        }
+      },
+      "EnumQueryConditionClueStatus": {
+        "type": "object",
+        "properties": {
+          "value": { "title": "查询值", "type": "string", "enum": ["PENDING", "LOCKED", "UNLOCKED", "EXPIRED"] }
+        },
+        "description": "Enum 查询条件",
+        "nullable": true
+      },
+      "NumberQueryCondition": {
+        "required": ["motion", "value"],
+        "type": "object",
+        "properties": {
+          "motion": {
+            "title": "查询动作",
+            "type": "string",
+            "description": "默认为EQ",
+            "default": "EQ",
+            "enum": ["EQ", "LT", "GT", "LE", "GE"]
+          },
+          "value": { "title": "查询值", "type": "integer", "format": "int64" }
+        },
+        "description": "Number 查询条件",
+        "nullable": true
+      },
+      "QueryCustomerPageRequest": {
+        "type": "object",
+        "properties": {
+          "companyName": { "$ref": "#/components/schemas/StringQueryCondition" },
+          "departmentName": { "$ref": "#/components/schemas/StringQueryCondition" },
+          "departmentSize": { "$ref": "#/components/schemas/NumberQueryCondition" },
+          "region": { "$ref": "#/components/schemas/StringQueryCondition" },
+          "leadSource": { "$ref": "#/components/schemas/StringQueryCondition" },
+          "hasComment": { "$ref": "#/components/schemas/BooleanQueryCondition" },
+          "lockTime": { "$ref": "#/components/schemas/DateTimeQueryCondition" },
+          "locked": { "$ref": "#/components/schemas/BooleanQueryCondition" },
+          "status": { "$ref": "#/components/schemas/EnumQueryConditionClueStatus" },
+          "sort": { "type": "array", "nullable": true, "items": { "$ref": "#/components/schemas/OrderField" } }
+        }
+      },
+      "PageResultCrmCustomerSimpleResponse": {
+        "title": "数据值",
+        "type": "object",
+        "properties": {
+          "list": { "type": "array", "items": { "$ref": "#/components/schemas/CrmCustomerSimpleResponse" } },
+          "total": { "type": "integer", "format": "int64" }
+        }
+      },
+      "ResponsePageResultCrmCustomerSimpleResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": { "$ref": "#/components/schemas/PageResultCrmCustomerSimpleResponse" }
+        }
+      },
+      "CreateCustomerRequest": {
+        "required": ["companyName", "contactsId", "departmentSize", "ignoreCustomerCheck", "leadSource"],
+        "type": "object",
+        "properties": {
+          "deptId": {
+            "title": "部门 id",
+            "type": "string",
+            "description": "当用户属于多个部门时，需要手动指定要添加到哪个部门"
+          },
+          "companyName": { "title": "公司名称", "type": "string", "description": "客户所属公司名称" },
+          "departmentName": { "title": "部门名称", "type": "string", "description": "所在部门/团队/项目名称" },
+          "departmentSize": { "title": "部门规模", "type": "integer", "format": "int32" },
+          "region": { "title": "地区", "type": "string", "nullable": true },
+          "address": { "title": "详细地址", "type": "string", "nullable": true },
+          "leadSource": { "title": "来源", "type": "string", "description": "如：主动咨询、老客户介绍" },
+          "contactsId": {
+            "title": "联系人列表",
+            "maxItems": 10,
+            "minItems": 0,
+            "type": "array",
+            "description": "创建客户时，联系人不能为 null或不填，可以给空数组。需要先创建联系人，应传入联系人id。",
+            "items": {
+              "title": "联系人列表",
+              "type": "string",
+              "description": "创建客户时，联系人不能为 null或不填，可以给空数组。需要先创建联系人，应传入联系人id。"
+            }
+          },
+          "remark": { "title": "备注", "type": "string", "nullable": true },
+          "extra": { "title": "额外信息", "type": "string", "description": "需要时可以存放 JSON", "nullable": true },
+          "ignoreCustomerCheck": { "title": "忽略客户检查", "type": "boolean" }
+        }
+      },
+      "AddCustomerCommentRequest": {
+        "title": "添加客户留言请求",
+        "required": ["content", "customerId"],
+        "type": "object",
+        "properties": {
+          "customerId": { "title": "客户ID", "type": "string", "format": "uuid" },
+          "content": { "title": "留言内容", "type": "string" }
+        }
+      },
+      "MultipleStringQueryCondition": {
+        "required": ["value"],
+        "type": "object",
+        "properties": {
+          "value": {
+            "title": "查询值",
+            "maxItems": 10,
+            "minItems": 0,
+            "uniqueItems": true,
+            "type": "array",
+            "items": { "title": "查询值", "type": "string" }
+          }
+        },
+        "description": "Multiple String 查询条件",
+        "nullable": true
+      },
+      "QueryCluePageRequest": {
+        "type": "object",
+        "properties": {
+          "customerName": { "$ref": "#/components/schemas/StringQueryCondition" },
+          "customerLeadSource": { "$ref": "#/components/schemas/StringQueryCondition" },
+          "customerId": { "$ref": "#/components/schemas/PrimaryKeyQueryCondition" },
+          "hasCustomerComment": { "$ref": "#/components/schemas/BooleanQueryCondition" },
+          "contactKeyword": { "$ref": "#/components/schemas/StringQueryCondition" },
+          "contactId": { "$ref": "#/components/schemas/PrimaryKeyQueryCondition" },
+          "owner": { "$ref": "#/components/schemas/StringQueryCondition" },
+          "participant": { "$ref": "#/components/schemas/StringQueryCondition" },
+          "productName": { "$ref": "#/components/schemas/StringQueryCondition" },
+          "statusName": { "$ref": "#/components/schemas/StringQueryCondition" },
+          "createTime": { "$ref": "#/components/schemas/DateTimeQueryCondition" },
+          "updateTime": { "$ref": "#/components/schemas/DateTimeQueryCondition" },
+          "closeTime": { "$ref": "#/components/schemas/DateTimeQueryCondition" },
+          "closed": { "$ref": "#/components/schemas/BooleanQueryCondition" },
+          "clueStatus": { "$ref": "#/components/schemas/EnumQueryConditionClueStatus" },
+          "tag": { "$ref": "#/components/schemas/MultipleStringQueryCondition" },
+          "sort": { "type": "array", "nullable": true, "items": { "$ref": "#/components/schemas/OrderField" } }
+        },
+        "description": "查询线索分页请求"
+      },
+      "CrmClueSimpleResponse": {
+        "required": ["customerName", "id", "locked", "ownerName", "product", "tag"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "线索id", "type": "string", "format": "uuid" },
+          "customerName": { "title": "客户名称", "type": "string" },
+          "customerLeadSource": { "title": "客户来源", "type": "string", "description": "如：主动咨询、老客户介绍" },
+          "ownerName": { "title": "线索所有人姓名", "type": "string" },
+          "participantName": {
+            "title": "参与人员姓名",
+            "type": "array",
+            "items": { "title": "参与人员姓名", "type": "string" }
+          },
+          "product": { "$ref": "#/components/schemas/CrmProductResponse" },
+          "locked": { "title": "是否已经锁定", "type": "boolean" },
+          "statusName": { "title": "状态文本", "type": "string" },
+          "closed": { "title": "是否已关闭", "type": "boolean" },
+          "clueStatus": { "title": "线索状态", "type": "string", "enum": ["PENDING", "LOCKED", "UNLOCKED", "EXPIRED"] },
+          "createTime": { "type": "string", "description": "创建时间", "format": "date-time" },
+          "updateTime": { "type": "string", "description": "修改时间", "format": "date-time" },
+          "closeTime": { "type": "string", "description": "关闭时间", "format": "date-time" },
+          "remark": { "title": "备注", "type": "string" },
+          "tag": { "title": "标签", "type": "array", "items": { "$ref": "#/components/schemas/TagSimpleResponse" } }
+        }
+      },
+      "PageResultCrmClueSimpleResponse": {
+        "title": "数据值",
+        "type": "object",
+        "properties": {
+          "list": { "type": "array", "items": { "$ref": "#/components/schemas/CrmClueSimpleResponse" } },
+          "total": { "type": "integer", "format": "int64" }
+        }
+      },
+      "ResponsePageResultCrmClueSimpleResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": { "$ref": "#/components/schemas/PageResultCrmClueSimpleResponse" }
+        }
+      },
+      "TagSimpleResponse": {
+        "title": "标签",
+        "required": ["name"],
+        "type": "object",
+        "properties": {
+          "dataField": {
+            "title": "数据类型",
+            "type": "string",
+            "description": "如果为 null，代表与具体的数据类型无关，为通用标签",
+            "nullable": true,
+            "enum": ["USER", "DEPT", "CRM_CONTACT", "CRM_CUSTOMER", "CRM_CLUE", "CRM_PRODUCT"]
+          },
+          "name": { "title": "标签名称", "type": "string" }
+        }
+      },
+      "CreateClueRequest": {
+        "title": "创建线索请求",
+        "required": ["addContactToCustomer", "contactsId", "customerId"],
+        "type": "object",
+        "properties": {
+          "customerId": { "title": "客户 id", "type": "string" },
+          "contactsId": {
+            "title": "联系人列表",
+            "maxItems": 10,
+            "minItems": 0,
+            "type": "array",
+            "description": "需要先创建联系人，应传入联系人id",
+            "items": { "title": "联系人列表", "type": "string", "description": "需要先创建联系人，应传入联系人id" }
+          },
+          "participant": {
+            "title": "参与人员 Id",
+            "maxItems": 10,
+            "minItems": 0,
+            "type": "array",
+            "nullable": true,
+            "items": { "$ref": "#/components/schemas/ClueParticipant" }
+          },
+          "productId": { "title": "产品id", "type": "string" },
+          "addContactToCustomer": { "title": "添加联系人到客户", "type": "boolean" },
+          "remark": { "title": "备注", "type": "string", "nullable": true }
+        }
+      },
+      "AddClueNoteRequest": {
+        "title": "添加销售记录请求",
+        "required": ["clueId", "content"],
+        "type": "object",
+        "properties": {
+          "clueId": { "title": "线索ID", "type": "string", "format": "uuid" },
+          "content": { "title": "销售记录内容", "type": "string" }
+        }
+      },
+      "BpmTaskRejectRequest": {
+        "required": ["reason", "taskId"],
+        "type": "object",
+        "properties": {
+          "taskId": { "type": "string", "description": "任务编号" },
+          "reason": { "type": "string", "description": "审批意见" }
+        },
+        "description": "拒绝任务审批请求"
+      },
+      "BpmTaskQueryRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "description": "任务名" },
+          "timeRange": { "$ref": "#/components/schemas/TimeRange" }
+        },
+        "description": "查询任务请求"
+      },
+      "TimeRange": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "title": "开始时间",
+            "type": "string",
+            "description": "格式为 yyyy-MM-ddTHH:mm:ssZ",
+            "format": "date-time"
+          },
+          "end": {
+            "title": "结束时间",
+            "type": "string",
+            "description": "格式为 yyyy-MM-ddTHH:mm:ssZ",
+            "format": "date-time"
+          }
+        },
+        "description": "时间范围查询"
+      },
+      "BpmTaskResponse": {
+        "required": ["assigneeUser", "startUser"],
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "description": "任务编号" },
+          "processInstanceId": { "title": "任务所在流程实例的id", "type": "string" },
+          "processName": { "title": "任务所在流程的名称", "type": "string" },
+          "name": { "type": "string", "description": "任务名字" },
+          "createTime": { "type": "string", "description": "创建时间", "format": "date-time" },
+          "endTime": { "type": "string", "description": "结束时间", "format": "date-time" },
+          "durationInMillis": { "type": "integer", "description": "持续时间", "format": "int64" },
+          "status": {
+            "type": "string",
+            "description": "任务状态",
+            "example": "APPROVED",
+            "enum": ["PENDING", "APPROVED", "REJECTED", "CANCELLED", "DELEGATED"]
+          },
+          "reason": { "type": "string", "description": "审批意见/理由" },
+          "form": { "type": "object", "description": "业务表单" },
+          "startUser": { "$ref": "#/components/schemas/User" },
+          "assigneeUser": { "$ref": "#/components/schemas/User" }
+        },
+        "description": "流程任务"
+      },
+      "PageResultBpmTaskResponse": {
+        "title": "数据值",
+        "type": "object",
+        "properties": {
+          "list": { "type": "array", "items": { "$ref": "#/components/schemas/BpmTaskResponse" } },
+          "total": { "type": "integer", "format": "int64" }
+        }
+      },
+      "ResponsePageResultBpmTaskResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": { "$ref": "#/components/schemas/PageResultBpmTaskResponse" }
+        }
+      },
+      "User": {
+        "required": ["gender", "name", "username"],
+        "type": "object",
+        "properties": {
+          "username": { "title": "账号名", "type": "string" },
+          "name": { "title": "姓名", "type": "string" },
+          "gender": { "title": "性别", "type": "string", "enum": ["MALE", "FEMALE", "OTHER"] }
+        },
+        "description": "用户信息"
+      },
+      "BpmTaskApproveRequest": {
+        "required": ["taskId"],
+        "type": "object",
+        "properties": {
+          "taskId": { "type": "string", "description": "任务编号" },
+          "reason": { "type": "string", "description": "审批意见" }
+        },
+        "description": "通过任务审批请求"
+      },
+      "BpmProcessQueryRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "description": "流程名" },
+          "processDefinitionId": { "type": "string", "description": "流程定义的编号" },
+          "status": {
+            "type": "string",
+            "description": "流程状态",
+            "example": "APPROVED",
+            "enum": ["PENDING", "APPROVED", "REJECTED", "CANCELLED"]
+          },
+          "startUser": { "type": "string", "description": "发起人的用户id，UUID" },
+          "timeRange": { "$ref": "#/components/schemas/TimeRange" }
+        },
+        "description": "查询流程请求"
+      },
+      "BpmProcessSimpleResponse": {
+        "required": ["id", "name", "startTime", "startUser", "status"],
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "description": "流程实例编号" },
+          "name": { "type": "string", "description": "流程名称" },
+          "status": {
+            "type": "string",
+            "description": "流程状态",
+            "example": "APPROVED",
+            "enum": ["PENDING", "APPROVED", "REJECTED", "CANCELLED"]
+          },
+          "startTime": { "type": "string", "description": "发起时间", "format": "date-time" },
+          "endTime": { "type": "string", "description": "结束时间", "format": "date-time" },
+          "durationInMillis": { "type": "integer", "description": "持续时间", "format": "int64" },
+          "businessType": { "type": "string", "description": "业务类型", "enum": ["CLUE_LOCK", "CLUE_STATUS_CHANGE"] },
+          "startUser": { "$ref": "#/components/schemas/User" },
+          "form": {
+            "type": "array",
+            "description": "业务表单摘要",
+            "items": { "$ref": "#/components/schemas/FormItemObject" }
+          }
+        },
+        "description": "流程实例简略信息"
+      },
+      "FormItemObject": {
+        "type": "object",
+        "properties": { "name": { "type": "string" }, "value": { "type": "object" }, "primary": { "type": "boolean" } },
+        "description": "业务表单摘要"
+      },
+      "PageResultBpmProcessSimpleResponse": {
+        "title": "数据值",
+        "type": "object",
+        "properties": {
+          "list": { "type": "array", "items": { "$ref": "#/components/schemas/BpmProcessSimpleResponse" } },
+          "total": { "type": "integer", "format": "int64" }
+        }
+      },
+      "ResponsePageResultBpmProcessSimpleResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": { "$ref": "#/components/schemas/PageResultBpmProcessSimpleResponse" }
+        }
+      },
+      "BpmClueLockCreateRequest": {
+        "required": ["description"],
+        "type": "object",
+        "properties": {
+          "clueId": { "title": "线索ID", "type": "string", "format": "uuid" },
+          "description": { "title": "相关描述", "type": "string" },
+          "extra": { "type": "string" }
+        }
+      },
+      "BpmClueChangeStatusRequest": {
+        "required": ["description", "override", "statusName"],
+        "type": "object",
+        "properties": {
+          "clueId": { "title": "线索ID", "type": "string", "format": "uuid" },
+          "statusName": { "title": "状态名称", "type": "string" },
+          "description": { "title": "相关描述", "type": "string" },
+          "override": {
+            "title": "覆盖已有申请",
+            "type": "boolean",
+            "description": "设置为 true 时，会直接覆盖之前未审核通过的修改申请，而不抛出异常"
+          }
+        }
+      },
+      "DepartmentResponse": {
+        "title": "所属部门",
+        "required": ["id", "name", "stringId"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "主键 id", "type": "string", "format": "uuid" },
+          "stringId": { "title": "部门id，唯一", "type": "string" },
+          "name": { "title": "部门名称", "type": "string" },
+          "description": { "title": "部门名称描述", "type": "string" },
+          "leader": { "$ref": "#/components/schemas/UserIdentifiableResponse" },
+          "children": {
+            "title": "包含的子部门名称",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DepartmentResponse" }
+          },
+          "status": { "title": "状态", "type": "string", "enum": ["ENABLED", "DISABLED"] }
+        },
+        "nullable": true
+      },
+      "ResponseUserProfileResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": { "$ref": "#/components/schemas/UserProfileResponse" }
+        }
+      },
+      "RoleResponse": {
+        "title": "所属角色",
+        "required": ["id", "name", "stringId"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "主键 id", "type": "string", "format": "uuid" },
+          "stringId": { "title": "角色id，唯一", "type": "string" },
+          "name": { "title": "角色名称", "type": "string" },
+          "description": { "title": "角色描述", "type": "string" },
+          "children": {
+            "title": "包含的子角色",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/RoleResponse" }
+          },
+          "status": { "title": "状态", "type": "string", "enum": ["ENABLED", "DISABLED"] },
+          "readonly": { "title": "是否只读", "type": "boolean" }
+        },
+        "nullable": true
+      },
+      "UserProfileResponse": {
+        "title": "数据值",
+        "required": ["avatarUrl", "gender", "id", "name", "status", "tenantName", "username"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "主键 id", "type": "string", "format": "uuid" },
+          "username": { "title": "账号名，用于登录", "type": "string" },
+          "name": { "title": "姓名", "type": "string" },
+          "gender": { "title": "性别", "type": "string", "enum": ["MALE", "FEMALE", "OTHER"] },
+          "phoneNumber": { "title": "手机号码", "type": "string" },
+          "avatarUrl": { "title": "头像地址", "type": "string" },
+          "info": {
+            "title": "其他个人信息，请传json",
+            "type": "object",
+            "additionalProperties": {
+              "title": "其他个人信息，请传json",
+              "type": "object",
+              "nullable": true,
+              "example": "{ age: 22 }"
+            },
+            "nullable": true,
+            "example": "{ age: 22 }"
+          },
+          "roles": {
+            "title": "所属角色",
+            "type": "array",
+            "nullable": true,
+            "items": { "$ref": "#/components/schemas/RoleResponse" }
+          },
+          "depts": {
+            "title": "所属部门",
+            "type": "array",
+            "nullable": true,
+            "items": { "$ref": "#/components/schemas/DepartmentResponse" }
+          },
+          "permission": {
+            "title": "拥有的操作权限",
+            "type": "array",
+            "items": { "title": "拥有的操作权限", "type": "string" }
+          },
+          "status": { "title": "用户状态", "type": "string", "enum": ["ENABLED", "DISABLED"] },
+          "tenantName": { "type": "string", "description": "租户名称" }
+        }
+      },
+      "ResponseListUserIdentifiableWithTenantResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": {
+            "title": "数据值",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/UserIdentifiableWithTenantResponse" }
+          }
+        }
+      },
+      "UserIdentifiableWithTenantResponse": {
+        "title": "数据值",
+        "required": ["gender", "id", "name", "tenantName", "username"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "用户id", "type": "string", "format": "uuid" },
+          "username": { "title": "账号名", "type": "string" },
+          "name": { "title": "姓名", "type": "string" },
+          "gender": { "title": "性别", "type": "string", "enum": ["MALE", "FEMALE", "OTHER"] },
+          "avatarUrl": { "title": "头像地址", "type": "string", "nullable": true },
+          "tenantName": { "type": "string", "description": "租户名称" }
+        }
+      },
+      "ResponseListTagBindingResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": { "title": "数据值", "type": "array", "items": { "$ref": "#/components/schemas/TagBindingResponse" } }
+        }
+      },
+      "TagBindingResponse": {
+        "title": "数据值",
+        "required": ["id", "readonly", "tag", "type"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "绑定 id", "type": "string", "format": "uuid" },
+          "tag": { "$ref": "#/components/schemas/TagResponse" },
+          "type": { "title": "标签类型", "type": "string", "description": "标签类型", "enum": ["SYSTEM", "USER"] },
+          "readonly": { "title": "是否只读", "type": "boolean" },
+          "remark": { "title": "备注", "type": "string" }
+        }
+      },
+      "ResponseListInvitationCodeResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": {
+            "title": "数据值",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/InvitationCodeResponse" }
+          }
+        }
+      },
+      "InvitationCodeUsageResponse": {
+        "required": ["code", "createTime", "scene", "useUser"],
+        "type": "object",
+        "properties": {
+          "code": { "$ref": "#/components/schemas/InvitationCodeResponse" },
+          "useUser": { "$ref": "#/components/schemas/UserIdentifiableResponse" },
+          "scene": { "title": "使用场景", "type": "string", "enum": ["REGISTER"] },
+          "createTime": { "type": "string", "description": "创建时间", "format": "date-time" }
+        }
+      },
+      "PageResultInvitationCodeUsageResponse": {
+        "title": "数据值",
+        "type": "object",
+        "properties": {
+          "list": { "type": "array", "items": { "$ref": "#/components/schemas/InvitationCodeUsageResponse" } },
+          "total": { "type": "integer", "format": "int64" }
+        }
+      },
+      "ResponsePageResultInvitationCodeUsageResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": { "$ref": "#/components/schemas/PageResultInvitationCodeUsageResponse" }
+        }
+      },
+      "PageResultCrmProductResponse": {
+        "title": "数据值",
+        "type": "object",
+        "properties": {
+          "list": { "type": "array", "items": { "$ref": "#/components/schemas/CrmProductResponse" } },
+          "total": { "type": "integer", "format": "int64" }
+        }
+      },
+      "ResponsePageResultCrmProductResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": { "$ref": "#/components/schemas/PageResultCrmProductResponse" }
+        }
+      },
+      "ResponseListDepartmentIdentifiableResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": {
+            "title": "数据值",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DepartmentIdentifiableResponse" }
+          }
+        }
+      },
+      "CrmProductWithUserAssociatedDepartmentResponse": {
+        "title": "数据值",
+        "required": ["createTime", "id", "name"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "产品id", "type": "string", "format": "uuid" },
+          "name": { "title": "产品名称", "type": "string" },
+          "description": { "title": "产品描述", "type": "string" },
+          "owner": { "$ref": "#/components/schemas/UserIdentifiableResponse" },
+          "createTime": { "type": "string", "description": "创建时间", "format": "date-time" },
+          "department": {
+            "title": "可用部门列表",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DepartmentIdentifiableResponse" }
+          },
+          "valid": {
+            "title": "产品是否有效",
+            "type": "boolean",
+            "description": "当可用部门列表为空或者超过一个时，产品无效"
+          }
+        }
+      },
+      "ResponseListCrmProductWithUserAssociatedDepartmentResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": {
+            "title": "数据值",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CrmProductWithUserAssociatedDepartmentResponse" }
+          }
+        }
+      },
+      "ResponseListCrmCustomerSimpleResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": {
+            "title": "数据值",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CrmCustomerSimpleResponse" }
+          }
+        }
+      },
+      "CrmContactWithStateResponse": {
+        "title": "联系人列表",
+        "required": ["contactInfo", "expired", "id", "name"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "联系人id，唯一", "type": "string", "format": "uuid" },
+          "name": { "title": "姓名", "type": "string" },
+          "customer": {
+            "title": "所属客户名称列表",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CrmCustomerIdentifiableResponse" }
+          },
+          "contactInfo": {
+            "title": "联系方式列表",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ContactInfoResponse" }
+          },
+          "remark": { "title": "备注", "type": "string" },
+          "extra": { "title": "额外信息", "type": "string" },
+          "expired": { "title": "是否已过期", "type": "boolean" }
+        }
+      },
+      "CrmCustomerResponse": {
+        "title": "数据值",
+        "required": ["companyName", "departmentName", "id"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "客户id，唯一", "type": "string", "format": "uuid" },
+          "companyName": { "title": "公司名称", "type": "string", "description": "客户所属公司名称" },
+          "departmentName": { "title": "部门名称", "type": "string", "description": "所在部门/团队/项目名称" },
+          "departmentSize": { "title": "部门规模", "type": "integer", "format": "int32" },
+          "region": { "title": "地区", "type": "string" },
+          "address": { "title": "详细地址", "type": "string" },
+          "leadSource": { "title": "来源", "type": "string", "description": "如：主动咨询、老客户介绍" },
+          "hasComment": { "title": "是否有留言", "type": "boolean" },
+          "contacts": {
+            "title": "联系人列表",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CrmContactWithStateResponse" }
+          },
+          "remark": { "title": "备注", "type": "string" },
+          "extra": { "title": "额外信息", "type": "string" }
+        }
+      },
+      "ResponseCrmCustomerResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": { "$ref": "#/components/schemas/CrmCustomerResponse" }
+        }
+      },
+      "ResponseListCrmCustomerCommentResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": {
+            "title": "数据值",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CrmCustomerCommentResponse" }
+          }
+        }
+      },
+      "ResponseListCrmContractAmountResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": {
+            "title": "数据值",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CrmContractAmountResponse" }
+          }
+        }
+      },
+      "ResponseListBpmTaskResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": { "title": "数据值", "type": "array", "items": { "$ref": "#/components/schemas/BpmTaskResponse" } }
+        }
+      },
+      "CrmClueLockResponse": {
+        "required": ["createTime", "customer", "id", "lockStatus", "processInstanceId", "product", "updateTime"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "锁定编号", "type": "string", "format": "uuid" },
+          "requirement": { "title": "需求描述", "type": "string" },
+          "owner": { "$ref": "#/components/schemas/UserIdentifiableResponse" },
+          "customer": { "$ref": "#/components/schemas/CrmCustomerResponse" },
+          "product": { "$ref": "#/components/schemas/CrmProductResponse" },
+          "lockStatus": {
+            "title": "锁定状态",
+            "type": "string",
+            "enum": ["PENDING", "APPROVED", "REJECTED", "CANCELLED", "EXPIRED"]
+          },
+          "processInstanceId": { "title": "关联的流程实例 ID", "type": "string" },
+          "createTime": { "type": "string", "description": "创建时间", "format": "date-time" },
+          "updateTime": { "type": "string", "description": "更新时间", "format": "date-time" }
+        },
+        "description": "锁定客户申请"
+      },
+      "PageResultCrmClueLockResponse": {
+        "title": "数据值",
+        "type": "object",
+        "properties": {
+          "list": { "type": "array", "items": { "$ref": "#/components/schemas/CrmClueLockResponse" } },
+          "total": { "type": "integer", "format": "int64" }
+        }
+      },
+      "ResponsePageResultCrmClueLockResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "title": "状态码", "type": "integer", "format": "int32", "example": 0 },
+          "msg": { "title": "状态信息", "type": "string", "example": "success" },
+          "data": { "$ref": "#/components/schemas/PageResultCrmClueLockResponse" }
+        }
+      },
+      "DeleteTagBindingRequest": {
+        "required": ["dataField", "entityId", "tagId"],
+        "type": "object",
+        "properties": {
+          "dataField": {
+            "title": "实体数据类型",
+            "type": "string",
+            "enum": ["USER", "DEPT", "CRM_CONTACT", "CRM_CUSTOMER", "CRM_CLUE", "CRM_PRODUCT"]
+          },
+          "entityId": { "title": "实体 id", "type": "string" },
+          "tagId": { "title": "标签 id", "type": "string" }
+        },
+        "description": "解绑标签请求"
+      }
+    }
+  }
+}

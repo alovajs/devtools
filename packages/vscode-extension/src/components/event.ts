@@ -4,8 +4,15 @@ import { debounce } from '@/utils';
 import { getCurrentWorkspacePath, getWorkspacePaths } from '@/utils/vscode';
 import * as vscode from 'vscode';
 import Error from './error';
-import { log } from './message';
+import message from './message';
 
+export const showError = (err: unknown) => {
+  const error = err as Error;
+  message.logError(error);
+  if (error.ERROR_CODE) {
+    message.error(error.message);
+  }
+};
 export function registerEvent() {
   // listener workspace directory changes
   vscode.workspace.onDidChangeWorkspaceFolders(event => {
@@ -44,20 +51,13 @@ export function registerEvent() {
   });
   // Listen for errors
 
-  process.on('uncaughtException', (err: Error) => {
-    log(err.message);
-    if (err.ERROR_CODE) {
-      vscode.window.showErrorMessage(err.message);
-    }
+  process.on('uncaughtException', err => {
+    showError(err);
   });
   // Listen for unhandled promise rejection
 
-  process.on('unhandledRejection', (error: Error) => {
-    const errMsg = error?.message ?? error ?? 'unhandledRejection';
-    log(errMsg);
-    if (error.ERROR_CODE) {
-      vscode.window.showErrorMessage(errMsg);
-    }
+  process.on('unhandledRejection', err => {
+    showError(err);
   });
 }
 export default {

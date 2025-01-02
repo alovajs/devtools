@@ -15,6 +15,9 @@ importers:
         specifier: ^15.12.0
         version: 15.12.0
     devDependencies:
+      '@alova/wormhole':
+        specifier: ^1.0.4
+        version: 1.0.4
       '@changesets/changelog-github':
         specifier: ^0.5.0
         version: 0.5.0
@@ -325,8 +328,8 @@ importers:
         version: 3.2.2
     devDependencies:
       '@alova/wormhole':
-        specifier: ^1.0.0
-        version: 1.0.0
+        specifier: workspace:^
+        version: link:../../packages/wormhole
       typescript:
         specifier: ^5.4.5
         version: 5.6.3
@@ -357,8 +360,8 @@ packages:
   '@alova/shared@1.1.0':
     resolution: {integrity: sha512-sCX5cVKYGrYJ8hGZ9fxqyKAsNGXd2frB4/UG3SKTXqCgs4OyROz1SYhh16iaKT1NaKrQ3444bS2BS/7kTwFpVA==}
 
-  '@alova/wormhole@1.0.0':
-    resolution: {integrity: sha512-5mROBgzhWtb1RH/Psc+KqT4CeVYMErVAPooa4p8eF6Q0R4JPSJPsu5s+hZm3ynYErVO16NdvroqIO9H3zkEXfQ==}
+  '@alova/wormhole@1.0.4':
+    resolution: {integrity: sha512-7YCw2OJlc+OrDpbOHlL+MUMtiO7KNFjiIVjxjYt+I6yKOl0s10MlVdRdrhOiDSf1eQu3otwiWuqvl1FjDZh+dg==}
     hasBin: true
 
   '@ampproject/remapping@2.3.0':
@@ -4713,7 +4716,7 @@ snapshots:
 
   '@alova/shared@1.1.0': {}
 
-  '@alova/wormhole@1.0.0':
+  '@alova/wormhole@1.0.4':
     dependencies:
       alova: 3.2.2
       commander: 12.1.0
@@ -4725,6 +4728,7 @@ snapshots:
       lodash: 4.17.21
       openapi-types: 12.1.3
       ora: 5.4.1
+      prettier: 3.3.3
       swagger2openapi: 7.0.8
     transitivePeerDependencies:
       - encoding

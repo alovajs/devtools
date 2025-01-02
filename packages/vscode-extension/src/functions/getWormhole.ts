@@ -58,7 +58,7 @@ export default () =>
         }
         return () => {
           removeConfiguration();
-          throw new Error('module `@alova/wormhole` is not found, please install via `npm i @alova/wormhole`', true);
+          throw new Error('module `@alova/wormhole` is not found, please install via `npm i @alova/wormhole`');
         };
       }
     }

@@ -36,8 +36,6 @@ export const readConfig = async (projectPath = process.cwd()) => {
   await unlink(outfile);
   // Read the cache file and save it
   const configuration = new Configuration(config, projectPath);
-  // Check configuration
-  configuration.checkConfig();
   configuration.readAlovaJson();
   return config;
 };
