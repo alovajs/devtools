@@ -261,30 +261,37 @@ function unCircular(
   openApi: OpenAPIV3_1.Document,
   map: Array<[string, any]>,
   objPath = '$',
-  seen = new WeakMap()
+  seen = new WeakMap<object, { $ref: string }>()
 ) {
   if (typeof obj !== 'object' || obj === null) {
     return obj; // 原始值直接返回
   }
   if (seen.has(obj)) {
-    return { $ref: seen.get(obj) };
+    return seen.get(obj);
   }
+  const setSeen = (obj: object, refOjec: { $ref: string }) => {
+    const oldRefObj = seen.get(obj) ?? refOjec;
+    oldRefObj.$ref = refOjec.$ref;
+    seen.set(obj, oldRefObj);
+  };
   const $ref = `#/components/schemas/${makeIdentifier(objPath, 'camelCas')}`;
-  seen.set(obj, $ref);
+  seen.set(obj, { $ref });
+  setComponentsBy$ref($ref, obj, openApi);
   if (isBaseReferenceObject(obj)) {
     const refObj = { $ref: obj._$ref };
     if (isEqualObject(obj, refObj, openApi)) {
-      seen.set(obj, refObj.$ref);
+      setSeen(obj, refObj);
       return refObj;
     }
     const [path] = map.find(([, item]) => isEqualObject(item, obj, openApi)) ?? [];
     if (path) {
-      seen.set(obj, path);
+      seen.set(obj, { $ref: path });
       return {
         $ref: path
       };
     }
     const nextPath = getNext$refKey(refObj.$ref, map);
+    seen.set(obj, { $ref: nextPath });
     for (const key in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, key) && isCircular(obj[key])) {
         obj[key] = unCircular(obj[key], openApi, map, `${objPath}.${key}`, seen);
@@ -292,7 +299,6 @@ function unCircular(
     }
     map.push([nextPath, obj]);
     setComponentsBy$ref(nextPath, obj, openApi);
-    seen.set(obj, nextPath);
     return {
       $ref: nextPath
     };
@@ -302,6 +308,7 @@ function unCircular(
       obj[key] = unCircular(obj[key], openApi, map, `${objPath}.${key}`, seen);
     }
   }
+  map.push([$ref, obj]);
   setComponentsBy$ref($ref, obj, openApi);
   return obj;
 }

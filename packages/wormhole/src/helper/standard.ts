@@ -133,7 +133,7 @@ export function getStandardOperationId(
 }
 export function getStandardTags(tags?: string[]) {
   const tagsSet = new Set<string>();
-  if (!tags) {
+  if (!tags || !tags.length) {
     return ['general'];
   }
   return tags.map(tag => {
