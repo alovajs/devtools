@@ -705,13 +705,7 @@ describe('generate API', () => {
        *   name: string
        *   // [required]
        *   photoUrls: string[]
-       *   tags?: Array<{
-       *     id?: number
-       *     name?: string
-       *     // [title] a Pet
-       *     // A pet for sale in the pet store
-       *     pet?: Pet1
-       *   }>
+       *   tags?: Array<Tag1>
        *   // pet status in the store
        *   // [deprecated]
        *   status?: 'available' | 'pending' | 'sold'
@@ -719,7 +713,7 @@ describe('generate API', () => {
        *     foo?: {
        *       bar?: {
        *         foo?: {
-       *           bar?: Giaecjaed200ContentApplicationJsonSchemaPropertiesTest
+       *           bar?: Fifbcibcd
        *         }
        *       }
        *     }
@@ -1068,6 +1062,47 @@ describe('generate API', () => {
       >(
         config: Config
       ): Alova2Method<string[], 'clients.generateCase4', Config>;`)
+    );
+  });
+
+  test('should handle nullable properties in OpenAPI 3.0', async () => {
+    const outputDir = resolve(__dirname, `./mock_output/nullable_openapi${getSalt()}`);
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/nullable_openapi.yaml'),
+          output: outputDir
+        }
+      ]
+    });
+
+    const globalsFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8');
+
+    // 检查生成的类型定义是否正确处理了 nullable 属性
+    expect(globalsFile).toMatch(
+      createStrReg(`type Pet = {
+  /**
+   * Pet ID
+   * ---
+   */
+  id?: number | null;
+  /**
+   * Pet Name
+   * ---
+   * [required]
+   */
+  name: string;
+  /**
+   * Pet Status
+   * ---
+   */
+  status?: 'available' | 'pending' | 'sold' | null;
+  /**
+   * Pet Tags
+   * ---
+   */
+  tags?: Tag[] | null;
+  }`)
     );
   });
 });
