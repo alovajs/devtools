@@ -1,4 +1,5 @@
 import Error from '@/components/error';
+import { showError } from '@/components/event';
 import message from '@/components/message';
 import { enable, loading } from '@/components/statusBar';
 import generate from '@/functions/generate';
@@ -12,18 +13,26 @@ export default {
   handler: () => async () => {
     try {
       loading();
-      if (!(await readConfig(getWorkspacePaths()))) {
+      const errorArr: Array<Error> = [];
+      const readInfo = await readConfig(getWorkspacePaths());
+      if (readInfo.errorArr.length > 0) {
+        errorArr.push(...readInfo.errorArr);
+      }
+      if (readInfo.configNum === 0 && readInfo.errorArr.length === 0) {
         throw new Error('Expected to create alova.config.js in root directory.');
       }
       updatedConfigPool();
       // Generate api file
-      const { resultArr, errorArr } = await generate({ force: true });
-      for (const [workspaceRootDir] of resultArr) {
+      const generateInfo = await generate({ force: true });
+      for (const [workspaceRootDir] of generateInfo.resultArr) {
         message.info(`[${getFileNameByPath(workspaceRootDir)}]: Your API is updated`);
       }
-      errorArr.forEach(([, error]) => {
-        throw error;
+      errorArr.push(...generateInfo.errorArr);
+      errorArr.forEach(error => {
+        showError(error);
       });
+    } catch (error) {
+      showError(error);
     } finally {
       if (getWormhole()) {
         enable();

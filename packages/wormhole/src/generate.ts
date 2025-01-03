@@ -13,9 +13,6 @@ const generate = async (config: Config, rules?: GenerateApiOptions) => {
     return [] as boolean[];
   }
   const configuration = new Configuration(config, rules?.projectPath ?? process.cwd());
-
-  // Check new configuration
-  configuration.checkConfig();
   const outputPathArr = configuration.getAllOutputPath();
   const templateTypeArr = configuration.getAllTemplateType();
   const openApiData = await configuration.getAllOpenApiData();

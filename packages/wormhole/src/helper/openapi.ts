@@ -2,7 +2,7 @@ import { getGlobalConfig } from '@/config';
 import { capitalizeFirstLetter } from '@/utils';
 import { cloneDeep, isArray, isEqualWith, isObject, mergeWith, sortBy } from 'lodash';
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
-import { isValidJSIdentifier, makeIdentifier } from './standard';
+import { getRandomVariable, isValidJSIdentifier, makeIdentifier } from './standard';
 /**
  * Determine whether it is a $ref object
  * @param obj Judgment object
@@ -232,7 +232,7 @@ function removeBaseReference(obj: Record<string, any>, openApi: OpenAPIV3_1.Docu
       return refObj;
     }
     for (const key in obj) {
-      if (hasBaseReferenceObject(obj[key])) {
+      if (Object.prototype.hasOwnProperty.call(obj, key) && hasBaseReferenceObject(obj[key])) {
         obj[key] = removeBaseReference(obj[key], openApi, map);
       }
     }
@@ -250,41 +250,58 @@ function removeBaseReference(obj: Record<string, any>, openApi: OpenAPIV3_1.Docu
     };
   }
   for (const key in obj) {
-    if (hasBaseReferenceObject(obj[key])) {
+    if (Object.prototype.hasOwnProperty.call(obj, key) && hasBaseReferenceObject(obj[key])) {
       obj[key] = removeBaseReference(obj[key], openApi, map);
     }
   }
   return obj;
 }
-function unCircular(obj: Record<string, any>, openApi: OpenAPIV3_1.Document, map: Array<[string, any]>) {
+function unCircular(
+  obj: Record<string, any>,
+  openApi: OpenAPIV3_1.Document,
+  map: Array<[string, any]>,
+  objPath = '$',
+  seen = new WeakMap<object, { $ref: string }>()
+) {
+  if (typeof obj !== 'object' || obj === null) {
+    return obj; // 原始值直接返回
+  }
+  if (seen.has(obj)) {
+    return seen.get(obj);
+  }
+  const setSeen = (obj: object, refOjec: { $ref: string }) => {
+    const oldRefObj = seen.get(obj) ?? refOjec;
+    oldRefObj.$ref = refOjec.$ref;
+    seen.set(obj, oldRefObj);
+  };
+  const $ref = `#/components/schemas/${makeIdentifier(getRandomVariable(objPath), 'camelCas')}`;
+  setSeen(obj, { $ref });
   if (isBaseReferenceObject(obj)) {
     const refObj = { $ref: obj._$ref };
     if (isEqualObject(obj, refObj, openApi)) {
+      setSeen(obj, refObj);
       return refObj;
     }
+    const nextPath = getNext$refKey(refObj.$ref, map);
+    seen.set(obj, { $ref: nextPath });
+    map.push([nextPath, obj]);
     for (const key in obj) {
-      if (isCircular(obj[key])) {
-        obj[key] = unCircular(obj[key], openApi, map);
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        obj[key] = unCircular(obj[key], openApi, map, `${objPath}.${key}`, seen);
       }
     }
-    const [path] = map.find(([, item]) => isEqualObject(item, obj, openApi)) ?? [];
-    if (path) {
-      return {
-        $ref: path
-      };
-    }
-    const nextPath = getNext$refKey(refObj.$ref, map);
-    map.push([nextPath, obj]);
     setComponentsBy$ref(nextPath, obj, openApi);
     return {
       $ref: nextPath
     };
   }
+  map.push([$ref, obj]);
   for (const key in obj) {
-    if (isCircular(obj[key])) {
-      obj[key] = unCircular(obj[key], openApi, map);
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      obj[key] = unCircular(obj[key], openApi, map, `${objPath}.${key}`, seen);
     }
   }
+  setComponentsBy$ref($ref, obj, openApi);
   return obj;
 }
 /**
@@ -312,7 +329,7 @@ export const mergeObject = <T>(
     // Handle circular references
 
     if (isCircular(srcValue)) {
-      srcValue = unCircular(srcValue, openApi, map);
+      srcValue = unCircular(srcValue, openApi, map, getRandomVariable(JSON.stringify(objValue)));
     }
     // Is there also a $ref attribute?
 
@@ -335,7 +352,7 @@ export function getStandardRefName(refPath: string, toUpperCase: boolean = true)
     refPathMap.set(refPath, refName);
     return refName;
   }
-  let newRefName = makeIdentifier(refName, 'snakeCase') || getRandomVariable();
+  let newRefName = makeIdentifier(refName, 'snakeCase') || getRandomVariable(refName);
   if (toUpperCase) {
     newRefName = capitalizeFirstLetter(newRefName);
   }
@@ -360,8 +377,4 @@ export function getResponseSuccessKey(responsesObject?: OpenAPIV3_1.ResponsesObj
     .filter(key => !Number.isNaN(key) && key >= 200 && key < 300)
     .sort((a, b) => a - b);
   return successKeys[0] ?? 200;
-}
-
-export function getRandomVariable() {
-  return `_${Math.random().toString(36).slice(2)}`;
 }

@@ -11,7 +11,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@alova/wormhole": "^1.0.0",
+    "@alova/wormhole": "workspace:^",
     "typescript": "^5.4.5"
   },
   "dependencies": {

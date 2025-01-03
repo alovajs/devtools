@@ -112,6 +112,10 @@ function parseSchema(
     if (refPath) {
       config.searchMap.set(refPath, result);
     }
+    // 兼容opnpai3.0的nullable
+    if ((schema as OpenAPIV3.SchemaObject).nullable) {
+      result = `${result} | null`;
+    }
     return result;
   }
   switch (schema.type) {
@@ -139,15 +143,16 @@ function parseSchema(
       result = 'boolean';
       break;
     case 'null':
+    case null:
       result = 'null';
       break;
     default:
       if (isArray(schema.type)) {
-        result = schema.type
+        result = `(${schema.type
           .map(
             nextType => `(${parseSchema({ ...schema, type: nextType as (typeof schema)['type'] }, openApi, config)})`
           )
-          .join(' | ');
+          .join(' | ')})`;
       } else if (schema.oneOf) {
         result = schema.oneOf.map(item => `(${parseSchema(item, openApi, config)})`).join(' | ');
       } else if (schema.anyOf) {
@@ -160,6 +165,10 @@ function parseSchema(
             ? ((schema.type || config.defaultType) ?? 'unknown')
             : (config.defaultType ?? 'unknown');
       }
+  }
+  // 兼容opnpai3.0的nullable
+  if ((schema as OpenAPIV3.SchemaObject).nullable) {
+    result = `${result} | null`;
   }
   if (refPath) {
     config.searchMap.set(refPath, result);
@@ -256,10 +265,7 @@ function parseArray(
       default:
         break;
     }
-    if (items.oneOf || items.enum) {
-      return `(${type})[]`;
-    }
-    return `${type}[]`;
+    return `(${type})[]`;
   }
   return '[]';
 }

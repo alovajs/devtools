@@ -1,6 +1,7 @@
 import { generate } from '@/index';
 import fs from 'node:fs/promises';
 import { resolve } from 'node:path';
+import type { OpenAPIV3_1 } from 'openapi-types';
 import { createStrReg } from './util';
 
 vi.mock('node:fs');
@@ -632,7 +633,8 @@ describe('generate API', () => {
     });
     const apiDefinitionsFile = await fs.readFile(resolve(outputDir, 'apiDefinitions.ts'), 'utf-8');
     expect(apiDefinitionsFile).toMatch("'general.addPet': ['POST', '/pet']");
-    expect(apiDefinitionsFile).toMatch("general.updatePet': ['PUT', '/pet']");
+    expect(apiDefinitionsFile).toMatch("'general.delPet': ['DELETE', '/pet']");
+    expect(apiDefinitionsFile).toMatch("'general.addPet': ['POST', '/pet']");
   });
 
   test('should generate the same api with different tag when has multiple tags', async () => {
@@ -659,7 +661,24 @@ describe('generate API', () => {
       generator: [
         {
           input: resolve(__dirname, './openapis/endless_loop_openapi.yaml'),
-          output: outputDir
+          output: outputDir,
+          handleApi(apiDescriptor) {
+            if (apiDescriptor.responses?.properties) {
+              const testObject: OpenAPIV3_1.SchemaObject = {
+                type: 'object',
+                properties: {
+                  foo: {
+                    type: 'object',
+                    properties: {} as Record<string, any>
+                  }
+                }
+              };
+              const foo = testObject.properties!.foo as OpenAPIV3_1.SchemaObject;
+              foo.properties!.bar = testObject;
+              apiDescriptor.responses.properties.test = testObject;
+            }
+            return apiDescriptor;
+          }
         }
       ]
     });
@@ -679,17 +698,26 @@ describe('generate API', () => {
        *       name?: string
        *       // [title] a Pet
        *       // A pet for sale in the pet store
-       *       pet?: Pet
+       *       pet?: Pet1
        *     }
        *   }
        *   // [required]
        *   name: string
        *   // [required]
        *   photoUrls: string[]
-       *   tags?: Array<Tag>
+       *   tags?: Array<Tag1>
        *   // pet status in the store
        *   // [deprecated]
        *   status?: 'available' | 'pending' | 'sold'
+       *   test?: {
+       *     foo?: {
+       *       bar?: {
+       *         foo?: {
+       *           bar?: Fifbcibcd
+       *         }
+       *       }
+       *     }
+       *   }
        * }`)
     );
   });
@@ -1034,6 +1062,47 @@ describe('generate API', () => {
       >(
         config: Config
       ): Alova2Method<string[], 'clients.generateCase4', Config>;`)
+    );
+  });
+
+  test('should handle nullable properties in OpenAPI 3.0', async () => {
+    const outputDir = resolve(__dirname, `./mock_output/nullable_openapi${getSalt()}`);
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/nullable_openapi.yaml'),
+          output: outputDir
+        }
+      ]
+    });
+
+    const globalsFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8');
+
+    // 检查生成的类型定义是否正确处理了 nullable 属性
+    expect(globalsFile).toMatch(
+      createStrReg(`type Pet = {
+  /**
+   * Pet ID
+   * ---
+   */
+  id?: number | null;
+  /**
+   * Pet Name
+   * ---
+   * [required]
+   */
+  name: string;
+  /**
+   * Pet Status
+   * ---
+   */
+  status?: 'available' | 'pending' | 'sold' | null;
+  /**
+   * Pet Tags
+   * ---
+   */
+  tags?: Tag[] | null;
+  }`)
     );
   });
 });

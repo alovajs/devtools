@@ -36,6 +36,29 @@ paths:
             - 'read:pets'
       requestBody:
         $ref: '#/components/requestBodies/Pet'
+    delete:
+      tags: []
+      summary: delete pet to the store 2
+      description: ''
+      operationId: delPet
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Pet'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
+        '405':
+          description: Invalid input
+      security:
+        - petstore_auth:
+            - 'write:pets'
+            - 'read:pets'
+      requestBody:
+        $ref: '#/components/requestBodies/Pet'
     put:
       tags:
         - 中文标签ภาษาไทยこんにちは

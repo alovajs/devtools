@@ -62,19 +62,15 @@ export default async function (
 
   templateData.alovaVersion = alovaVersion;
   // Do you need to generate api files?
-  // Determine whether api files need to be generated
 
   if (!force && isEqual(templateData, DEFAULT_CONFIG.templateData.get(alovaJsonPath))) {
     return false;
   }
-  // Save template data
-
-  DEFAULT_CONFIG.templateData.set(alovaJsonPath, templateData);
   // Generate alova.json file
-
   await writeAlovaJson(templateData, alovaJsonPath);
+  // Save template data
+  DEFAULT_CONFIG.templateData.set(alovaJsonPath, templateData);
   // Get whether index.ts|index.js exists
-
   const indexIsExists = await existsPromise(path.join(outputDir, `index${templateFile.getExt()}`));
   // mustache grammar generation
   // Define template configuration objects

@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import util from 'node:util';
 import * as vscode from 'vscode';
 // Create an output channel

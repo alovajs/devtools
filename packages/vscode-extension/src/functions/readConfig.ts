@@ -1,10 +1,9 @@
-import { log } from '@/components/message';
-import { getWorkspacePaths } from '@/utils/vscode';
-import wormhole from '@/helper/wormhole';
-import { removeConfiguration, refeshAutoUpdate } from '@/helper/autoUpdate';
-import type { Config } from '@alova/wormhole';
-import { CONFIG_POOL } from '@/helper/config';
 import Error from '@/components/error';
+import { refeshAutoUpdate, removeConfiguration } from '@/helper/autoUpdate';
+import { CONFIG_POOL } from '@/helper/config';
+import wormhole from '@/helper/wormhole';
+import { getWorkspacePaths } from '@/utils/vscode';
+import type { Config } from '@alova/wormhole';
 
 export const resolveWorkspaces = async (workspaceRootPaths?: string | string[]) => {
   const workspacePaths = workspaceRootPaths ? [workspaceRootPaths].flat() : getWorkspacePaths();
@@ -18,6 +17,7 @@ export const resolveWorkspaces = async (workspaceRootPaths?: string | string[]) 
 };
 export default async (workspaceRootPathArr: string | string[]) => {
   let configNum = 0;
+  const errorArr: Array<Error> = [];
   const dirs = await resolveWorkspaces([workspaceRootPathArr].flat());
   for (const dir of dirs) {
     let config: Config | null = null;
@@ -25,10 +25,8 @@ export default async (workspaceRootPathArr: string | string[]) => {
       config = await wormhole.readConfig(dir);
     } catch (err) {
       const error = err as Error;
-      if (error.force) {
-        throw error;
-      }
-      log(error.message);
+      error?.setPath?.(dir);
+      errorArr.push(error);
     }
     if (!config) {
       removeConfiguration(dir);
@@ -44,7 +42,7 @@ export default async (workspaceRootPathArr: string | string[]) => {
     refeshAutoUpdate(configuration);
     configNum += 1;
   }
-  return configNum > 0;
+  return { configNum, errorArr };
 };
 export const updatedConfigPool = async () => {
   const workspaceRootPaths = await resolveWorkspaces();

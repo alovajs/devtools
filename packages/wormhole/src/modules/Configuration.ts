@@ -15,9 +15,10 @@ export default class Configuration {
 
   constructor(config: Config, workspaceRootDir: string) {
     // Configuration file
-
     this.config = config;
     this.workspaceRootDir = workspaceRootDir;
+    // Check configuration
+    this.checkConfig();
   }
 
   // Detect configuration file
