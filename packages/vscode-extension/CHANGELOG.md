@@ -1,10 +1,14 @@
 # Change Log
 
-## 1.0.5
+## 1.0.6
 
 ### Patch Changes
 
-- [#54](https://github.com/alovajs/devtools/pull/54) [`45e510c`](https://github.com/alovajs/devtools/commit/45e510c5eb8bc242c821070ca4bf993eafa88f39) Thanks [@czhlin](https://github.com/czhlin)! - 1. Add nullable support 2. Customized circular reference problem handling 3. tags supports empty arrays 4. More friendly plug-in error prompts
+- [#54](https://github.com/alovajs/devtools/pull/54) [`45e510c`](https://github.com/alovajs/devtools/commit/45e510c5eb8bc242c821070ca4bf993eafa88f39) Thanks [@czhlin](https://github.com/czhlin)! 
+  - Add nullable support 
+  - Customized circular reference problem handling 
+  - tags supports empty arrays 
+  - More friendly plug-in error prompts
 
 ### Patch Changes
 
