@@ -1,15 +1,15 @@
 import { generate } from '@/index';
 import { createPlugin } from '@/plugins';
 import { rename } from '@/plugins/presets/rename';
+import type { ApiPlugin } from '@/type/plugin';
 import fs from 'node:fs/promises';
 import { resolve } from 'node:path';
-import type { Plugin } from '~/plugin';
 
 vi.mock('node:fs');
 vi.mock('node:fs/promises');
 const getSalt = () => `_${Math.random().toString(36).slice(2)}`;
 
-const generateWithPlugin = async (inputFile: string, plugins: Plugin[], outputDir?: string) => {
+const generateWithPlugin = async (inputFile: string, plugins: ApiPlugin[], outputDir?: string) => {
   outputDir ??= resolve(__dirname, `./mock_output/plugin_test${getSalt()}`);
   await generate({
     generator: [{ input: inputFile, output: outputDir, plugins }]

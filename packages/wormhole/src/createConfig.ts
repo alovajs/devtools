@@ -1,7 +1,7 @@
+import type { TemplateType } from '@/type/base';
 import path from 'node:path';
 import getAlovaVersion, { AlovaVersion } from './functions/getAlovaVersion';
 import getAutoTemplateType from './functions/getAutoTemplateType';
-import { TemplateType } from './interface.type';
 import TemplateFile from './modules/TemplateFile';
 
 interface ConfigCreationOptions {

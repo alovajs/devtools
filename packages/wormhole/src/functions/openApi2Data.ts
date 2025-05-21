@@ -9,11 +9,12 @@ import {
 import { convertToType, jsonSchema2TsStr } from '@/helper/schema2type';
 import { getStandardOperationId, getStandardTags } from '@/helper/standard';
 import { generateDefaultValues } from '@/helper/typeStr';
-import type { Api, ApiDescriptor, GeneratorConfig, TemplateType } from '@/interface.type';
+import type { Api, ApiDescriptor, TemplateType } from '@/type/base';
+import type { GeneratorConfig } from '@/type/config';
+import type { PluginContext } from '@/type/plugin';
 import { format, removeUndefined } from '@/utils';
 import { cloneDeep, isEmpty } from 'lodash';
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
-import { PluginContext } from '~/plugin';
 import { AlovaVersion } from './getAlovaVersion';
 
 type Path = {
@@ -343,7 +344,7 @@ export const transformPathObj = async (
     try {
       newApiDescriptor = handleApi(newApiDescriptor);
     } catch {
-      return { ...apiDescriptor, url, method };
+      return { ...pathObj, url, method };
     }
   }
 

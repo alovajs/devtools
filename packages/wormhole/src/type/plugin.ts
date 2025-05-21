@@ -1,4 +1,5 @@
-import type { ApiDescriptor, GeneratorConfig } from './index';
+import type { ApiDescriptor } from '@/type/base';
+import type { GeneratorConfig } from '@/type/config';
 
 export interface PluginContext {
   url: string;
@@ -7,7 +8,7 @@ export interface PluginContext {
   readonly apiDescriptor: ApiDescriptor;
 }
 
-export interface Plugin {
+export interface ApiPlugin {
   name?: string;
   /**
    * apply plugin to the apiDescriptor

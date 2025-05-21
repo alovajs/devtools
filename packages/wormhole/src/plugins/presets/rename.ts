@@ -1,6 +1,5 @@
-import { Parameter, Plugin, PluginContext } from '~/index';
-import { ApiDescriptor } from '../../interface.type';
-
+import type { ApiDescriptor, Parameter } from '@/type/base';
+import type { ApiPlugin, PluginContext } from '@/type/plugin';
 /**
  * Rename style options
  */
@@ -246,7 +245,7 @@ function renameApiDescriptor(apiDescriptor: ApiDescriptor, config: RenameConfig)
  * Creates a rename plugin that transforms API descriptors
  * according to specified naming rules
  */
-export function rename(config: RenameConfig | RenameConfig[]): Plugin {
+export function rename(config: RenameConfig | RenameConfig[]): ApiPlugin {
   const configs = Array.isArray(config) ? config : [config];
 
   for (const conf of configs) {

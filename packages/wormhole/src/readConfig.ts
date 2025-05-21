@@ -1,4 +1,4 @@
-import type { Config } from '@/interface.type';
+import type { Config } from '@/type/config';
 import esbuild from 'esbuild';
 import { unlink } from 'node:fs/promises';
 import path from 'node:path';

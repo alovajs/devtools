@@ -1,5 +1,5 @@
 import { getGlobalConfig } from '@/config';
-import type { PlatformType } from '@/interface.type';
+import type { PlatformType } from '@/type/base';
 import { fetchData } from '@/utils';
 import importFresh from 'import-fresh';
 import YAML from 'js-yaml';

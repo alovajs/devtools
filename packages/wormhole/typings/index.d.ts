@@ -1,5 +1,4 @@
 import { OpenAPIV3_1 } from 'openapi-types';
-import type { Plugin } from './plugin';
 
 /**
  * Find the corresponding input attribute value
@@ -23,6 +22,41 @@ export type ApiDescriptor = Omit<OperationObject, 'requestBody' | 'parameters' |
   requestBody?: SchemaObject;
   responses?: SchemaObject;
 };
+/**
+ * Generated api description information
+ */
+export interface Api {
+  method: string;
+  summary: string;
+  path: string;
+  pathParameters: string;
+  queryParameters: string;
+  pathParametersComment?: string;
+  queryParametersComment?: string;
+  responseComment?: string;
+  requestComment?: string;
+  name: string;
+  global: string;
+  responseName: string;
+  requestName?: string;
+  defaultValue?: string;
+  pathKey: string;
+}
+export interface PluginContext {
+  url: string;
+  method: string;
+  readonly config: GeneratorConfig;
+  readonly apiDescriptor: ApiDescriptor;
+}
+export interface ApiPlugin {
+  name?: string;
+  /**
+   * apply plugin to the apiDescriptor
+   * @param context
+   * @returns a valid ApiDescriptor object, otherwise skip the processing of this path
+   */
+  apply(context: PluginContext): ApiDescriptor | void | undefined | null;
+}
 export interface HandleApi {
   (apiDescriptor: ApiDescriptor): ApiDescriptor | void | undefined | null;
 }
@@ -98,6 +132,10 @@ export type GeneratorConfig = {
    */
   defaultRequire?: boolean;
   /**
+   * plugin will be executed before `handleApi`
+   */
+  plugins?: ApiPlugin[];
+  /**
    * Filter or convert the generated api function and return a new `apiDescriptor` to generate the api.
    * When this function is not specified, `apiDescriptor` object is not converted.
    * The type of `apiDescriptor` is the same as the api item of openapi file.
@@ -128,10 +166,6 @@ export type GeneratorConfig = {
    * ```
    */
   handleApi?: HandleApi;
-  /**
-   *
-   */
-  plugins?: Plugin[];
 };
 export type Config = {
   /**
@@ -162,26 +196,6 @@ export type GenerateApiOptions = {
   force?: boolean;
   projectPath?: string;
 };
-/**
- * Generated api description information
- */
-export interface Api {
-  method: string;
-  summary: string;
-  path: string;
-  pathParameters: string;
-  queryParameters: string;
-  pathParametersComment?: string;
-  queryParametersComment?: string;
-  responseComment?: string;
-  requestComment?: string;
-  name: string;
-  global: string;
-  responseName: string;
-  requestName?: string;
-  defaultValue?: string;
-  pathKey: string;
-}
 export type AlovaVersion = `v${number}`;
 export type Path = {
   key: string;
@@ -233,6 +247,66 @@ export declare const createConfig: ({ projectPath, type }?: ConfigCreationOption
  */
 export declare const generate: (config: Config, rules?: GenerateApiOptions) => Promise<boolean[]>;
 /**
+ * Creates a plugin factory function with proper typing
+ *
+ * @param plugin - Function that creates a plugin instance
+ * @returns The original plugin function with proper typing
+ *
+ * @example
+ * // Create a custom plugin
+ * const myPlugin = createPlugin((options: MyOptions) => ({
+ *   name: 'myPlugin',
+ *   apply: (context) => {
+ *     // Plugin implementation
+ *     return context.apiDescriptor;
+ *   }
+ * }));
+ *
+ * // Use the plugin
+ * generate({
+ *   generator: [{
+ *     // ...
+ *     plugins: [myPlugin({ key: 'value' })]
+ *   }]
+ * });
+ */
+export declare function createPlugin<T extends any[]>(plugin: (...args: T) => ApiPlugin): (...args: T) => ApiPlugin;
+/**
+ * Rename style options
+ */
+export type RenameStyle = 'camelCase' | 'kebabCase' | 'snakeCase' | 'pascalCase';
+/**
+ * Rename plugin configuration
+ */
+export interface RenameConfig {
+  /**
+   * Target scope for renaming, defaults to 'url'
+   */
+  scope?: 'url' | 'params' | 'pathParams' | 'data' | 'response';
+  /**
+   * Matching rule for selective renaming:
+   * - string: target contains this string
+   * - RegExp: target matches this pattern
+   * - function: custom matching logic
+   * If not specified, all targets will be processed
+   */
+  match?: string | RegExp | ((key: string) => boolean);
+  /**
+   * Naming style to apply
+   */
+  style?: RenameStyle;
+  /**
+   * Custom transformation function
+   * Will be applied before style transformation
+   */
+  transform?: (apiDescriptor: ApiDescriptor) => string;
+}
+/**
+ * Creates a rename plugin that transforms API descriptors
+ * according to specified naming rules
+ */
+export declare function rename(config: RenameConfig | RenameConfig[]): ApiPlugin;
+/**
  * Read the alova.config configuration file and return the parsed configuration object.
  * @param projectPath The project path where the configuration file is located. The default value is `process.cwd()`.
  * @returns a promise instance that contains configuration object.
@@ -250,7 +324,5 @@ export declare const getApis: (config: Config, projectPath?: string) => Api[];
  * @returns An array of relative paths to directories containing alova.config configuration files.
  */
 export function resolveWorkspaces(projectPath?: string): Promise<string[]>;
-
-export * from './plugin';
 
 export {};

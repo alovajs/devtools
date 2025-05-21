@@ -3,7 +3,8 @@ import { getAlovaJsonPath, readAlovaJson } from '@/functions/alovaJson';
 import getAutoTemplateType from '@/functions/getAutoTemplateType';
 import getOpenApiData from '@/functions/getOpenApiData';
 import { isValidJSIdentifier } from '@/helper/standard';
-import type { Config, GeneratorConfig, TemplateType } from '@/interface.type';
+import type { TemplateType } from '@/type/base';
+import type { Config, GeneratorConfig } from '@/type/config';
 import { isEmpty } from '@/utils';
 import path from 'node:path';
 

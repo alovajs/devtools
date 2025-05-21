@@ -1,5 +1,6 @@
 import { getGlobalConfig } from '@/config';
-import type { GeneratorConfig, TemplateType } from '@/interface.type';
+import type { TemplateType } from '@/type/base';
+import type { GeneratorConfig } from '@/type/config';
 import { existsPromise } from '@/utils';
 import { isEqual } from 'lodash';
 import path from 'node:path';

@@ -1,5 +1,5 @@
 import type { AlovaVersion } from '@/functions/getAlovaVersion';
-import type { TemplateType } from '@/interface.type';
+import type { TemplateType } from '@/type/base';
 import { generateFile, readAndRenderTemplate } from '@/utils';
 import { cloneDeep, merge } from 'lodash';
 

@@ -1,4 +1,4 @@
-import type { TemplateType } from '@/interface.type';
+import type { TemplateType } from '@/type/base';
 import importFresh from 'import-fresh';
 import path from 'node:path';
 import { PackageJson } from 'type-fest';

@@ -1,4 +1,4 @@
-import type { Config, GenerateApiOptions } from '@/interface.type';
+import type { Config, GenerateApiOptions } from '@/type/config';
 import generateApi from './functions/generateApi';
 import Configuration from './modules/Configuration';
 
