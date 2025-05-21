@@ -13,6 +13,7 @@ import type { Api, ApiDescriptor, GeneratorConfig, TemplateType } from '@/interf
 import { format, removeUndefined } from '@/utils';
 import { cloneDeep, isEmpty } from 'lodash';
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
+import { PluginContext } from '~/plugin';
 import { AlovaVersion } from './getAlovaVersion';
 
 type Path = {
@@ -262,7 +263,7 @@ export const transformPathObj = async (
   map: Array<[string, any]>
 ) => {
   const { handleApi } = config;
-  if (!handleApi || typeof handleApi !== 'function') {
+  if (typeof handleApi !== 'function' && !config.plugins?.length) {
     return { ...pathObjOrigin, url, method };
   }
   const pathObj = cloneDeep(pathObjOrigin);
@@ -306,16 +307,46 @@ export const transformPathObj = async (
     apiDescriptor.responses = responseSchemaObj;
   }
   let newApiDescriptor: ApiDescriptor | void | undefined | null = apiDescriptor;
-  let handleApiDone = false;
-  try {
-    newApiDescriptor = handleApi(apiDescriptor);
-    handleApiDone = true;
-  } catch {
-    handleApiDone = false;
-  }
-  if (!handleApiDone) {
+
+  if (!handleApi && !config.plugins?.length) {
     return { ...pathObj, url, method };
   }
+
+  // Apply all plugins in sequence
+  // Each plugin gets a chance to transform the API descriptor
+  // If a plugin returns null/undefined, the API will be skipped
+  for (const plugin of config.plugins ?? []) {
+    const pluginContext: PluginContext = {
+      url,
+      method,
+      config,
+      apiDescriptor: newApiDescriptor
+    };
+
+    const result = plugin.apply(pluginContext);
+
+    // Null return is a valid filter signal
+    if (result === null || result === undefined) {
+      // This API is intentionally filtered out
+      return null;
+    }
+
+    if (typeof result !== 'object') {
+      console.error(`Plugin "${plugin.name || 'unnamed'}" returned invalid value type: ${typeof result}`);
+      continue;
+    }
+
+    newApiDescriptor = result;
+  }
+
+  if (handleApi) {
+    try {
+      newApiDescriptor = handleApi(newApiDescriptor);
+    } catch {
+      return { ...apiDescriptor, url, method };
+    }
+  }
+
   if (!newApiDescriptor) {
     return null;
   }

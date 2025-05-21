@@ -1,4 +1,5 @@
 import type { OpenAPIV3_1 } from 'openapi-types';
+import { Plugin } from '~/plugin';
 
 /**
  * Find the corresponding input attribute value
@@ -108,6 +109,11 @@ export type GeneratorConfig = {
    * When there is no require, it defaults to require, and only nullable takes effect.
    */
   defaultRequire?: boolean;
+
+  /**
+   * plugin will be executed before `handleApi`
+   */
+  plugins?: Plugin[];
 
   /**
    * Filter or convert the generated api function and return a new `apiDescriptor` to generate the api.

@@ -1,4 +1,5 @@
 import { OpenAPIV3_1 } from 'openapi-types';
+import type { Plugin } from './plugin';
 
 /**
  * Find the corresponding input attribute value
@@ -127,6 +128,10 @@ export type GeneratorConfig = {
    * ```
    */
   handleApi?: HandleApi;
+  /**
+   *
+   */
+  plugins?: Plugin[];
 };
 export type Config = {
   /**
@@ -245,5 +250,7 @@ export declare const getApis: (config: Config, projectPath?: string) => Api[];
  * @returns An array of relative paths to directories containing alova.config configuration files.
  */
 export function resolveWorkspaces(projectPath?: string): Promise<string[]>;
+
+export * from './plugin';
 
 export {};
