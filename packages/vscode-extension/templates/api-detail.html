@@ -9,343 +9,54 @@
     <link
       href="{{ styleUri }}"
       rel="stylesheet" />
+    <!-- Prism 主题 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css"
+      rel="stylesheet"
+      id="prism-theme" />
+    <!-- 行号插件 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/line-numbers/prism-line-numbers.min.css"
+      rel="stylesheet" />
   </head>
 
   <body>
     <div class="container">
-      <!-- API头部信息 -->
-      <div class="api-header">
-        <div class="api-method">
-          <span class="method-tag get">GET</span>
-          <div class="api-url">/api/v1/users/{userId}/orders</div>
-        </div>
-        <div class="api-description">
-          获取指定用户的所有订单信息，包括订单状态、商品列表、价格等详细信息。支持分页和过滤条件。
-        </div>
+      <div class="api-selector">
+        <select
+          id="api-select"
+          class="api-select">
+          <option value="">选择API查看文档...</option>
+          <option value="postAccountUser">POST /account/user/{version}</option>
+          <option value="getUserProfile">GET /user/{id}/profile</option>
+          <option value="updateProduct">PUT /products/{id}</option>
+        </select>
       </div>
 
-      <!-- 选项卡导航 -->
-      <div class="tabs-container">
-        <div class="tabs">
-          <div
-            class="tab active"
-            data-tab="parameters">
-            Parameters
-          </div>
-          <div
-            class="tab"
-            data-tab="response">
-            Response
-          </div>
-        </div>
-
-        <!-- Parameters 内容 -->
-        <div
-          class="tab-content active"
-          id="parameters-content">
-          <!-- Path Parameters -->
-          <div class="section">
-            <div class="section-header">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                style="margin-right: 8px">
-                <path
-                  d="M12 2L2 7L12 12L22 7L12 2Z"
-                  stroke="var(--vscode-accent)"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round" />
-                <path
-                  d="M2 17L12 22L22 17"
-                  stroke="var(--vscode-accent)"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round" />
-                <path
-                  d="M2 12L12 17L22 12"
-                  stroke="var(--vscode-accent)"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round" />
-              </svg>
-              Path Parameters
-            </div>
-            <table class="parameters-table">
-              <thead>
-                <tr>
-                  <th style="width: 20%">参数名</th>
-                  <th style="width: 10%">必填</th>
-                  <th style="width: 15%">类型</th>
-                  <th style="width: 55%">描述</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><span class="parameter-name">userId</span></td>
-                  <td><span class="parameter-required required">必填</span></td>
-                  <td><span class="parameter-type">integer</span></td>
-                  <td>用户唯一标识ID，必须是有效的用户ID</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Query Parameters -->
-          <div class="section">
-            <div class="section-header">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                style="margin-right: 8px">
-                <path
-                  d="M11 17C14.866 17 18 13.866 18 10C18 6.13401 14.866 3 11 3C7.13401 3 4 6.13401 4 10C4 13.866 7.13401 17 11 17Z"
-                  stroke="var(--vscode-accent)"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round" />
-                <path
-                  d="M21 21L16.65 16.65"
-                  stroke="var(--vscode-accent)"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round" />
-              </svg>
-              Query Parameters
-            </div>
-            <table class="parameters-table">
-              <thead>
-                <tr>
-                  <th style="width: 20%">参数名</th>
-                  <th style="width: 10%">必填</th>
-                  <th style="width: 15%">类型</th>
-                  <th style="width: 55%">描述</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><span class="parameter-name">status</span></td>
-                  <td><span class="parameter-required optional">可选</span></td>
-                  <td><span class="parameter-type">string</span></td>
-                  <td>订单状态过滤条件，可选值: pending, completed, cancelled</td>
-                </tr>
-                <tr>
-                  <td><span class="parameter-name">page</span></td>
-                  <td><span class="parameter-required optional">可选</span></td>
-                  <td><span class="parameter-type">integer</span></td>
-                  <td>分页页码，默认值为1</td>
-                </tr>
-                <tr>
-                  <td><span class="parameter-name">limit</span></td>
-                  <td><span class="parameter-required optional">可选</span></td>
-                  <td><span class="parameter-type">integer</span></td>
-                  <td>每页记录数，默认值为20，最大值为100</td>
-                </tr>
-                <tr>
-                  <td><span class="parameter-name">sort</span></td>
-                  <td><span class="parameter-required optional">可选</span></td>
-                  <td><span class="parameter-type">string</span></td>
-                  <td>排序字段，格式: field_name:asc 或 field_name:desc</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Request Body -->
-          <div class="section">
-            <div class="section-header">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                style="margin-right: 8px">
-                <path
-                  d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z"
-                  stroke="var(--vscode-accent)"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round" />
-                <path
-                  d="M14 2V8H20"
-                  stroke="var(--vscode-accent)"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round" />
-                <path
-                  d="M16 13H8"
-                  stroke="var(--vscode-accent)"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round" />
-                <path
-                  d="M16 17H8"
-                  stroke="var(--vscode-accent)"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round" />
-                <path
-                  d="M10 9H9H8"
-                  stroke="var(--vscode-accent)"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round" />
-              </svg>
-              Request Body
-            </div>
-            <div class="response-section">
-              <div class="response-title">
-                <div class="status-code">application/json</div>
-                <div class="response-description">此接口不需要请求体</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Response 内容 -->
-        <div
-          class="tab-content"
-          id="response-content">
-          <!-- 响应状态 -->
-          <div class="response-status">
-            <span class="status-badge status-200">200: Success</span>
-            <span class="status-badge status-400">400: Bad Request</span>
-            <span class="status-badge status-400">401: Unauthorized</span>
-            <span class="status-badge status-400">404: Not Found</span>
-          </div>
-
-          <!-- 成功响应 -->
-          <div class="section">
-            <div class="section-header">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                style="margin-right: 8px">
-                <path
-                  d="M22 11.08V12C21.9988 14.1564 21.3005 16.2547 20.0093 17.9818C18.7182 19.709 16.9033 20.9725 14.8354 21.5839C12.7674 22.1953 10.5573 22.1219 8.53447 21.3746C6.51168 20.6273 4.78465 19.2461 3.61096 17.4371C2.43727 15.628 1.87979 13.4881 2.02168 11.3363C2.16356 9.18455 2.99721 7.13631 4.39828 5.49706C5.79935 3.85781 7.69279 2.71537 9.79619 2.24013C11.8996 1.7649 14.1003 1.98232 16.07 2.85999"
-                  stroke="var(--vscode-success)"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round" />
-                <path
-                  d="M22 4L12 14.01L9 11.01"
-                  stroke="var(--vscode-success)"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round" />
-              </svg>
-              Success Response
-            </div>
-            <div class="response-section">
-              <div class="response-title">
-                <div class="status-code">200 OK</div>
-                <div class="response-description">成功获取订单列表</div>
-              </div>
-
-              <div class="json-container">
-                <pre><code>{
-"<span class="json-key">status</span>": <span class="json-string">"success"</span>,
-"<span class="json-key">code</span>": <span class="json-number">200</span>,
-"<span class="json-key">message</span>": <span class="json-string">"Orders retrieved successfully"</span>,
-"<span class="json-key">data</span>": {
-  "<span class="json-key">total</span>": <span class="json-number">125</span>,
-  "<span class="json-key">page</span>": <span class="json-number">1</span>,
-  "<span class="json-key">limit</span>": <span class="json-number">20</span>,
-  "<span class="json-key">orders</span>": [
-    {
-      "<span class="json-key">id</span>": <span class="json-string">"ORD-2023-001"</span>,
-      "<span class="json-key">userId</span>": <span class="json-number">42</span>,
-      "<span class="json-key">status</span>": <span class="json-string">"completed"</span>,
-      "<span class="json-key">totalAmount</span>": <span class="json-number">149.99</span>,
-      "<span class="json-key">createdAt</span>": <span class="json-string">"2023-07-15T10:30:00Z"</span>,
-      "<span class="json-key">items</span>": [
-        {
-          "<span class="json-key">productId</span>": <span class="json-number">101</span>,
-          "<span class="json-key">name</span>": <span class="json-string">"Wireless Headphones"</span>,
-          "<span class="json-key">quantity</span>": <span class="json-number">1</span>,
-          "<span class="json-key">price</span>": <span class="json-number">99.99</span>
-        },
-        {
-          "<span class="json-key">productId</span>": <span class="json-number">205</span>,
-          "<span class="json-key">name</span>": <span class="json-string">"Phone Case"</span>,
-          "<span class="json-key">quantity</span>": <span class="json-number">2</span>,
-          "<span class="json-key">price</span>": <span class="json-number">25.00</span>
-        }
-      ]
-    }
-  ]
-}
-}</code></pre>
-              </div>
-            </div>
-          </div>
-
-          <!-- 错误响应 -->
-          <div class="section">
-            <div class="section-header">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                style="margin-right: 8px">
-                <path
-                  d="M12 8V12V8ZM12 16H12.01H12ZM21 12C21 13.1819 20.7672 14.3522 20.3149 15.4442C19.8626 16.5361 19.1997 17.5282 18.364 18.364C17.5282 19.1997 16.5361 19.8626 15.4442 20.3149C14.3522 20.7672 13.1819 21 12 21C10.8181 21 9.64778 20.7672 8.55585 20.3149C7.46392 19.8626 6.47177 19.1997 5.63604 18.364C4.80031 17.5282 4.13738 16.5361 3.68508 15.4442C3.23279 14.3522 3 13.1819 3 12C3 9.61305 3.94821 7.32387 5.63604 5.63604C7.32387 3.94821 9.61305 3 12 3C14.3869 3 16.6761 3.94821 18.364 5.63604C20.0518 7.32387 21 9.61305 21 12Z"
-                  stroke="var(--vscode-error)"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round" />
-              </svg>
-              Error Response
-            </div>
-            <div class="response-section">
-              <div class="response-title">
-                <div class="status-code">404 Not Found</div>
-                <div class="response-description">用户不存在</div>
-              </div>
-
-              <div class="json-container">
-                <pre><code>{
-"<span class="json-key">status</span>": <span class="json-string">"error"</span>,
-"<span class="json-key">code</span>": <span class="json-number">404</span>,
-"<span class="json-key">message</span>": <span class="json-string">"User not found"</span>,
-"<span class="json-key">details</span>": {
-  "<span class="json-key">userId</span>": <span class="json-number">9999</span>
-}
-}</code></pre>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div
+        class="api-container"
+        id="api-container">
+        <div class="no-content">请从下拉菜单中选择一个API</div>
       </div>
 
       <div class="footer">
-        <button class="copy-btn">
+        <button
+          class="copy-btn"
+          id="copy-btn">
           <svg
-            width="16"
-            height="16"
+            width="14"
+            height="14"
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg">
             <path
               d="M8 4V16C8 16.5304 8.21071 17.0391 8.58579 17.4142C8.96086 17.7893 9.46957 18 10 18H18C18.5304 18 19.0391 17.7893 19.4142 17.4142C19.7893 17.0391 20 16.5304 20 16V7.5C20 7.10218 19.842 6.72064 19.5607 6.43934C19.2794 6.15804 18.8978 6 18.5 6H14C13.4696 6 12.9609 5.78929 12.5858 5.41421C12.2107 5.03914 12 4.53043 12 4V4C12 3.46957 11.7893 2.96086 11.4142 2.58579C11.0391 2.21071 10.5304 2 10 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V14C4 14.5304 4.21071 15.0391 4.58579 15.4142C4.96086 15.7893 5.46957 16 6 16H8"
               stroke="currentColor"
-              stroke-width="2"
+              stroke-width="1.5"
               stroke-linecap="round"
               stroke-linejoin="round" />
           </svg>
-          复制API文档
+          复制示例代码
         </button>
       </div>
     </div>
@@ -356,7 +67,6 @@
         <button id="refresh-btn">Refresh</button>
       </div>
     </div>
-
     <div id="items-container">
       <p
         class="empty-message"
@@ -365,48 +75,342 @@
       </p>
       <ul id="items-list"></ul>
     </div>
+    <!-- 引入 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-typescript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
     <script>
-      // 选项卡切换功能
-      document.querySelectorAll('.tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-          // 移除所有活动状态
-          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      // ===== 数据服务 =====
+      const apiService = {
+        // API数据
+        apiData: {
+          postAccountUser: {
+            method: 'POST',
+            summary: '创建用户账户',
+            path: '/account/user/{version}',
+            name: 'postAccountUser',
+            responseName: 'UserBase',
+            requestName: 'UserCreate',
+            pathParameters:
+              "{\n  /**\n   * generator version used by codegen engine\n   * [required]\n   */\n  version: 'V2' | 'V3'\n}",
+            pathParametersComment:
+              "{\n*   // generator version used by codegen engine\n*   // [required]\n*   version: 'V2' | 'V3'\n* }",
+            responseComment:
+              '{\n*   // [title] Name\n*   name?: string\n*   // 角色\n*   role?: 0 | 1\n*   // 超管下角色\n*   role_admin?: 0 | 1\n*   // [title] Phone\n*   phone?: string\n* }',
+            requestComment:
+              '{\n*   // [title] Account\n*   // [required]\n*   account: string\n*   // [title] Password\n*   // [required]\n*   password: string\n*   // [title] Name\n*   name?: string\n*   // 角色\n*   role?: 0 | 1\n*   // 超管下角色\n*   role_admin?: 0 | 1\n*   // [title] Phone\n*   phone?: string\n* }',
+            defaultValue:
+              "Apis.general.postAccountUser({\n  pathParams: {\n    version: 'V2'\n  },\n  data: {\n    account: '',\n    password: ''\n  }\n})"
+          },
+          getUserProfile: {
+            method: 'GET',
+            summary: '获取用户个人资料',
+            path: '/user/{id}/profile',
+            name: 'getUserProfile',
+            responseName: 'UserProfile',
+            queryParameters: '{\n  /**\n   * 是否包含详细信息\n   */\n  detailed?: boolean\n}',
+            pathParameters: '{\n  /**\n   * 用户ID\n   * [required]\n   */\n  id: string\n}',
+            defaultValue:
+              "Apis.user.getProfile({\n  pathParams: {\n    id: '12345'\n  },\n  queryParams: {\n    detailed: true\n  }\n})"
+          },
+          updateProduct: {
+            method: 'PUT',
+            summary: '更新产品信息',
+            path: '/products/{id}',
+            name: 'updateProduct',
+            responseName: 'Product',
+            requestName: 'ProductUpdate',
+            pathParameters: '{\n  /**\n   * 产品ID\n   * [required]\n   */\n  id: string\n}',
+            requestComment:
+              '{\n*   // 产品名称\n*   name?: string\n*   // 产品描述\n*   description?: string\n*   // 价格\n*   price?: number\n*   // 库存数量\n*   stock?: number\n*   // 上架状态\n*   published?: boolean\n* }',
+            defaultValue:
+              "Apis.products.update({\n  pathParams: {\n    id: 'prod-123'\n  },\n  data: {\n    name: 'New Product Name',\n    price: 29.99\n  }\n})"
+          }
+        },
 
-          // 添加当前活动状态
-          tab.classList.add('active');
-          const tabId = tab.getAttribute('data-tab');
-          document.getElementById(`${tabId}-content`).classList.add('active');
-        });
-      });
+        // 获取所有API
+        getAllApis() {
+          return Object.keys(this.apiData);
+        },
 
-      // 复制按钮功能
-      document.querySelector('.copy-btn').addEventListener('click', function () {
-        const originalContent = this.innerHTML;
-        this.innerHTML = `
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M9 16.1719L19.5938 5.57812L21 6.98438L9 18.9844L3.42188 13.4062L4.82812 12L9 16.1719Z" fill="currentColor"/>
-                </svg>
-                已复制到剪贴板
-            `;
+        // 获取API详情
+        getApiDetails(apiKey) {
+          return this.apiData[apiKey] || null;
+        }
+      };
 
-        setTimeout(() => {
-          this.innerHTML = originalContent;
-        }, 2000);
-      });
+      // ===== 渲染服务 =====
+      const renderService = {
+        // 渲染API文档
+        renderApiDocumentation(api) {
+          if (!api) {
+            return '<div class="no-content">请从下拉菜单中选择一个API</div>';
+          }
 
-      // 动态检测主题变化
-      const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+          return `
+                    <div class="api-header">
+                        <div class="api-method">
+                            <span class="method-tag ${api.method.toLowerCase()}">${api.method}</span>
+                            <div class="api-url">${api.path}</div>
+                        </div>
+                        <div class="api-summary">${api.summary}</div>
 
-      function handleThemeChange(e) {
-        const isDarkMode = e.matches;
-        document.documentElement.style.setProperty('--vscode-background', isDarkMode ? '#1e1e1e' : '#ffffff');
-        document.documentElement.style.setProperty('--vscode-foreground', isDarkMode ? '#d4d4d4' : '#333333');
-        document.documentElement.style.setProperty('--vscode-border', isDarkMode ? '#454545' : '#cccccc');
+                        <div class="api-info-row">
+                            <div class="api-info-label">API名称:</div>
+                            <div class="api-info-value">${api.name}</div>
+                        </div>
+                        <div class="api-info-row">
+                            <div class="api-info-label">响应体类型:</div>
+                            <div class="api-info-value">${api.responseName}</div>
+                        </div>
+                    </div>
+
+                    <div class="tabs-container">
+                        <div class="tabs">
+                            <div class="tab active" data-tab="parameters">参数</div>
+                            <div class="tab" data-tab="response">响应</div>
+                            <div class="tab" data-tab="example">示例</div>
+                        </div>
+
+                        <div class="tab-content active" id="parameters-content">
+                            ${this.renderParametersSection(api)}
+                        </div>
+
+                        <div class="tab-content" id="response-content">
+                            ${this.renderResponseSection(api)}
+                        </div>
+
+                        <div class="tab-content" id="example-content">
+                            ${this.renderExampleSection(api)}
+                        </div>
+                    </div>
+                `;
+        },
+
+        // 渲染参数部分
+        renderParametersSection(api) {
+          return `
+                    <div class="section">
+                        <div class="section-header">Path 参数</div>
+                        ${this.renderParameterBlock(api.pathParametersComment, 'PathParameters')}
+                    </div>
+
+                    <div class="section">
+                        <div class="section-header">Query 参数</div>
+                        ${
+                          api.queryParameters
+                            ? this.renderParameterBlock(api.queryParameters, 'QueryParameters')
+                            : '<div class="no-content">此接口没有查询参数</div>'
+                        }
+                    </div>
+
+                    <div class="section">
+                        <div class="section-header">请求体</div>
+                        ${
+                          api.requestName
+                            ? `<pre class="line-numbers comment-block"><code class="language-typescript">${this.typeComment(api.requestComment, 'RequestBody')}</code></pre>`
+                            : '<div class="no-content">此接口不需要请求体</div>'
+                        }
+                    </div>
+                `;
+        },
+
+        // 渲染响应部分
+        renderResponseSection(api) {
+          return `
+                    <div class="section">
+                      <pre class="line-numbers comment-block"><code class="language-typescript">${this.typeComment(api.responseComment, 'ResponseBody')}</code></pre>
+                    </div>
+                `;
+        },
+
+        // 渲染示例部分
+        renderExampleSection(api) {
+          return `
+                    <div class="section">
+                        <div class="json-container">
+                            <pre class="line-numbers comment-block"><code class="language-typescript">${api.defaultValue || '//无示例代码'}</code></pre>
+                        </div>
+                    </div>
+                `;
+        },
+
+        // 渲染参数块
+        renderParameterBlock(parameters, name) {
+          const content = this.typeComment(parameters, name);
+          return content
+            ? `<pre class="line-numbers comment-block"><code class="language-typescript">${content}</code></pre>`
+            : '<div class="no-content">无参数信息</div>';
+        },
+
+        // 清理注释文本
+        typeComment(comment, name) {
+          if (!comment) {
+            return '';
+          }
+          const pureComment = comment.replace(/\n\*/g, '\n').replace(/^\* /gm, '').trim();
+          if (!pureComment) {
+            return '';
+          }
+          return `type ${name ?? 'tsType'} = ${pureComment}`;
+        }
+      };
+      class ClassWatcher {
+        constructor(targetNode, classToWatch, classAddedCallback, classRemovedCallback) {
+          this.targetNode = targetNode;
+          this.classToWatch = classToWatch;
+          this.classAddedCallback = classAddedCallback;
+          this.classRemovedCallback = classRemovedCallback;
+          this.observer = null;
+          this.lastClassState = targetNode.classList.contains(this.classToWatch);
+
+          this.init();
+        }
+
+        init() {
+          this.observer = new MutationObserver(this.mutationCallback);
+          this.observe();
+          const currentClassState = this.targetNode?.classList.contains(this.classToWatch);
+          if (currentClassState) {
+            this.classAddedCallback();
+          } else {
+            this.classRemovedCallback();
+          }
+        }
+
+        observe() {
+          this.observer.observe(this.targetNode, { attributes: true });
+        }
+
+        disconnect() {
+          this.observer.disconnect();
+        }
+
+        mutationCallback = mutationsList => {
+          for (let mutation of mutationsList) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+              let currentClassState = mutation.target.classList.contains(this.classToWatch);
+              if (this.lastClassState !== currentClassState) {
+                this.lastClassState = currentClassState;
+                if (currentClassState) {
+                  this.classAddedCallback();
+                } else {
+                  this.classRemovedCallback();
+                }
+              }
+            }
+          }
+        };
       }
 
-      darkModeMediaQuery.addListener(handleThemeChange);
-      handleThemeChange(darkModeMediaQuery);
+      // ===== 控制器 =====
+      const controller = {
+        // 初始化应用
+        init() {
+          this.cacheElements();
+          this.setupEventListeners();
+          this.renderApiSelector();
+          this.wathThemeChange();
+        },
+
+        wathThemeChange() {
+          const lightPrismUrl = 'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css';
+          const darkPrismUrl = 'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css';
+          const prismTheme = document.getElementById('prism-theme');
+          const setDarkTheme = isDark => {
+            if (isDark) {
+              prismTheme.href = darkPrismUrl;
+            } else {
+              prismTheme.href = lightPrismUrl;
+            }
+          };
+          const classWatcher = new ClassWatcher(
+            document.body,
+            'vscode-light',
+            () => setDarkTheme(false),
+            () => setDarkTheme(true)
+          );
+        },
+        // 缓存DOM元素
+        cacheElements() {
+          this.elements = {
+            apiSelect: document.getElementById('api-select'),
+            apiContainer: document.getElementById('api-container'),
+            copyBtn: document.getElementById('copy-btn')
+          };
+        },
+
+        // 设置事件监听
+        setupEventListeners() {
+          this.elements.apiSelect.addEventListener('change', this.handleApiSelect.bind(this));
+          this.elements.copyBtn.addEventListener('click', this.handleCopy.bind(this));
+        },
+
+        // 渲染API选择器
+        renderApiSelector() {
+          const apis = apiService.getAllApis();
+          apis.forEach(apiKey => {
+            const api = apiService.getApiDetails(apiKey);
+            const option = document.createElement('option');
+            option.value = apiKey;
+            option.textContent = `${api.method} ${api.path}`;
+            this.elements.apiSelect.appendChild(option);
+          });
+        },
+
+        // 处理API选择
+        handleApiSelect() {
+          const apiKey = this.elements.apiSelect.value;
+          const api = apiService.getApiDetails(apiKey);
+          this.elements.apiContainer.innerHTML = renderService.renderApiDocumentation(api);
+          this.setupTabs();
+        },
+
+        // 设置标签页交互
+        setupTabs() {
+          const tabs = this.elements.apiContainer.querySelectorAll('.tab');
+
+          tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+              // 移除所有活动状态
+              tabs.forEach(t => t.classList.remove('active'));
+
+              // 隐藏所有内容
+              const contents = this.elements.apiContainer.querySelectorAll('.tab-content');
+              contents.forEach(c => c.classList.remove('active'));
+
+              // 激活当前标签
+              tab.classList.add('active');
+              const tabId = tab.getAttribute('data-tab');
+              document.getElementById(`${tabId}-content`).classList.add('active');
+            });
+          });
+          Prism.highlightAll();
+        },
+
+        // 处理复制操作
+        handleCopy() {
+          const codeBlock = this.elements.apiContainer.querySelector('.json-container pre code');
+          if (codeBlock) {
+            navigator.clipboard.writeText(codeBlock.innerText).then(() => {
+              const originalContent = this.elements.copyBtn.innerHTML;
+              this.elements.copyBtn.innerHTML = `
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 16.1719L19.5938 5.57812L21 6.98438L9 18.9844L3.42187 13.4062L4.82812 12L9 16.1719Z" fill="currentColor"/>
+                            </svg>
+                            已复制
+                        `;
+
+              setTimeout(() => {
+                this.elements.copyBtn.innerHTML = originalContent;
+              }, 2000);
+            });
+          }
+        }
+      };
+
+      // 初始化应用
+      document.addEventListener('DOMContentLoaded', () => controller.init());
 
       const vscode = acquireVsCodeApi();
 
