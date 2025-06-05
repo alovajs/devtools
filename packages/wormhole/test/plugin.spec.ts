@@ -1,9 +1,9 @@
 import { generate } from '@/index';
 import { createPlugin } from '@/plugins';
 import { rename } from '@/plugins/presets/rename';
-import type { ApiPlugin } from '@/type/plugin';
 import fs from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { ApiPlugin } from '~/index';
 
 vi.mock('node:fs');
 vi.mock('node:fs/promises');
@@ -25,9 +25,8 @@ describe('plugin test', () => {
   test('should apply plugin correctly', async () => {
     const applyFn = vi.fn();
     const nullPlugin = createPlugin(() => ({
-      name: 'nullPlugin',
-      apply: context => {
-        applyFn(context);
+      handleApi: apiDescriptor => {
+        applyFn(apiDescriptor);
         return null;
       }
     }));

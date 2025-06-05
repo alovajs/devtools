@@ -1,5 +1,5 @@
 import type { ApiDescriptor, Parameter } from '@/type/base';
-import type { ApiPlugin, PluginContext } from '@/type/plugin';
+import { ApiPlugin } from '~/index';
 /**
  * Rename style options
  */
@@ -255,9 +255,7 @@ export function rename(config: RenameConfig | RenameConfig[]): ApiPlugin {
   }
 
   return {
-    name: 'rename',
-    apply: (context: PluginContext) => {
-      const { apiDescriptor } = context;
+    handleApi: (apiDescriptor: ApiDescriptor) => {
       if (!apiDescriptor) return null;
 
       // Apply each configuration in sequence

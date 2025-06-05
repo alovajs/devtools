@@ -1,4 +1,4 @@
-import type { ApiPlugin } from '@/type/plugin';
+import { ApiPlugin } from '~/index';
 
 /**
  * Creates a plugin factory function with proper typing
@@ -9,10 +9,9 @@ import type { ApiPlugin } from '@/type/plugin';
  * @example
  * // Create a custom plugin
  * const myPlugin = createPlugin((options: MyOptions) => ({
- *   name: 'myPlugin',
- *   apply: (context) => {
+ *   handleApi: (apiDescriptor) => {
  *     // Plugin implementation
- *     return context.apiDescriptor;
+ *     return apiDescriptor;
  *   }
  * }));
  *

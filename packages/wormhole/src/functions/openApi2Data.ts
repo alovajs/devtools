@@ -11,7 +11,6 @@ import { getStandardOperationId, getStandardTags } from '@/helper/standard';
 import { generateDefaultValues } from '@/helper/typeStr';
 import type { Api, ApiDescriptor, TemplateType } from '@/type/base';
 import type { GeneratorConfig } from '@/type/config';
-import type { PluginContext } from '@/type/plugin';
 import { format, removeUndefined } from '@/utils';
 import { cloneDeep, isEmpty } from 'lodash';
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
@@ -313,18 +312,15 @@ export const transformPathObj = async (
     return { ...pathObj, url, method };
   }
 
+  if (!newApiDescriptor === null || newApiDescriptor === undefined) {
+    return null;
+  }
+
   // Apply all plugins in sequence
   // Each plugin gets a chance to transform the API descriptor
   // If a plugin returns null/undefined, the API will be skipped
   for (const plugin of config.plugins ?? []) {
-    const pluginContext: PluginContext = {
-      url,
-      method,
-      config,
-      apiDescriptor: newApiDescriptor
-    };
-
-    const result = plugin.apply(pluginContext);
+    const result = plugin.handleApi?.(newApiDescriptor!) as ApiDescriptor | void | undefined | null;
 
     // Null return is a valid filter signal
     if (result === null || result === undefined) {
@@ -333,7 +329,7 @@ export const transformPathObj = async (
     }
 
     if (typeof result !== 'object') {
-      console.error(`Plugin "${plugin.name || 'unnamed'}" returned invalid value type: ${typeof result}`);
+      console.error(`Plugin returned invalid value type: ${typeof result}`);
       continue;
     }
 

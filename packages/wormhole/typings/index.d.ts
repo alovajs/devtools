@@ -42,20 +42,8 @@ export interface Api {
   defaultValue?: string;
   pathKey: string;
 }
-export interface PluginContext {
-  url: string;
-  method: string;
-  readonly config: GeneratorConfig;
-  readonly apiDescriptor: ApiDescriptor;
-}
 export interface ApiPlugin {
-  name?: string;
-  /**
-   * apply plugin to the apiDescriptor
-   * @param context
-   * @returns a valid ApiDescriptor object, otherwise skip the processing of this path
-   */
-  apply(context: PluginContext): ApiDescriptor | void | undefined | null;
+  handleApi?: HandleApi;
 }
 export interface HandleApi {
   (apiDescriptor: ApiDescriptor): ApiDescriptor | void | undefined | null;
@@ -325,4 +313,5 @@ export declare const getApis: (config: Config, projectPath?: string) => Api[];
  */
 export function resolveWorkspaces(projectPath?: string): Promise<string[]>;
 
-export {};
+export { };
+
