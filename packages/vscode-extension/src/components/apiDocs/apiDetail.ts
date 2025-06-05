@@ -31,11 +31,6 @@ export class ApiDetailProvider implements vscode.WebviewViewProvider {
           this._pendingUpdates = [];
           break;
         }
-
-        case 'addItem': {
-          vscode.commands.executeCommand(commandMap.addItem.commandId);
-          break;
-        }
         case 'refresh': {
           vscode.commands.executeCommand(commandMap.refresh.commandId);
           break;

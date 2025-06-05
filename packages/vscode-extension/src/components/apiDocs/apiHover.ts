@@ -31,6 +31,7 @@ function createTargetRegex(target: string): RegExp {
   return new RegExp(withSpaces, 's');
 }
 export class ApiHoverProvider implements vscode.HoverProvider {
+  constructor(private context: vscode.ExtensionContext) {}
   // eslint-disable-next-line class-methods-use-this
   provideHover(document: vscode.TextDocument, position: vscode.Position) {
     const startLine = Math.max(0, position.line - 10);

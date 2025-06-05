@@ -130,45 +130,4 @@ export class ApiServerProvider implements vscode.TreeDataProvider<ApiTreeItem> {
   getParent(element: ApiTreeItem): Thenable<ApiTreeItem | undefined> {
     return Promise.resolve(this.getItemById(element.parent ?? ''));
   }
-  addItem(): void {
-    vscode.window
-      .showInputBox({
-        prompt: 'Enter item name',
-        placeHolder: 'Item name'
-      })
-      .then(name => {
-        if (!name) {
-          return;
-        }
-
-        const newItem: ApiTreeItem = {
-          id: `item-${Date.now()}`,
-          label: name,
-          icon: 'file'
-        };
-
-        this.items.push(newItem);
-        this.refresh();
-      });
-  }
-
-  editItem(item: ApiTreeItem): void {
-    vscode.window
-      .showInputBox({
-        value: item.label,
-        prompt: 'Edit item name'
-      })
-      .then(newName => {
-        if (newName && newName !== item.label) {
-          item.label = newName;
-          this.refresh();
-        }
-      });
-  }
-
-  deleteItem(item: ApiTreeItem): void {
-    this.items = this.items.filter(i => i.id !== item.id);
-    // this.saveItems();
-    this.refresh();
-  }
 }

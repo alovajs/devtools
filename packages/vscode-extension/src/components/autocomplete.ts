@@ -1,6 +1,7 @@
 import autocompleteCommand from '@/commands/autocomplete';
 import autocomplete from '@/functions/autocomplete';
 import * as vscode from 'vscode';
+import type { CodeSnippet } from './codeSnippet';
 
 const triggerCharacters: string[] = [' ', '.', '>', '》', ':', '-'];
 class AutoComplete extends vscode.CompletionItem {}
@@ -39,3 +40,16 @@ export default vscode.languages.registerCompletionItemProvider(
   },
   ...triggerCharacters // Characters that trigger auto-completion
 );
+
+export const getAutocompleteCodeSnippet = async (text: string, filePath: string): Promise<CodeSnippet[]> =>
+  (await autocomplete(text, filePath)).map(item => {
+    const codeSnippet: CodeSnippet = {
+      id: item.path,
+      name: `[${item.method}] ${item.summary}`,
+      description: item.path,
+      language: '*',
+      code: item.replaceText,
+      tags: ['alova']
+    };
+    return codeSnippet;
+  });

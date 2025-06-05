@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import { ApiDetailProvider } from './apiDetail';
 import { ApiHoverProvider } from './apiHover';
-import type { ApiTreeItem } from './apiServer';
 import { ApiServerProvider } from './apiServer';
 import { commandMap } from './command';
 
@@ -12,6 +11,7 @@ export function activate(context: vscode.ExtensionContext) {
   // 注册视图
   const apiServerProvider = new ApiServerProvider(context);
   const apiDetailProvider = new ApiDetailProvider(context);
+  const apiHoverProvider = new ApiHoverProvider(context);
   const apiServerTreeView = vscode.window.createTreeView('api-docs-server-view', {
     treeDataProvider: apiServerProvider
   });
@@ -19,7 +19,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(apiServerTreeView);
   context.subscriptions.push(apiDetailWebview);
   apiServerProvider.onDidChangeTreeData(() => {
-    // apiDetailProvider.updateView(apiServerProvider.getItems());
+    apiDetailProvider.updateView();
   });
   apiServerTreeView.onDidChangeSelection(e => {
     if (e.selection.length > 0) {
@@ -29,25 +29,12 @@ export function activate(context: vscode.ExtensionContext) {
   });
   // 注册命令
   context.subscriptions.push(
-    vscode.commands.registerCommand(commandMap.addItem.commandId, () => {
-      apiServerProvider.addItem();
-    }),
-
     vscode.commands.registerCommand(commandMap.refresh.commandId, () => {
       apiServerProvider.refresh();
-      // apiDetailProvider.updateView(apiServerProvider.getItems());
-    }),
-
-    vscode.commands.registerCommand(commandMap.editItem.commandId, (item: ApiTreeItem) => {
-      apiServerProvider.editItem(item);
-    }),
-
-    vscode.commands.registerCommand(commandMap.deleteItem.commandId, (item: ApiTreeItem) => {
-      apiServerProvider.deleteItem(item);
     })
   );
   // 注册悬停提供器
-  vscode.languages.registerHoverProvider('*', new ApiHoverProvider());
+  vscode.languages.registerHoverProvider('*', apiHoverProvider);
   // 监听活动编辑器变更
   vscode.window.onDidChangeActiveTextEditor(editor => {
     if (editor) {

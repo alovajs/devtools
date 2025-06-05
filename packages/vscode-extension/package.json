@@ -31,50 +31,50 @@
         "title": "Create alova config"
       },
       {
-        "command": "alova.apiDocs.addItem",
-        "title": "Add New Item",
-        "icon": "$(add)"
-      },
-      {
         "command": "alova.apiDocs.refresh",
         "title": "Refresh View",
         "icon": "$(refresh)"
       },
       {
-        "command": "alova.apiDocs.editItem",
-        "title": "Edit Item"
+        "command": "alova.snippetSearch.open",
+        "title": "打开代码片段搜索",
+        "category": "Snippet Search"
       },
       {
-        "command": "alova.apiDocs.deleteItem",
-        "title": "Delete Item"
+        "command": "alova.snippetSearch.insert",
+        "title": "插入代码片段",
+        "category": "Snippet Search"
+      },
+      {
+        "command": "alova.snippetSearch.showHelp",
+        "title": "显示快捷键帮助",
+        "category": "Snippet Search"
       }
     ],
     "menus": {
       "view/title": [
-        {
-          "command": "alova.apiDocs.addItem",
-          "group": "navigation",
-          "when": "view == api-docs-server-view"
-        },
         {
           "command": "alova.apiDocs.refresh",
           "group": "navigation",
           "when": "view == api-docs-server-view"
         }
       ],
-      "view/item/context": [
+      "view/item/context": [],
+      "commandPalette": [
         {
-          "command": "alova.apiDocs.editItem",
-          "group": "inline",
-          "when": "view == api-docs-server-view && viewItem =~ /tree-item/"
-        },
-        {
-          "command": "alova.apiDocs.deleteItem",
-          "group": "inline",
-          "when": "view == api-docs-server-view && viewItem =~ /tree-item/"
+          "command": "alova.snippetSearch.insert",
+          "when": "editorTextFocus"
         }
       ]
     },
+    "keybindings": [
+      {
+        "command": "alova.snippetSearch.open",
+        "key": "ctrl+alt+p",
+        "mac": "cmd+alt+p",
+        "when": "editorTextFocus"
+      }
+    ],
     "icons": {
       "alova-icon-id": {
         "description": "alova icon",
