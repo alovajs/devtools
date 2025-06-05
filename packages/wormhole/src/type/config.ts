@@ -1,5 +1,5 @@
 import type { ApiDescriptor, ConfigType, PlatformType } from '@/type/base';
-import type { ApiPlugin } from '@/type/plugin';
+import type { ApiPlugin } from '~/index';
 
 export interface HandleApi {
   (apiDescriptor: ApiDescriptor): ApiDescriptor | void | undefined | null;

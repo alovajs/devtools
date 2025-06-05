@@ -1,51 +1,12 @@
-import { generate } from '@/index';
-import { createPlugin } from '@/plugins';
 import { rename } from '@/plugins/presets/rename';
-import fs from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { ApiPlugin } from '~/index';
+import { generateWithPlugin } from '../util';
 
 vi.mock('node:fs');
 vi.mock('node:fs/promises');
-const getSalt = () => `_${Math.random().toString(36).slice(2)}`;
-
-const generateWithPlugin = async (inputFile: string, plugins: ApiPlugin[], outputDir?: string) => {
-  outputDir ??= resolve(__dirname, `./mock_output/plugin_test${getSalt()}`);
-  await generate({
-    generator: [{ input: inputFile, output: outputDir, plugins }]
-  });
-
-  const apiDefinitionsFile = await fs.readFile(resolve(outputDir, 'apiDefinitions.ts'), 'utf-8');
-  const globalsFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8');
-
-  return { apiDefinitionsFile, globalsFile };
-};
-
-describe('plugin test', () => {
-  test('should apply plugin correctly', async () => {
-    const applyFn = vi.fn();
-    const nullPlugin = createPlugin(() => ({
-      handleApi: apiDescriptor => {
-        applyFn(apiDescriptor);
-        return null;
-      }
-    }));
-
-    const { apiDefinitionsFile, globalsFile } = await generateWithPlugin(
-      resolve(__dirname, './openapis/openapi_301.json'),
-      [nullPlugin()]
-    );
-
-    expect(apiDefinitionsFile).not.toBeUndefined();
-    // should generate a empty api interface
-    expect(globalsFile).toMatch('interface Apis {}');
-    expect(applyFn).toHaveBeenCalled();
-  });
-});
-
 describe('rename plugin', () => {
   test('should rename urls to snakeCase style', async () => {
-    const { apiDefinitionsFile } = await generateWithPlugin(resolve(__dirname, './openapis/openapi_300.yaml'), [
+    const { apiDefinitionsFile } = await generateWithPlugin(resolve(__dirname, '../openapis/openapi_300.yaml'), [
       rename({ scope: 'url', style: 'snakeCase' })
     ]);
 
@@ -56,7 +17,7 @@ describe('rename plugin', () => {
   });
 
   test('should rename urls to camelCase style', async () => {
-    const { apiDefinitionsFile } = await generateWithPlugin(resolve(__dirname, './openapis/naming_openapi.yaml'), [
+    const { apiDefinitionsFile } = await generateWithPlugin(resolve(__dirname, '../openapis/naming_openapi.yaml'), [
       rename({ scope: 'url', style: 'camelCase' })
     ]);
 
@@ -65,7 +26,7 @@ describe('rename plugin', () => {
   });
 
   test('should apply custom transform function', async () => {
-    const { apiDefinitionsFile } = await generateWithPlugin(resolve(__dirname, './openapis/naming_openapi.yaml'), [
+    const { apiDefinitionsFile } = await generateWithPlugin(resolve(__dirname, '../openapis/naming_openapi.yaml'), [
       rename({
         scope: 'url',
         transform: descriptor => `/custom_prefix${descriptor.url}`
@@ -77,7 +38,7 @@ describe('rename plugin', () => {
   });
 
   test('should only rename matched urls', async () => {
-    const { apiDefinitionsFile } = await generateWithPlugin(resolve(__dirname, './openapis/naming_openapi.yaml'), [
+    const { apiDefinitionsFile } = await generateWithPlugin(resolve(__dirname, '../openapis/naming_openapi.yaml'), [
       rename({
         scope: 'url',
         match: 'user',
@@ -93,7 +54,7 @@ describe('rename plugin', () => {
   });
 
   test('should rename parameters to camelCase', async () => {
-    const { globalsFile } = await generateWithPlugin(resolve(__dirname, './openapis/naming_openapi.yaml'), [
+    const { globalsFile } = await generateWithPlugin(resolve(__dirname, '../openapis/naming_openapi.yaml'), [
       rename({ scope: 'params', style: 'camelCase' })
     ]);
 
@@ -105,7 +66,7 @@ describe('rename plugin', () => {
   });
 
   test('should rename path parameters', async () => {
-    const { globalsFile } = await generateWithPlugin(resolve(__dirname, './openapis/naming_openapi.yaml'), [
+    const { globalsFile } = await generateWithPlugin(resolve(__dirname, '../openapis/naming_openapi.yaml'), [
       rename({ scope: 'pathParams', style: 'camelCase' })
     ]);
 
@@ -116,7 +77,7 @@ describe('rename plugin', () => {
   });
 
   test('should rename request body properties', async () => {
-    const { globalsFile } = await generateWithPlugin(resolve(__dirname, './openapis/naming_openapi.yaml'), [
+    const { globalsFile } = await generateWithPlugin(resolve(__dirname, '../openapis/naming_openapi.yaml'), [
       rename({ scope: 'data', style: 'camelCase' })
     ]);
 
@@ -128,7 +89,7 @@ describe('rename plugin', () => {
   });
 
   test('should rename response properties', async () => {
-    const { globalsFile } = await generateWithPlugin(resolve(__dirname, './openapis/naming_openapi.yaml'), [
+    const { globalsFile } = await generateWithPlugin(resolve(__dirname, '../openapis/naming_openapi.yaml'), [
       rename({ scope: 'response', style: 'camelCase' })
     ]);
 
@@ -141,7 +102,7 @@ describe('rename plugin', () => {
 
   test('should apply multiple rename configs in sequence', async () => {
     const { apiDefinitionsFile, globalsFile } = await generateWithPlugin(
-      resolve(__dirname, './openapis/naming_openapi.yaml'),
+      resolve(__dirname, '../openapis/naming_openapi.yaml'),
       [
         rename([
           // First make URLs snake_case
@@ -163,7 +124,7 @@ describe('rename plugin', () => {
   });
 
   test('should convert mixed naming to consistent style', async () => {
-    const { globalsFile } = await generateWithPlugin(resolve(__dirname, './openapis/naming_openapi.yaml'), [
+    const { globalsFile } = await generateWithPlugin(resolve(__dirname, '../openapis/naming_openapi.yaml'), [
       rename([
         // Change all to camelCase
         { scope: 'url', style: 'camelCase' },
@@ -190,7 +151,7 @@ describe('rename plugin', () => {
 
   test('should convert all styles to snakeCase', async () => {
     const { apiDefinitionsFile, globalsFile } = await generateWithPlugin(
-      resolve(__dirname, './openapis/naming_openapi.yaml'),
+      resolve(__dirname, '../openapis/naming_openapi.yaml'),
       [
         rename([
           // Change all to snake_case
@@ -217,7 +178,7 @@ describe('rename plugin', () => {
   });
 
   test('should convert to kebabCase style', async () => {
-    const { apiDefinitionsFile } = await generateWithPlugin(resolve(__dirname, './openapis/naming_openapi.yaml'), [
+    const { apiDefinitionsFile } = await generateWithPlugin(resolve(__dirname, '../openapis/naming_openapi.yaml'), [
       rename({ scope: 'url', style: 'kebabCase' })
     ]);
 
@@ -227,7 +188,7 @@ describe('rename plugin', () => {
   });
 
   test('should convert to pascalCase style', async () => {
-    const { globalsFile } = await generateWithPlugin(resolve(__dirname, './openapis/naming_openapi.yaml'), [
+    const { globalsFile } = await generateWithPlugin(resolve(__dirname, '../openapis/naming_openapi.yaml'), [
       rename({ scope: 'data', style: 'pascalCase' })
     ]);
 
@@ -238,7 +199,7 @@ describe('rename plugin', () => {
   });
 
   test('should match using regex pattern', async () => {
-    const { apiDefinitionsFile } = await generateWithPlugin(resolve(__dirname, './openapis/naming_openapi.yaml'), [
+    const { apiDefinitionsFile } = await generateWithPlugin(resolve(__dirname, '../openapis/naming_openapi.yaml'), [
       rename({
         scope: 'url',
         match: /user|order/,
@@ -252,7 +213,7 @@ describe('rename plugin', () => {
   });
 
   test('should match using function matcher', async () => {
-    const { apiDefinitionsFile } = await generateWithPlugin(resolve(__dirname, './openapis/naming_openapi.yaml'), [
+    const { apiDefinitionsFile } = await generateWithPlugin(resolve(__dirname, '../openapis/naming_openapi.yaml'), [
       rename({
         scope: 'url',
         match: key => key.includes('user') && !key.includes('detail'),
@@ -271,7 +232,7 @@ describe('rename plugin', () => {
   });
 
   test('should correctly handle path parameter placeholders', async () => {
-    const { apiDefinitionsFile } = await generateWithPlugin(resolve(__dirname, './openapis/naming_openapi.yaml'), [
+    const { apiDefinitionsFile } = await generateWithPlugin(resolve(__dirname, '../openapis/naming_openapi.yaml'), [
       rename({
         scope: 'pathParams',
         style: 'camelCase'
@@ -284,7 +245,7 @@ describe('rename plugin', () => {
   });
 
   test('should apply both style and transform function', async () => {
-    const { apiDefinitionsFile } = await generateWithPlugin(resolve(__dirname, './openapis/naming_openapi.yaml'), [
+    const { apiDefinitionsFile } = await generateWithPlugin(resolve(__dirname, '../openapis/naming_openapi.yaml'), [
       rename({
         scope: 'url',
         style: 'camelCase',
