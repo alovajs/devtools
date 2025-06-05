@@ -14,15 +14,11 @@
       href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css"
       rel="stylesheet"
       id="prism-theme" />
-    <!-- 行号插件 CSS -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/line-numbers/prism-line-numbers.min.css"
-      rel="stylesheet" />
   </head>
 
   <body>
     <div class="container">
-      <div class="api-selector">
+      <!-- <div class="api-selector">
         <select
           id="api-select"
           class="api-select">
@@ -31,12 +27,12 @@
           <option value="getUserProfile">GET /user/{id}/profile</option>
           <option value="updateProduct">PUT /products/{id}</option>
         </select>
-      </div>
+      </div> -->
 
       <div
         class="api-container"
         id="api-container">
-        <div class="no-content">请从下拉菜单中选择一个API</div>
+        <div class="no-content">没有Api详细信息</div>
       </div>
 
       <div class="footer">
@@ -60,85 +56,10 @@
         </button>
       </div>
     </div>
-    <div class="header">
-      <h1>Dynamic Sidebar</h1>
-      <div class="controls">
-        <button id="add-btn">Add Item</button>
-        <button id="refresh-btn">Refresh</button>
-      </div>
-    </div>
-    <div id="items-container">
-      <p
-        class="empty-message"
-        id="empty-message">
-        No items yet. Click "Add Item" to get started.
-      </p>
-      <ul id="items-list"></ul>
-    </div>
     <!-- 引入 JS -->
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-typescript.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
     <script>
-      // ===== 数据服务 =====
-      const apiService = {
-        // API数据
-        apiData: {
-          postAccountUser: {
-            method: 'POST',
-            summary: '创建用户账户',
-            path: '/account/user/{version}',
-            name: 'postAccountUser',
-            responseName: 'UserBase',
-            requestName: 'UserCreate',
-            pathParameters:
-              "{\n  /**\n   * generator version used by codegen engine\n   * [required]\n   */\n  version: 'V2' | 'V3'\n}",
-            pathParametersComment:
-              "{\n*   // generator version used by codegen engine\n*   // [required]\n*   version: 'V2' | 'V3'\n* }",
-            responseComment:
-              '{\n*   // [title] Name\n*   name?: string\n*   // 角色\n*   role?: 0 | 1\n*   // 超管下角色\n*   role_admin?: 0 | 1\n*   // [title] Phone\n*   phone?: string\n* }',
-            requestComment:
-              '{\n*   // [title] Account\n*   // [required]\n*   account: string\n*   // [title] Password\n*   // [required]\n*   password: string\n*   // [title] Name\n*   name?: string\n*   // 角色\n*   role?: 0 | 1\n*   // 超管下角色\n*   role_admin?: 0 | 1\n*   // [title] Phone\n*   phone?: string\n* }',
-            defaultValue:
-              "Apis.general.postAccountUser({\n  pathParams: {\n    version: 'V2'\n  },\n  data: {\n    account: '',\n    password: ''\n  }\n})"
-          },
-          getUserProfile: {
-            method: 'GET',
-            summary: '获取用户个人资料',
-            path: '/user/{id}/profile',
-            name: 'getUserProfile',
-            responseName: 'UserProfile',
-            queryParameters: '{\n  /**\n   * 是否包含详细信息\n   */\n  detailed?: boolean\n}',
-            pathParameters: '{\n  /**\n   * 用户ID\n   * [required]\n   */\n  id: string\n}',
-            defaultValue:
-              "Apis.user.getProfile({\n  pathParams: {\n    id: '12345'\n  },\n  queryParams: {\n    detailed: true\n  }\n})"
-          },
-          updateProduct: {
-            method: 'PUT',
-            summary: '更新产品信息',
-            path: '/products/{id}',
-            name: 'updateProduct',
-            responseName: 'Product',
-            requestName: 'ProductUpdate',
-            pathParameters: '{\n  /**\n   * 产品ID\n   * [required]\n   */\n  id: string\n}',
-            requestComment:
-              '{\n*   // 产品名称\n*   name?: string\n*   // 产品描述\n*   description?: string\n*   // 价格\n*   price?: number\n*   // 库存数量\n*   stock?: number\n*   // 上架状态\n*   published?: boolean\n* }',
-            defaultValue:
-              "Apis.products.update({\n  pathParams: {\n    id: 'prod-123'\n  },\n  data: {\n    name: 'New Product Name',\n    price: 29.99\n  }\n})"
-          }
-        },
-
-        // 获取所有API
-        getAllApis() {
-          return Object.keys(this.apiData);
-        },
-
-        // 获取API详情
-        getApiDetails(apiKey) {
-          return this.apiData[apiKey] || null;
-        }
-      };
-
       // ===== 渲染服务 =====
       const renderService = {
         // 渲染API文档
@@ -148,91 +69,87 @@
           }
 
           return `
-                    <div class="api-header">
-                        <div class="api-method">
-                            <span class="method-tag ${api.method.toLowerCase()}">${api.method}</span>
-                            <div class="api-url">${api.path}</div>
-                        </div>
-                        <div class="api-summary">${api.summary}</div>
+                          <div class="api-header">
+                              <div class="api-method">
+                                  <span class="method-tag ${api.method.toLowerCase()}">${api.method}</span>
+                                  <div class="api-url">${api.path}</div>
+                              </div>
+                              <div class="api-summary">${api.summary}</div>
 
-                        <div class="api-info-row">
-                            <div class="api-info-label">API名称:</div>
-                            <div class="api-info-value">${api.name}</div>
-                        </div>
-                        <div class="api-info-row">
-                            <div class="api-info-label">响应体类型:</div>
-                            <div class="api-info-value">${api.responseName}</div>
-                        </div>
-                    </div>
+                              <div class="api-info-row">
+                                  <div class="api-info-label">方法名称:</div>
+                                  <div class="api-info-value">${api.pathKey}</div>
+                              </div>
+                          </div>
 
-                    <div class="tabs-container">
-                        <div class="tabs">
-                            <div class="tab active" data-tab="parameters">参数</div>
-                            <div class="tab" data-tab="response">响应</div>
-                            <div class="tab" data-tab="example">示例</div>
-                        </div>
+                          <div class="tabs-container">
+                              <div class="tabs">
+                                  <div class="tab active" data-tab="parameters">参数</div>
+                                  <div class="tab" data-tab="response">响应</div>
+                                  <div class="tab" data-tab="example">示例</div>
+                              </div>
 
-                        <div class="tab-content active" id="parameters-content">
-                            ${this.renderParametersSection(api)}
-                        </div>
+                              <div class="tab-content active" id="parameters-content">
+                                  ${this.renderParametersSection(api)}
+                              </div>
 
-                        <div class="tab-content" id="response-content">
-                            ${this.renderResponseSection(api)}
-                        </div>
+                              <div class="tab-content" id="response-content">
+                                  ${this.renderResponseSection(api)}
+                              </div>
 
-                        <div class="tab-content" id="example-content">
-                            ${this.renderExampleSection(api)}
-                        </div>
-                    </div>
-                `;
+                              <div class="tab-content" id="example-content">
+                                  ${this.renderExampleSection(api)}
+                              </div>
+                          </div>
+                      `;
         },
 
         // 渲染参数部分
         renderParametersSection(api) {
           return `
-                    <div class="section">
-                        <div class="section-header">Path 参数</div>
-                        ${this.renderParameterBlock(api.pathParametersComment, 'PathParameters')}
-                    </div>
+                          <div class="section">
+                              <div class="section-header">Path 参数</div>
+                              ${this.renderParameterBlock(api.pathParametersComment, 'PathParameters')}
+                          </div>
 
-                    <div class="section">
-                        <div class="section-header">Query 参数</div>
-                        ${
-                          api.queryParameters
-                            ? this.renderParameterBlock(api.queryParameters, 'QueryParameters')
-                            : '<div class="no-content">此接口没有查询参数</div>'
-                        }
-                    </div>
+                          <div class="section">
+                              <div class="section-header">Query 参数</div>
+                              ${
+                                api.queryParameters
+                                  ? this.renderParameterBlock(api.queryParameters, 'QueryParameters')
+                                  : '<div class="no-content">此接口没有查询参数</div>'
+                              }
+                          </div>
 
-                    <div class="section">
-                        <div class="section-header">请求体</div>
-                        ${
-                          api.requestName
-                            ? `<pre class="line-numbers comment-block"><code class="language-typescript">${this.typeComment(api.requestComment, 'RequestBody')}</code></pre>`
-                            : '<div class="no-content">此接口不需要请求体</div>'
-                        }
-                    </div>
-                `;
+                          <div class="section">
+                              <div class="section-header">请求体</div>
+                              ${
+                                api.requestName
+                                  ? `<pre class="line-numbers comment-block"><code class="language-typescript">${this.typeComment(api.requestComment, 'RequestBody')}</code></pre>`
+                                  : '<div class="no-content">此接口不需要请求体</div>'
+                              }
+                          </div>
+                      `;
         },
 
         // 渲染响应部分
         renderResponseSection(api) {
           return `
-                    <div class="section">
-                      <pre class="line-numbers comment-block"><code class="language-typescript">${this.typeComment(api.responseComment, 'ResponseBody')}</code></pre>
-                    </div>
-                `;
+                          <div class="section">
+                            <pre class="line-numbers comment-block"><code class="language-typescript">${this.typeComment(api.responseComment, 'ResponseBody')}</code></pre>
+                          </div>
+                      `;
         },
 
         // 渲染示例部分
         renderExampleSection(api) {
           return `
-                    <div class="section">
-                        <div class="json-container">
-                            <pre class="line-numbers comment-block"><code class="language-typescript">${api.defaultValue || '//无示例代码'}</code></pre>
-                        </div>
-                    </div>
-                `;
+                          <div class="section">
+                              <div class="json-container">
+                                  <pre class="line-numbers comment-block"><code class="language-typescript">${api.defaultValue || '//无示例代码'}</code></pre>
+                              </div>
+                          </div>
+                      `;
         },
 
         // 渲染参数块
@@ -309,7 +226,6 @@
         init() {
           this.cacheElements();
           this.setupEventListeners();
-          this.renderApiSelector();
           this.wathThemeChange();
         },
 
@@ -334,7 +250,6 @@
         // 缓存DOM元素
         cacheElements() {
           this.elements = {
-            apiSelect: document.getElementById('api-select'),
             apiContainer: document.getElementById('api-container'),
             copyBtn: document.getElementById('copy-btn')
           };
@@ -342,26 +257,13 @@
 
         // 设置事件监听
         setupEventListeners() {
-          this.elements.apiSelect.addEventListener('change', this.handleApiSelect.bind(this));
           this.elements.copyBtn.addEventListener('click', this.handleCopy.bind(this));
         },
-
-        // 渲染API选择器
-        renderApiSelector() {
-          const apis = apiService.getAllApis();
-          apis.forEach(apiKey => {
-            const api = apiService.getApiDetails(apiKey);
-            const option = document.createElement('option');
-            option.value = apiKey;
-            option.textContent = `${api.method} ${api.path}`;
-            this.elements.apiSelect.appendChild(option);
-          });
-        },
-
-        // 处理API选择
-        handleApiSelect() {
-          const apiKey = this.elements.apiSelect.value;
-          const api = apiService.getApiDetails(apiKey);
+        updateData(api) {
+          if (!api) {
+            this.elements.apiContainer.innerHTML = `<div class="no-content">没有Api详细信息</div>`;
+            return;
+          }
           this.elements.apiContainer.innerHTML = renderService.renderApiDocumentation(api);
           this.setupTabs();
         },
@@ -395,11 +297,11 @@
             navigator.clipboard.writeText(codeBlock.innerText).then(() => {
               const originalContent = this.elements.copyBtn.innerHTML;
               this.elements.copyBtn.innerHTML = `
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M9 16.1719L19.5938 5.57812L21 6.98438L9 18.9844L3.42187 13.4062L4.82812 12L9 16.1719Z" fill="currentColor"/>
-                            </svg>
-                            已复制
-                        `;
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                      <path d="M9 16.1719L19.5938 5.57812L21 6.98438L9 18.9844L3.42187 13.4062L4.82812 12L9 16.1719Z" fill="currentColor"/>
+                                  </svg>
+                                  已复制
+                              `;
 
               setTimeout(() => {
                 this.elements.copyBtn.innerHTML = originalContent;
@@ -418,49 +320,16 @@
       window.addEventListener('load', () => {
         vscode.postMessage({ type: 'webview-ready' });
       });
-      // 处理按钮点击
-      document.getElementById('add-btn').addEventListener('click', () => {
-        vscode.postMessage({ type: 'addItem' });
-      });
-
-      document.getElementById('refresh-btn').addEventListener('click', () => {
-        vscode.postMessage({ type: 'refresh' });
-      });
-
       // 处理来自扩展的消息
       window.addEventListener('message', event => {
+        console.log(event, 341);
         const message = event.data;
         switch (message.type) {
           case 'updateData':
-            updateItemsList(message.data);
+            controller.updateData(message.data);
             break;
         }
       });
-
-      function updateItemsList(items) {
-        const list = document.getElementById('items-list');
-        const emptyMsg = document.getElementById('empty-message');
-
-        if (items.length === 0) {
-          list.innerHTML = '';
-          emptyMsg.style.display = 'block';
-          return;
-        }
-
-        emptyMsg.style.display = 'none';
-        list.innerHTML = '';
-
-        items.forEach(item => {
-          const li = document.createElement('li');
-          li.className = 'item';
-          li.innerHTML = `
-                  <span class="item-icon">📄</span>
-                  <span class="item-label">${item.label}</span>
-                  <span class="item-id">#${item.id.slice(0, 6)}</span>
-              `;
-          list.appendChild(li);
-        });
-      }
     </script>
   </body>
 </html>

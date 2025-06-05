@@ -9,7 +9,7 @@ import {
 import { convertToType, jsonSchema2TsStr } from '@/helper/schema2type';
 import { getStandardOperationId, getStandardTags } from '@/helper/standard';
 import { generateDefaultValues } from '@/helper/typeStr';
-import type { Api, ApiDescriptor, GeneratorConfig, TemplateType } from '@/interface.type';
+import type { Api, ApiDescriptor, ApiDoc, GeneratorConfig, TemplateType } from '@/interface.type';
 import { format, removeUndefined } from '@/utils';
 import { cloneDeep, isEmpty } from 'lodash';
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
@@ -20,10 +20,6 @@ type Path = {
   method: string;
   path: string;
 };
-interface PathApis {
-  tag: string;
-  apis: Api[];
-}
 export const getApiDefultValue = (api: Api) => {
   const configStrArr: string[] = [];
   if (api.pathParametersComment) {
@@ -59,7 +55,7 @@ export interface TemplateData extends Omit<OpenAPIV3_1.Document, ''> {
   baseUrl: string;
   pathsArr: Path[];
   schemas?: string[];
-  pathApis: PathApis[];
+  pathApis: ApiDoc[];
   globalHost: string;
   global: string;
   alovaVersion: AlovaVersion;

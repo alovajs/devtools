@@ -18,23 +18,6 @@ body {
   display: flex;
   flex-direction: column;
 }
-/* ===== 滚动条 ===== */
-body::-webkit-scrollbar {
-  width: 6px;
-}
-
-body::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-body::-webkit-scrollbar-thumb {
-  background: var(--vscode-scrollbarSlider-background);
-  border-radius: 4px;
-}
-
-body::-webkit-scrollbar-thumb:hover {
-  background: var(--vscode-scrollbarSlider-hoverBackground);
-}
 /* ===== 布局组件 ===== */
 .container {
   flex: 1;
@@ -285,64 +268,4 @@ body::-webkit-scrollbar-thumb:hover {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--vscode-scrollbarSlider-hoverBackground);
-}
-/*
-  API DETAIL
-*/
-.header {
-  margin-bottom: 15px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--vscode-sideBarSectionHeader-border);
-}
-h1 {
-  font-size: 1.2em;
-  margin: 0 0 10px 0;
-  color: var(--vscode-foreground);
-}
-.controls {
-  display: flex;
-  gap: 8px;
-}
-button {
-  background-color: var(--vscode-button-background);
-  color: var(--vscode-button-foreground);
-  border: none;
-  padding: 6px 12px;
-  border-radius: 2px;
-  cursor: pointer;
-  font-size: 0.9em;
-}
-button:hover {
-  background-color: var(--vscode-button-hoverBackground);
-}
-#items-container {
-  margin-top: 15px;
-}
-.empty-message {
-  color: var(--vscode-disabledForeground);
-  font-style: italic;
-  margin: 10px 0;
-}
-#items-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.item {
-  display: flex;
-  align-items: center;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--vscode-sideBarSectionHeader-border);
-}
-.item-icon {
-  margin-right: 8px;
-  width: 20px;
-  text-align: center;
-}
-.item-label {
-  flex: 1;
-}
-.item-id {
-  font-size: 0.8em;
-  color: var(--vscode-descriptionForeground);
 }

@@ -71,3 +71,16 @@ export const getApis = (config: Config, projectPath = process.cwd()) => {
     return templateData.pathApis.flatMap(item => item.apis);
   });
 };
+
+export const getApiDocs = (config: Config, projectPath = process.cwd()) => {
+  if (!config || !projectPath) {
+    return [];
+  }
+  const configuration = new Configuration(config, projectPath);
+  const outputArr = configuration.getAllOutputPath() ?? [];
+  return outputArr.map(output => {
+    const apiPath = getAlovaJsonPath(projectPath, output);
+    const templateData = DEFAULT_CONFIG.templateData.get(apiPath);
+    return templateData?.pathApis ?? [];
+  });
+};

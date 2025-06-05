@@ -1,3 +1,5 @@
+import { getApiDocs } from '@/functions/getApis';
+import type { Api } from '@alova/wormhole';
 import * as vscode from 'vscode';
 
 export type ApiTreeItem = {
@@ -5,11 +7,20 @@ export type ApiTreeItem = {
   label: string;
   description?: string;
   icon?: string;
+  parent?: string;
   children?: ApiTreeItem[];
+  api?: Api;
 };
 export class ApiServerTreeItem extends vscode.TreeItem {
   icon?: string;
   children?: ApiServerTreeItem[];
+}
+function generateApiTooltipContent(api: Api): string {
+  return `
+## [${api.method}] ${api.path}
+---
+${api.summary}    
+`;
 }
 export class ApiServerProvider implements vscode.TreeDataProvider<ApiTreeItem> {
   private _onDidChangeTreeData = new vscode.EventEmitter<ApiTreeItem | undefined | null | void>();
@@ -22,23 +33,71 @@ export class ApiServerProvider implements vscode.TreeDataProvider<ApiTreeItem> {
   }
 
   private loadItems(): void {
-    const storedItems = this.context.globalState.get<ApiTreeItem[]>('dynamicSidebarItems', []);
-    this.items = storedItems;
     process.nextTick(() => {
+      this.init();
       this._onDidChangeTreeData.fire();
     });
   }
-
-  private saveItems(): void {
-    this.context.globalState.update('dynamicSidebarItems', this.items);
+  init() {
+    const apiDocs = getApiDocs();
+    const projects = apiDocs.map(data => {
+      const project: ApiTreeItem = {
+        id: data.name,
+        label: data.name,
+        icon: 'project',
+        children: data.apiDocs.map((apiDocs, idx) => {
+          const label = `SERVER-${idx + 1}`;
+          const server: ApiTreeItem = {
+            id: label,
+            label,
+            parent: data.name,
+            icon: 'server',
+            children: apiDocs.map(apiDoc => ({
+              parent: label,
+              id: `${label}-${apiDoc.tag}`,
+              label: apiDoc.tag,
+              icon: 'folder',
+              children: apiDoc.apis.map(api => ({
+                parent: `${label}-${apiDoc.tag}`,
+                id: `${api.global}.${api.pathKey}`,
+                label: `[${api.method}]${api.path}`,
+                icon: 'symbol-method',
+                api
+              }))
+            }))
+          };
+          return server;
+        })
+      };
+      return project;
+    });
+    this.items = projects;
   }
 
   refresh(): void {
+    this.init();
     this._onDidChangeTreeData.fire();
   }
   getItems(): ApiTreeItem[] {
     return this.items;
   }
+  getItemById(id: string) {
+    const findInNodes = (nodes: ApiTreeItem[]): ApiTreeItem | undefined => {
+      for (const node of nodes) {
+        if (node.id === id) {
+          return node;
+        }
+        if (node.children?.length) {
+          const found = findInNodes(node.children);
+          if (found) {
+            return found;
+          }
+        }
+      }
+    };
+    return findInNodes(this.items);
+  }
+
   // eslint-disable-next-line class-methods-use-this
   getTreeItem(element: ApiTreeItem): ApiServerTreeItem {
     const item = new ApiServerTreeItem(
@@ -49,7 +108,12 @@ export class ApiServerProvider implements vscode.TreeDataProvider<ApiTreeItem> {
     item.description = element.description;
     item.id = element.id;
     item.contextValue = 'tree-item';
-
+    // 设置 tooltip（支持 Markdown）
+    if (element.api) {
+      item.tooltip = new vscode.MarkdownString(generateApiTooltipContent(element.api), true);
+      item.tooltip.supportHtml = true; // 启用 HTML 支持
+      item.tooltip.isTrusted = true; // 信任内容（允许执行命令）
+    }
     if (element.icon) {
       item.iconPath = new vscode.ThemeIcon(element.icon);
     }
@@ -63,7 +127,9 @@ export class ApiServerProvider implements vscode.TreeDataProvider<ApiTreeItem> {
     }
     return Promise.resolve(this.items);
   }
-
+  getParent(element: ApiTreeItem): Thenable<ApiTreeItem | undefined> {
+    return Promise.resolve(this.getItemById(element.parent ?? ''));
+  }
   addItem(): void {
     vscode.window
       .showInputBox({
@@ -82,7 +148,6 @@ export class ApiServerProvider implements vscode.TreeDataProvider<ApiTreeItem> {
         };
 
         this.items.push(newItem);
-        this.saveItems();
         this.refresh();
       });
   }
@@ -96,7 +161,6 @@ export class ApiServerProvider implements vscode.TreeDataProvider<ApiTreeItem> {
       .then(newName => {
         if (newName && newName !== item.label) {
           item.label = newName;
-          this.saveItems();
           this.refresh();
         }
       });
@@ -104,7 +168,7 @@ export class ApiServerProvider implements vscode.TreeDataProvider<ApiTreeItem> {
 
   deleteItem(item: ApiTreeItem): void {
     this.items = this.items.filter(i => i.id !== item.id);
-    this.saveItems();
+    // this.saveItems();
     this.refresh();
   }
 }

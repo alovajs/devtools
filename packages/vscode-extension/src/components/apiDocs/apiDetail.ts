@@ -1,4 +1,5 @@
 import TemplateEngine from '@/templateEngine';
+import type { Api } from '@alova/wormhole';
 import * as vscode from 'vscode';
 import { commandMap } from './command';
 
@@ -46,12 +47,11 @@ export class ApiDetailProvider implements vscode.WebviewViewProvider {
     });
   }
 
-  updateView(items: any[]) {
+  updateView(api?: Api) {
     const message = {
       type: 'updateData',
-      data: items
+      data: api
     };
-
     if (this._isWebviewReady) {
       // Webview 已就绪，直接发送消息
       this._view?.webview.postMessage(message);

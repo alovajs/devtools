@@ -191,3 +191,8 @@ export interface Api {
   defaultValue?: string;
   pathKey: string;
 }
+
+export interface ApiDoc {
+  apis: Api[];
+  tag: string;
+}

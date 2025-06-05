@@ -177,16 +177,16 @@ export interface Api {
   defaultValue?: string;
   pathKey: string;
 }
+export interface ApiDoc {
+  apis: Api[];
+  tag: string;
+}
 export type AlovaVersion = `v${number}`;
 export type Path = {
   key: string;
   method: string;
   path: string;
 };
-export interface PathApis {
-  tag: string;
-  apis: Api[];
-}
 export interface TemplateData extends Omit<OpenAPIV3_1.Document, ''> {
   vue?: boolean;
   react?: boolean;
@@ -195,7 +195,7 @@ export interface TemplateData extends Omit<OpenAPIV3_1.Document, ''> {
   baseUrl: string;
   pathsArr: Path[];
   schemas?: string[];
-  pathApis: PathApis[];
+  pathApis: ApiDoc[];
   globalHost: string;
   global: string;
   alovaVersion: AlovaVersion;
@@ -239,6 +239,7 @@ export declare const getAutoUpdateConfig: (config: Config) => {
   immediate: boolean;
 };
 export declare const getApis: (config: Config, projectPath?: string) => Api[];
+export declare const getApiDocs: (config: Config, projectPath?: string) => ApiDoc[][];
 /**
  * Search for all directories containing alova.config configuration files under the monorepo project. It will search for configuration files based on `workspaces` in `package.json` or subpackages defined in `pnpm-workspace.yaml`
  * @param projectPath The project path to search, defaults to `process.cwd()`.
