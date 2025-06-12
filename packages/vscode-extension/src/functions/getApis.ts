@@ -10,8 +10,13 @@ export default (filePath: string) => {
   }
   return wormhole.getApis(config, projectPath);
 };
-export const getApiDocs = () =>
-  CONFIG_POOL.map(([projectPath, config]) => ({
-    name: getFileNameByPath(projectPath),
-    apiDocs: wormhole.getApiDocs(config, projectPath)
-  }));
+export const getApiDocs = async () => {
+  console.log(CONFIG_POOL, 14);
+
+  return Promise.all(
+    CONFIG_POOL.map(async ([projectPath, config]) => ({
+      name: getFileNameByPath(projectPath),
+      apiDocs: await wormhole.getApiDocs(config, projectPath)
+    }))
+  );
+};

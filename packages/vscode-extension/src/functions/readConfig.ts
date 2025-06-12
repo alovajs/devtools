@@ -1,6 +1,6 @@
 import Error from '@/components/error';
 import { refeshAutoUpdate, removeConfiguration } from '@/helper/autoUpdate';
-import { CONFIG_POOL } from '@/helper/config';
+import { CONFIG_POOL, ON_CONFIG_CHANGE } from '@/helper/config';
 import wormhole from '@/helper/wormhole';
 import { getWorkspacePaths } from '@/utils/vscode';
 import type { Config } from '@alova/wormhole';
@@ -16,6 +16,7 @@ export const resolveWorkspaces = async (workspaceRootPaths?: string | string[]) 
   return dirs;
 };
 export default async (workspaceRootPathArr: string | string[]) => {
+  console.log('开始读取配置文件...', workspaceRootPathArr);
   let configNum = 0;
   const errorArr: Array<Error> = [];
   const dirs = await resolveWorkspaces([workspaceRootPathArr].flat());
@@ -42,6 +43,10 @@ export default async (workspaceRootPathArr: string | string[]) => {
     refeshAutoUpdate(configuration);
     configNum += 1;
   }
+  console.log('配置文件读取完毕，共读取到', configNum, '个配置文件');
+
+  ON_CONFIG_CHANGE.forEach(fn => fn());
+  ON_CONFIG_CHANGE.splice(0, ON_CONFIG_CHANGE.length);
   return { configNum, errorArr };
 };
 export const updatedConfigPool = async () => {

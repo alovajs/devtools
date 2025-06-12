@@ -1,5 +1,5 @@
+import type { TemplateData } from '@/interface.type';
 import path from 'node:path';
-import type { TemplateData } from './functions/openApi2Data';
 
 declare global {
   // eslint-disable-next-line vars-on-top, no-var

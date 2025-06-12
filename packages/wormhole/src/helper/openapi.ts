@@ -1,15 +1,15 @@
 import { getGlobalConfig } from '@/config';
+import { standardLoader } from '@/core/loader';
 import { capitalizeFirstLetter } from '@/utils';
 import { cloneDeep, isArray, isEqualWith, isObject, mergeWith, sortBy } from 'lodash';
-import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
-import { getRandomVariable, isValidJSIdentifier, makeIdentifier } from './standard';
+import { OpenAPIV3_1 } from 'openapi-types';
 /**
  * Determine whether it is a $ref object
  * @param obj Judgment object
  * @returns Whether it is a $ref object
  */
-export function isReferenceObject(obj: any): obj is OpenAPIV3.ReferenceObject {
-  return !!(obj as OpenAPIV3.ReferenceObject)?.$ref;
+export function isReferenceObject(obj: any): obj is OpenAPIV3_1.ReferenceObject {
+  return !!(obj as OpenAPIV3_1.ReferenceObject)?.$ref;
 }
 function isBaseReferenceObject(obj: any): obj is { _$ref: string } & Record<string, any> {
   return !!(obj as { _$ref: string })?._$ref;
@@ -41,6 +41,16 @@ export const findBy$ref = <T = OpenAPIV3_1.SchemaObject>(
     throw new DEFAULT_CONFIG.Error(`cannot find $ref '${path}'`);
   }
   return (isDeep ? cloneDeep(find) : find) as T;
+};
+export const parseReference = <T, U = Exclude<T, OpenAPIV3_1.ReferenceObject>>(
+  obj: T,
+  document: OpenAPIV3_1.Document,
+  isDeep: boolean = false
+): U => {
+  if (isReferenceObject(obj)) {
+    return findBy$ref<U>(obj.$ref, document, isDeep);
+  }
+  return obj as unknown as U;
 };
 /**
  *
@@ -166,12 +176,16 @@ export function isEqualObject(objValue: any, srcValue: any, openApi: OpenAPIV3_1
  */
 export function getNext$refKey(path: string, map: Array<[string, any]> = []) {
   function getNameVersion(path: string) {
-    const name = getStandardRefName(path, false);
+    const name = standardLoader.transformRefName(path, {
+      toUpperCase: false
+    });
     const [, nameVersion = 0] = /(\d+)$/.exec(name) ?? [];
     return Number(nameVersion);
   }
   function getOnlyName(path: string) {
-    const name = getStandardRefName(path, false);
+    const name = standardLoader.transformRefName(path, {
+      toUpperCase: false
+    });
     const [, onlyName] = /(.*?)(\d*)$/.exec(name) ?? [];
     return onlyName;
   }
@@ -274,7 +288,9 @@ function unCircular(
     oldRefObj.$ref = refOjec.$ref;
     seen.set(obj, oldRefObj);
   };
-  const $ref = `#/components/schemas/${makeIdentifier(getRandomVariable(objPath), 'camelCas')}`;
+  const $ref = `#/components/schemas/${standardLoader.transform(standardLoader.transformRadomVariable(objPath), {
+    style: 'camelCas'
+  })}`;
   setSeen(obj, { $ref });
   if (isBaseReferenceObject(obj)) {
     const refObj = { $ref: obj._$ref };
@@ -329,7 +345,7 @@ export const mergeObject = <T>(
     // Handle circular references
 
     if (isCircular(srcValue)) {
-      srcValue = unCircular(srcValue, openApi, map, getRandomVariable(JSON.stringify(objValue)));
+      srcValue = unCircular(srcValue, openApi, map, standardLoader.transformRadomVariable(JSON.stringify(objValue)));
     }
     // Is there also a $ref attribute?
 
@@ -340,41 +356,14 @@ export const mergeObject = <T>(
   }
   return mergeWith(cloneDeep(objValue), srcValue, customizer);
 };
-const refPathMap = new Map<string, string>();
-const refNameSet = new Set<string>();
-export function getStandardRefName(refPath: string, toUpperCase: boolean = true) {
-  if (refPathMap.has(refPath)) {
-    return refPathMap.get(refPath) ?? '';
-  }
-  const refName = get$refName(refPath, toUpperCase);
-  if (isValidJSIdentifier(refName)) {
-    refNameSet.add(refName);
-    refPathMap.set(refPath, refName);
-    return refName;
-  }
-  let newRefName = makeIdentifier(refName, 'snakeCase') || getRandomVariable(refName);
-  if (toUpperCase) {
-    newRefName = capitalizeFirstLetter(newRefName);
-  }
-  if (refNameSet.has(newRefName)) {
-    let num = 1;
-    while (refNameSet.has(`${newRefName}${num}`)) {
-      num += 1;
-    }
-    newRefName = `${newRefName}${num}`;
-  }
-  refNameSet.add(newRefName);
-  refPathMap.set(refPath, newRefName);
-  return newRefName;
-}
 
 export function getResponseSuccessKey(responsesObject?: OpenAPIV3_1.ResponsesObject) {
   if (!responsesObject) {
-    return 200;
+    return '200';
   }
   const successKeys = Object.keys(responsesObject)
     .map(key => Number(key))
     .filter(key => !Number.isNaN(key) && key >= 200 && key < 300)
     .sort((a, b) => a - b);
-  return successKeys[0] ?? 200;
+  return `${successKeys[0] ?? 'default'}`;
 }

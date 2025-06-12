@@ -5,7 +5,7 @@ import { ApiServerProvider } from './apiServer';
 import { commandMap } from './command';
 
 export const utils = {
-  openApiDocs(_apiId: string) {}
+  async openApiDocs(_apiId: string) {}
 };
 export function activate(context: vscode.ExtensionContext) {
   // 注册视图
@@ -18,9 +18,6 @@ export function activate(context: vscode.ExtensionContext) {
   const apiDetailWebview = vscode.window.registerWebviewViewProvider('api-docs-detail-view', apiDetailProvider);
   context.subscriptions.push(apiServerTreeView);
   context.subscriptions.push(apiDetailWebview);
-  apiServerProvider.onDidChangeTreeData(() => {
-    apiDetailProvider.updateView();
-  });
   apiServerTreeView.onDidChangeSelection(e => {
     if (e.selection.length > 0) {
       const selectedItem = e.selection[0];
@@ -42,12 +39,15 @@ export function activate(context: vscode.ExtensionContext) {
     }
   });
 
-  utils.openApiDocs = (apiId: string) => {
-    apiServerProvider.refresh();
-    const apiTreeItem = apiServerProvider.getItemById(apiId);
-    if (apiTreeItem) {
+  utils.openApiDocs = async (apiId: string) => {
+    let apiTreeItem = apiServerProvider.getItemById(apiId);
+    if (!apiTreeItem) {
+      await apiServerProvider.refresh();
+      apiTreeItem = apiServerProvider.getItemById(apiId);
+    }
+    if (apiTreeItem && !apiServerTreeView.selection.includes(apiTreeItem)) {
       vscode.commands.executeCommand('workbench.view.extension.api-docs-sidebar');
-      apiServerTreeView.reveal(apiTreeItem, { select: true });
+      apiServerTreeView.reveal(apiTreeItem, { select: true, focus: true });
       apiDetailProvider.updateView(apiTreeItem.api);
     }
   };

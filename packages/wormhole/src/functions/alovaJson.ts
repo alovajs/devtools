@@ -1,8 +1,9 @@
 import { getGlobalConfig } from '@/config';
+import { logger } from '@/infrastructure/logger';
+import type { TemplateData } from '@/interface.type';
 import { existsPromise, format } from '@/utils';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { TemplateData } from './openApi2Data';
 
 const DEFAULT_CONFIG = getGlobalConfig();
 export const writeAlovaJson = async (data: TemplateData, originPath: string, name = 'api.json') => {
@@ -25,7 +26,7 @@ export const readAlovaJson = async (originPath: string, name = 'api.json') => {
 
   const filePath = `${originPath}_${name}`;
   if (!(await existsPromise(filePath))) {
-    throw new DEFAULT_CONFIG.Error('alovaJson is not exists');
+    throw logger.error('alovaJson is not exists', undefined, 'debug');
   }
 
   // Read JSON files using fs.readFile

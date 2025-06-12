@@ -1,4 +1,5 @@
 import { getApiDocs } from '@/functions/getApis';
+import { waitConfigChange } from '@/helper/config';
 import type { Api } from '@alova/wormhole';
 import * as vscode from 'vscode';
 
@@ -29,17 +30,23 @@ export class ApiServerProvider implements vscode.TreeDataProvider<ApiTreeItem> {
   private items: ApiTreeItem[] = [];
 
   constructor(private context: vscode.ExtensionContext) {
-    this.loadItems();
-  }
-
-  private loadItems(): void {
-    process.nextTick(() => {
-      this.init();
-      this._onDidChangeTreeData.fire();
+    waitConfigChange().then(() => {
+      this.loadItems();
     });
   }
-  init() {
-    const apiDocs = getApiDocs();
+
+  private loadItems() {
+    return new Promise<void>(resolve => {
+      process.nextTick(() => {
+        this.init().then(() => {
+          this._onDidChangeTreeData.fire();
+          resolve();
+        });
+      });
+    });
+  }
+  async init() {
+    const apiDocs = await getApiDocs();
     const projects = apiDocs.map(data => {
       const project: ApiTreeItem = {
         id: data.name,
@@ -74,9 +81,8 @@ export class ApiServerProvider implements vscode.TreeDataProvider<ApiTreeItem> {
     this.items = projects;
   }
 
-  refresh(): void {
-    this.init();
-    this._onDidChangeTreeData.fire();
+  refresh() {
+    return this.loadItems();
   }
   getItems(): ApiTreeItem[] {
     return this.items;

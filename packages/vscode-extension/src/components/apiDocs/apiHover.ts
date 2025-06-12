@@ -33,12 +33,12 @@ function createTargetRegex(target: string): RegExp {
 export class ApiHoverProvider implements vscode.HoverProvider {
   constructor(private context: vscode.ExtensionContext) {}
   // eslint-disable-next-line class-methods-use-this
-  provideHover(document: vscode.TextDocument, position: vscode.Position) {
+  async provideHover(document: vscode.TextDocument, position: vscode.Position) {
     const startLine = Math.max(0, position.line - 10);
     const endLine = Math.min(document.lineCount - 1, position.line);
     const filePath = document.uri.fsPath;
     // 定义需要匹配的目标字符串
-    const TARGET_STRINGS = getApis(filePath).map(item => `${item.global}.${item.pathKey}`);
+    const TARGET_STRINGS = (await getApis(filePath)).map(item => `${item.global}.${item.pathKey}`);
     let contextText = '';
     for (let i = startLine; i <= endLine; i += 1) {
       contextText += `${document.lineAt(i).text}\n`;

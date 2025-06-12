@@ -1,10 +1,11 @@
+import { configHelper } from '@/infrastructure/config/ConfigHelper';
+import { logger } from '@/infrastructure/logger';
 import type { Config } from '@/interface.type';
 import esbuild from 'esbuild';
 import { unlink } from 'node:fs/promises';
 import path from 'node:path';
 import { getGlobalConfig } from './config';
 import { getAlovaJsonPath } from './functions/alovaJson';
-import Configuration from './modules/Configuration';
 import { resolveConfigFile } from './utils';
 
 const DEFAULT_CONFIG = getGlobalConfig();
@@ -17,7 +18,10 @@ const DEFAULT_CONFIG = getGlobalConfig();
 export const readConfig = async (projectPath = process.cwd()) => {
   const configFile = await resolveConfigFile(projectPath);
   if (!configFile) {
-    throw new DEFAULT_CONFIG.Error(`Cannot found config file from path ${projectPath}`);
+    throw logger.error(`Cannot found config file from path ${projectPath}`, {
+      projectPath,
+      name: 'readConfig'
+    });
   }
   const configTmpFileName = `alova_tmp_${Date.now()}.cjs`;
   const outfile = path.join(projectPath, configTmpFileName);
@@ -31,38 +35,23 @@ export const readConfig = async (projectPath = process.cwd()) => {
   });
   // eslint-disable-next-line import/no-dynamic-require, global-require
   const module = require(outfile);
-
+  unlink(outfile);
   const config: Config = module.default || module;
-  await unlink(outfile);
   // Read the cache file and save it
-  const configuration = new Configuration(config, projectPath);
-  configuration.readAlovaJson();
+  await configHelper.load(config, projectPath);
   return config;
 };
 
-export const getAutoUpdateConfig = (config: Config) => {
-  const autoUpdateConfig = config.autoUpdate;
-  let time = 60 * 5; // Default five minutes
-
-  let immediate = false;
-  const isStop = !autoUpdateConfig;
-  if (typeof autoUpdateConfig === 'object') {
-    time = Number(autoUpdateConfig.interval);
-    immediate = !!autoUpdateConfig.launchEditor;
-  }
-  return {
-    time,
-    isStop,
-    immediate
-  };
+export const getAutoUpdateConfig = async (config: Config) => {
+  await configHelper.load(config);
+  return configHelper.autoUpdateConfig();
 };
-export const getApis = (config: Config, projectPath = process.cwd()) => {
+export const getApis = async (config: Config, projectPath = process.cwd()) => {
   if (!config || !projectPath) {
     return [];
   }
-  const configuration = new Configuration(config, projectPath);
-  const outputArr = configuration.getAllOutputPath() ?? [];
-  return outputArr.flatMap(output => {
+  await configHelper.load(config, projectPath);
+  return configHelper.getOutput().flatMap(output => {
     const apiPath = getAlovaJsonPath(projectPath, output);
     const templateData = DEFAULT_CONFIG.templateData.get(apiPath);
     if (!templateData) {
@@ -72,13 +61,12 @@ export const getApis = (config: Config, projectPath = process.cwd()) => {
   });
 };
 
-export const getApiDocs = (config: Config, projectPath = process.cwd()) => {
+export const getApiDocs = async (config: Config, projectPath = process.cwd()) => {
   if (!config || !projectPath) {
     return [];
   }
-  const configuration = new Configuration(config, projectPath);
-  const outputArr = configuration.getAllOutputPath() ?? [];
-  return outputArr.map(output => {
+  await configHelper.load(config, projectPath);
+  return configHelper.getOutput().map(output => {
     const apiPath = getAlovaJsonPath(projectPath, output);
     const templateData = DEFAULT_CONFIG.templateData.get(apiPath);
     return templateData?.pathApis ?? [];

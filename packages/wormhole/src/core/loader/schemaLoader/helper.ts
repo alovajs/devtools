@@ -1,11 +1,11 @@
-import { getGlobalConfig } from '@/config';
+import { standardLoader } from '@/core/loader';
+import { findBy$ref, isReferenceObject } from '@/helper/openapi';
+import { logger } from '@/infrastructure/logger';
 import { format } from '@/utils';
 import { isArray } from 'lodash';
 import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
-import { findBy$ref, getStandardRefName, isReferenceObject } from './openapi';
-import { isValidJSIdentifier } from './standard';
 
-const DEFAULT_CONFIG = getGlobalConfig();
+export type SchemaOrigin = OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject;
 export interface Schema2TypeOptions {
   deep?: boolean; // Whether to parse recursively
 
@@ -13,7 +13,7 @@ export interface Schema2TypeOptions {
 
   defaultType?: 'any' | 'unknown'; // Default type when not matched
 
-  commentStyle?: 'line' | 'docment'; // Comment style
+  commentStyle?: 'line' | 'document'; // Comment style
 
   preText?: string; // annotation prefix
 
@@ -28,14 +28,14 @@ export interface Schema2TypeOptions {
  * @param type Comment style
  * @returns annotation object
  */
-export function comment(type: 'line' | 'docment') {
-  const startText = type === 'docment' ? '/**\n' : '';
-  const endText = type === 'docment' ? '\n */\n' : '\n';
+export function comment(type: 'line' | 'document') {
+  const startText = type === 'document' ? '/**\n' : '';
+  const endText = type === 'document' ? '\n */\n' : '\n';
   let str = '';
   let idx = 0;
-  const preText = type === 'docment' ? ' *' : '//';
-  const docmentKeyArr = [['[deprecated]', '@deprecated']];
-  const docmentTransformeKeyArr: Array<[string, (text: string) => string]> = [
+  const preText = type === 'document' ? ' *' : '//';
+  const documentKeyArr = [['[deprecated]', '@deprecated']];
+  const documentTransformKeyArr: Array<[string, (text: string) => string]> = [
     [
       '[title]',
       (text: string) => {
@@ -44,23 +44,23 @@ export function comment(type: 'line' | 'docment') {
       }
     ]
   ];
-  const transformeText = (text: string) => {
+  const transformText = (text: string) => {
     text = text.trim();
     if (type === 'line') {
       return text;
     }
-    const docmentTransformeFn = docmentTransformeKeyArr.find(item => text.startsWith(item[0]));
-    if (docmentTransformeFn) {
-      return docmentTransformeFn[1](text);
+    const documentTransformFn = documentTransformKeyArr.find(item => text.startsWith(item[0]));
+    if (documentTransformFn) {
+      return documentTransformFn[1](text);
     }
-    return docmentKeyArr.find(item => item[0] === text)?.[1] ?? text;
+    return documentKeyArr.find(item => item[0] === text)?.[1] ?? text;
   };
   return {
     add(text: string) {
       if (idx) {
         str += '\n';
       }
-      str += transformeText(text)
+      str += transformText(text)
         .split('\n')
         .map(item => `${preText} ${item}`)
         .join('\n');
@@ -86,11 +86,11 @@ function parseSchema(
   openApi: OpenAPIV3_1.Document,
   config: Schema2TypeOptions
 ): string {
-  let schema: OpenAPIV3_1.SchemaObject = schemaOrigin;
+  let schema: OpenAPIV3_1.SchemaObject = schemaOrigin as OpenAPIV3_1.SchemaObject;
   let refPath = '';
   if (isReferenceObject(schemaOrigin)) {
     refPath = schemaOrigin.$ref;
-    const nameType = getStandardRefName(schemaOrigin.$ref);
+    const nameType = standardLoader.transformRefName(schemaOrigin.$ref);
     if (config.visited?.has(refPath)) {
       return nameType;
     }
@@ -166,7 +166,7 @@ function parseSchema(
             : (config.defaultType ?? 'unknown');
       }
   }
-  // 兼容opnpai3.0的nullable
+  // 兼容openai3.0的nullable
   if ((schema as OpenAPIV3.SchemaObject).nullable) {
     result = `${result} | null`;
   }
@@ -201,7 +201,7 @@ function parseObject(
     }
     let type = parseSchema(valueOrigin, openApi, config);
     if (!config.deep && refPath) {
-      type = getStandardRefName(refPath);
+      type = standardLoader.transformRefName(refPath);
     }
     let valueStr = '';
     const doc = comment(config.commentStyle ?? 'line');
@@ -218,7 +218,7 @@ function parseObject(
       doc.add('[deprecated]');
     }
     const keyValue = key.trim();
-    valueStr = `${doc.end()}${isValidJSIdentifier(keyValue) ? keyValue : `"${keyValue}"`}${optionalFlag}: ${type};`;
+    valueStr = `${doc.end()}${standardLoader.validate(keyValue) ? keyValue : `"${keyValue}"`}${optionalFlag}: ${type};`;
     valueStr.split('\n').forEach(line => lines.push(` ${line}`));
   }
   lines.push(`}`);
@@ -255,7 +255,7 @@ function parseArray(
     }
     const type = parseSchema(schema.items, openApi, config);
     if (!config.deep && refPath) {
-      return `${getStandardRefName(refPath)}[]`;
+      return `${standardLoader.transformRefName(refPath)}[]`;
     }
     switch (items.type) {
       case 'object':
@@ -285,7 +285,7 @@ function parseEnum(schema: OpenAPIV3_1.SchemaObject): string {
  * @returns Formatted ts type string
  */
 export async function convertToType(
-  schemaOrigin: OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject,
+  schemaOrigin: SchemaOrigin,
   openApi: OpenAPIV3_1.Document,
   config: Schema2TypeOptions
 ): Promise<string> {
@@ -298,9 +298,10 @@ export async function convertToType(
   const tsStr = parseSchema(schemaOrigin, openApi, config);
 
   if (!tsStr) {
-    // eslint-disable-next-line
-    console.error(`went wrong with schemaOrigin: `, schemaOrigin);
-    throw new DEFAULT_CONFIG.Error('schema2type went wrong');
+    throw logger.error(`schema2type went wrong`, {
+      message: 'went wrong with schemaOrigin',
+      schemaOrigin
+    });
   }
 
   // Format ts type
@@ -313,67 +314,3 @@ export async function convertToType(
 
   return tsStrArr.map((line, idx) => (idx ? config.preText : '') + line).join('\n');
 }
-interface JsonSchema2TsOptions {
-  export?: boolean;
-  defaultRequire?: boolean; // If there is no nullbale or require, the default is require.
-
-  on$RefTsStr?: (name: string, tsStr: string) => void;
-}
-/**
- * Parse the schema object into a ts type string
- * @param schema schema object
- * @param name Type name
- * @param openApi openapi document object
- * @param options Configuration items
- * @returns interface Ts string
- */
-export const jsonSchema2TsStr = async (
-  schema: OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject,
-  name: string,
-  openApi: OpenAPIV3_1.Document,
-  options: JsonSchema2TsOptions = {
-    export: false,
-    defaultRequire: false
-  },
-  searchMap: Map<string, string> = new Map(),
-  map: Map<string, string> = new Map(),
-  visited: Set<string> = new Set()
-): Promise<string> => {
-  const tsStr = await convertToType(schema, openApi, {
-    shallowDeep: true,
-    defaultType: 'unknown',
-    commentStyle: 'docment',
-    preText: '',
-    searchMap,
-    defaultRequire: options.defaultRequire,
-    async on$Ref(refObject) {
-      if (options.on$RefTsStr) {
-        const name = getStandardRefName(refObject.$ref);
-        if (map.has(name)) {
-          options.on$RefTsStr(name, map.get(name) ?? '');
-          return;
-        }
-        if (visited.has(refObject.$ref)) {
-          return;
-        }
-        visited.add(refObject.$ref);
-        const result = await jsonSchema2TsStr(
-          findBy$ref(refObject.$ref, openApi),
-          name,
-          openApi,
-          options,
-          searchMap,
-          map,
-          visited
-        );
-        map.set(name, result);
-        options.on$RefTsStr(name, result);
-      }
-    }
-  });
-  let result = `type ${name} = ${tsStr}`;
-  if (options.export) {
-    result = `export ${result}`;
-  }
-  return result;
-};
