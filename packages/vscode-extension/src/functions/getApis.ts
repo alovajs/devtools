@@ -3,20 +3,18 @@ import wormhole from '@/helper/wormhole';
 import { getFileNameByPath } from '@/utils';
 import path from 'node:path';
 
-export default (filePath: string) => {
+export default async (filePath: string) => {
   const [projectPath, config] = CONFIG_POOL.find(([projectPath]) => filePath.includes(path.resolve(projectPath))) ?? [];
   if (!config) {
     return [];
   }
-  return wormhole.getApis(config, projectPath);
+  const apiDocs = await wormhole.getApiDocs(config, projectPath);
+  return apiDocs.flatMap(apiDoc => apiDoc.flatMap(item => item.apis));
 };
-export const getApiDocs = async () => {
-  console.log(CONFIG_POOL, 14);
-
-  return Promise.all(
+export const getApiDocs = async () =>
+  Promise.all(
     CONFIG_POOL.map(async ([projectPath, config]) => ({
       name: getFileNameByPath(projectPath),
       apiDocs: await wormhole.getApiDocs(config, projectPath)
     }))
   );
-};

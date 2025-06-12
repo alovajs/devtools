@@ -1,7 +1,7 @@
 /* eslint-disable class-methods-use-this */
 import { standardLoader } from '@/core/loader';
 import type { Loader, OpenAPIDocument } from '@/type';
-import { findBy$ref } from '@/utils/openapi';
+import { findBy$ref } from '@/utils';
 import { convertToType, Schema2TypeOptions, SchemaOrigin } from './helper';
 
 export interface SchemaLoaderOptions extends Schema2TypeOptions {

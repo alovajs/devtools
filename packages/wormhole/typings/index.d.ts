@@ -1,7 +1,62 @@
-import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
+import { OpenAPIV3_1 } from 'openapi-types';
 import { z } from 'zod';
 
 export type AlovaVersion = `v${number}`;
+export type ModuleType = 'commonJs' | 'ESModule';
+export type OpenAPIDocument = OpenAPIV3_1.Document;
+export type SchemaObject = OpenAPIV3_1.SchemaObject;
+export type Parameter = OpenAPIV3_1.ParameterObject;
+export type OperationObject = OpenAPIV3_1.OperationObject;
+export interface Api {
+  tag: string;
+  method: string;
+  summary: string;
+  path: string;
+  pathParameters: string;
+  queryParameters: string;
+  pathParametersComment?: string;
+  queryParametersComment?: string;
+  responseComment?: string;
+  requestComment?: string;
+  name: string;
+  global: string;
+  responseName: string;
+  requestName?: string;
+  defaultValue?: string;
+  pathKey: string;
+}
+export interface ApiDoc {
+  apis: Api[];
+  tag: string;
+}
+export type ApiDescriptor = Omit<OperationObject, 'requestBody' | 'parameters' | 'responses'> & {
+  url: string;
+  method: string;
+  parameters?: Parameter[];
+  requestBody?: SchemaObject;
+  responses?: SchemaObject;
+};
+export type ApiPath = {
+  key: string;
+  method: string;
+  path: string;
+};
+export interface TemplateData extends Omit<OpenAPIDocument, ''> {
+  vue?: boolean;
+  react?: boolean;
+  moduleType?: ModuleType;
+  defaultKey?: boolean;
+  baseUrl: string;
+  pathsArr: ApiPath[];
+  schemas?: string[];
+  pathApis: ApiDoc[];
+  globalHost: string;
+  global: string;
+  alovaVersion: AlovaVersion;
+  commentText: string;
+  useImportType: boolean;
+  type: TemplateType;
+}
 declare const zConfigType: z.ZodEnum<['auto', 'ts', 'typescript', 'module', 'commonjs']>;
 declare const zTemplateType: z.ZodEnum<['typescript', 'module', 'commonjs']>;
 declare const zPlatformType: z.ZodEnum<['swagger', 'knife4j', 'yapi']>;
@@ -148,60 +203,6 @@ export type Config = {
         interval: number;
       };
 };
-export type OpenAPI3Document = OpenAPIV3.Document | OpenAPIV3_1.Document;
-export type SchemaObject = OpenAPIV3_1.SchemaObject;
-export type Parameter = OpenAPIV3_1.ParameterObject;
-export type OperationObject = OpenAPIV3_1.OperationObject;
-export type ApiDescriptor = Omit<OperationObject, 'requestBody' | 'parameters' | 'responses'> & {
-  url: string;
-  method: string;
-  parameters?: Parameter[];
-  requestBody?: SchemaObject;
-  responses?: SchemaObject;
-};
-export interface Api {
-  tag: string;
-  method: string;
-  summary: string;
-  path: string;
-  pathParameters: string;
-  queryParameters: string;
-  pathParametersComment?: string;
-  queryParametersComment?: string;
-  responseComment?: string;
-  requestComment?: string;
-  name: string;
-  global: string;
-  responseName: string;
-  requestName?: string;
-  defaultValue?: string;
-  pathKey: string;
-}
-export interface ApiDoc {
-  apis: Api[];
-  tag: string;
-}
-export type Path = {
-  key: string;
-  method: string;
-  path: string;
-};
-export interface TemplateData extends Omit<OpenAPI3Document, ''> {
-  vue?: boolean;
-  react?: boolean;
-  moduleType?: 'commonJs' | 'ESModule';
-  defaultKey?: boolean;
-  baseUrl: string;
-  pathsArr: Path[];
-  schemas?: string[];
-  pathApis: ApiDoc[];
-  globalHost: string;
-  global: string;
-  alovaVersion: AlovaVersion;
-  commentText: string;
-  useImportType: boolean;
-  type: TemplateType;
-}
 export type GenerateApiOptions = {
   force?: boolean;
   projectPath?: string;
@@ -241,7 +242,6 @@ export declare const getAutoUpdateConfig: (config: Config) => Promise<{
   isStop: boolean;
   immediate: boolean;
 }>;
-export declare const getApis: (config: Config, projectPath?: string) => Promise<Api[]>;
 export declare const getApiDocs: (config: Config, projectPath?: string) => Promise<ApiDoc[][]>;
 /**
  * Search for all directories containing alova.config configuration files under the monorepo project. It will search for configuration files based on `workspaces` in `package.json` or subpackages defined in `pnpm-workspace.yaml`

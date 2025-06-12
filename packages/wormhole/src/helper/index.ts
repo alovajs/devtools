@@ -1,4 +1,4 @@
 export * from './config';
+export * from './document';
 export * from './logger';
-export * from './openapi';
 export * from './template';

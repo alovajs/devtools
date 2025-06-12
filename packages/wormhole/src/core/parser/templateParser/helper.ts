@@ -19,7 +19,7 @@ import {
   mergeObject,
   parseReference,
   removeAll$ref
-} from '@/utils/openapi';
+} from '@/utils';
 import { cloneDeep, isEmpty } from 'lodash';
 
 const remove$ref = (

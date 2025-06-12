@@ -1,5 +1,5 @@
 import { logger } from '@/helper';
-import type { OpenAPI2Document, OpenAPIDocument, PlatformType } from '@/type';
+import type { OpenAPIDocument, OpenAPIV2Document, PlatformType } from '@/type';
 import { fetchData } from '@/utils';
 import importFresh from 'import-fresh';
 import YAML from 'js-yaml';
@@ -9,7 +9,7 @@ import swagger2openapi from 'swagger2openapi';
 
 const supportedExtname = ['json', 'yaml'];
 const supportedPlatformType: PlatformType[] = ['swagger'];
-function isSwagger2(data: any): data is OpenAPI2Document {
+function isSwagger2(data: any): data is OpenAPIV2Document {
   return !!data?.swagger;
 }
 // Parse local openapi files

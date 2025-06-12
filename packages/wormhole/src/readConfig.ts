@@ -41,16 +41,6 @@ export const getAutoUpdateConfig = async (config: Config) => {
   await configHelper.load(config);
   return configHelper.autoUpdateConfig();
 };
-export const getApis = async (config: Config, projectPath = process.cwd()) => {
-  if (!config || !projectPath) {
-    return [];
-  }
-  await configHelper.load(config, projectPath);
-  return configHelper.getOutput().flatMap(output => {
-    const templateData = TemplateHelper.getData(projectPath, output);
-    return templateData?.pathApis.flatMap(item => item.apis) ?? [];
-  });
-};
 
 export const getApiDocs = async (config: Config, projectPath = process.cwd()) => {
   if (!config || !projectPath) {
