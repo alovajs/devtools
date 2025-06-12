@@ -322,7 +322,6 @@
       });
       // 处理来自扩展的消息
       window.addEventListener('message', event => {
-        console.log(event, 341);
         const message = event.data;
         switch (message.type) {
           case 'updateData':

@@ -12,11 +12,10 @@ export default vscode.languages.registerCompletionItemProvider(
       document: vscode.TextDocument,
       position: vscode.Position,
       _,
-      context: vscode.CompletionContext
+      _context: vscode.CompletionContext
     ) {
       // Support newline code from starting position to input position
       const text = document.lineAt(position).text.slice(0, position.character);
-      console.log('Trigger character:', context.triggerCharacter);
       // const linePrefix = ;
       if (/a-(>|》).*/.test(text)) {
         const [, , value] = /a-(>|》)(.*)[\s.>:-]?/.exec(text) || [];
