@@ -9,7 +9,7 @@ export async function fetchData(url: string) {
     .Get<Response>(url)
     .then(response => {
       if (!response.ok) {
-        throw logger.error(`HTTP error! status: ${response.status}`, {
+        throw logger.throwError(`HTTP error! status: ${response.status}`, {
           url
         });
       }

@@ -290,7 +290,7 @@ export async function convertToType(
   const tsStr = parseSchema(schemaOrigin, openApi, config);
 
   if (!tsStr) {
-    throw logger.error(`schema2type went wrong`, {
+    throw logger.throwError(`schema2type went wrong`, {
       message: 'went wrong with schemaOrigin',
       schemaOrigin
     });

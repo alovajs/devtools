@@ -6,6 +6,7 @@ import type { AlovaVersion, GeneratorConfig, TemplateType } from '@/type';
 import { existsPromise } from '@/utils';
 import { isEqual } from 'lodash';
 import path from 'node:path';
+import { fromError } from 'zod-validation-error';
 import { zGeneratorConfig } from './zType';
 
 export class GeneratorHelper {
@@ -59,7 +60,14 @@ export class GeneratorHelper {
   }
 
   static async validateConfig(config: unknown): Promise<GeneratorConfig> {
-    return zGeneratorConfig.parse(config);
+    let result = config as GeneratorConfig;
+    try {
+      result = zGeneratorConfig.parse(config);
+    } catch (error) {
+      const zError = fromError(error);
+      throw logger.throwError(zError.message, zError.details);
+    }
+    return result;
   }
   static getAlovaVersion(config: GeneratorConfig, projectPath: string): AlovaVersion {
     const configVersion = Number(config.version);

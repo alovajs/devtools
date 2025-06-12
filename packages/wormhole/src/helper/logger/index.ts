@@ -69,12 +69,19 @@ class Logger {
     }
   }
 
-  error(message: string | Error, details?: unknown, level: LogLevel = 'error') {
-    if (this.shouldLog(level)) {
+  // eslint-disable-next-line class-methods-use-this
+  private errorMsg(msg: string | Error) {
+    return msg instanceof Error ? msg.message : msg;
+  }
+  error(message: string, details?: unknown) {
+    if (this.shouldLog('error')) {
       // eslint-disable-next-line no-console
-      console[level](this.formatMessage('error', message.toString(), details));
+      console.error(this.formatMessage('error', message, details));
     }
-    return new DEFAULT_CONFIG.Error(message.toString());
+  }
+  throwError(error: string | Error, details?: unknown) {
+    this.debug(this.errorMsg(error), details);
+    return new DEFAULT_CONFIG.Error(this.errorMsg(error));
   }
 }
 

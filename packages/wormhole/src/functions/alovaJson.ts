@@ -26,7 +26,7 @@ export const readAlovaJson = async (originPath: string, name = 'api.json') => {
 
   const filePath = `${originPath}_${name}`;
   if (!(await existsPromise(filePath))) {
-    throw logger.error('alovaJson is not exists', undefined, 'debug');
+    throw logger.throwError('alovaJson is not exists');
   }
 
   // Read JSON files using fs.readFile

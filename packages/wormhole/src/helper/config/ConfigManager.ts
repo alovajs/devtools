@@ -1,5 +1,6 @@
 import { logger } from '@/helper';
 import { isArray, isObject, mergeWith } from 'lodash';
+import { fromError } from 'zod-validation-error';
 import type { Config, GeneratorConfig } from './type';
 import { zConfig } from './zType';
 
@@ -44,7 +45,7 @@ export class ConfigManager {
     // 合并配置
     const mergedConfig = this.mergeConfig(this.defaultConfig, config);
     // 验证配置
-    const validatedConfig = await this.validateConfig(mergedConfig);
+    const validatedConfig = this.validateConfig(mergedConfig);
     // 更新配置
     this.config = validatedConfig;
     this.readConfig = Object.freeze(this.config);
@@ -69,8 +70,15 @@ export class ConfigManager {
    * 验证配置
    */
   // eslint-disable-next-line class-methods-use-this
-  private async validateConfig(config: unknown): Promise<Config> {
-    return zConfig.parse(config);
+  private validateConfig(config: unknown): Config {
+    let result = config as Config;
+    try {
+      result = zConfig.parse(config);
+    } catch (error) {
+      const zError = fromError(error);
+      throw logger.throwError(zError.message, zError.details);
+    }
+    return result;
   }
 
   /**

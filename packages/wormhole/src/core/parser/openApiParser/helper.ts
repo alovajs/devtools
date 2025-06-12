@@ -17,7 +17,7 @@ function isSwagger2(data: any): data is OpenAPIV2Document {
 async function parseLocalFile(url: string, projectPath = process.cwd()) {
   const [, extname] = /\.([^.]+)$/.exec(url) ?? [];
   if (!supportedExtname.includes(extname)) {
-    throw logger.error(`Unsupported file type: ${extname}`, {
+    throw logger.throwError(`Unsupported file type: ${extname}`, {
       url,
       projectPath
     });
@@ -56,7 +56,7 @@ async function parseRemoteFile(url: string, platformType?: PlatformType) {
   }
   // There is no platform type and there is an extension
   if (!supportedExtname.includes(extname)) {
-    throw logger.error(`Unsupported file type: ${extname}`, {
+    throw logger.throwError(`Unsupported file type: ${extname}`, {
       url,
       platformType
     });
@@ -78,7 +78,7 @@ async function parseRemoteFile(url: string, platformType?: PlatformType) {
 
 export async function getPlatformOpenApiData(url: string, platformType: PlatformType) {
   if (!supportedPlatformType.includes(platformType)) {
-    throw logger.error(`Platform type ${platformType} is not supported.`, {
+    throw logger.throwError(`Platform type ${platformType} is not supported.`, {
       url,
       platformType
     });
@@ -117,7 +117,7 @@ export async function getOpenApiData(
       data = (await swagger2openapi.convertObj(data, { warnOnly: true })).openapi as OpenAPIDocument;
     }
   } catch (error: any) {
-    throw logger.error(`Cannot read file from ${url}`, {
+    throw logger.throwError(`Cannot read file from ${url}`, {
       error: error.message,
       projectPath,
       url,
@@ -125,7 +125,7 @@ export async function getOpenApiData(
     });
   }
   if (!data) {
-    throw logger.error(`Cannot read file from ${url}`, {
+    throw logger.throwError(`Cannot read file from ${url}`, {
       projectPath,
       url,
       platformType

@@ -13,7 +13,7 @@ import path from 'node:path';
 export const readConfig = async (projectPath = process.cwd()) => {
   const configFile = await resolveConfigFile(projectPath);
   if (!configFile) {
-    throw logger.error(`Cannot found config file from path ${projectPath}`, {
+    throw logger.throwError(`Cannot found config file from path ${projectPath}`, {
       projectPath,
       name: 'readConfig'
     });

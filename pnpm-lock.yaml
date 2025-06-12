@@ -202,6 +202,9 @@ importers:
       zod:
         specifier: ^3.25.53
         version: 3.25.53
+      zod-validation-error:
+        specifier: ^3.4.1
+        version: 3.4.1(zod@3.25.53)
     devDependencies:
       '@types/fs-extra':
         specifier: ^11.0.4
@@ -4688,6 +4691,12 @@ packages:
   yocto-queue@1.1.1:
     resolution: {integrity: sha512-b4JR1PFR10y1mKjhHY9LaGo6tmrgjit7hxVIeAmyMw3jegXR4dhYqLaQF5zMXZxY7tLpMyJeLjr1C4rLmkVe8g==}
     engines: {node: '>=12.20'}
+
+  zod-validation-error@3.4.1:
+    resolution: {integrity: sha512-1KP64yqDPQ3rupxNv7oXhf7KdhHHgaqbKuspVoiN93TT0xrBjql+Svjkdjq/Qh/7GSMmgQs3AfvBT0heE35thw==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      zod: ^3.24.4
 
   zod@3.25.53:
     resolution: {integrity: sha512-BKOKoY3XcGUVkqaalCtFK15LhwR0G0i65AClFpWSXLN2gJNBGlTktukHgwexCTa/dAacPPp9ReryXPWyeZF4LQ==}
@@ -9553,5 +9562,9 @@ snapshots:
   yocto-queue@0.1.0: {}
 
   yocto-queue@1.1.1: {}
+
+  zod-validation-error@3.4.1(zod@3.25.53):
+    dependencies:
+      zod: 3.25.53
 
   zod@3.25.53: {}
