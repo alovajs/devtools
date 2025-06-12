@@ -65,8 +65,11 @@ export function logWarn(...messageArr: any[]) {
   output('warn', ...messageArr);
 }
 
+// eslint-disable-next-line no-console
 const consoleLog = console.log;
+// eslint-disable-next-line no-console
 const consoleWarn = console.warn;
+// eslint-disable-next-line no-console
 const consoleError = console.error;
 
 Object.defineProperties(console, {

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import esbuild, { Plugin } from 'esbuild';
 import alias from 'esbuild-plugin-alias';
 import path from 'node:path';
