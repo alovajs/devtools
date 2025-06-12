@@ -1,7 +1,7 @@
 import { generate } from '@/index';
+import type { SchemaObject } from '@/type';
 import fs from 'node:fs/promises';
 import { resolve } from 'node:path';
-import type { OpenAPIV3 } from 'openapi-types';
 import { createStrReg } from './util';
 
 vi.mock('node:fs');
@@ -663,7 +663,7 @@ describe('generate API', () => {
           output: outputDir,
           handleApi(apiDescriptor) {
             if (apiDescriptor.responses?.properties) {
-              const testObject: OpenAPIV3.SchemaObject = {
+              const testObject: SchemaObject = {
                 type: 'object',
                 properties: {
                   foo: {
@@ -672,7 +672,7 @@ describe('generate API', () => {
                   }
                 }
               };
-              const foo = testObject.properties!.foo as OpenAPIV3.SchemaObject;
+              const foo = testObject.properties!.foo as SchemaObject;
               foo.properties!.bar = testObject;
               apiDescriptor.responses.properties.test = testObject;
             }

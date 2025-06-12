@@ -1,4 +1,4 @@
-import { logger } from '@/infrastructure/logger';
+import { logger } from '@/helper/logger';
 import { createAlova } from 'alova';
 import adapterFetch from 'alova/fetch';
 import fs from 'node:fs/promises';

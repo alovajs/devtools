@@ -1,10 +1,10 @@
-import { get$refName } from '@/helper/openapi';
-import { capitalizeFirstLetter, strHashCode } from '@/utils';
-import { OpenAPIV3_1 } from 'openapi-types';
+import type { OperationObject } from '@/type';
+import { capitalizeFirstLetter, get$refName, strHashCode } from '@/utils';
+
 import type { StandardLoader } from './index';
 
 export function getStandardOperationId(
-  pathObject: OpenAPIV3_1.OperationObject,
+  pathObject: OperationObject,
   options: {
     url: string;
     method: string;

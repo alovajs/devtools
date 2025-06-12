@@ -1,7 +1,5 @@
 /* eslint-disable class-methods-use-this */
-import type { PlatformType } from '@/interface.type';
-import { OpenAPIV3_1 } from 'openapi-types';
-import { Parser } from '../types';
+import type { OpenAPIDocument, Parser, PlatformType } from '@/type';
 import { getOpenApiData } from './helper';
 
 export interface OpenApiParserOptions {
@@ -9,10 +7,10 @@ export interface OpenApiParserOptions {
   platformType?: PlatformType;
 }
 
-export class OpenApiParser implements Parser<string, OpenAPIV3_1.Document, OpenApiParserOptions> {
+export class OpenApiParser implements Parser<string, OpenAPIDocument, OpenApiParserOptions> {
   name = 'openapiParser';
 
-  async parse(input: string, options?: OpenApiParserOptions): Promise<OpenAPIV3_1.Document> {
+  async parse(input: string, options?: OpenApiParserOptions): Promise<OpenAPIDocument> {
     return getOpenApiData(input, options?.projectPath, options?.platformType);
   }
 }

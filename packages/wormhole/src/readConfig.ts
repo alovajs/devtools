@@ -1,14 +1,9 @@
-import { configHelper } from '@/infrastructure/config/ConfigHelper';
-import { logger } from '@/infrastructure/logger';
-import type { Config } from '@/interface.type';
+import { configHelper, logger, TemplateHelper } from '@/helper';
+import type { Config } from '@/type/lib';
+import { resolveConfigFile } from '@/utils';
 import esbuild from 'esbuild';
 import { unlink } from 'node:fs/promises';
 import path from 'node:path';
-import { getGlobalConfig } from './config';
-import { getAlovaJsonPath } from './functions/alovaJson';
-import { resolveConfigFile } from './utils';
-
-const DEFAULT_CONFIG = getGlobalConfig();
 
 /**
  * Read the alova.config configuration file and return the parsed configuration object.
@@ -52,12 +47,8 @@ export const getApis = async (config: Config, projectPath = process.cwd()) => {
   }
   await configHelper.load(config, projectPath);
   return configHelper.getOutput().flatMap(output => {
-    const apiPath = getAlovaJsonPath(projectPath, output);
-    const templateData = DEFAULT_CONFIG.templateData.get(apiPath);
-    if (!templateData) {
-      return [];
-    }
-    return templateData.pathApis.flatMap(item => item.apis);
+    const templateData = TemplateHelper.getData(projectPath, output);
+    return templateData?.pathApis.flatMap(item => item.apis) ?? [];
   });
 };
 
@@ -67,8 +58,7 @@ export const getApiDocs = async (config: Config, projectPath = process.cwd()) =>
   }
   await configHelper.load(config, projectPath);
   return configHelper.getOutput().map(output => {
-    const apiPath = getAlovaJsonPath(projectPath, output);
-    const templateData = DEFAULT_CONFIG.templateData.get(apiPath);
+    const templateData = TemplateHelper.getData(projectPath, output);
     return templateData?.pathApis ?? [];
   });
 };

@@ -1,8 +1,8 @@
+import getAlovaVersion from '@/functions/getAlovaVersion';
+import getAutoTemplateType from '@/functions/getAutoTemplateType';
+import { templateHelper } from '@/helper';
+import type { TemplateType } from '@/type/lib';
 import path from 'node:path';
-import getAlovaVersion from './functions/getAlovaVersion';
-import getAutoTemplateType from './functions/getAutoTemplateType';
-import { templateHelper } from './infrastructure/template/TemplateHelper';
-import { TemplateType } from './interface.type';
 
 interface ConfigCreationOptions {
   projectPath?: string;

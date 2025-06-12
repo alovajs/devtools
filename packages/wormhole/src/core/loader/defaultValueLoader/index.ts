@@ -1,7 +1,7 @@
 /* eslint-disable class-methods-use-this */
-import type { Api } from '@/interface.type';
+import type { Api, Loader } from '@/type';
 import { format } from '@/utils';
-import { Loader } from '../types';
+
 import { generateDefaultValues, generateDefaultValuesFormat } from './helper';
 
 export interface DefaultValueLoaderOptions {

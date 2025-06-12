@@ -1,15 +1,14 @@
 /* eslint-disable class-methods-use-this */
 import { standardLoader } from '@/core/loader';
-import { findBy$ref } from '@/helper/openapi';
-import type { OpenAPIV3_1 } from 'openapi-types';
-import { Loader } from '../types';
+import type { Loader, OpenAPIDocument } from '@/type';
+import { findBy$ref } from '@/utils/openapi';
 import { convertToType, Schema2TypeOptions, SchemaOrigin } from './helper';
 
 export interface SchemaLoaderOptions extends Schema2TypeOptions {
-  document: OpenAPIV3_1.Document;
+  document: OpenAPIDocument;
 }
 export interface Schema2TsStrOptions {
-  document: OpenAPIV3_1.Document;
+  document: OpenAPIDocument;
   name: string;
   export?: boolean;
   defaultRequire?: boolean; // If there is no nullbale or require, the default is require.

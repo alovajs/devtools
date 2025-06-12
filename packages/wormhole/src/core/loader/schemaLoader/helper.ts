@@ -1,11 +1,11 @@
 import { standardLoader } from '@/core/loader';
-import { findBy$ref, isReferenceObject } from '@/helper/openapi';
-import { logger } from '@/infrastructure/logger';
-import { format } from '@/utils';
-import { isArray } from 'lodash';
-import { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
+import { logger } from '@/helper';
+import { findBy$ref, format, isReferenceObject } from '@/utils';
 
-export type SchemaOrigin = OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject;
+import type { ArraySchemaObject, OpenAPIDocument, ReferenceObject, SchemaObject, SchemaObjectV3 } from '@/type';
+import { isArray } from 'lodash';
+
+export type SchemaOrigin = SchemaObject | ReferenceObject;
 export interface Schema2TypeOptions {
   deep?: boolean; // Whether to parse recursively
 
@@ -21,7 +21,7 @@ export interface Schema2TypeOptions {
 
   searchMap: Map<string, string>;
   visited?: Set<string>;
-  on$Ref?: (refOject: OpenAPIV3_1.ReferenceObject) => void;
+  on$Ref?: (refOject: ReferenceObject) => void;
 }
 /**
  * Generate comment string
@@ -82,11 +82,11 @@ export function comment(type: 'line' | 'document') {
  * @returns ts type string
  */
 function parseSchema(
-  schemaOrigin: OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject,
-  openApi: OpenAPIV3_1.Document,
+  schemaOrigin: SchemaObject | ReferenceObject,
+  openApi: OpenAPIDocument,
   config: Schema2TypeOptions
 ): string {
-  let schema: OpenAPIV3_1.SchemaObject = schemaOrigin as OpenAPIV3_1.SchemaObject;
+  let schema: SchemaObject = schemaOrigin as SchemaObject;
   let refPath = '';
   if (isReferenceObject(schemaOrigin)) {
     refPath = schemaOrigin.$ref;
@@ -113,7 +113,7 @@ function parseSchema(
       config.searchMap.set(refPath, result);
     }
     // 兼容opnpai3.0的nullable
-    if ((schema as OpenAPIV3.SchemaObject).nullable) {
+    if ((schema as SchemaObjectV3).nullable) {
       result = `${result} | null`;
     }
     return result;
@@ -167,7 +167,7 @@ function parseSchema(
       }
   }
   // 兼容openai3.0的nullable
-  if ((schema as OpenAPIV3.SchemaObject).nullable) {
+  if ((schema as SchemaObjectV3).nullable) {
     result = `${result} | null`;
   }
   if (refPath) {
@@ -182,19 +182,15 @@ function parseSchema(
  * @param config Configuration items
  * @returns  ts type string
  */
-function parseObject(
-  schema: OpenAPIV3_1.SchemaObject,
-  openApi: OpenAPIV3_1.Document,
-  config: Schema2TypeOptions
-): string {
+function parseObject(schema: SchemaObject, openApi: OpenAPIDocument, config: Schema2TypeOptions): string {
   const properties = schema.properties || {};
   const required = new Set(schema.required ?? []);
   const lines: string[] = [`{`];
   for (const [key, valueOrigin] of Object.entries(properties)) {
     const optionalFlag =
-      required.has(key) || (config.defaultRequire && !(schema as OpenAPIV3.SchemaObject).nullable) ? '' : '?';
+      required.has(key) || (config.defaultRequire && !(schema as SchemaObjectV3).nullable) ? '' : '?';
     let refPath = '';
-    let value = valueOrigin as OpenAPIV3_1.SchemaObject;
+    let value = valueOrigin as SchemaObject;
     if (isReferenceObject(valueOrigin)) {
       refPath = valueOrigin.$ref;
       value = findBy$ref(valueOrigin.$ref, openApi);
@@ -237,17 +233,13 @@ function parseObject(
  * @param config Configuration items
  * @returns ts type string
  */
-function parseArray(
-  schema: OpenAPIV3_1.ArraySchemaObject,
-  openApi: OpenAPIV3_1.Document,
-  config: Schema2TypeOptions
-): string {
+function parseArray(schema: ArraySchemaObject, openApi: OpenAPIDocument, config: Schema2TypeOptions): string {
   if (Array.isArray(schema.items)) {
     const types = schema.items.map(item => parseSchema(item, openApi, config));
     return `[\n${types.map(type => `${type},\n`)}\n]`;
   }
   if (schema.items) {
-    let items = schema.items as OpenAPIV3_1.SchemaObject;
+    let items = schema.items as SchemaObject;
     let refPath = '';
     if (isReferenceObject(schema.items)) {
       items = findBy$ref(schema.items.$ref, openApi);
@@ -274,7 +266,7 @@ function parseArray(
  * @param schema schema object
  * @returns ts type string
  */
-function parseEnum(schema: OpenAPIV3_1.SchemaObject): string {
+function parseEnum(schema: SchemaObject): string {
   return schema.enum?.map?.((value: any) => JSON.stringify(value))?.join?.(' | ') || '';
 }
 /**
@@ -286,7 +278,7 @@ function parseEnum(schema: OpenAPIV3_1.SchemaObject): string {
  */
 export async function convertToType(
   schemaOrigin: SchemaOrigin,
-  openApi: OpenAPIV3_1.Document,
+  openApi: OpenAPIDocument,
   config: Schema2TypeOptions
 ): Promise<string> {
   if (!schemaOrigin) {

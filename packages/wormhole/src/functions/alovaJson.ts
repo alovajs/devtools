@@ -1,6 +1,6 @@
 import { getGlobalConfig } from '@/config';
-import { logger } from '@/infrastructure/logger';
-import type { TemplateData } from '@/interface.type';
+import { logger } from '@/helper';
+import type { TemplateData } from '@/type';
 import { existsPromise, format } from '@/utils';
 import fs from 'node:fs/promises';
 import path from 'node:path';

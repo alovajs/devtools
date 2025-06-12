@@ -1,13 +1,11 @@
-import { logger } from '@/infrastructure/logger';
-import type { PlatformType } from '@/interface.type';
+import { logger } from '@/helper';
+import type { OpenAPI2Document, OpenAPIDocument, PlatformType } from '@/type';
 import { fetchData } from '@/utils';
 import importFresh from 'import-fresh';
 import YAML from 'js-yaml';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { OpenAPIV3_1 } from 'openapi-types';
 import swagger2openapi from 'swagger2openapi';
-import { OpenAPI2Document } from '../types';
 
 const supportedExtname = ['json', 'yaml'];
 const supportedPlatformType: PlatformType[] = ['swagger'];
@@ -104,8 +102,8 @@ export async function getOpenApiData(
   url: string,
   projectPath?: string,
   platformType?: PlatformType
-): Promise<OpenAPIV3_1.Document> {
-  let data: OpenAPIV3_1.Document | null = null;
+): Promise<OpenAPIDocument> {
+  let data: OpenAPIDocument | null = null;
   try {
     if (!/^http(s)?:\/\//.test(url)) {
       // local file
@@ -116,7 +114,7 @@ export async function getOpenApiData(
     }
     // If it is a swagger2 file
     if (isSwagger2(data)) {
-      data = (await swagger2openapi.convertObj(data, { warnOnly: true })).openapi as OpenAPIV3_1.Document;
+      data = (await swagger2openapi.convertObj(data, { warnOnly: true })).openapi as OpenAPIDocument;
     }
   } catch (error: any) {
     throw logger.error(`Cannot read file from ${url}`, {

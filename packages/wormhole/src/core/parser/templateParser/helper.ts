@@ -1,4 +1,17 @@
 import { schemaLoader, standardLoader } from '@/core/loader';
+import type {
+  ApiDescriptor,
+  ApiMethod,
+  GeneratorConfig,
+  OpenAPIDocument,
+  OperationObject,
+  ParameterObject,
+  ReferenceObject,
+  RequestBodyObject,
+  ResponseObject,
+  ResponsesObject,
+  SchemaObject
+} from '@/type';
 import {
   findBy$ref,
   getResponseSuccessKey,
@@ -6,15 +19,12 @@ import {
   mergeObject,
   parseReference,
   removeAll$ref
-} from '@/helper/openapi';
-import type { ApiDescriptor, GeneratorConfig } from '@/interface.type';
+} from '@/utils/openapi';
 import { cloneDeep, isEmpty } from 'lodash';
-import { OpenAPIV3_1 } from 'openapi-types';
-import { ApiMethod } from './openApiHelper';
 
 const remove$ref = (
-  originObj: OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject,
-  openApi: OpenAPIV3_1.Document,
+  originObj: SchemaObject | ReferenceObject,
+  openApi: OpenAPIDocument,
   config: GeneratorConfig,
   schemasMap?: Map<string, string>,
   preText: string = '',
@@ -50,8 +60,8 @@ const remove$ref = (
     }
   });
 export const parseResponse = async (
-  responses: OpenAPIV3_1.ResponsesObject | undefined,
-  openApi: OpenAPIV3_1.Document,
+  responses: ResponsesObject | undefined,
+  openApi: OpenAPIDocument,
   config: GeneratorConfig,
   schemasMap: Map<string, string>,
   searchMap: Map<string, string>,
@@ -65,7 +75,7 @@ export const parseResponse = async (
       responseComment: 'unknown'
     };
   }
-  const responseObject: OpenAPIV3_1.ResponseObject = isReferenceObject(responseInfo)
+  const responseObject: ResponseObject = isReferenceObject(responseInfo)
     ? findBy$ref(responseInfo.$ref, openApi)
     : responseInfo;
   const key = getContentKey(responseObject.content, config.responseMediaType);
@@ -83,8 +93,8 @@ export const parseResponse = async (
   };
 };
 export const parseRequestBody = async (
-  requestBody: OpenAPIV3_1.RequestBodyObject | OpenAPIV3_1.ReferenceObject | undefined,
-  openApi: OpenAPIV3_1.Document,
+  requestBody: RequestBodyObject | ReferenceObject | undefined,
+  openApi: OpenAPIDocument,
   config: GeneratorConfig,
   schemasMap: Map<string, string>,
   searchMap: Map<string, string>,
@@ -96,7 +106,7 @@ export const parseRequestBody = async (
       requestComment: ''
     };
   }
-  const requestBodyObject: OpenAPIV3_1.RequestBodyObject = isReferenceObject(requestBody)
+  const requestBodyObject: RequestBodyObject = isReferenceObject(requestBody)
     ? findBy$ref(requestBody.$ref, openApi)
     : requestBody;
   const key = getContentKey(requestBodyObject.content, config.bodyMediaType);
@@ -121,22 +131,22 @@ const getContentKey = (content: Record<string, any> = {}, requireKey = 'applicat
   return key;
 };
 export const parseParameters = async (
-  parameters: (OpenAPIV3_1.ReferenceObject | OpenAPIV3_1.ParameterObject)[] | undefined,
-  openApi: OpenAPIV3_1.Document,
+  parameters: (ReferenceObject | ParameterObject)[] | undefined,
+  openApi: OpenAPIDocument,
   config: GeneratorConfig,
   schemasMap: Map<string, string>,
   searchMap: Map<string, string>,
   removeMap: Map<string, string>
 ) => {
-  const pathParameters: OpenAPIV3_1.SchemaObject = {
+  const pathParameters: SchemaObject = {
     type: 'object'
   };
-  const queryParameters: OpenAPIV3_1.SchemaObject = {
+  const queryParameters: SchemaObject = {
     type: 'object'
   };
   for (const refParameter of parameters || []) {
     const parameter = isReferenceObject(refParameter)
-      ? findBy$ref<OpenAPIV3_1.ParameterObject>(refParameter.$ref, openApi)
+      ? findBy$ref<ParameterObject>(refParameter.$ref, openApi)
       : refParameter;
     if (parameter.in === 'path') {
       if (!pathParameters.properties) {
@@ -206,7 +216,7 @@ export const parseParameters = async (
 export const transformApiMethods = async (
   apiMethod: ApiMethod,
   options: {
-    document: OpenAPIV3_1.Document;
+    document: OpenAPIDocument;
     config: GeneratorConfig;
     map?: Array<[string, any]>;
   }
@@ -230,7 +240,7 @@ export const transformApiMethods = async (
     operationObject: apiMethod.operationObject
   });
 
-  newApiMethod.operationObject = mergeObject<OpenAPIV3_1.OperationObject>(
+  newApiMethod.operationObject = mergeObject<OperationObject>(
     apiMethod.operationObject,
     newApiMethod.operationObject,
     options.document,
@@ -243,7 +253,7 @@ export const transformApiMethods = async (
 export const apiMethod2ApiDescriptor = (
   apiMethod: ApiMethod,
   options: {
-    document: OpenAPIV3_1.Document;
+    document: OpenAPIDocument;
     config: GeneratorConfig;
   }
 ) => {
@@ -261,14 +271,14 @@ export const apiMethod2ApiDescriptor = (
   };
   const successKey = getResponseSuccessKey(responses);
   const responseSuccess = responses?.[successKey];
-  let requestBodyObject = requestBody as OpenAPIV3_1.RequestBodyObject;
-  let responseObject = responseSuccess as OpenAPIV3_1.ResponseObject;
+  let requestBodyObject = requestBody as RequestBodyObject;
+  let responseObject = responseSuccess as ResponseObject;
   let requestKey = 'application/json';
   let responseKey = 'application/json';
   if (parameters) {
     apiDescriptor.parameters = [];
     parameters.forEach(parameter => {
-      apiDescriptor.parameters?.push(removeAll$ref<OpenAPIV3_1.ParameterObject>(parameter, document));
+      apiDescriptor.parameters?.push(removeAll$ref<ParameterObject>(parameter, document));
     });
   }
   if (requestBody) {
@@ -298,7 +308,7 @@ export const apiMethod2ApiDescriptor = (
 export const apiDescriptor2apiMethod = (
   apiDescriptor: ApiDescriptor,
   options: {
-    operationObject: OpenAPIV3_1.OperationObject;
+    operationObject: OperationObject;
     oldApiInfo: {
       successKey: string;
       requestKey: string;
@@ -306,8 +316,8 @@ export const apiDescriptor2apiMethod = (
       hasResponse: boolean;
       hasRequestBody: boolean;
       hasParameters: boolean;
-      requestBody: OpenAPIV3_1.RequestBodyObject;
-      response: OpenAPIV3_1.ResponseObject;
+      requestBody: RequestBodyObject;
+      response: ResponseObject;
     };
   }
 ) => {

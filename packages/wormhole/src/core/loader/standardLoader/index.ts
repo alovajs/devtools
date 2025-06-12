@@ -1,6 +1,5 @@
 /* eslint-disable class-methods-use-this */
-import { OpenAPIV3_1 } from 'openapi-types';
-import { Loader } from '../types';
+import type { Loader, OperationObject } from '@/type';
 import { isValidJSIdentifier, makeIdentifier } from './helper';
 import { getRandomVariable, getStandardOperationId, getStandardRefName, getStandardTags } from './standards';
 
@@ -34,7 +33,7 @@ export class StandardLoader implements Loader<string, string, StandardLoaderOpti
     });
   }
   transformOperationId(
-    pathObject: OpenAPIV3_1.OperationObject,
+    pathObject: OperationObject,
     options: {
       url: string;
       method: string;

@@ -1,7 +1,5 @@
-import { configHelper } from '@/infrastructure/config/ConfigHelper';
-import type { Config } from '@/infrastructure/config/types';
-import type { GenerateApiOptions } from '@/interface.type';
-import generateApi from './functions/generateApi';
+import { configHelper } from '@/helper';
+import type { Config, GenerateApiOptions } from '@/type/lib';
 /**
  * Generate relevant API information based on the configuration object. Generally, it needs to be used with `readConfig()`.
  * @param config generating config
@@ -13,23 +11,8 @@ const generate = async (config: Config, rules?: GenerateApiOptions) => {
     return [] as boolean[];
   }
   await configHelper.load(config, rules?.projectPath ?? process.cwd());
-  const outputPathArr = configHelper.getOutput();
-  const templateTypeArr = configHelper.getTemplateType();
-  const openApiData = await configHelper.getOpenApiData();
-  const generatorConfigArr = configHelper.getConfig().generator;
-  const result = await Promise.all(
-    outputPathArr.map((outputPath, idx) =>
-      // Generate api file
-      generateApi(
-        configHelper.getProjectPath(),
-        outputPath,
-        openApiData[idx],
-        generatorConfigArr[idx],
-        templateTypeArr[idx] ?? 'commonjs',
-        rules?.force ?? false
-      )
-    )
-  );
-  return result;
+  return configHelper.generate({
+    force: rules?.force
+  });
 };
 export default generate;

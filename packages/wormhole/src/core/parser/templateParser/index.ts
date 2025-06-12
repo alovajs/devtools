@@ -1,28 +1,25 @@
 /* eslint-disable class-methods-use-this */
 import { defaultValueLoader, standardLoader } from '@/core/loader';
-import { GeneratorHelper } from '@/infrastructure/config/GeneratorHelper';
-import { TemplateHelper } from '@/infrastructure/template/TemplateHelper';
-import type { Api, GeneratorConfig, Parser, TemplateData } from '@/interface.type';
-import { OpenAPIV3_1 } from 'openapi-types';
+import { GeneratorHelper, OpenApiHelper, TemplateHelper } from '@/helper';
+
+import type { Api, ApiMethod, GeneratorConfig, OpenAPIDocument, Parser, TemplateData } from '@/type';
 import { parseParameters, parseRequestBody, parseResponse, transformApiMethods } from './helper';
-import { ApiMethod, OpenApiHelper } from './openApiHelper';
 
 export interface TemplateParserOptions {
   generatorConfig: GeneratorConfig;
   projectPath: string; // Project address
-  outputPath: string; // Output path
 }
 
-export class TemplateParser implements Parser<OpenAPIV3_1.Document, TemplateData, TemplateParserOptions> {
+export class TemplateParser implements Parser<OpenAPIDocument, TemplateData, TemplateParserOptions> {
   name = 'templateParser';
   private schemasMap = new Map<string, string>();
   private searchMap = new Map<string, string>();
   private removeMap = new Map<string, string>();
   private operationIdSet = new Set<string>();
   private pathMap: Array<[string, any]> = [];
-  private document: OpenAPIV3_1.Document;
+  private document: OpenAPIDocument;
   private options: TemplateParserOptions;
-  async parse(document: OpenAPIV3_1.Document, options: TemplateParserOptions): Promise<TemplateData> {
+  async parse(document: OpenAPIDocument, options: TemplateParserOptions): Promise<TemplateData> {
     this.document = document;
     this.options = options;
     const templateData = await this.parseBaseInfo();

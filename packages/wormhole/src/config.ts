@@ -1,4 +1,4 @@
-import type { TemplateData } from '@/interface.type';
+import type { TemplateData } from '@/type/lib';
 import path from 'node:path';
 
 declare global {
