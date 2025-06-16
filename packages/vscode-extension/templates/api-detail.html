@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0" />
+    <title>Dynamic Sidebar</title>
+    <link
+      href="{{ styleUri }}"
+      rel="stylesheet" />
+    <!-- Prism 主题 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css"
+      rel="stylesheet"
+      id="prism-theme" />
+  </head>
+
+  <body>
+    <div class="container">
+      <!-- <div class="api-selector">
+        <select
+          id="api-select"
+          class="api-select">
+          <option value="">选择API查看文档...</option>
+          <option value="postAccountUser">POST /account/user/{version}</option>
+          <option value="getUserProfile">GET /user/{id}/profile</option>
+          <option value="updateProduct">PUT /products/{id}</option>
+        </select>
+      </div> -->
+
+      <div
+        class="api-container"
+        id="api-container">
+        <div class="no-content">没有Api详细信息</div>
+      </div>
+
+      <div class="footer">
+        <button
+          class="copy-btn"
+          id="copy-btn">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M8 4V16C8 16.5304 8.21071 17.0391 8.58579 17.4142C8.96086 17.7893 9.46957 18 10 18H18C18.5304 18 19.0391 17.7893 19.4142 17.4142C19.7893 17.0391 20 16.5304 20 16V7.5C20 7.10218 19.842 6.72064 19.5607 6.43934C19.2794 6.15804 18.8978 6 18.5 6H14C13.4696 6 12.9609 5.78929 12.5858 5.41421C12.2107 5.03914 12 4.53043 12 4V4C12 3.46957 11.7893 2.96086 11.4142 2.58579C11.0391 2.21071 10.5304 2 10 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V14C4 14.5304 4.21071 15.0391 4.58579 15.4142C4.96086 15.7893 5.46957 16 6 16H8"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+          复制示例代码
+        </button>
+      </div>
+    </div>
+    <!-- 引入 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-typescript.min.js"></script>
+    <script>
+      // ===== 渲染服务 =====
+      const renderService = {
+        // 渲染API文档
+        renderApiDocumentation(api) {
+          if (!api) {
+            return '<div class="no-content">请从下拉菜单中选择一个API</div>';
+          }
+
+          return `
+                          <div class="api-header">
+                              <div class="api-method">
+                                  <span class="method-tag ${api.method.toLowerCase()}">${api.method}</span>
+                                  <div class="api-url">${api.path}</div>
+                              </div>
+                              <div class="api-summary">${api.summary}</div>
+
+                              <div class="api-info-row">
+                                  <div class="api-info-label">方法名称:</div>
+                                  <div class="api-info-value">${api.pathKey}</div>
+                              </div>
+                          </div>
+
+                          <div class="tabs-container">
+                              <div class="tabs">
+                                  <div class="tab active" data-tab="parameters">参数</div>
+                                  <div class="tab" data-tab="response">响应</div>
+                                  <div class="tab" data-tab="example">示例</div>
+                              </div>
+
+                              <div class="tab-content active" id="parameters-content">
+                                  ${this.renderParametersSection(api)}
+                              </div>
+
+                              <div class="tab-content" id="response-content">
+                                  ${this.renderResponseSection(api)}
+                              </div>
+
+                              <div class="tab-content" id="example-content">
+                                  ${this.renderExampleSection(api)}
+                              </div>
+                          </div>
+                      `;
+        },
+
+        // 渲染参数部分
+        renderParametersSection(api) {
+          return `
+                          <div class="section">
+                              <div class="section-header">Path 参数</div>
+                              ${this.renderParameterBlock(api.pathParametersComment, 'PathParameters')}
+                          </div>
+
+                          <div class="section">
+                              <div class="section-header">Query 参数</div>
+                              ${
+                                api.queryParameters
+                                  ? this.renderParameterBlock(api.queryParameters, 'QueryParameters')
+                                  : '<div class="no-content">此接口没有查询参数</div>'
+                              }
+                          </div>
+
+                          <div class="section">
+                              <div class="section-header">请求体</div>
+                              ${
+                                api.requestName
+                                  ? `<pre class="line-numbers comment-block"><code class="language-typescript">${this.typeComment(api.requestComment, 'RequestBody')}</code></pre>`
+                                  : '<div class="no-content">此接口不需要请求体</div>'
+                              }
+                          </div>
+                      `;
+        },
+
+        // 渲染响应部分
+        renderResponseSection(api) {
+          return `
+                          <div class="section">
+                            <pre class="line-numbers comment-block"><code class="language-typescript">${this.typeComment(api.responseComment, 'ResponseBody')}</code></pre>
+                          </div>
+                      `;
+        },
+
+        // 渲染示例部分
+        renderExampleSection(api) {
+          return `
+                          <div class="section">
+                              <div class="json-container">
+                                  <pre class="line-numbers comment-block"><code class="language-typescript">${api.defaultValue || '//无示例代码'}</code></pre>
+                              </div>
+                          </div>
+                      `;
+        },
+
+        // 渲染参数块
+        renderParameterBlock(parameters, name) {
+          const content = this.typeComment(parameters, name);
+          return content
+            ? `<pre class="line-numbers comment-block"><code class="language-typescript">${content}</code></pre>`
+            : '<div class="no-content">无参数信息</div>';
+        },
+
+        // 清理注释文本
+        typeComment(comment, name) {
+          if (!comment) {
+            return '';
+          }
+          const pureComment = comment.replace(/\n\*/g, '\n').replace(/^\* /gm, '').trim();
+          if (!pureComment) {
+            return '';
+          }
+          return `type ${name ?? 'tsType'} = ${pureComment}`;
+        }
+      };
+      class ClassWatcher {
+        constructor(targetNode, classToWatch, classAddedCallback, classRemovedCallback) {
+          this.targetNode = targetNode;
+          this.classToWatch = classToWatch;
+          this.classAddedCallback = classAddedCallback;
+          this.classRemovedCallback = classRemovedCallback;
+          this.observer = null;
+          this.lastClassState = targetNode.classList.contains(this.classToWatch);
+
+          this.init();
+        }
+
+        init() {
+          this.observer = new MutationObserver(this.mutationCallback);
+          this.observe();
+          const currentClassState = this.targetNode?.classList.contains(this.classToWatch);
+          if (currentClassState) {
+            this.classAddedCallback();
+          } else {
+            this.classRemovedCallback();
+          }
+        }
+
+        observe() {
+          this.observer.observe(this.targetNode, { attributes: true });
+        }
+
+        disconnect() {
+          this.observer.disconnect();
+        }
+
+        mutationCallback = mutationsList => {
+          for (let mutation of mutationsList) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+              let currentClassState = mutation.target.classList.contains(this.classToWatch);
+              if (this.lastClassState !== currentClassState) {
+                this.lastClassState = currentClassState;
+                if (currentClassState) {
+                  this.classAddedCallback();
+                } else {
+                  this.classRemovedCallback();
+                }
+              }
+            }
+          }
+        };
+      }
+
+      // ===== 控制器 =====
+      const controller = {
+        // 初始化应用
+        init() {
+          this.cacheElements();
+          this.setupEventListeners();
+          this.wathThemeChange();
+        },
+
+        wathThemeChange() {
+          const lightPrismUrl = 'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css';
+          const darkPrismUrl = 'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css';
+          const prismTheme = document.getElementById('prism-theme');
+          const setDarkTheme = isDark => {
+            if (isDark) {
+              prismTheme.href = darkPrismUrl;
+            } else {
+              prismTheme.href = lightPrismUrl;
+            }
+          };
+          const classWatcher = new ClassWatcher(
+            document.body,
+            'vscode-light',
+            () => setDarkTheme(false),
+            () => setDarkTheme(true)
+          );
+        },
+        // 缓存DOM元素
+        cacheElements() {
+          this.elements = {
+            apiContainer: document.getElementById('api-container'),
+            copyBtn: document.getElementById('copy-btn')
+          };
+        },
+
+        // 设置事件监听
+        setupEventListeners() {
+          this.elements.copyBtn.addEventListener('click', this.handleCopy.bind(this));
+        },
+        updateData(api) {
+          if (!api) {
+            this.elements.apiContainer.innerHTML = `<div class="no-content">没有Api详细信息</div>`;
+            return;
+          }
+          this.elements.apiContainer.innerHTML = renderService.renderApiDocumentation(api);
+          this.setupTabs();
+        },
+
+        // 设置标签页交互
+        setupTabs() {
+          const tabs = this.elements.apiContainer.querySelectorAll('.tab');
+
+          tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+              // 移除所有活动状态
+              tabs.forEach(t => t.classList.remove('active'));
+
+              // 隐藏所有内容
+              const contents = this.elements.apiContainer.querySelectorAll('.tab-content');
+              contents.forEach(c => c.classList.remove('active'));
+
+              // 激活当前标签
+              tab.classList.add('active');
+              const tabId = tab.getAttribute('data-tab');
+              document.getElementById(`${tabId}-content`).classList.add('active');
+            });
+          });
+          Prism.highlightAll();
+        },
+
+        // 处理复制操作
+        handleCopy() {
+          const codeBlock = this.elements.apiContainer.querySelector('.json-container pre code');
+          if (codeBlock) {
+            navigator.clipboard.writeText(codeBlock.innerText).then(() => {
+              const originalContent = this.elements.copyBtn.innerHTML;
+              this.elements.copyBtn.innerHTML = `
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                      <path d="M9 16.1719L19.5938 5.57812L21 6.98438L9 18.9844L3.42187 13.4062L4.82812 12L9 16.1719Z" fill="currentColor"/>
+                                  </svg>
+                                  已复制
+                              `;
+
+              setTimeout(() => {
+                this.elements.copyBtn.innerHTML = originalContent;
+              }, 2000);
+            });
+          }
+        }
+      };
+
+      // 初始化应用
+      document.addEventListener('DOMContentLoaded', () => controller.init());
+
+      const vscode = acquireVsCodeApi();
+
+      // 通知扩展Webview已准备好
+      window.addEventListener('load', () => {
+        vscode.postMessage({ type: 'webview-ready' });
+      });
+      // 处理来自扩展的消息
+      window.addEventListener('message', event => {
+        const message = event.data;
+        switch (message.type) {
+          case 'updateData':
+            controller.updateData(message.data);
+            break;
+        }
+      });
+    </script>
+  </body>
+</html>

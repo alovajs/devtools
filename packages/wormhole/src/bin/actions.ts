@@ -1,5 +1,5 @@
 import { createConfig, generate, readConfig, resolveWorkspaces } from '@/index';
-import { TemplateType } from '@/type/base';
+import type { TemplateType } from '@/type/lib';
 import ora from 'ora';
 
 export const actionInit = async ({ type, cwd }: { type?: TemplateType; cwd?: string }) => {

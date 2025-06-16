@@ -1,9 +1,9 @@
+import { existsPromise, resolveConfigFile } from '@/utils';
 import { glob } from 'glob';
 import yaml from 'js-yaml';
 import nodefs from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { existsPromise, resolveConfigFile } from './utils';
 
 /**
  * Search for all directories containing alova.config configuration files under the monorepo project. It will search for configuration files based on `workspaces` in `package.json` or subpackages defined in `pnpm-workspace.yaml`

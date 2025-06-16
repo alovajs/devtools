@@ -1,5 +1,5 @@
+import { ApiDescriptor } from '~/index';
 import { processApiTags, tagModifier, type ModifierHandler } from '../../src/plugins/presets/tagModifier';
-import type { ApiDescriptor } from '../../src/type/base';
 
 describe('tagModifier plugin tests', () => {
   // Mock API descriptor with tags

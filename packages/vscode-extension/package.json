@@ -13,7 +13,8 @@
     "Other"
   ],
   "activationEvents": [
-    "workspaceContains:package.json"
+    "workspaceContains:package.json",
+    "onView:myTreeView"
   ],
   "main": "out/extension.js",
   "icon": "resources/icon.png",
@@ -28,6 +29,50 @@
         "command": "alova.create.config",
         "category": "Alova",
         "title": "Create alova config"
+      },
+      {
+        "command": "alova.apiDocs.refresh",
+        "title": "Refresh View",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "alova.snippetSearch.open",
+        "title": "打开代码片段搜索",
+        "category": "Snippet Search"
+      },
+      {
+        "command": "alova.snippetSearch.insert",
+        "title": "插入代码片段",
+        "category": "Snippet Search"
+      },
+      {
+        "command": "alova.snippetSearch.showHelp",
+        "title": "显示快捷键帮助",
+        "category": "Snippet Search"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "alova.apiDocs.refresh",
+          "group": "navigation",
+          "when": "view == api-docs-server-view"
+        }
+      ],
+      "view/item/context": [],
+      "commandPalette": [
+        {
+          "command": "alova.snippetSearch.insert",
+          "when": "editorTextFocus"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "alova.snippetSearch.open",
+        "key": "ctrl+alt+p",
+        "mac": "cmd+alt+p",
+        "when": "editorTextFocus"
       }
     ],
     "icons": {
@@ -38,6 +83,29 @@
           "fontCharacter": "\\E64B"
         }
       }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "api-docs-sidebar",
+          "title": "Api docs",
+          "icon": "resources/icon.png"
+        }
+      ]
+    },
+    "views": {
+      "api-docs-sidebar": [
+        {
+          "id": "api-docs-server-view",
+          "name": "Api Server",
+          "type": "tree"
+        },
+        {
+          "id": "api-docs-detail-view",
+          "name": "Api Detail",
+          "type": "webview"
+        }
+      ]
     }
   },
   "scripts": {

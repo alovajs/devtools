@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
+import { ApiDescriptor } from '~/index';
 import { apiFilter, filterApiDescriptor, type Config } from '../../src/plugins/presets/filterApi';
-import type { ApiDescriptor } from '../../src/type/base';
 import { generateWithPlugin } from '../util';
 
 vi.mock('node:fs');

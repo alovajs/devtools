@@ -1,6 +1,5 @@
 /// <reference types='./globals.d.ts' />
 /* tslint:disable */
-/* eslint-disable */
 /**
  * Swagger Generator - version 3.0.57
  *

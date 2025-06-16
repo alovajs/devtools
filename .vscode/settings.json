@@ -19,5 +19,6 @@
   "typescript.tsc.autoDetect": "off",
   "[handlebars]": {
     "editor.defaultFormatter": "monosans.djlint"
-  }
+  },
+  "cSpell.words": ["ALOVA", "APIV", "yapi"]
 }

@@ -1,7 +1,7 @@
 import { generate } from '@/index';
+import type { SchemaObject } from '@/type';
 import fs from 'node:fs/promises';
 import { resolve } from 'node:path';
-import type { OpenAPIV3_1 } from 'openapi-types';
 import { createStrReg } from './util';
 
 vi.mock('node:fs');
@@ -255,7 +255,7 @@ describe('generate API', () => {
   });
 
   test('should generate target versioned code', async () => {
-    const outputDir = resolve(__dirname, './mock_output/openapi_301');
+    const outputDir = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`);
     await generate({
       generator: [
         {
@@ -270,7 +270,7 @@ describe('generate API', () => {
     expect(await fs.readFile(resolve(outputDir, 'createApis.ts'), 'utf-8')).toMatchSnapshot();
     expect(await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8')).toMatchSnapshot();
 
-    const outputDir2 = resolve(__dirname, './mock_output/openapi_301');
+    const outputDir2 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`);
     await generate({
       generator: [
         {
@@ -576,7 +576,6 @@ describe('generate API', () => {
     });
     const fileContentEsm = await fs.readFile(resolve(outputDir, 'createApis.js'), 'utf-8');
     expect(fileContentEsm).toMatch('globalHost.Apis = Apis;');
-
     const outputDir3 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`);
     const outputDir4 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`);
     const results = await generate({
@@ -664,7 +663,7 @@ describe('generate API', () => {
           output: outputDir,
           handleApi(apiDescriptor) {
             if (apiDescriptor.responses?.properties) {
-              const testObject: OpenAPIV3_1.SchemaObject = {
+              const testObject: SchemaObject = {
                 type: 'object',
                 properties: {
                   foo: {
@@ -673,7 +672,7 @@ describe('generate API', () => {
                   }
                 }
               };
-              const foo = testObject.properties!.foo as OpenAPIV3_1.SchemaObject;
+              const foo = testObject.properties!.foo as SchemaObject;
               foo.properties!.bar = testObject;
               apiDescriptor.responses.properties.test = testObject;
             }

@@ -1,5 +1,4 @@
-import type { ApiDescriptor, Parameter } from '@/type/base';
-import { ApiPlugin } from '~/index';
+import type { ApiDescriptor, ApiPlugin, Parameter } from '~/index';
 /**
  * Rename style options
  */
