@@ -34,7 +34,7 @@ function isValidTagName(tag: string): boolean {
  * @param handler Tag modifier handler function
  * @returns Modified API descriptor
  */
-function processApiTags(apiDescriptor: ApiDescriptor, handler: ModifierHandler): ApiDescriptor {
+export function processApiTags(apiDescriptor: ApiDescriptor, handler: ModifierHandler): ApiDescriptor {
   if (!apiDescriptor) return apiDescriptor;
 
   const newDescriptor = { ...apiDescriptor };
@@ -103,10 +103,13 @@ export function tagModifier(handler: ModifierHandler): ApiPlugin {
   }
 
   return {
-    handleApi: (apiDescriptor: ApiDescriptor) => {
-      if (!apiDescriptor) return null;
+    name: 'tagModifier',
+    extends: {
+      handleApi: (apiDescriptor: ApiDescriptor) => {
+        if (!apiDescriptor) return null;
 
-      return processApiTags(apiDescriptor, handler);
+        return processApiTags(apiDescriptor, handler);
+      }
     }
   };
 }

@@ -316,26 +316,6 @@ export const transformPathObj = async (
     return null;
   }
 
-  // Apply all plugins in sequence
-  // Each plugin gets a chance to transform the API descriptor
-  // If a plugin returns null/undefined, the API will be skipped
-  for (const plugin of config.plugins ?? []) {
-    const result = plugin.handleApi?.(newApiDescriptor!) as ApiDescriptor | void | undefined | null;
-
-    // Null return is a valid filter signal
-    if (result === null || result === undefined) {
-      // This API is intentionally filtered out
-      return null;
-    }
-
-    if (typeof result !== 'object') {
-      console.error(`Plugin returned invalid value type: ${typeof result}`);
-      continue;
-    }
-
-    newApiDescriptor = result;
-  }
-
   if (handleApi) {
     try {
       newApiDescriptor = handleApi(newApiDescriptor);

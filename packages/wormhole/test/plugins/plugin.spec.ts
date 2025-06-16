@@ -9,9 +9,11 @@ describe('plugin test', () => {
   test('should apply plugin correctly', async () => {
     const applyFn = vi.fn();
     const nullPlugin = createPlugin(() => ({
-      handleApi: apiDescriptor => {
-        applyFn(apiDescriptor);
-        return null;
+      extends: {
+        handleApi: apiDescriptor => {
+          applyFn(apiDescriptor);
+          return null;
+        }
       }
     }));
 

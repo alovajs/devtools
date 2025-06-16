@@ -102,7 +102,7 @@ function combineFilterResults(apiDescriptor: ApiDescriptor, configs: Config[]): 
  * @param configs Configuration array
  * @returns Filtered API descriptor, or null if filtered out
  */
-function filterApiDescriptor(apiDescriptor: ApiDescriptor, configs: Config[]): ApiDescriptor | null {
+export function filterApiDescriptor(apiDescriptor: ApiDescriptor, configs: Config[]): ApiDescriptor | null {
   if (!apiDescriptor) return null;
 
   // Use union logic to determine whether to keep the API
@@ -148,10 +148,13 @@ export function apiFilter(config: Config | Config[]): ApiPlugin {
   }
 
   return {
-    handleApi: (apiDescriptor: ApiDescriptor) => {
-      if (!apiDescriptor) return null;
+    name: 'filterApi',
+    extends: {
+      handleApi: (apiDescriptor: ApiDescriptor) => {
+        if (!apiDescriptor) return null;
 
-      return filterApiDescriptor(apiDescriptor, configs);
+        return filterApiDescriptor(apiDescriptor, configs);
+      }
     }
   };
 }

@@ -194,7 +194,8 @@ type ApiDescriptor$1 = Omit<OperationObject$1, 'requestBody' | 'parameters' | 'r
   responses?: SchemaObject$1;
 };
 export interface ApiPlugin {
-  handleApi?: HandleApi;
+  name?: string;
+  extends?: Partial<GeneratorConfig> | ((config: GeneratorConfig) => Partial<GeneratorConfig>);
 }
 export interface HandleApi {
   (apiDescriptor: ApiDescriptor$1): ApiDescriptor$1 | void | undefined | null;
@@ -407,4 +408,4 @@ export declare const getApis: (config: Config$1, projectPath?: string) => Api[];
  */
 export function resolveWorkspaces(projectPath?: string): Promise<string[]>;
 
-export {};
+export { };

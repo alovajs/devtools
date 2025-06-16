@@ -1,5 +1,5 @@
 import { resolve } from 'node:path';
-import { apiFilter, type Config } from '../../src/plugins/presets/filterApi';
+import { apiFilter, filterApiDescriptor, type Config } from '../../src/plugins/presets/filterApi';
 import type { ApiDescriptor } from '../../src/type/base';
 import { generateWithPlugin } from '../util';
 
@@ -43,51 +43,47 @@ describe('apiFilter plugin tests', () => {
   describe('Basic filtering functionality', () => {
     test('should include APIs when URL contains specified string', () => {
       const config: Config = { include: 'user' };
-      const plugin = apiFilter(config);
 
-      const result = plugin.handleApi?.(mockApiDescriptorUser);
+      const result = filterApiDescriptor(mockApiDescriptorUser, [config]);
       expect(result).toBeDefined();
       expect(result?.url).toBe('/user/profile');
 
-      const resultAdmin = plugin.handleApi?.(mockApiDescriptorAdmin);
+      const resultAdmin = filterApiDescriptor(mockApiDescriptorAdmin, [config]);
       expect(resultAdmin).toBeNull();
     });
 
     test('should exclude APIs when URL contains specified string', () => {
       const config: Config = { exclude: 'internal' };
-      const plugin = apiFilter(config);
 
-      const result = plugin.handleApi?.(mockApiDescriptorUser);
+      const result = filterApiDescriptor(mockApiDescriptorUser, [config]);
       expect(result).toBeDefined();
       expect(result?.url).toBe('/user/profile');
 
-      const resultInternal = plugin.handleApi?.(mockApiDescriptorInternal);
+      const resultInternal = filterApiDescriptor(mockApiDescriptorInternal, [config]);
       expect(resultInternal).toBeNull();
     });
 
     test('should handle both include and exclude rules', () => {
       const config: Config = { include: 'admin', exclude: 'internal' };
-      const plugin = apiFilter(config);
 
       // Should include admin but not internal
-      const resultAdmin = plugin.handleApi?.(mockApiDescriptorAdmin);
+      const resultAdmin = filterApiDescriptor(mockApiDescriptorAdmin, [config]);
       expect(resultAdmin).toBeDefined();
 
-      const resultInternal = plugin.handleApi?.(mockApiDescriptorInternal);
+      const resultInternal = filterApiDescriptor(mockApiDescriptorInternal, [config]);
       expect(resultInternal).toBeNull();
 
-      const resultUser = plugin.handleApi?.(mockApiDescriptorUser);
+      const resultUser = filterApiDescriptor(mockApiDescriptorUser, [config]);
       expect(resultUser).toBeNull();
     });
 
     test('should work with regex patterns', () => {
       const config: Config = { include: /^\/user/ };
-      const plugin = apiFilter(config);
 
-      const result = plugin.handleApi?.(mockApiDescriptorUser);
+      const result = filterApiDescriptor(mockApiDescriptorUser, [config]);
       expect(result).toBeDefined();
 
-      const resultAdmin = plugin.handleApi?.(mockApiDescriptorAdmin);
+      const resultAdmin = filterApiDescriptor(mockApiDescriptorAdmin, [config]);
       expect(resultAdmin).toBeNull();
     });
 
@@ -95,15 +91,14 @@ describe('apiFilter plugin tests', () => {
       const config: Config = {
         include: (url: string) => url.includes('order') || url.includes('user')
       };
-      const plugin = apiFilter(config);
 
-      const resultUser = plugin.handleApi?.(mockApiDescriptorUser);
+      const resultUser = filterApiDescriptor(mockApiDescriptorUser, [config]);
       expect(resultUser).toBeDefined();
 
-      const resultOrder = plugin.handleApi?.(mockApiDescriptorOrder);
+      const resultOrder = filterApiDescriptor(mockApiDescriptorOrder, [config]);
       expect(resultOrder).toBeDefined();
 
-      const resultAdmin = plugin.handleApi?.(mockApiDescriptorAdmin);
+      const resultAdmin = filterApiDescriptor(mockApiDescriptorAdmin, [config]);
       expect(resultAdmin).toBeNull();
     });
   });
@@ -111,45 +106,41 @@ describe('apiFilter plugin tests', () => {
   describe('Different scope tests', () => {
     test('should filter by URL scope (default)', () => {
       const config: Config = { scope: 'url', include: 'user' };
-      const plugin = apiFilter(config);
 
-      const result = plugin.handleApi?.(mockApiDescriptorUser);
+      const result = filterApiDescriptor(mockApiDescriptorUser, [config]);
       expect(result).toBeDefined();
 
-      const resultAdmin = plugin.handleApi?.(mockApiDescriptorAdmin);
+      const resultAdmin = filterApiDescriptor(mockApiDescriptorAdmin, [config]);
       expect(resultAdmin).toBeNull();
     });
 
     test('should filter by tag scope', () => {
       const config: Config = { scope: 'tag', include: 'admin' };
-      const plugin = apiFilter(config);
 
-      const resultAdmin = plugin.handleApi?.(mockApiDescriptorAdmin);
+      const resultAdmin = filterApiDescriptor(mockApiDescriptorAdmin, [config]);
       expect(resultAdmin).toBeDefined();
 
-      const resultUser = plugin.handleApi?.(mockApiDescriptorUser);
+      const resultUser = filterApiDescriptor(mockApiDescriptorUser, [config]);
       expect(resultUser).toBeNull();
     });
 
     test('should filter by tag scope with multiple tags', () => {
       const config: Config = { scope: 'tag', include: 'profile' };
-      const plugin = apiFilter(config);
 
-      const resultUser = plugin.handleApi?.(mockApiDescriptorUser);
+      const resultUser = filterApiDescriptor(mockApiDescriptorUser, [config]);
       expect(resultUser).toBeDefined();
 
-      const resultAdmin = plugin.handleApi?.(mockApiDescriptorAdmin);
+      const resultAdmin = filterApiDescriptor(mockApiDescriptorAdmin, [config]);
       expect(resultAdmin).toBeNull();
     });
 
     test('should exclude by tag scope', () => {
       const config: Config = { scope: 'tag', exclude: 'internal' };
-      const plugin = apiFilter(config);
 
-      const resultUser = plugin.handleApi?.(mockApiDescriptorUser);
+      const resultUser = filterApiDescriptor(mockApiDescriptorUser, [config]);
       expect(resultUser).toBeDefined();
 
-      const resultInternal = plugin.handleApi?.(mockApiDescriptorInternal);
+      const resultInternal = filterApiDescriptor(mockApiDescriptorInternal, [config]);
       expect(resultInternal).toBeNull();
     });
 
@@ -162,9 +153,8 @@ describe('apiFilter plugin tests', () => {
       };
 
       const config: Config = { scope: 'tag', include: 'user' };
-      const plugin = apiFilter(config);
 
-      const result = plugin.handleApi?.(noTagsApi);
+      const result = filterApiDescriptor(noTagsApi, [config]);
       expect(result).toBeNull();
     });
   });
@@ -172,17 +162,16 @@ describe('apiFilter plugin tests', () => {
   describe('Multiple configuration union logic tests', () => {
     test('should apply union logic with multiple include configs', () => {
       const configs: Config[] = [{ include: 'user' }, { include: 'admin' }];
-      const plugin = apiFilter(configs);
 
       // Should include both user and admin APIs
-      const resultUser = plugin.handleApi?.(mockApiDescriptorUser);
+      const resultUser = filterApiDescriptor(mockApiDescriptorUser, configs);
       expect(resultUser).toBeDefined();
 
-      const resultAdmin = plugin.handleApi?.(mockApiDescriptorAdmin);
+      const resultAdmin = filterApiDescriptor(mockApiDescriptorAdmin, configs);
       expect(resultAdmin).toBeDefined();
 
       // Should exclude order API
-      const resultOrder = plugin.handleApi?.(mockApiDescriptorOrder);
+      const resultOrder = filterApiDescriptor(mockApiDescriptorOrder, configs);
       expect(resultOrder).toBeNull();
     });
 
@@ -191,35 +180,33 @@ describe('apiFilter plugin tests', () => {
         { scope: 'url', include: 'user' },
         { scope: 'tag', include: 'public' }
       ];
-      const plugin = apiFilter(configs);
 
       // Should include user API (matches URL)
-      const resultUser = plugin.handleApi?.(mockApiDescriptorUser);
+      const resultUser = filterApiDescriptor(mockApiDescriptorUser, configs);
       expect(resultUser).toBeDefined();
 
       // Should include order API (matches tag)
-      const resultOrder = plugin.handleApi?.(mockApiDescriptorOrder);
+      const resultOrder = filterApiDescriptor(mockApiDescriptorOrder, configs);
       expect(resultOrder).toBeDefined();
 
       // Should exclude admin API (no match)
-      const resultAdmin = plugin.handleApi?.(mockApiDescriptorAdmin);
+      const resultAdmin = filterApiDescriptor(mockApiDescriptorAdmin, configs);
       expect(resultAdmin).toBeNull();
     });
 
     test('should apply union logic with include and exclude configs', () => {
       const configs: Config[] = [{ include: 'user' }, { include: 'order', exclude: 'admin' }];
-      const plugin = apiFilter(configs);
 
       // Should include user API
-      const resultUser = plugin.handleApi?.(mockApiDescriptorUser);
+      const resultUser = filterApiDescriptor(mockApiDescriptorUser, configs);
       expect(resultUser).toBeDefined();
 
       // Should include order API
-      const resultOrder = plugin.handleApi?.(mockApiDescriptorOrder);
+      const resultOrder = filterApiDescriptor(mockApiDescriptorOrder, configs);
       expect(resultOrder).toBeDefined();
 
       // Should exclude admin API
-      const resultAdmin = plugin.handleApi?.(mockApiDescriptorAdmin);
+      const resultAdmin = filterApiDescriptor(mockApiDescriptorAdmin, configs);
       expect(resultAdmin).toBeNull();
     });
 
@@ -229,22 +216,21 @@ describe('apiFilter plugin tests', () => {
         { scope: 'url', include: /\/admin/ },
         { include: 'order' }
       ];
-      const plugin = apiFilter(configs);
 
       // Should include user API (tag match)
-      const resultUser = plugin.handleApi?.(mockApiDescriptorUser);
+      const resultUser = filterApiDescriptor(mockApiDescriptorUser, configs);
       expect(resultUser).toBeDefined();
 
       // Should include admin API (URL regex match)
-      const resultAdmin = plugin.handleApi?.(mockApiDescriptorAdmin);
+      const resultAdmin = filterApiDescriptor(mockApiDescriptorAdmin, configs);
       expect(resultAdmin).toBeDefined();
 
       // Should include order API (URL string match)
-      const resultOrder = plugin.handleApi?.(mockApiDescriptorOrder);
+      const resultOrder = filterApiDescriptor(mockApiDescriptorOrder, configs);
       expect(resultOrder).toBeDefined();
 
       // Should exclude internal API
-      const resultInternal = plugin.handleApi?.(mockApiDescriptorInternal);
+      const resultInternal = filterApiDescriptor(mockApiDescriptorInternal, configs);
       expect(resultInternal).toBeNull();
     });
   });
@@ -252,17 +238,15 @@ describe('apiFilter plugin tests', () => {
   describe('Edge case tests', () => {
     test('should return null when API descriptor is null', () => {
       const config: Config = { include: 'user' };
-      const plugin = apiFilter(config);
 
-      const result = plugin.handleApi?.(null as any);
+      const result = filterApiDescriptor(null as any, [config]);
       expect(result).toBeNull();
     });
 
     test('should return null when API descriptor is undefined', () => {
       const config: Config = { include: 'user' };
-      const plugin = apiFilter(config);
 
-      const result = plugin.handleApi?.(undefined as any);
+      const result = filterApiDescriptor(undefined as any, config as any);
       expect(result).toBeNull();
     });
 
@@ -275,9 +259,8 @@ describe('apiFilter plugin tests', () => {
       };
 
       const config: Config = { include: 'user' };
-      const plugin = apiFilter(config);
 
-      const result = plugin.handleApi?.(emptyUrlApi);
+      const result = filterApiDescriptor(emptyUrlApi, [config]);
       expect(result).toBeNull();
     });
 
@@ -289,9 +272,8 @@ describe('apiFilter plugin tests', () => {
       } as ApiDescriptor;
 
       const config: Config = { include: 'user' };
-      const plugin = apiFilter(config);
 
-      const result = plugin.handleApi?.(noUrlApi);
+      const result = filterApiDescriptor(noUrlApi, [config]);
       expect(result).toBeNull();
     });
 
@@ -305,28 +287,25 @@ describe('apiFilter plugin tests', () => {
       };
 
       const config: Config = { scope: 'tag', include: 'user' };
-      const plugin = apiFilter(config);
 
-      const result = plugin.handleApi?.(emptyTagsApi);
+      const result = filterApiDescriptor(emptyTagsApi, [config]);
       expect(result).toBeNull();
     });
 
     test('should handle null exclude rule (should include all)', () => {
       const config: Config = { include: 'user', exclude: undefined };
-      const plugin = apiFilter(config);
 
-      const result = plugin.handleApi?.(mockApiDescriptorUser);
+      const result = filterApiDescriptor(mockApiDescriptorUser, [config]);
       expect(result).toBeDefined();
     });
 
     test('should handle null include rule with exclude', () => {
       const config: Config = { include: undefined, exclude: 'internal' };
-      const plugin = apiFilter(config);
 
-      const result = plugin.handleApi?.(mockApiDescriptorUser);
+      const result = filterApiDescriptor(mockApiDescriptorUser, [config]);
       expect(result).toBeDefined();
 
-      const resultInternal = plugin.handleApi?.(mockApiDescriptorInternal);
+      const resultInternal = filterApiDescriptor(mockApiDescriptorInternal, [config]);
       expect(resultInternal).toBeNull();
     });
   });
@@ -384,14 +363,13 @@ describe('apiFilter plugin tests', () => {
           return url.includes('user');
         }
       };
-      const plugin = apiFilter(config);
 
       // Should handle the error gracefully and return false (exclude)
-      const result = plugin.handleApi?.(mockApiDescriptorAdmin);
+      const result = filterApiDescriptor(mockApiDescriptorAdmin, [config]);
       expect(result).toBeNull();
 
       // Should work normally for other URLs
-      const resultUser = plugin.handleApi?.(mockApiDescriptorUser);
+      const resultUser = filterApiDescriptor(mockApiDescriptorUser, [config]);
       expect(resultUser).toBeDefined();
     });
   });

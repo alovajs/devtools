@@ -10,6 +10,7 @@ import { getAlovaJsonPath, writeAlovaJson } from './alovaJson';
 import getAlovaVersion, { AlovaVersion } from './getAlovaVersion';
 import getFrameworkTag from './getFrameworkTag';
 import openApi2Data from './openApi2Data';
+import { prepareConfig } from './prepareConfig';
 
 const DEFAULT_CONFIG = getGlobalConfig();
 export default async function (
@@ -42,6 +43,9 @@ export default async function (
     : `v${configVersion}`;
   const templateFile = new TemplateFile(type, alovaVersion);
   // Convert open api object to template object
+
+  // Merge plugin extends
+  config = prepareConfig(config);
 
   const templateData = await openApi2Data(data, config);
   // Framework technology stack tag vue | react

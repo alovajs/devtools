@@ -1,4 +1,4 @@
-import { tagModifier, type ModifierHandler } from '../../src/plugins/presets/tagModifier';
+import { processApiTags, tagModifier, type ModifierHandler } from '../../src/plugins/presets/tagModifier';
 import type { ApiDescriptor } from '../../src/type/base';
 
 describe('tagModifier plugin tests', () => {
@@ -21,9 +21,8 @@ describe('tagModifier plugin tests', () => {
 
   test('should convert tags to uppercase', () => {
     const handler: ModifierHandler = (tag: string) => tag.toUpperCase();
-    const plugin = tagModifier(handler);
 
-    const result = plugin.handleApi?.(mockApiDescriptor);
+    const result = processApiTags(mockApiDescriptor, handler);
 
     expect(result).toBeDefined();
     expect(result?.tags).toEqual(['USER', 'API', 'MANAGEMENT']);
@@ -31,9 +30,8 @@ describe('tagModifier plugin tests', () => {
 
   test('should add prefix to tags', () => {
     const handler: ModifierHandler = (tag: string) => `api-${tag}`;
-    const plugin = tagModifier(handler);
 
-    const result = plugin.handleApi?.(mockApiDescriptor);
+    const result = processApiTags(mockApiDescriptor, handler);
 
     expect(result).toBeDefined();
     expect(result?.tags).toEqual(['api-user', 'api-api', 'api-management']);
@@ -41,9 +39,8 @@ describe('tagModifier plugin tests', () => {
 
   test('should remove tags when handler returns null', () => {
     const handler: ModifierHandler = (tag: string) => (tag === 'api' ? null : tag);
-    const plugin = tagModifier(handler);
 
-    const result = plugin.handleApi?.(mockApiDescriptor);
+    const result = processApiTags(mockApiDescriptor, handler);
 
     expect(result).toBeDefined();
     expect(result?.tags).toEqual(['user', 'management']);
@@ -51,9 +48,8 @@ describe('tagModifier plugin tests', () => {
 
   test('should remove tags when handler returns undefined', () => {
     const handler: ModifierHandler = (tag: string) => (tag === 'management' ? undefined : tag);
-    const plugin = tagModifier(handler);
 
-    const result = plugin.handleApi?.(mockApiDescriptor);
+    const result = processApiTags(mockApiDescriptor, handler);
 
     expect(result).toBeDefined();
     expect(result?.tags).toEqual(['user', 'api']);
@@ -61,9 +57,8 @@ describe('tagModifier plugin tests', () => {
 
   test('should remove multiple tags', () => {
     const handler: ModifierHandler = (tag: string) => (['api', 'management'].includes(tag) ? null : tag.toUpperCase());
-    const plugin = tagModifier(handler);
 
-    const result = plugin.handleApi?.(mockApiDescriptor);
+    const result = processApiTags(mockApiDescriptor, handler);
 
     expect(result).toBeDefined();
     expect(result?.tags).toEqual(['USER']);
@@ -71,9 +66,8 @@ describe('tagModifier plugin tests', () => {
 
   test('should return original descriptor when no tags exist', () => {
     const handler: ModifierHandler = (tag: string) => tag.toUpperCase();
-    const plugin = tagModifier(handler);
 
-    const result = plugin.handleApi?.(mockApiDescriptorNoTags);
+    const result = processApiTags(mockApiDescriptorNoTags, handler);
 
     expect(result).toBeDefined();
     expect(result?.tags).toBeUndefined();
@@ -81,9 +75,8 @@ describe('tagModifier plugin tests', () => {
 
   test('should keep original tag when transformed tag is invalid', () => {
     const handler: ModifierHandler = (tag: string) => `${tag}@#!`; // Add invalid characters
-    const plugin = tagModifier(handler);
 
-    const result = plugin.handleApi?.(mockApiDescriptor);
+    const result = processApiTags(mockApiDescriptor, handler);
 
     expect(result).toBeDefined();
     // Should keep original tags because new tags contain invalid characters
@@ -104,9 +97,8 @@ describe('tagModifier plugin tests', () => {
       }
       return tag.toUpperCase();
     };
-    const plugin = tagModifier(handler);
 
-    const result = plugin.handleApi?.(mockApiDescriptor);
+    const result = processApiTags(mockApiDescriptor, handler);
 
     expect(result).toBeDefined();
     // user -> USER, api -> api (kept original due to error), management -> MANAGEMENT
@@ -120,9 +112,8 @@ describe('tagModifier plugin tests', () => {
     };
 
     const handler: ModifierHandler = (tag: string) => tag.toUpperCase();
-    const plugin = tagModifier(handler);
 
-    const result = plugin.handleApi?.(apiDescriptorEmptyTags);
+    const result = processApiTags(apiDescriptorEmptyTags, handler);
 
     expect(result).toBeDefined();
     expect(result?.tags).toEqual([]);
@@ -130,18 +121,16 @@ describe('tagModifier plugin tests', () => {
 
   test('should return null when API descriptor is null', () => {
     const handler: ModifierHandler = (tag: string) => tag.toUpperCase();
-    const plugin = tagModifier(handler);
 
-    const result = plugin.handleApi?.(null as any);
+    const result = processApiTags(null as any, handler);
 
     expect(result).toBeNull();
   });
 
   test('should remove all tags when handler always returns null', () => {
     const handler: ModifierHandler = () => null;
-    const plugin = tagModifier(handler);
 
-    const result = plugin.handleApi?.(mockApiDescriptor);
+    const result = processApiTags(mockApiDescriptor, handler);
 
     expect(result).toBeDefined();
     expect(result?.tags).toEqual([]);

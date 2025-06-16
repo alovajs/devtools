@@ -255,14 +255,17 @@ export function rename(config: RenameConfig | RenameConfig[]): ApiPlugin {
   }
 
   return {
-    handleApi: (apiDescriptor: ApiDescriptor) => {
-      if (!apiDescriptor) return null;
+    name: 'rename',
+    extends: {
+      handleApi: (apiDescriptor: ApiDescriptor) => {
+        if (!apiDescriptor) return null;
 
-      // Apply each configuration in sequence
-      return configs.reduce<ApiDescriptor | null>((desc, conf) => {
-        if (!desc) return null;
-        return renameApiDescriptor(desc, conf);
-      }, apiDescriptor);
+        // Apply each configuration in sequence
+        return configs.reduce<ApiDescriptor | null>((desc, conf) => {
+          if (!desc) return null;
+          return renameApiDescriptor(desc, conf);
+        }, apiDescriptor);
+      }
     }
   };
 }
