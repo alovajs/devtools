@@ -5,7 +5,7 @@ exports[`generate API > should generate code from an url 1`] = `
 /* tslint:disable */
 /* eslint-disable */
 /**
- * Swagger Generator - version 3.0.66
+ * Swagger Generator - version 3.0.68
  *
  * This is an online swagger codegen server.  You can find out more at https://github.com/swagger-api/swagger-codegen or on [irc.freenode.net, #swagger](http://swagger.io/irc/).
  *
@@ -78,7 +78,7 @@ exports[`generate API > should generate code from an url 3`] = `
 "/* tslint:disable */
 /* eslint-disable */
 /**
- * Swagger Generator - version 3.0.66
+ * Swagger Generator - version 3.0.68
  *
  * This is an online swagger codegen server.  You can find out more at https://github.com/swagger-api/swagger-codegen or on [irc.freenode.net, #swagger](http://swagger.io/irc/).
  *
@@ -173,7 +173,7 @@ exports[`generate API > should generate code from an url 4`] = `
 "/* tslint:disable */
 /* eslint-disable */
 /**
- * Swagger Generator - version 3.0.66
+ * Swagger Generator - version 3.0.68
  *
  * This is an online swagger codegen server.  You can find out more at https://github.com/swagger-api/swagger-codegen or on [irc.freenode.net, #swagger](http://swagger.io/irc/).
  *
@@ -2414,7 +2414,7 @@ exports[`generate API > should generate code from an url 5`] = `
 /* tslint:disable */
 /* eslint-disable */
 /**
- * Swagger Generator - version 3.0.66
+ * Swagger Generator - version 3.0.68
  *
  * This is an online swagger codegen server.  You can find out more at https://github.com/swagger-api/swagger-codegen or on [irc.freenode.net, #swagger](http://swagger.io/irc/).
  *
@@ -2487,7 +2487,7 @@ exports[`generate API > should generate code from an url 7`] = `
 "/* tslint:disable */
 /* eslint-disable */
 /**
- * Swagger Generator - version 3.0.66
+ * Swagger Generator - version 3.0.68
  *
  * This is an online swagger codegen server.  You can find out more at https://github.com/swagger-api/swagger-codegen or on [irc.freenode.net, #swagger](http://swagger.io/irc/).
  *
@@ -2582,7 +2582,7 @@ exports[`generate API > should generate code from an url 8`] = `
 "/* tslint:disable */
 /* eslint-disable */
 /**
- * Swagger Generator - version 3.0.66
+ * Swagger Generator - version 3.0.68
  *
  * This is an online swagger codegen server.  You can find out more at https://github.com/swagger-api/swagger-codegen or on [irc.freenode.net, #swagger](http://swagger.io/irc/).
  *
