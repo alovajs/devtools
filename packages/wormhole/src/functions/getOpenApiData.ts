@@ -49,29 +49,66 @@ async function parseRemoteFile(url: string, platformType?: PlatformType) {
   // There is no platform type and there is an extension
 
   const dataText = (await fetchData(url)) ?? '';
+  let data: any;
   switch (extname) {
     case 'yaml': {
-      const data = YAML.load(dataText) as any;
-      return data;
+      data = YAML.load(dataText) as any;
+      break;
     }
     // Json
 
     default: {
-      return JSON.parse(dataText);
+      data = JSON.parse(dataText);
+      break;
     }
   }
+
+  // Validate if the data is valid (prevent server from returning error responses)
+  if (!isValidOpenApiData(data)) {
+    throw new Error(`Data retrieved from URL ${url} is not a valid OpenAPI document`);
+  }
+
+  return data;
 }
+
 // Parse platform openapi files
+function isValidOpenApiData(data: any): boolean {
+  if (!data || typeof data !== 'object') {
+    return false;
+  }
+
+  // Check if it's an error response format (e.g., {"code": -1, "msg": "URL does not exist", "data": null})
+  if (data.code !== undefined && data.msg !== undefined) {
+    return false;
+  }
+
+  // Check if it contains required OpenAPI/Swagger structure
+  return !!(data.openapi || data.swagger || data.info || data.paths);
+}
 
 export async function getPlatformOpenApiData(url: string, platformType: PlatformType) {
   switch (platformType) {
     case 'swagger': {
-      const dataText =
-        (await fetchData(url)
-          .then(text => JSON.stringify(JSON.parse(text)))
-          .catch(() => fetchData(`${url}/openapi.json`))
-          .catch(() => fetchData(`${url}/v2/swagger.json`))) ?? '';
-      return JSON.parse(dataText);
+      const urlsToTry = [url, `${url}/openapi.json`, `${url}/v2/swagger.json`];
+
+      for (const tryUrl of urlsToTry) {
+        try {
+          const dataText = await fetchData(tryUrl);
+          if (!dataText) continue;
+
+          const data = JSON.parse(dataText);
+          if (isValidOpenApiData(data)) {
+            return data;
+          }
+          // If data is invalid, continue to next URL
+        } catch {
+          // If request or parsing fails, continue to next URL
+          continue;
+        }
+      }
+
+      // If all URLs fail or return invalid data, throw error
+      throw new Error(`Unable to retrieve valid OpenAPI document from any URL: ${urlsToTry.join(', ')}`);
     }
     default:
       break;
