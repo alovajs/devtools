@@ -14,7 +14,7 @@ export class GeneratorHelper {
   private static instance: GeneratorHelper;
   private config: GeneratorConfig;
   private readConfig: Readonly<GeneratorConfig>;
-  static readonly defaultConfig: GeneratorConfig = Object.freeze({
+  private readonly defaultConfig: GeneratorConfig = Object.freeze({
     input: '',
     output: '',
     responseMediaType: 'application/json',
@@ -31,7 +31,6 @@ export class GeneratorHelper {
     }
     return GeneratorHelper.instance;
   }
-
   public static load(config: GeneratorConfig) {
     const ins = new GeneratorHelper();
     return ins.load(config);
@@ -39,9 +38,12 @@ export class GeneratorHelper {
   public getConfig() {
     return this.readConfig;
   }
+  public getDefaultConfig() {
+    return this.defaultConfig;
+  }
   public async load(config: Partial<GeneratorConfig>) {
     // 合并配置
-    const mergedConfig = { ...GeneratorHelper.defaultConfig, ...config };
+    const mergedConfig = { ...this.defaultConfig, ...config };
     // 验证配置
     const validatedConfig = await GeneratorHelper.validateConfig(mergedConfig);
     // 更新配置

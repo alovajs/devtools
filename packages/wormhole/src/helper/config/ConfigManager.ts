@@ -1,5 +1,6 @@
-import { GeneratorHelper, logger } from '@/helper';
-import { isArray, isObject, mergeWith } from 'lodash';
+import { logger } from '@/helper';
+import { generatorHelper } from '@/helper/config/GeneratorHelper';
+import { isArray, isObject, mergeWith, omit } from 'lodash';
 import { fromError } from 'zod-validation-error';
 import type { Config, GeneratorConfig } from './type';
 import { zConfig } from './zType';
@@ -13,11 +14,8 @@ export class ConfigManager {
     generator: [],
     autoUpdate: true
   });
-  private readonly defaultGeneratorConfig: GeneratorConfig = GeneratorHelper.defaultConfig;
-  private readonly defaultOneGeneratorConfig: GeneratorConfig = Object.freeze({
-    ...this.defaultGeneratorConfig,
-    global: 'Apis'
-  });
+  private readonly defaultGeneratorConfig: GeneratorConfig = omit(generatorHelper.getDefaultConfig(), ['global']);
+  private readonly defaultOneGeneratorConfig: GeneratorConfig = generatorHelper.getDefaultConfig();
   private constructor() {
     this.config = this.defaultConfig;
   }
