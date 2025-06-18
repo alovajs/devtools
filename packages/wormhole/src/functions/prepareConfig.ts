@@ -1,5 +1,5 @@
+import { GeneratorConfig } from '@/type';
 import { cloneDeep, mergeWith } from 'lodash';
-import { GeneratorConfig } from '~/index';
 
 export function extendsConfig(config: GeneratorConfig, newConfig: Partial<GeneratorConfig>): GeneratorConfig {
   const mergedConfig = cloneDeep(config);

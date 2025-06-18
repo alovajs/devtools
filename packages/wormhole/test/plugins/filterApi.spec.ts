@@ -1,6 +1,6 @@
+import { apiFilter, filterApiDescriptor, type FilterApiConfig } from '@/plugins/presets/filterApi';
+import { ApiDescriptor } from '@/type';
 import { resolve } from 'node:path';
-import { ApiDescriptor } from '~/index';
-import { apiFilter, filterApiDescriptor, type Config } from '../../src/plugins/presets/filterApi';
 import { generateWithPlugin } from '../util';
 
 vi.mock('node:fs');
@@ -42,7 +42,7 @@ describe('apiFilter plugin tests', () => {
 
   describe('Basic filtering functionality', () => {
     test('should include APIs when URL contains specified string', () => {
-      const config: Config = { include: 'user' };
+      const config: FilterApiConfig = { include: 'user' };
 
       const result = filterApiDescriptor(mockApiDescriptorUser, [config]);
       expect(result).toBeDefined();
@@ -53,7 +53,7 @@ describe('apiFilter plugin tests', () => {
     });
 
     test('should exclude APIs when URL contains specified string', () => {
-      const config: Config = { exclude: 'internal' };
+      const config: FilterApiConfig = { exclude: 'internal' };
 
       const result = filterApiDescriptor(mockApiDescriptorUser, [config]);
       expect(result).toBeDefined();
@@ -64,7 +64,7 @@ describe('apiFilter plugin tests', () => {
     });
 
     test('should handle both include and exclude rules', () => {
-      const config: Config = { include: 'admin', exclude: 'internal' };
+      const config: FilterApiConfig = { include: 'admin', exclude: 'internal' };
 
       // Should include admin but not internal
       const resultAdmin = filterApiDescriptor(mockApiDescriptorAdmin, [config]);
@@ -78,7 +78,7 @@ describe('apiFilter plugin tests', () => {
     });
 
     test('should work with regex patterns', () => {
-      const config: Config = { include: /^\/user/ };
+      const config: FilterApiConfig = { include: /^\/user/ };
 
       const result = filterApiDescriptor(mockApiDescriptorUser, [config]);
       expect(result).toBeDefined();
@@ -88,7 +88,7 @@ describe('apiFilter plugin tests', () => {
     });
 
     test('should work with function matchers', () => {
-      const config: Config = {
+      const config: FilterApiConfig = {
         include: (url: string) => url.includes('order') || url.includes('user')
       };
 
@@ -105,7 +105,7 @@ describe('apiFilter plugin tests', () => {
 
   describe('Different scope tests', () => {
     test('should filter by URL scope (default)', () => {
-      const config: Config = { scope: 'url', include: 'user' };
+      const config: FilterApiConfig = { scope: 'url', include: 'user' };
 
       const result = filterApiDescriptor(mockApiDescriptorUser, [config]);
       expect(result).toBeDefined();
@@ -115,7 +115,7 @@ describe('apiFilter plugin tests', () => {
     });
 
     test('should filter by tag scope', () => {
-      const config: Config = { scope: 'tag', include: 'admin' };
+      const config: FilterApiConfig = { scope: 'tag', include: 'admin' };
 
       const resultAdmin = filterApiDescriptor(mockApiDescriptorAdmin, [config]);
       expect(resultAdmin).toBeDefined();
@@ -125,7 +125,7 @@ describe('apiFilter plugin tests', () => {
     });
 
     test('should filter by tag scope with multiple tags', () => {
-      const config: Config = { scope: 'tag', include: 'profile' };
+      const config: FilterApiConfig = { scope: 'tag', include: 'profile' };
 
       const resultUser = filterApiDescriptor(mockApiDescriptorUser, [config]);
       expect(resultUser).toBeDefined();
@@ -135,7 +135,7 @@ describe('apiFilter plugin tests', () => {
     });
 
     test('should exclude by tag scope', () => {
-      const config: Config = { scope: 'tag', exclude: 'internal' };
+      const config: FilterApiConfig = { scope: 'tag', exclude: 'internal' };
 
       const resultUser = filterApiDescriptor(mockApiDescriptorUser, [config]);
       expect(resultUser).toBeDefined();
@@ -152,7 +152,7 @@ describe('apiFilter plugin tests', () => {
         operationId: 'getNoTags'
       };
 
-      const config: Config = { scope: 'tag', include: 'user' };
+      const config: FilterApiConfig = { scope: 'tag', include: 'user' };
 
       const result = filterApiDescriptor(noTagsApi, [config]);
       expect(result).toBeNull();
@@ -161,7 +161,7 @@ describe('apiFilter plugin tests', () => {
 
   describe('Multiple configuration union logic tests', () => {
     test('should apply union logic with multiple include configs', () => {
-      const configs: Config[] = [{ include: 'user' }, { include: 'admin' }];
+      const configs: FilterApiConfig[] = [{ include: 'user' }, { include: 'admin' }];
 
       // Should include both user and admin APIs
       const resultUser = filterApiDescriptor(mockApiDescriptorUser, configs);
@@ -176,7 +176,7 @@ describe('apiFilter plugin tests', () => {
     });
 
     test('should apply union logic with mixed scope configs', () => {
-      const configs: Config[] = [
+      const configs: FilterApiConfig[] = [
         { scope: 'url', include: 'user' },
         { scope: 'tag', include: 'public' }
       ];
@@ -195,7 +195,7 @@ describe('apiFilter plugin tests', () => {
     });
 
     test('should apply union logic with include and exclude configs', () => {
-      const configs: Config[] = [{ include: 'user' }, { include: 'order', exclude: 'admin' }];
+      const configs: FilterApiConfig[] = [{ include: 'user' }, { include: 'order', exclude: 'admin' }];
 
       // Should include user API
       const resultUser = filterApiDescriptor(mockApiDescriptorUser, configs);
@@ -211,7 +211,7 @@ describe('apiFilter plugin tests', () => {
     });
 
     test('should work with complex union conditions', () => {
-      const configs: Config[] = [
+      const configs: FilterApiConfig[] = [
         { scope: 'tag', include: 'user' },
         { scope: 'url', include: /\/admin/ },
         { include: 'order' }
@@ -237,14 +237,14 @@ describe('apiFilter plugin tests', () => {
 
   describe('Edge case tests', () => {
     test('should return null when API descriptor is null', () => {
-      const config: Config = { include: 'user' };
+      const config: FilterApiConfig = { include: 'user' };
 
       const result = filterApiDescriptor(null as any, [config]);
       expect(result).toBeNull();
     });
 
     test('should return null when API descriptor is undefined', () => {
-      const config: Config = { include: 'user' };
+      const config: FilterApiConfig = { include: 'user' };
 
       const result = filterApiDescriptor(undefined as any, config as any);
       expect(result).toBeNull();
@@ -258,7 +258,7 @@ describe('apiFilter plugin tests', () => {
         operationId: 'getEmpty'
       };
 
-      const config: Config = { include: 'user' };
+      const config: FilterApiConfig = { include: 'user' };
 
       const result = filterApiDescriptor(emptyUrlApi, [config]);
       expect(result).toBeNull();
@@ -271,7 +271,7 @@ describe('apiFilter plugin tests', () => {
         operationId: 'getNoUrl'
       } as ApiDescriptor;
 
-      const config: Config = { include: 'user' };
+      const config: FilterApiConfig = { include: 'user' };
 
       const result = filterApiDescriptor(noUrlApi, [config]);
       expect(result).toBeNull();
@@ -286,21 +286,21 @@ describe('apiFilter plugin tests', () => {
         operationId: 'getEmptyTags'
       };
 
-      const config: Config = { scope: 'tag', include: 'user' };
+      const config: FilterApiConfig = { scope: 'tag', include: 'user' };
 
       const result = filterApiDescriptor(emptyTagsApi, [config]);
       expect(result).toBeNull();
     });
 
     test('should handle null exclude rule (should include all)', () => {
-      const config: Config = { include: 'user', exclude: undefined };
+      const config: FilterApiConfig = { include: 'user', exclude: undefined };
 
       const result = filterApiDescriptor(mockApiDescriptorUser, [config]);
       expect(result).toBeDefined();
     });
 
     test('should handle null include rule with exclude', () => {
-      const config: Config = { include: undefined, exclude: 'internal' };
+      const config: FilterApiConfig = { include: undefined, exclude: 'internal' };
 
       const result = filterApiDescriptor(mockApiDescriptorUser, [config]);
       expect(result).toBeDefined();
@@ -312,7 +312,7 @@ describe('apiFilter plugin tests', () => {
 
   describe('Error handling tests', () => {
     test('should throw error when neither include nor exclude is specified', () => {
-      const config: Config = {};
+      const config: FilterApiConfig = {};
 
       expect(() => {
         apiFilter(config);
@@ -320,7 +320,7 @@ describe('apiFilter plugin tests', () => {
     });
 
     test('should throw error for multiple configs when none have include or exclude', () => {
-      const configs: Config[] = [{ scope: 'url' }, { scope: 'tag' }];
+      const configs: FilterApiConfig[] = [{ scope: 'url' }, { scope: 'tag' }];
 
       expect(() => {
         apiFilter(configs);
@@ -328,7 +328,7 @@ describe('apiFilter plugin tests', () => {
     });
 
     test('should throw error when one config in array is invalid', () => {
-      const configs: Config[] = [
+      const configs: FilterApiConfig[] = [
         { include: 'user' },
         { scope: 'tag' } // Missing include/exclude
       ];
@@ -339,7 +339,7 @@ describe('apiFilter plugin tests', () => {
     });
 
     test('should work when at least one valid config exists in single config', () => {
-      const config: Config = { include: 'user' };
+      const config: FilterApiConfig = { include: 'user' };
 
       expect(() => {
         apiFilter(config);
@@ -347,7 +347,11 @@ describe('apiFilter plugin tests', () => {
     });
 
     test('should work when all configs in array are valid', () => {
-      const configs: Config[] = [{ include: 'user' }, { exclude: 'internal' }, { scope: 'tag', include: 'admin' }];
+      const configs: FilterApiConfig[] = [
+        { include: 'user' },
+        { exclude: 'internal' },
+        { scope: 'tag', include: 'admin' }
+      ];
 
       expect(() => {
         apiFilter(configs);
@@ -355,7 +359,7 @@ describe('apiFilter plugin tests', () => {
     });
 
     test('should handle function matcher that throws error gracefully', () => {
-      const config: Config = {
+      const config: FilterApiConfig = {
         include: (url: string) => {
           if (url === '/admin/dashboard') {
             throw new Error('Test error');

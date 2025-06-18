@@ -1,4 +1,4 @@
-import { ApiPlugin } from '~/index';
+import { ApiPlugin } from '@/type';
 
 /**
  * Creates a plugin factory function with proper typing

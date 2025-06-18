@@ -1,4 +1,4 @@
-import { logger } from '@/helper';
+import { GeneratorHelper, logger } from '@/helper';
 import { isArray, isObject, mergeWith } from 'lodash';
 import { fromError } from 'zod-validation-error';
 import type { Config, GeneratorConfig } from './type';
@@ -13,16 +13,7 @@ export class ConfigManager {
     generator: [],
     autoUpdate: true
   });
-  private readonly defaultGeneratorConfig: GeneratorConfig = Object.freeze({
-    input: '',
-    output: '',
-    responseMediaType: 'application/json',
-    bodyMediaType: 'application/json',
-    type: 'auto',
-    globalHost: 'globalThis',
-    useImportType: false,
-    defaultRequire: false
-  });
+  private readonly defaultGeneratorConfig: GeneratorConfig = GeneratorHelper.defaultConfig;
   private readonly defaultOneGeneratorConfig: GeneratorConfig = Object.freeze({
     ...this.defaultGeneratorConfig,
     global: 'Apis'

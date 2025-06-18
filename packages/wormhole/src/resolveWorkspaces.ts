@@ -6,7 +6,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 /**
- * Search for all directories containing alova.config configuration files under the monorepo project. It will search for configuration files based on `workspaces` in `package.json` or subpackages defined in `pnpm-workspace.yaml`
+ * Search for all directories containing alova.config configuration files under the monorepo project. It will search for configuration files based on `workspaces` in `package.json` or sub packages defined in `pnpm-workspace.yaml`
  * @param projectPath The project path to search, defaults to `process.cwd()`.
  * @returns An array of relative paths to directories containing alova.config configuration files.
  */
@@ -20,7 +20,7 @@ export default async function resolveWorkspaces(projectPath = process.cwd()) {
     resultDirs.push(projectPath);
   }
 
-  // Find subpackages based on workspaces in package.json or pnpm-workspace.yaml
+  // Find sub packages based on workspaces in package.json or pnpm-workspace.yaml
 
   const packageJsonPath = path.join(projectPath, 'package.json');
   const pnpmWorkspacePathYaml = path.join(projectPath, 'pnpm-workspace.yaml');

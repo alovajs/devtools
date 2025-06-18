@@ -1,7 +1,7 @@
 import { standardLoader } from '@/core/loader';
+import { ApiPlugin } from '@/type';
 import path from 'node:path';
 import { z } from 'zod';
-import { ApiPlugin } from '~/index';
 /**
  * Find the corresponding input attribute value
  */

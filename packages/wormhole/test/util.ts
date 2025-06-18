@@ -1,9 +1,9 @@
 import { generate } from '@/index';
+import { ApiPlugin } from '@/type';
 import isEqualWith from 'lodash/isEqualWith';
 import fs from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { expect } from 'vitest';
-import { ApiPlugin } from '~/index';
 
 // Customize the comparator function and ignore the comparison of the function
 function customizer(objValue: any, othValue: any) {

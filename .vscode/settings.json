@@ -20,5 +20,5 @@
   "[handlebars]": {
     "editor.defaultFormatter": "monosans.djlint"
   },
-  "cSpell.words": ["ALOVA", "APIV", "yapi"]
+  "cSpell.words": ["ALOVA", "APIV", "nodefs", "yapi"]
 }

@@ -1,9 +1,9 @@
-import type { ApiDescriptor, ApiPlugin } from '~/index';
-
+import { logger } from '@/helper/logger';
+import type { ApiDescriptor, ApiPlugin } from '@/type';
 /**
  * Filter configuration interface
  */
-export interface Config {
+export interface FilterApiConfig {
   /**
    * Target scope for filtering, defaults to 'url'
    */
@@ -72,7 +72,7 @@ function getApiProperty(apiDescriptor: ApiDescriptor, scope: 'url' | 'tag'): str
  * @param config Filter configuration
  * @returns Whether it passes the filter (true means keep, false means filter out)
  */
-function applyFilterRule(apiDescriptor: ApiDescriptor, config: Config): boolean {
+function applyFilterRule(apiDescriptor: ApiDescriptor, config: FilterApiConfig): boolean {
   const scope = config.scope || 'url';
   const value = getApiProperty(apiDescriptor, scope);
 
@@ -90,7 +90,7 @@ function applyFilterRule(apiDescriptor: ApiDescriptor, config: Config): boolean 
  * @param configs Configuration array
  * @returns Whether it passes the filter (true means keep, false means filter out)
  */
-function combineFilterResults(apiDescriptor: ApiDescriptor, configs: Config[]): boolean {
+function combineFilterResults(apiDescriptor: ApiDescriptor, configs: FilterApiConfig[]): boolean {
   // If any configuration matches, keep the API (union logic)
   return configs.some(config => applyFilterRule(apiDescriptor, config));
 }
@@ -101,7 +101,7 @@ function combineFilterResults(apiDescriptor: ApiDescriptor, configs: Config[]): 
  * @param configs Configuration array
  * @returns Filtered API descriptor, or null if filtered out
  */
-export function filterApiDescriptor(apiDescriptor: ApiDescriptor, configs: Config[]): ApiDescriptor | null {
+export function filterApiDescriptor(apiDescriptor: ApiDescriptor, configs: FilterApiConfig[]): ApiDescriptor | null {
   if (!apiDescriptor) return null;
 
   // Use union logic to determine whether to keep the API
@@ -136,13 +136,13 @@ export function filterApiDescriptor(apiDescriptor: ApiDescriptor, configs: Confi
  * ]);
  * ```
  */
-export function apiFilter(config: Config | Config[]): ApiPlugin {
+export function apiFilter(config: FilterApiConfig | FilterApiConfig[]): ApiPlugin {
   const configs = Array.isArray(config) ? config : [config];
 
   // Validate configuration
   for (const conf of configs) {
     if (!conf.include && !conf.exclude) {
-      throw new Error('at least one of `include` or `exclude` must be specified');
+      throw logger.throwError('at least one of `include` or `exclude` must be specified');
     }
   }
 

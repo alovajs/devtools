@@ -1,4 +1,4 @@
-import type { ApiDescriptor, ApiPlugin } from '~/index';
+import type { ApiDescriptor, ApiPlugin } from '@/type';
 
 /**
  * Tag modifier handler function type

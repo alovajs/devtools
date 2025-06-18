@@ -72,12 +72,12 @@ export type TemplateType = z.infer<typeof zTemplateType>;
  * platform type
  */
 export type PlatformType = z.infer<typeof zPlatformType>;
-export interface HandleApi {
-  (apiDescriptor: ApiDescriptor): ApiDescriptor | void | undefined | null;
-}
 export interface ApiPlugin {
   name?: string;
   extends?: Partial<GeneratorConfig> | ((config: GeneratorConfig) => Partial<GeneratorConfig>);
+}
+export interface HandleApi {
+  (apiDescriptor: ApiDescriptor): ApiDescriptor | void | undefined | null;
 }
 export type GeneratorConfig = {
   /**
@@ -240,6 +240,164 @@ export declare const createConfig: ({ projectPath, type }?: ConfigCreationOption
  */
 export declare const generate: (config: Config, rules?: GenerateApiOptions) => Promise<boolean[]>;
 /**
+ * Creates a plugin factory function with proper typing
+ *
+ * @param plugin - Function that creates a plugin instance
+ * @returns The original plugin function with proper typing
+ *
+ * @example
+ * // Create a custom plugin
+ * const myPlugin = createPlugin((options: MyOptions) => ({
+ *   handleApi: (apiDescriptor) => {
+ *     // Plugin implementation
+ *     return apiDescriptor;
+ *   }
+ * }));
+ *
+ * // Use the plugin
+ * generate({
+ *   generator: [{
+ *     // ...
+ *     plugins: [myPlugin({ key: 'value' })]
+ *   }]
+ * });
+ */
+export declare function createPlugin<T extends any[]>(plugin: (...args: T) => ApiPlugin): (...args: T) => ApiPlugin;
+/**
+ * Filter configuration interface
+ */
+export interface FilterApiConfig {
+  /**
+   * Target scope for filtering, defaults to 'url'
+   */
+  scope?: 'url' | 'tag';
+  /**
+   * Include rule:
+   * - string: target contains this string
+   * - RegExp: target matches this pattern
+   * - function: custom matching logic
+   */
+  include?: string | RegExp | ((key: string) => boolean);
+  /**
+   * Exclude rule:
+   * - string: target contains this string
+   * - RegExp: target matches this pattern
+   * - function: custom matching logic
+   */
+  exclude?: string | RegExp | ((key: string) => boolean);
+}
+/**
+ * Main processing function for filtering API descriptors
+ * @param apiDescriptor API descriptor
+ * @param configs Configuration array
+ * @returns Filtered API descriptor, or null if filtered out
+ */
+export declare function filterApiDescriptor(
+  apiDescriptor: ApiDescriptor,
+  configs: FilterApiConfig[]
+): ApiDescriptor | null;
+/**
+ * Creates a plugin for filtering APIs
+ *
+ * @param config Filter configuration, can be a single config or array of configs
+ * @returns API plugin instance
+ *
+ * @example
+ * ```ts
+ * // Only include URLs containing 'user'
+ * const userOnlyFilter = apiFilter({
+ *   include: 'user'
+ * });
+ *
+ * // Exclude tags containing 'internal'
+ * const noInternalFilter = apiFilter({
+ *   scope: 'tag',
+ *   exclude: 'internal'
+ * });
+ *
+ * // Multi-condition filtering (union)
+ * const multiFilter = apiFilter([
+ *   { include: 'user' },
+ *   { include: 'admin' }
+ * ]);
+ * ```
+ */
+export declare function apiFilter(config: FilterApiConfig | FilterApiConfig[]): ApiPlugin;
+/**
+ * Rename style options
+ */
+export type RenameStyle = 'camelCase' | 'kebabCase' | 'snakeCase' | 'pascalCase';
+/**
+ * Rename plugin configuration
+ */
+export interface RenameConfig {
+  /**
+   * Target scope for renaming, defaults to 'url'
+   */
+  scope?: 'url' | 'params' | 'pathParams' | 'data' | 'response';
+  /**
+   * Matching rule for selective renaming:
+   * - string: target contains this string
+   * - RegExp: target matches this pattern
+   * - function: custom matching logic
+   * If not specified, all targets will be processed
+   */
+  match?: string | RegExp | ((key: string) => boolean);
+  /**
+   * Naming style to apply
+   */
+  style?: RenameStyle;
+  /**
+   * Custom transformation function
+   * Will be applied before style transformation
+   */
+  transform?: (apiDescriptor: ApiDescriptor) => string;
+}
+/**
+ * Creates a rename plugin that transforms API descriptors
+ * according to specified naming rules
+ */
+export declare function rename(config: RenameConfig | RenameConfig[]): ApiPlugin;
+/**
+ * Tag modifier handler function type
+ * Receives a tag string and returns the modified tag string, or null/undefined/void to remove the tag
+ */
+export type ModifierHandler = (tag: string) => string | null | undefined | void;
+/**
+ * Processes tags in the API descriptor
+ * @param apiDescriptor The API descriptor
+ * @param handler Tag modifier handler function
+ * @returns Modified API descriptor
+ */
+export declare function processApiTags(apiDescriptor: ApiDescriptor, handler: ModifierHandler): ApiDescriptor;
+/**
+ * Creates a tag modifier plugin
+ *
+ * @param handler Tag modifier handler function that receives a tag string and returns modified tag or null/undefined/void to remove the tag
+ * @returns API plugin instance
+ *
+ * @example
+ * ```ts
+ * // Convert all tags to uppercase
+ * const upperCasePlugin = tagModifier(tag => tag.toUpperCase());
+ *
+ * // Add prefix to tags
+ * const prefixPlugin = tagModifier(tag => `api-${tag}`);
+ *
+ * // Remove specific tags
+ * const filterPlugin = tagModifier(tag => tag === 'internal' ? null : tag);
+ *
+ * // Use the plugin
+ * export default {
+ *   generator: [{
+ *     // ...other config
+ *     plugins: [upperCasePlugin]
+ *   }]
+ * };
+ * ```
+ */
+export declare function tagModifier(handler: ModifierHandler): ApiPlugin;
+/**
  * Read the alova.config configuration file and return the parsed configuration object.
  * @param projectPath The project path where the configuration file is located. The default value is `process.cwd()`.
  * @returns a promise instance that contains configuration object.
@@ -252,7 +410,7 @@ export declare const getAutoUpdateConfig: (config: Config) => Promise<{
 }>;
 export declare const getApiDocs: (config: Config, projectPath?: string) => Promise<ApiDoc[][]>;
 /**
- * Search for all directories containing alova.config configuration files under the monorepo project. It will search for configuration files based on `workspaces` in `package.json` or subpackages defined in `pnpm-workspace.yaml`
+ * Search for all directories containing alova.config configuration files under the monorepo project. It will search for configuration files based on `workspaces` in `package.json` or sub packages defined in `pnpm-workspace.yaml`
  * @param projectPath The project path to search, defaults to `process.cwd()`.
  * @returns An array of relative paths to directories containing alova.config configuration files.
  */

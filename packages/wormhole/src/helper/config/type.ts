@@ -1,6 +1,6 @@
 import type { ApiDescriptor } from '@/type/api';
 import { z } from 'zod';
-import { ApiPlugin } from '~/index';
+// import { ApiPlugin } from '@/type';
 import { zConfigType, zPlatformType, zTemplateType } from './zType';
 
 /**
@@ -15,7 +15,10 @@ export type TemplateType = z.infer<typeof zTemplateType>;
  * platform type
  */
 export type PlatformType = z.infer<typeof zPlatformType>;
-
+export interface ApiPlugin {
+  name?: string;
+  extends?: Partial<GeneratorConfig> | ((config: GeneratorConfig) => Partial<GeneratorConfig>);
+}
 export interface HandleApi {
   (apiDescriptor: ApiDescriptor): ApiDescriptor | void | undefined | null;
 }
