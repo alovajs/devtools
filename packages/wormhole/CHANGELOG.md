@@ -1,5 +1,11 @@
 # @alova/wormhole
 
+## 1.0.7
+
+### Patch Changes
+
+- [#69](https://github.com/alovajs/devtools/pull/69) [`0e293cc`](https://github.com/alovajs/devtools/commit/0e293cc4e5f76099b5287ad1f4a62c94f43482c3) Thanks [@LittleTurtle2333](https://github.com/LittleTurtle2333)! - Fixes issue where invalid responses like {"code": -1, "msg": "URL does not exist"} would generate empty apiDefinitions and global objects.
+
 ## 1.0.6
 
 ### Patch Changes
