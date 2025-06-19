@@ -4,6 +4,7 @@ import path from 'node:path';
 const projectPath = path.resolve(__dirname, '../');
 
 const DESIGN_NO_DIR = ['api-common'];
+const EXCLUDE_DIR = ['node_modules'];
 /**
  * Recursively copies files from one directory to another
  * @param {string} src - The source directory
@@ -20,9 +21,11 @@ function copyDirectory(src: string, dest: string) {
 
   // Loop through each entry in the source directory
   for (const entry of entries) {
+    if (EXCLUDE_DIR.includes(entry.name)) {
+      continue;
+    }
     const srcPath = path.join(src, entry.name);
     const destPath = path.join(dest, entry.name);
-
     // If entry is a directory, recursively copy it
     if (entry.isDirectory()) {
       copyDirectory(srcPath, destPath);

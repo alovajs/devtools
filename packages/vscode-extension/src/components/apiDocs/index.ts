@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
+import { ApiCodeLensProvider } from './apiCodeLen';
 import { ApiDetailProvider } from './apiDetail';
-import { ApiHoverProvider } from './apiHover';
 import { ApiServerProvider } from './apiServer';
 import { commandMap } from './command';
 
@@ -11,7 +11,8 @@ export function activate(context: vscode.ExtensionContext) {
   // 注册视图
   const apiServerProvider = new ApiServerProvider(context);
   const apiDetailProvider = new ApiDetailProvider(context);
-  const apiHoverProvider = new ApiHoverProvider(context);
+  // const apiHoverProvider = new ApiHoverProvider(context);
+  const apiCodeLensProvider = new ApiCodeLensProvider(context);
   const apiServerTreeView = vscode.window.createTreeView('api-docs-server-view', {
     treeDataProvider: apiServerProvider
   });
@@ -30,8 +31,8 @@ export function activate(context: vscode.ExtensionContext) {
       apiServerProvider.refresh();
     })
   );
-  // 注册悬停提供器
-  vscode.languages.registerHoverProvider('*', apiHoverProvider);
+  // 注册CodeLens提供器
+  vscode.languages.registerCodeLensProvider('*', apiCodeLensProvider);
   // 监听活动编辑器变更
   vscode.window.onDidChangeActiveTextEditor(editor => {
     if (editor) {

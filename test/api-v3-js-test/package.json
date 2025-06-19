@@ -1,8 +1,9 @@
 {
-  "name": "api-v3-js-test",
+  "name": "api-common",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "commonjs",
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -12,7 +13,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "alova": "3.0.0-beta.10",
+    "@alova/mock": "^1.5.2",
+    "alova": "^2.21.3",
     "vue": "^3.4.27"
   },
   "devDependencies": {
