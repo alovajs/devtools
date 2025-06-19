@@ -1,23 +1,25 @@
 {
-  "name": "api-common",
+  "name": "api-ts-test",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "type": "commonjs",
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "gen": "openapi --input ./openapi.yaml --output ./src/api"
+    "gen": "openapi --input ./openapi.yaml --output ./src/api",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@alova/mock": "^1.5.2",
-    "alova": "^2.21.3",
+    "alova": "^2.20.5",
     "vue": "^3.4.27"
   },
   "devDependencies": {
-    "@alova/wormhole": "workspace:^"
+    "@alova/wormhole": "workspace:^",
+    "openapi": "^1.0.1",
+    "typescript": "^5.4.5"
   }
 }

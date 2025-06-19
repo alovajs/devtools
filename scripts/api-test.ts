@@ -4,7 +4,7 @@ import path from 'node:path';
 const projectPath = path.resolve(__dirname, '../');
 
 const DESIGN_NO_DIR = ['api-common'];
-const EXCLUDE_DIR = ['node_modules'];
+const EXCLUDE_DIR = ['node_modules', 'package.json'];
 /**
  * Recursively copies files from one directory to another
  * @param {string} src - The source directory

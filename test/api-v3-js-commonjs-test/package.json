@@ -1,5 +1,5 @@
 {
-  "name": "api-common",
+  "name": "api-v3-js-commonjs-test",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -13,8 +13,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@alova/mock": "^1.5.2",
-    "alova": "^2.21.3",
+    "@alova/adapter-xhr": "2.0.0-beta.8",
+    "alova": "3.0.0-beta.10",
     "vue": "^3.4.27"
   },
   "devDependencies": {
