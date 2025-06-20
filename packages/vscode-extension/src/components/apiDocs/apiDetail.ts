@@ -7,6 +7,8 @@ export class ApiDetailProvider implements vscode.WebviewViewProvider {
   private _view?: vscode.WebviewView;
   private _isWebviewReady = false;
   private _pendingUpdates: any[] = [];
+  private _onWebViewReady = new vscode.EventEmitter<ApiDetailProvider>();
+  readonly onWebViewReady = this._onWebViewReady.event;
   constructor(private context: vscode.ExtensionContext) {}
 
   resolveWebviewView(webviewView: vscode.WebviewView): void {
@@ -29,6 +31,7 @@ export class ApiDetailProvider implements vscode.WebviewViewProvider {
             this._view?.webview.postMessage(update);
           });
           this._pendingUpdates = [];
+          this._onWebViewReady.fire(this);
           break;
         }
         case 'refresh': {

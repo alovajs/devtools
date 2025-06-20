@@ -18,17 +18,6 @@
 
   <body>
     <div class="container">
-      <!-- <div class="api-selector">
-        <select
-          id="api-select"
-          class="api-select">
-          <option value="">选择API查看文档...</option>
-          <option value="postAccountUser">POST /account/user/{version}</option>
-          <option value="getUserProfile">GET /user/{id}/profile</option>
-          <option value="updateProduct">PUT /products/{id}</option>
-        </select>
-      </div> -->
-
       <div
         class="api-container"
         id="api-container">
@@ -37,7 +26,7 @@
 
       <div class="footer">
         <button
-          class="copy-btn"
+          class="copy-btn no"
           id="copy-btn">
           <svg
             width="14"
@@ -165,7 +154,11 @@
           if (!comment) {
             return '';
           }
-          const pureComment = comment.replace(/\n\*/g, '\n').replace(/^\* /gm, '').trim();
+          const pureComment = comment
+            .replace(/\n\*/g, '\n')
+            .replace(/^\* /gm, '')
+            .replace(/Array<(.+)>/g, 'Array< \$1 >')
+            .trim();
           if (!pureComment) {
             return '';
           }
@@ -228,7 +221,10 @@
           this.setupEventListeners();
           this.wathThemeChange();
         },
-
+        elements: {
+          apiContainer: document.getElementById('api-container'),
+          copyBtn: document.getElementById('copy-btn')
+        },
         wathThemeChange() {
           const lightPrismUrl = 'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css';
           const darkPrismUrl = 'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css';
@@ -262,9 +258,11 @@
         updateData(api) {
           if (!api) {
             this.elements.apiContainer.innerHTML = `<div class="no-content">没有Api详细信息</div>`;
+            this.elements.copyBtn.classList.add('no');
             return;
           }
           this.elements.apiContainer.innerHTML = renderService.renderApiDocumentation(api);
+          this.elements.copyBtn.classList.remove('no');
           this.setupTabs();
         },
 

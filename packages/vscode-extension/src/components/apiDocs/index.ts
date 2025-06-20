@@ -3,7 +3,11 @@ import { ApiCodeLensProvider } from './apiCodeLen';
 import { ApiDetailProvider } from './apiDetail';
 import { ApiServerProvider } from './apiServer';
 import { commandMap } from './command';
-
+// 展开特定视图
+export async function expandView(viewId: string) {
+  // 聚焦到目标视图
+  await vscode.commands.executeCommand(`${viewId}.focus`);
+}
 export const utils = {
   async openApiDocs(_apiId: string) {}
 };
@@ -11,7 +15,6 @@ export function activate(context: vscode.ExtensionContext) {
   // 注册视图
   const apiServerProvider = new ApiServerProvider(context);
   const apiDetailProvider = new ApiDetailProvider(context);
-  // const apiHoverProvider = new ApiHoverProvider(context);
   const apiCodeLensProvider = new ApiCodeLensProvider(context);
   const apiServerTreeView = vscode.window.createTreeView('api-docs-server-view', {
     treeDataProvider: apiServerProvider
@@ -22,7 +25,14 @@ export function activate(context: vscode.ExtensionContext) {
   apiServerTreeView.onDidChangeSelection(e => {
     if (e.selection.length > 0) {
       const selectedItem = e.selection[0];
+      expandView('api-docs-detail-view');
       apiDetailProvider.updateView(selectedItem.api);
+    }
+  });
+  apiDetailProvider.onWebViewReady(detail => {
+    const selectedItem = apiServerTreeView.selection[0];
+    if (selectedItem) {
+      detail.updateView(selectedItem.api);
     }
   });
   // 注册命令
