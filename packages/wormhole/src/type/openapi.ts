@@ -13,3 +13,4 @@ export type ResponsesObject = OpenAPIV3_1.ResponsesObject;
 export type RequestBodyObject = OpenAPIV3_1.RequestBodyObject;
 export type ParameterObject = OpenAPIV3_1.ParameterObject;
 export type ArraySchemaObject = OpenAPIV3_1.ArraySchemaObject;
+export type SchemaType = OpenAPIV3_1.NonArraySchemaObjectType | OpenAPIV3_1.ArraySchemaObjectType;

@@ -127,7 +127,7 @@ export async function getPlatformOpenApiData(url: string, platformType: Platform
       }
 
       // If all URLs fail or return invalid data, throw error
-      throw new Error(`Unable to retrieve valid OpenAPI document from any URL: ${urlsToTry.join(', ')}`);
+      throw logger.throwError(`Unable to retrieve valid OpenAPI document from any URL: ${urlsToTry.join(', ')}`);
     }
     default:
       break;

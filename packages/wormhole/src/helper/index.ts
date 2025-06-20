@@ -1,3 +1,4 @@
+export * from './comment';
 export * from './config';
 export * from './document';
 export * from './logger';
