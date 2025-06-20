@@ -9,9 +9,9 @@ const AUTOUPDATE_MAP = new Map<
   { time: number; immediate: boolean; timer: ReturnType<typeof highPrecisionInterval> }
 >();
 
-export function refeshAutoUpdate(configuration: ConfigObject) {
+export async function refeshAutoUpdate(configuration: ConfigObject) {
   const [, config] = configuration;
-  const { time, immediate, isStop } = wormhole.getAutoUpdateConfig(config);
+  const { time, immediate, isStop } = await wormhole.getAutoUpdateConfig(config);
   const oldConfig = AUTOUPDATE_MAP.get(configuration[0]);
   // Filter out configured timers
 

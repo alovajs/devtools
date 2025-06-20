@@ -39,7 +39,7 @@ module.exports = {
       // 未指定此函数时则不转换apiDescripor对象
       // apiDescriptor的格式与openapi文件的接口对象格式相同
       // 对类型生成也同样适用123
-      handleApi: (apiDescriptor, log) => {
+      handleApi: apiDescriptor => {
         // 返回空表示过滤掉此api
         // if (!apiDescriptor.url.startsWith('/generate')) {
         //   return;

@@ -5,6 +5,7 @@
     "module": "CommonJS",
     "resolveJsonModule": false,
     "esModuleInterop": true,
+    "skipLibCheck": false,
     "types": ["vitest/globals"],
     "paths": {
       "~/*": ["./typings/*"],
