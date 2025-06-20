@@ -37,7 +37,7 @@ export const simpleTypeGenerator = (ast: AST, ctx: GeneratorCtx) => {
     case ASTType.LITERAL:
       result.code = JSON.stringify(ast.params);
       break;
-    case ASTType.REFERENCE:
+    case ASTType.REFERENCE: // reference
       result.code = ast.params;
       break;
     default:

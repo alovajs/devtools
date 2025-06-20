@@ -4,7 +4,7 @@ interface CommentOptions {
   type: CommentType;
   comment?: string;
 }
-type TransformKey = '[deprecated]' | '[title]' | '[required]';
+type TransformKey = '[deprecated]' | '[title]' | '[required]' | '[cycle]' | '[summary]';
 export class CommentHelper {
   private type: CommentType = 'line';
   private comment: string = '';
@@ -13,6 +13,14 @@ export class CommentHelper {
     '[required]': '[required]',
     '[title]': (text: string) => {
       const [, nextText = ''] = /\[title\](.*)/.exec(text) ?? [];
+      return `${nextText.trim()}\n---`;
+    },
+    '[cycle]': (text: string) => {
+      const [, nextText = ''] = /\[cycle\](.*)/.exec(text) ?? [];
+      return `${nextText.trim()}\n---`;
+    },
+    '[summary]': (text: string) => {
+      const [, nextText = ''] = /\[summary\](.*)/.exec(text) ?? [];
       return `${nextText.trim()}\n---`;
     }
   };

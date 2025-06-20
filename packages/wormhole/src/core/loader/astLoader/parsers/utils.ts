@@ -1,30 +1,34 @@
 import { CommentHelper } from '@/helper';
-import { AbstractAST, ASTType, CommentType, SchemaObject } from '@/type';
-import { ParserCtx } from './type';
+import { AbstractAST, ASTType, CommentType, ReferenceObject, SchemaObject } from '@/type';
+import { isReferenceObject } from '@/utils';
+import { ASTParser, ParserCtx, ParserSchemaType } from './type';
 
 export const getCommentBySchema = (
-  schema: SchemaObject,
+  schema: SchemaObject | ReferenceObject,
   options: {
     type: CommentType;
   }
 ) => {
   const commenter = CommentHelper.load(options);
-  if (schema.title) {
+  if (!isReferenceObject(schema) && schema.title) {
     commenter.add('[title]', schema.title);
+  }
+  if (isReferenceObject(schema) && schema.summary) {
+    commenter.add('[summary]', schema.summary);
   }
   if (schema.description) {
     commenter.add(schema.description);
   }
   return commenter.end();
 };
-export const initAST = (schema: SchemaObject, ctx: ParserCtx) => {
+export const initAST = (schema: SchemaObject | ReferenceObject, ctx: ParserCtx) => {
   const result: AbstractAST = {
     type: ASTType.UNKNOWN,
     comment: getCommentBySchema(schema, {
       type: ctx.options.commentType
     }),
     keyName: ctx.keyName,
-    deprecated: schema.deprecated
+    deprecated: isReferenceObject(schema) ? false : schema.deprecated
   };
   ctx.keyName = '';
   return result;
@@ -73,3 +77,18 @@ export function getType(value: unknown) {
   // 普通对象
   return 'Object';
 }
+export const parse = (
+  schema: SchemaObject | ReferenceObject,
+  options: {
+    type: ParserSchemaType;
+    ctx: ParserCtx;
+    parsers: ASTParser[];
+  }
+) => {
+  const { type, ctx, parsers } = options;
+  const parser = parsers.find(parser => [parser.type].flat().includes(type));
+  if (parser) {
+    return parser.parse(schema, ctx);
+  }
+  return null;
+};

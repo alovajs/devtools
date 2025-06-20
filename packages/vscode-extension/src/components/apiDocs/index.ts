@@ -25,7 +25,9 @@ export function activate(context: vscode.ExtensionContext) {
   apiServerTreeView.onDidChangeSelection(e => {
     if (e.selection.length > 0) {
       const selectedItem = e.selection[0];
-      expandView('api-docs-detail-view');
+      if (selectedItem.api) {
+        expandView('api-docs-detail-view');
+      }
       apiDetailProvider.updateView(selectedItem.api);
     }
   });

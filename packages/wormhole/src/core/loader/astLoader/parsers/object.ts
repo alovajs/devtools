@@ -11,6 +11,7 @@ export const objectTypeParser = (schema: SchemaObject, ctx: ParserCtx): AST => {
   const properties = schema.properties || {};
   const required = new Set(schema.required ?? []);
   for (const [key, value] of Object.entries(properties)) {
+    ctx.pathKey = key;
     result.params.push({
       ast: ctx.next(value, ctx.options),
       keyName: key,

@@ -48,6 +48,19 @@ export const parseReference = <T, U = Exclude<T, ReferenceObject>>(
   }
   return obj as unknown as U;
 };
+export const dereference = <T, U = Exclude<T, ReferenceObject>>(
+  obj: T,
+  document: OpenAPIDocument,
+  isDeep: boolean = false
+): U => {
+  if (isReferenceObject(obj)) {
+    const result = findBy$ref<U & { description?: string }>(obj.$ref, document, isDeep);
+    if (obj.description) {
+      result.description = obj.description;
+    }
+  }
+  return obj as unknown as U;
+};
 /**
  *
  * @param path $ref path
