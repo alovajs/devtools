@@ -1,6 +1,6 @@
 import { getGlobalConfig } from '@/config';
 import { standardLoader } from '@/core/loader';
-import type { OpenAPIDocument, ReferenceObject, ResponsesObject, SchemaObject } from '@/type';
+import type { MaybeArraySchemaObject, OpenAPIDocument, ReferenceObject, ResponsesObject, SchemaObject } from '@/type';
 import { capitalizeFirstLetter } from '@/utils';
 import { cloneDeep, isArray, isEqualWith, isObject, mergeWith, sortBy } from 'lodash';
 /**
@@ -13,6 +13,9 @@ export function isReferenceObject(obj: any): obj is ReferenceObject {
 }
 function isBaseReferenceObject(obj: any): obj is { _$ref: string } & Record<string, any> {
   return !!(obj as { _$ref: string })?._$ref;
+}
+export function isMaybeArraySchemaObject(obj: any): obj is MaybeArraySchemaObject {
+  return !!(obj as MaybeArraySchemaObject)?.items;
 }
 
 /**
