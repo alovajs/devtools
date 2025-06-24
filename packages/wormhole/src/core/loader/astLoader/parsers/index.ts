@@ -1,6 +1,13 @@
 import { ASTType, ReferenceObject, SchemaObject, TUnknown } from '@/type';
 import { isReferenceObject } from '@/utils';
+import arrayParser from './array';
+import enumParser from './enum';
 import { forward } from './forward';
+import groupParser from './group';
+import objectParser from './object';
+import referenceParser from './reference';
+import simpleParser from './simple';
+import tupleParser from './tuple';
 import { ParserCtx, ParserOptions, ParserSchemaType } from './type';
 import { parse } from './utils';
 
@@ -38,7 +45,7 @@ export const astParse = (schema: SchemaObject | ReferenceObject, options: Parser
   const value = parse(schema, {
     type: getParserSchemaType(schema),
     ctx,
-    parsers: []
+    parsers: [arrayParser, objectParser, enumParser, simpleParser, referenceParser, tupleParser, groupParser]
   });
   if (!value) {
     return {

@@ -13,7 +13,7 @@ export type ResponsesObject = OpenAPIV3_1.ResponsesObject;
 export type RequestBodyObject = OpenAPIV3_1.RequestBodyObject;
 export type ParameterObject = OpenAPIV3_1.ParameterObject;
 export type ArraySchemaObject = OpenAPIV3_1.ArraySchemaObject;
-
+export type TupleSchemaObject = Omit<ArraySchemaObject, 'items'> & { items: MaybeSchemaObject[] };
 export type SchemaType = OpenAPIV3_1.NonArraySchemaObjectType | OpenAPIV3_1.ArraySchemaObjectType;
 export type MaybeSchemaObject = SchemaObject | ReferenceObject;
 export type MaybeArraySchemaObject = Exclude<SchemaObject, OpenAPIV3_1.NonArraySchemaObject> & {

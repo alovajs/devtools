@@ -3,6 +3,7 @@ import convertTypeArray from './rules/convertTypeArray';
 import handleEmptyType from './rules/handleEmptyType';
 import inferType from './rules/inferType';
 import mergeAnyOf from './rules/mergeAnyOf';
+import normalizeCombiningKeywords from './rules/normalizeCombiningKeywords';
 import normalizeEnum from './rules/normalizeEnum';
 import normalizeNullType from './rules/normalizeNullType';
 import removeRedundantKeywords from './rules/removeRedundantKeywords';
@@ -32,6 +33,11 @@ normalizer
     name: 'normalizeEnum',
     description: '规范化枚举类型',
     handler: normalizeEnum
+  })
+  .addRule({
+    name: 'normalizeCombiningKeywords',
+    description: '规范化anyOf/oneOf/allOf 关键字',
+    handler: normalizeCombiningKeywords
   })
   .addRule({
     name: 'mergeAnyOf',
