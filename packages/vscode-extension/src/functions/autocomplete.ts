@@ -45,4 +45,4 @@ const filterAutoCompleteItem = (text: string, apiArr: Api[]): AutoCompleteItem[]
   return autoCompleteArr;
 };
 export default async (text: string, filePath: string): Promise<AutoCompleteItem[]> =>
-  filterAutoCompleteItem(text, getApis(filePath));
+  filterAutoCompleteItem(text, await getApis(filePath));

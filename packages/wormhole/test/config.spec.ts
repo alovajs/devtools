@@ -1,5 +1,5 @@
 import { createConfig, readConfig } from '@/index';
-import type { Config } from '@/interface.type';
+import type { Config } from '@/type';
 import { existsPromise } from '@/utils';
 import fs from 'node:fs/promises';
 import { resolve } from 'node:path';

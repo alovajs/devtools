@@ -1,6 +1,6 @@
 import Error from '@/components/error';
 import { refeshAutoUpdate, removeConfiguration } from '@/helper/autoUpdate';
-import { CONFIG_POOL } from '@/helper/config';
+import { CONFIG_POOL, ON_CONFIG_CHANGE } from '@/helper/config';
 import wormhole from '@/helper/wormhole';
 import { getWorkspacePaths } from '@/utils/vscode';
 import type { Config } from '@alova/wormhole';
@@ -42,6 +42,8 @@ export default async (workspaceRootPathArr: string | string[]) => {
     refeshAutoUpdate(configuration);
     configNum += 1;
   }
+  ON_CONFIG_CHANGE.forEach(fn => fn());
+  ON_CONFIG_CHANGE.splice(0, ON_CONFIG_CHANGE.length);
   return { configNum, errorArr };
 };
 export const updatedConfigPool = async () => {

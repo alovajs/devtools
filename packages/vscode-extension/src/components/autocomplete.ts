@@ -1,6 +1,7 @@
 import autocompleteCommand from '@/commands/autocomplete';
 import autocomplete from '@/functions/autocomplete';
 import * as vscode from 'vscode';
+import type { CodeSnippet } from './codeSnippet';
 
 const triggerCharacters: string[] = [' ', '.', '>', '》', ':', '-'];
 class AutoComplete extends vscode.CompletionItem {}
@@ -11,11 +12,10 @@ export default vscode.languages.registerCompletionItemProvider(
       document: vscode.TextDocument,
       position: vscode.Position,
       _,
-      context: vscode.CompletionContext
+      _context: vscode.CompletionContext
     ) {
       // Support newline code from starting position to input position
       const text = document.lineAt(position).text.slice(0, position.character);
-      console.log('Trigger character:', context.triggerCharacter);
       // const linePrefix = ;
       if (/a-(>|》).*/.test(text)) {
         const [, , value] = /a-(>|》)(.*)[\s.>:-]?/.exec(text) || [];
@@ -39,3 +39,16 @@ export default vscode.languages.registerCompletionItemProvider(
   },
   ...triggerCharacters // Characters that trigger auto-completion
 );
+
+export const getAutocompleteCodeSnippet = async (text: string, filePath: string): Promise<CodeSnippet[]> =>
+  (await autocomplete(text, filePath)).map(item => {
+    const codeSnippet: CodeSnippet = {
+      id: item.path,
+      name: `[${item.method}] ${item.summary}`,
+      description: item.path,
+      language: '*',
+      code: item.replaceText,
+      tags: ['alova']
+    };
+    return codeSnippet;
+  });

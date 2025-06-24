@@ -10,3 +10,4 @@ type LastOf<T> =
 declare type UnionToTuple<T, L = LastOf<T>, N = [T] extends [never] ? true : false> = true extends N
   ? []
   : [...UnionToTuple<Exclude<T, L>>, L];
+type Modify<T, R> = Omit<T, keyof R> & R;

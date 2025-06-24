@@ -1,5 +1,7 @@
 import { commands } from '@/commands';
 import setup from '@/commands/setup';
+import apiDocs from '@/components/apiDocs';
+import codeSnippet from '@/components/codeSnippet';
 import * as vscode from 'vscode';
 
 export function activate(context: vscode.ExtensionContext) {
@@ -7,6 +9,8 @@ export function activate(context: vscode.ExtensionContext) {
   commands.forEach(({ commandId, handler }) => {
     context.subscriptions.push(vscode.commands.registerCommand(commandId, handler(context)));
   });
+  apiDocs.activate(context);
+  codeSnippet.activate(context);
   vscode.commands.executeCommand(setup.commandId);
 }
 
