@@ -1,4 +1,4 @@
-import { schemaLoader, standardLoader } from '@/core/loader';
+import { astLoader, schemaLoader } from '@/core/loader';
 import type {
   ApiDescriptor,
   ApiMethod,
@@ -22,50 +22,40 @@ import {
 } from '@/utils';
 import { cloneDeep, isEmpty } from 'lodash';
 
-const remove$ref = (
+const getTsStr = (
   originObj: SchemaObject | ReferenceObject,
-  openApi: OpenAPIDocument,
-  config: GeneratorConfig,
-  schemasMap?: Map<string, string>,
-  preText: string = '',
-  searchMap: Map<string, string> = new Map(),
-  map: Map<string, string> = new Map()
-): Promise<string> =>
-  schemaLoader.transform(originObj, {
-    document: openApi,
+  options: {
+    document: OpenAPIDocument;
+    config: GeneratorConfig;
+    schemasMap?: Map<string, string>;
+    preText?: string;
+  }
+): Promise<string> => {
+  const { document, preText = '', config, schemasMap } = options;
+  return schemaLoader.transform(originObj, {
+    document,
     deep: false,
-    commentStyle: 'document',
+    commentType: 'doc',
     preText,
-    searchMap,
     defaultRequire: config.defaultRequire,
-    on$Ref(refOject) {
-      const type = standardLoader.transformRefName(refOject.$ref);
-      if (schemasMap && !schemasMap.has(type)) {
-        schemaLoader
-          .transformTsStr(refOject, {
-            name: type,
-            document: openApi,
-            export: true,
-            defaultRequire: config.defaultRequire,
-            on$RefTsStr(name, tsStr) {
-              schemasMap.set(name, tsStr);
-            },
-            searchMap,
-            map
-          })
-          .then(schema => {
-            schemasMap.set(type, schema);
-          });
+    async onReference(ast) {
+      if (ast.keyName && schemasMap && !schemasMap.has(ast.keyName)) {
+        const result = await astLoader.transformTsStr(ast, {
+          shallowDeep: true,
+          commentType: 'doc',
+          format: true,
+          export: true
+        });
+        schemasMap.set(ast.keyName, result);
       }
     }
   });
+};
 export const parseResponse = async (
   responses: ResponsesObject | undefined,
-  openApi: OpenAPIDocument,
+  document: OpenAPIDocument,
   config: GeneratorConfig,
-  schemasMap: Map<string, string>,
-  searchMap: Map<string, string>,
-  removeMap: Map<string, string>
+  schemasMap: Map<string, string>
 ) => {
   const successKey = getResponseSuccessKey(responses);
   const responseInfo = responses?.[successKey];
@@ -76,29 +66,30 @@ export const parseResponse = async (
     };
   }
   const responseObject: ResponseObject = isReferenceObject(responseInfo)
-    ? findBy$ref(responseInfo.$ref, openApi)
+    ? findBy$ref(responseInfo.$ref, document)
     : responseInfo;
   const key = getContentKey(responseObject.content, config.responseMediaType);
   const responseSchema = responseObject?.content?.[key]?.schema ?? {};
-  const responseName = await remove$ref(responseSchema, openApi, config, schemasMap, '', removeMap);
+  const responseName = await getTsStr(responseSchema, {
+    document,
+    config,
+    schemasMap
+  });
   return {
     responseName,
     responseComment: await schemaLoader.transform(responseSchema, {
-      document: openApi,
+      document,
       deep: true,
       preText: '* ',
-      searchMap,
       defaultRequire: config.defaultRequire
     })
   };
 };
 export const parseRequestBody = async (
   requestBody: RequestBodyObject | ReferenceObject | undefined,
-  openApi: OpenAPIDocument,
+  document: OpenAPIDocument,
   config: GeneratorConfig,
-  schemasMap: Map<string, string>,
-  searchMap: Map<string, string>,
-  removeMap: Map<string, string>
+  schemasMap: Map<string, string>
 ) => {
   if (!requestBody) {
     return {
@@ -107,18 +98,17 @@ export const parseRequestBody = async (
     };
   }
   const requestBodyObject: RequestBodyObject = isReferenceObject(requestBody)
-    ? findBy$ref(requestBody.$ref, openApi)
+    ? findBy$ref(requestBody.$ref, document)
     : requestBody;
   const key = getContentKey(requestBodyObject.content, config.bodyMediaType);
   const requestBodySchema = requestBodyObject?.content?.[key]?.schema ?? {};
-  const requestName = await remove$ref(requestBodySchema, openApi, config, schemasMap, '', removeMap);
+  const requestName = await getTsStr(requestBodySchema, { document, config, schemasMap });
   return {
     requestName,
     requestComment: await schemaLoader.transform(requestBodySchema, {
-      document: openApi,
+      document,
       deep: true,
       preText: '* ',
-      searchMap,
       defaultRequire: config.defaultRequire
     })
   };
@@ -132,11 +122,9 @@ const getContentKey = (content: Record<string, any> = {}, requireKey = 'applicat
 };
 export const parseParameters = async (
   parameters: (ReferenceObject | ParameterObject)[] | undefined,
-  openApi: OpenAPIDocument,
+  document: OpenAPIDocument,
   config: GeneratorConfig,
-  schemasMap: Map<string, string>,
-  searchMap: Map<string, string>,
-  removeMap: Map<string, string>
+  schemasMap: Map<string, string>
 ) => {
   const pathParameters: SchemaObject = {
     type: 'object'
@@ -146,7 +134,7 @@ export const parseParameters = async (
   };
   for (const refParameter of parameters || []) {
     const parameter = isReferenceObject(refParameter)
-      ? findBy$ref<ParameterObject>(refParameter.$ref, openApi)
+      ? findBy$ref<ParameterObject>(refParameter.$ref, document)
       : refParameter;
     if (parameter.in === 'path') {
       if (!pathParameters.properties) {
@@ -186,22 +174,28 @@ export const parseParameters = async (
   let pathParametersComment = '';
   let queryParametersComment = '';
   if (Object.keys(pathParameters.properties ?? {}).length) {
-    pathParametersStr = await remove$ref(pathParameters, openApi, config, schemasMap, '', removeMap);
+    pathParametersStr = await getTsStr(pathParameters, {
+      document,
+      config,
+      schemasMap
+    });
     pathParametersComment = await schemaLoader.transform(pathParameters, {
-      document: openApi,
+      document,
       deep: true,
       preText: '* ',
-      searchMap,
       defaultRequire: config.defaultRequire
     });
   }
   if (Object.keys(queryParameters.properties ?? {}).length) {
-    queryParametersStr = await remove$ref(queryParameters, openApi, config, schemasMap, '', removeMap);
+    queryParametersStr = await getTsStr(queryParameters, {
+      document,
+      config,
+      schemasMap
+    });
     queryParametersComment = await schemaLoader.transform(queryParameters, {
-      document: openApi,
+      document,
       deep: true,
       preText: '* ',
-      searchMap,
       defaultRequire: config.defaultRequire
     });
   }

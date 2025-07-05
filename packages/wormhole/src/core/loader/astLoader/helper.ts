@@ -1,11 +1,22 @@
-import { AST } from '@/type';
-import { astGenerate } from './generates';
+import { AST, MaybeSchemaObject } from '@/type';
+import { astGenerate, normalizeCode } from './generates';
 import { GeneratorOptions } from './generates/type';
+import normalizer from './normalize';
+import { astParse, type ParserOptions } from './parsers';
 
-export const transformAST = (ast: AST, options: GeneratorOptions) => {
+export interface TransformAstOptions extends GeneratorOptions {
+  format?: boolean;
+}
+export async function transformAST(ast: AST, options: TransformAstOptions) {
   const result = astGenerate(ast, options);
-  console.log(result, 7);
-};
-export default {
-  transformAST
-};
+  if (options.format) {
+    result.code = await normalizeCode(result.code, result.type);
+  }
+  return result;
+}
+
+export async function transformSchema(schema: MaybeSchemaObject, options: ParserOptions) {
+  const normalized = normalizer.normalize(schema);
+  return astParse(normalized, options);
+}
+export { ParserOptions };

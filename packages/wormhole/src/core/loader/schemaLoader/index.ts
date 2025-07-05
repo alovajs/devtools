@@ -1,71 +1,46 @@
 /* eslint-disable class-methods-use-this */
-import { standardLoader } from '@/core/loader';
-import type { Loader, OpenAPIDocument } from '@/type';
-import { findBy$ref } from '@/utils';
-import { convertToType, Schema2TypeOptions, SchemaOrigin } from './helper';
+import type { AST, CommentType, Loader, MaybeSchemaObject, OpenAPIDocument } from '@/type';
+import { astLoader } from '../astLoader';
+import { GeneratorOptions, getValue } from '../astLoader/generates';
 
+export interface Schema2TypeOptions {
+  deep?: boolean; // Whether to parse recursively
+  shallowDeep?: boolean; // Only the outermost layer is analytic
+  commentType?: CommentType; // Comment style
+  preText?: string; // annotation prefix
+  defaultRequire?: boolean; // If there is no nullbale or require, the default is require.
+}
 export interface SchemaLoaderOptions extends Schema2TypeOptions {
   document: OpenAPIDocument;
+  onReference?: (ast: AST) => void;
 }
-export interface Schema2TsStrOptions {
-  document: OpenAPIDocument;
-  name: string;
-  export?: boolean;
-  defaultRequire?: boolean; // If there is no nullbale or require, the default is require.
-  on$RefTsStr?: (name: string, tsStr: string) => void;
-  searchMap?: Map<string, string>;
-  map?: Map<string, string>;
-  visited?: Set<string>;
-}
-export class SchemaLoader implements Loader<SchemaOrigin, Promise<string>, SchemaLoaderOptions> {
+export class SchemaLoader implements Loader<MaybeSchemaObject, Promise<string>, SchemaLoaderOptions> {
   name = 'schemaLoader';
 
-  transform(schemaOrigin: SchemaOrigin, options: SchemaLoaderOptions) {
-    return convertToType(schemaOrigin, options.document, options);
-  }
-  async transformTsStr(schemaOrigin: SchemaOrigin, _options: Schema2TsStrOptions) {
-    const options = {
-      export: false,
-      defaultRequire: false,
-      searchMap: new Map<string, string>(),
-      map: new Map<string, string>(),
-      visited: new Set<string>(),
-      ..._options
-    };
-    const tsStr = await this.transform(schemaOrigin, {
+  async transform(schemaOrigin: MaybeSchemaObject, options: SchemaLoaderOptions) {
+    const ast = await astLoader.transformSchema(schemaOrigin, {
       document: options.document,
-      shallowDeep: true,
-      defaultType: 'unknown',
-      commentStyle: 'document',
-      preText: '',
-      searchMap: options.searchMap,
+      commentType: options.commentType ?? 'line',
       defaultRequire: options.defaultRequire,
-      on$Ref: async refObject => {
-        if (!options.on$RefTsStr) {
-          return;
-        }
-        const name = standardLoader.transformRefName(refObject.$ref);
-        if (options.map.has(name)) {
-          options.on$RefTsStr(name, options.map.get(name) ?? '');
-          return;
-        }
-        if (options.visited.has(refObject.$ref)) {
-          return;
-        }
-        options.visited.add(refObject.$ref);
-        const result = await this.transformTsStr(findBy$ref(refObject.$ref, options.document), {
-          ...options,
-          name
-        });
-        options.map.set(name, result);
-        options.on$RefTsStr(name, result);
+      onReference(ast) {
+        options.onReference?.(ast);
       }
     });
-    let result = `type ${options.name} = ${tsStr}`;
-    if (options.export) {
-      result = `export ${result}`;
-    }
-    return result;
+    const genOptions: GeneratorOptions = {
+      deep: options.deep,
+      shallowDeep: options.shallowDeep,
+      commentType: options.commentType ?? 'line'
+    };
+    const result = await astLoader.transform(ast, {
+      ...genOptions,
+      format: true
+    });
+    const tsStrArr = getValue(result, {
+      ...genOptions
+    })
+      .trim()
+      .split('\n');
+    return tsStrArr.map((line, idx) => (idx ? options.preText : '') + line).join('\n');
   }
 }
 

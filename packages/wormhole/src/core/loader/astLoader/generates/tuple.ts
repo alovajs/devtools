@@ -21,11 +21,13 @@ export const tupleTypeGenerator = (ast: TTuple, ctx: GeneratorCtx) => {
   }
   const lines: string[] = [`[`];
   params.forEach((param, idx, arr) => {
+    ctx.pathKey = param.keyName;
     const value = getValue(ctx.next(param, ctx.options), ctx.options);
     const endText = idx === arr.length - 1 ? '' : ',';
     `${value}${endText}`.split('\n').forEach(line => lines.push(` ${line}`));
   });
   if (maxItems < minItems) {
+    ctx.pathKey = spreadParam.keyName;
     lines.push(`,\n...Array<${getValue(ctx.next(spreadParam, ctx.options), ctx.options)}>`);
   }
   lines.push(`]`);

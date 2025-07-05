@@ -40,6 +40,9 @@ export const simpleTypeGenerator = (ast: AST, ctx: GeneratorCtx) => {
     case ASTType.REFERENCE: // reference
       result.code = ast.params;
       break;
+    case ASTType.CUSTOM:
+      result.code = ast.params;
+      break;
     default:
       break;
   }
@@ -57,7 +60,8 @@ export default <ASTGenerator>{
     ASTType.UNKNOWN,
     ASTType.NEVER,
     ASTType.REFERENCE,
-    ASTType.LITERAL
+    ASTType.LITERAL,
+    ASTType.CUSTOM
   ],
   generate: simpleTypeGenerator
 };

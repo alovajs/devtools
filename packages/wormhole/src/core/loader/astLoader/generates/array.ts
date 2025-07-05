@@ -9,11 +9,13 @@ export const arrayTypeGenerator = (ast: TArray, ctx: GeneratorCtx) => {
     type: 'type',
     code: ''
   };
+  ctx.pathKey = '[]';
   const paramsResult = ctx.next(ast.params, ctx.options);
-  if (ast.params.type === ASTType.INTERFACE) {
-    result.code = `Array<${getValue(paramsResult, ctx.options)}>`;
+  const tsStr = getValue(paramsResult, ctx.options);
+  if (ast.params.type !== ASTType.INTERFACE || tsStr === paramsResult.name) {
+    result.code = `(${tsStr})[]`;
   } else {
-    result.code = `(${getValue(paramsResult, ctx.options)})[]`;
+    result.code = `Array<${tsStr}>`;
   }
   return result;
 };

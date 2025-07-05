@@ -6,7 +6,7 @@ import interfaceTypeASTGenerator from './interface';
 import simpleTypeASTGenerator from './simple';
 import tupleTypeASTGenerator from './tuple';
 import { GeneratorCtx, GeneratorOptions } from './type';
-import { generate, normalizeCode } from './utils';
+import { generate, getTsStr, getValue, normalizeCode } from './utils';
 
 export * from './type';
 const supportGenerator = [
@@ -21,21 +21,35 @@ const supportGenerator = [
 export const astGenerate = (ast: AST, options: GeneratorOptions) => {
   const ctx: GeneratorCtx = {
     options,
+    path: ['$'],
     next(ast, options) {
-      return astGenerate(ast, options);
+      const { pathKey } = ctx;
+      if (pathKey) {
+        ctx.path.push(pathKey);
+        ctx.pathKey = '';
+      }
+      ctx.options = options;
+      const result = doGenerate(ast, ctx);
+      if (pathKey) {
+        ctx.path.pop();
+      }
+      return result;
     }
   };
-  const value = generate(ast, ctx, supportGenerator);
-  if (!value) {
-    return simpleTypeASTGenerator.generate(
-      {
-        ...ast,
-        type: ASTType.UNKNOWN
-      },
-      ctx
-    );
-  }
-  return value;
+  const doGenerate = (ast: AST, ctx: GeneratorCtx) => {
+    const value = generate(ast, ctx, supportGenerator);
+    if (!value) {
+      return simpleTypeASTGenerator.generate(
+        {
+          ...ast,
+          type: ASTType.UNKNOWN
+        },
+        ctx
+      );
+    }
+    return value;
+  };
+  return doGenerate(ast, ctx);
 };
 
-export { normalizeCode };
+export { getTsStr, getValue, normalizeCode };

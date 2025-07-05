@@ -12,8 +12,6 @@ export interface TemplateParserOptions {
 export class TemplateParser implements Parser<OpenAPIDocument, TemplateData, TemplateParserOptions> {
   name = 'templateParser';
   private schemasMap = new Map<string, string>();
-  private searchMap = new Map<string, string>();
-  private removeMap = new Map<string, string>();
   private operationIdSet = new Set<string>();
   private pathMap: Array<[string, any]> = [];
   private document: OpenAPIDocument;
@@ -28,8 +26,6 @@ export class TemplateParser implements Parser<OpenAPIDocument, TemplateData, Tem
   }
   private clear() {
     this.schemasMap.clear();
-    this.searchMap.clear();
-    this.removeMap.clear();
     this.operationIdSet.clear();
     this.pathMap.splice(0, this.pathMap.length);
   }
@@ -96,25 +92,19 @@ export class TemplateParser implements Parser<OpenAPIDocument, TemplateData, Tem
         operationObject.parameters,
         this.document,
         this.options.generatorConfig,
-        this.schemasMap,
-        this.searchMap,
-        this.removeMap
+        this.schemasMap
       );
       const { requestComment, requestName } = await parseRequestBody(
         operationObject.requestBody,
         this.document,
         this.options.generatorConfig,
-        this.schemasMap,
-        this.searchMap,
-        this.removeMap
+        this.schemasMap
       );
       const { responseComment, responseName } = await parseResponse(
         operationObject.responses,
         this.document,
         this.options.generatorConfig,
-        this.schemasMap,
-        this.searchMap,
-        this.removeMap
+        this.schemasMap
       );
       const api: Api = {
         tag,

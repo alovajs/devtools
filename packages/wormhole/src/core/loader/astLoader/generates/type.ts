@@ -2,6 +2,8 @@ import { AST, ASTType, CommentType } from '@/type';
 
 export interface GeneratorCtx {
   options: GeneratorOptions;
+  pathKey?: string;
+  path: string[];
   next(ast: AST, options: GeneratorOptions): GeneratorResult;
 }
 export interface ASTGenerator {
@@ -17,5 +19,6 @@ export interface GeneratorResult {
 
 export interface GeneratorOptions {
   deep?: boolean;
+  shallowDeep?: boolean;
   commentType: CommentType;
 }

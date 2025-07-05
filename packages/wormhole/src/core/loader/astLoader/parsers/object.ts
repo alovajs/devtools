@@ -15,14 +15,24 @@ export const objectTypeParser = (schema: SchemaObject, ctx: ParserCtx): AST => {
     result.params.push({
       ast: ctx.next(value, ctx.options),
       keyName: key,
-      isRequired: required.has(key)
+      isRequired: required.has(key) || !!ctx.options.defaultRequire
     });
   }
-  if (!result.params.length) {
+  if (!result.params.length && !schema.additionalProperties) {
     return {
       ...result,
       type: ASTType.OBJECT
     };
+  }
+  if (schema.additionalProperties) {
+    if (typeof schema.additionalProperties === 'boolean') {
+      result.addParams = {
+        type: ASTType.ANY
+      };
+    } else {
+      ctx.pathKey = '[key: string]';
+      result.addParams = ctx.next(schema.additionalProperties, ctx.options);
+    }
   }
   return result;
 };

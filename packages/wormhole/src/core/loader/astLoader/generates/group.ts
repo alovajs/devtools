@@ -11,7 +11,9 @@ export const groupTypeGenerator = (ast: TIntersection | TUnion, ctx: GeneratorCt
   };
   const groups: string[] = [];
   ast.params.forEach(item => {
-    groups.push(`(${getValue(ctx.next(item, ctx.options), ctx.options)})`);
+    ctx.pathKey = `${item.keyName}`;
+    const nextValue = ctx.next(item, ctx.options);
+    groups.push(`(${getValue(nextValue, ctx.options)})`);
   });
 
   switch (ast.type) {

@@ -58,11 +58,22 @@ export const dereference = <T, U = Exclude<T, ReferenceObject>>(
 ): U => {
   if (isReferenceObject(obj)) {
     const result = findBy$ref<U & { description?: string }>(obj.$ref, document, isDeep);
-    if (obj.description) {
-      result.description = obj.description;
-    }
+    const description = obj.description || result.description;
+    return {
+      ...result,
+      description
+    };
   }
   return obj as unknown as U;
+};
+export const nextReference = (schema: SchemaObject) => {
+  for (const keyStr of Object.keys(schema)) {
+    const key = keyStr as keyof SchemaObject;
+    if (schema[key] && typeof schema[key] === 'object' && isReferenceObject(schema[key])) {
+      return schema[key];
+    }
+  }
+  return null;
 };
 /**
  *

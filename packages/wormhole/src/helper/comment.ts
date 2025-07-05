@@ -27,6 +27,12 @@ export class CommentHelper {
   static load(options: CommentOptions) {
     return new CommentHelper().load(options);
   }
+  static parse(comment: string) {
+    return comment
+      .split('\n')
+      .map(span => span.replace(/^\/\*+|\*+\/|\*|\/\//, '').trim())
+      .filter(span => span);
+  }
   load(options: CommentOptions) {
     this.type = options.type;
     if (options.comment) {
@@ -40,7 +46,7 @@ export class CommentHelper {
     if (this.comment) {
       this.comment += '\n';
     }
-    this.comment += this.transformText(`${key}${text}`)
+    this.comment += this.transformText(`${key} ${text}`)
       .split('\n')
       .map(span => `${this.preText()} ${span}`)
       .join('\n');
@@ -61,10 +67,7 @@ export class CommentHelper {
     return this.type === 'doc' ? '\n */\n' : '\n';
   }
   private normalize() {
-    const comment = this.comment
-      .split('\n')
-      .map(span => span.replace(/^\/\*+|\*+\/|\*|\/\//, '').trimEnd())
-      .filter(span => span)
+    const comment = CommentHelper.parse(this.comment)
       .map(span => `${this.preText()} ${span}`)
       .join('\n');
     return comment.replace('*/*', '* / *').replace('/*', '/ *').replace('*/', '* /');

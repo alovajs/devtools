@@ -224,7 +224,7 @@ describe('Schema Normalizer', () => {
       };
 
       const result = normalizer.normalize(schema) as SchemaObject;
-      expect(result.type).toEqual(['string', 'number', 'boolean']); // 不应该推断类型
+      expect(result.type).toEqual(['string', 'integer', 'boolean']); // 不应该推断类型
       expect(result.enum).toEqual(['a', 1, true]);
     });
   });

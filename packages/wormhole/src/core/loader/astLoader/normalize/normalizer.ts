@@ -5,7 +5,6 @@ import { cloneDeep, isEqual } from 'lodash';
  * 规则处理函数类型
  */
 export type RuleHandler = (schema: SchemaObject) => SchemaObject | void;
-
 /**
  * 规则定义
  */
@@ -31,20 +30,19 @@ export class SchemaNormalizer {
    */
   normalize(schema: MaybeSchemaObject): MaybeSchemaObject {
     // 深度优先遍历
-    const process = (s: MaybeSchemaObject): MaybeSchemaObject => {
-      if (!s || isReferenceObject(s)) {
+    const process = (s: MaybeSchemaObject, visited = new Set<string>()): MaybeSchemaObject => {
+      if (!s || isReferenceObject(s) || visited.has(JSON.stringify(s))) {
         return s;
       }
-
       // 处理组合模式
       if (s.anyOf) {
-        s.anyOf = s.anyOf.map(process);
+        s.anyOf = s.anyOf.map(item => process(item));
       }
       if (s.oneOf) {
-        s.oneOf = s.oneOf.map(process);
+        s.oneOf = s.oneOf.map(item => process(item));
       }
       if (s.allOf) {
-        s.allOf = s.allOf.map(process);
+        s.allOf = s.allOf.map(item => process(item));
       }
 
       // 处理数组类型
@@ -64,20 +62,17 @@ export class SchemaNormalizer {
       // 应用规则
       for (const rule of this.rules) {
         const newResult = rule.handler(result);
-        if (newResult) {
+        if (newResult && !visited.has(JSON.stringify(newResult))) {
           result = newResult;
+          visited.add(JSON.stringify(result));
         }
       }
-      if (isEqual(result, s)) {
+      if (isEqual(s, result)) {
         return result;
       }
-      const nextResult = process(result);
-      if (isEqual(result, nextResult)) {
-        return result;
-      }
-      return nextResult;
+      visited.delete(JSON.stringify(result));
+      return process(result, visited);
     };
-
     return process(cloneDeep(schema));
   }
 }

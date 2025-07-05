@@ -1,7 +1,16 @@
 import type { SchemaObject, SchemaType } from '@/type';
 
-const GLOBAL_KEYWORDS = ['title', 'description', 'default', 'examples', 'deprecated', 'readOnly', 'writeOnly', 'const'];
-const TYPE_SPECIFIC_KEYWORDS = {
+export const GLOBAL_KEYWORDS = [
+  'title',
+  'description',
+  'default',
+  'examples',
+  'deprecated',
+  'readOnly',
+  'writeOnly',
+  'const'
+];
+export const TYPE_SPECIFIC_KEYWORDS = {
   string: ['minLength', 'maxLength', 'pattern', 'format', 'contentMediaType'],
   number: ['minimum', 'maximum', 'exclusiveMinimum', 'exclusiveMaximum', 'multipleOf'],
   integer: ['minimum', 'maximum', 'exclusiveMinimum', 'exclusiveMaximum', 'multipleOf'],
@@ -16,7 +25,6 @@ export function assignTypeSpecificKeywords(
 ) {
   const keywords = TYPE_SPECIFIC_KEYWORDS[type as keyof typeof TYPE_SPECIFIC_KEYWORDS];
   if (!keywords) {
-    Object.assign(branch, typeSpecificKeywords);
     return;
   }
   keywords.forEach(key => {

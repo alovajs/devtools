@@ -450,7 +450,8 @@ describe('generate API', () => {
     expect(fileContentCjs).toMatch(
       createStrReg(`module.exports = {
   createApis,
-  withConfigType
+  withConfigType,
+  mountApis
 };`)
     );
 
@@ -512,7 +513,8 @@ describe('generate API', () => {
     expect(fileContentCjs).toMatch(
       createStrReg(`module.exports = {
   createApis,
-  withConfigType
+  withConfigType,
+  mountApis
 };`)
     );
   });
@@ -702,16 +704,24 @@ describe('generate API', () => {
        *     tag?: {
        *       id?: number
        *       name?: string
-       *       // [title] a Pet
-       *       // A pet for sale in the pet store
+       *       // [cycle] $
        *       pet?: Pet1
        *     }
        *   }
-       *   // [required]
        *   name: string
-       *   // [required]
+       *   // [items] start
+       *   // [items] end
        *   photoUrls: string[]
-       *   tags?: Array<Tag1>
+       *   // [items] start
+       *   // [title] Pet Tag
+       *   // A tag for a pet
+       *   // [items] end
+       *   tags?: Array<{
+       *     id?: number
+       *     name?: string
+       *     // [cycle] $
+       *     pet?: Pet1
+       *   }>
        *   // pet status in the store
        *   // [deprecated]
        *   status?: 'available' | 'pending' | 'sold'
@@ -719,6 +729,7 @@ describe('generate API', () => {
        *     foo?: {
        *       bar?: {
        *         foo?: {
+       *           // [cycle] $.test.foo.bar
        *           bar?: Fifbcibcd
        *         }
        *       }
@@ -872,7 +883,6 @@ describe('generate API', () => {
             clientOnly?: boolean;
             /**
              * client id
-             * [required]
              */
             id: number;
           };
@@ -961,7 +971,6 @@ describe('generate API', () => {
           params: {
             /**
              * Status values that need to be considered for filter
-             * [required]
              * @deprecated
              */
             status: ('available' | 'pending' | 'sold')[];
@@ -996,9 +1005,6 @@ describe('generate API', () => {
       generateCase1<
         Config extends Alova2MethodConfig<Blob> & {
           params: {
-            /**
-             * [required]
-             */
             codegenOptionsURL: string;
           };
         }
@@ -1017,9 +1023,6 @@ describe('generate API', () => {
       generateCase2<
         Config extends Alova2MethodConfig<string> & {
           params: {
-            /**
-             * [required]
-             */
             codegenOptionsURL: string;
           };
         }
@@ -1038,9 +1041,6 @@ describe('generate API', () => {
       generateCase3<
         Config extends Alova2MethodConfig<string[]> & {
           params: {
-            /**
-             * [required]
-             */
             codegenOptionsURL: string;
           };
         }
@@ -1059,9 +1059,6 @@ describe('generate API', () => {
       generateCase4<
         Config extends Alova2MethodConfig<string[]> & {
           params: {
-            /**
-             * [required]
-             */
             codegenOptionsURL: string;
           };
         }
@@ -1086,7 +1083,7 @@ describe('generate API', () => {
 
     // 检查生成的类型定义是否正确处理了 nullable 属性
     expect(globalsFile).toMatch(
-      createStrReg(`type Pet = {
+      createStrReg(`interface Pet {
   /**
    * Pet ID
    * ---
@@ -1095,14 +1092,13 @@ describe('generate API', () => {
   /**
    * Pet Name
    * ---
-   * [required]
    */
   name: string;
   /**
    * Pet Status
    * ---
    */
-  status?: 'available' | 'pending' | 'sold' | null;
+  status?: ('available' | 'pending' | 'sold') | null;
   /**
    * Pet Tags
    * ---

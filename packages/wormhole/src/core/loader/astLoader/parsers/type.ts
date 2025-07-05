@@ -8,6 +8,7 @@ export interface ASTParser {
 export interface ParserOptions {
   commentType: CommentType;
   document: OpenAPIDocument;
+  defaultRequire?: boolean;
   onReference?: (ast: AST) => void;
 }
 export interface ParserCtx {
@@ -15,6 +16,7 @@ export interface ParserCtx {
   keyName?: string;
   pathKey?: string;
   visited: Set<string>;
+  pathMap: Map<string, string>;
   path: string[];
   options: ParserOptions;
 }

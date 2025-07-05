@@ -14,6 +14,7 @@ export enum ASTType {
   STRING = 'STRING',
   TUPLE = 'TUPLE',
   UNION = 'UNION',
+  CUSTOM = 'CUSTOM',
   UNKNOWN = 'UNKNOWN'
 }
 export type AST =
@@ -30,6 +31,7 @@ export type AST =
   | TObject
   | TReference
   | TString
+  | TCustom
   | TTuple
   | TUnion
   | TUnknown;
@@ -40,8 +42,12 @@ export interface AbstractAST {
   type: ASTType;
   // 注释
   comment?: string;
-  // 类型名
+  // 深度注释
+  deepComment?: string;
+  // 外部引用
   keyName?: string;
+  // 类型名
+  name?: string;
   // 是否弃用
   deprecated?: boolean;
 }
@@ -75,6 +81,7 @@ export interface TEnumParam {
 export interface TInterface extends AbstractAST {
   type: ASTType.INTERFACE;
   params: TInterfaceParam[];
+  addParams?: AST;
 }
 
 export interface TInterfaceParam {
@@ -121,6 +128,10 @@ export interface TObject extends AbstractAST {
 
 export interface TString extends AbstractAST {
   type: ASTType.STRING;
+}
+export interface TCustom extends AbstractAST {
+  type: ASTType.CUSTOM;
+  params: string;
 }
 // simple type end
 

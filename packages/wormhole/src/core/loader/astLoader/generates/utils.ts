@@ -4,23 +4,35 @@ import { format } from '@/utils';
 import { ASTGenerator, GeneratorCtx, GeneratorOptions, GeneratorResult } from './type';
 
 export const generate = (ast: AST, ctx: GeneratorCtx, generators: ASTGenerator[]) => {
-  const generator = generators.find(generator => [generator.type].flat().includes(ast.type));
+  const generator = generators.find(generator => {
+    const tyes = [generator.type].flat();
+    return tyes.includes(ast.type);
+  });
   if (generator) {
     return generator.generate(ast, ctx);
   }
   return null;
 };
 
-export const isRightGenerate = (ast: AST, generator: ASTGenerator) => [generator.type].flat().includes(ast.type);
-
-export const getValue = (result: GeneratorResult, options: GeneratorOptions) =>
-  options.deep || !result.name ? result.code : result.name;
+export const getValue = (result: GeneratorResult, options: GeneratorOptions) => {
+  if (options.shallowDeep) {
+    options.shallowDeep = false;
+    options.deep = false;
+    return result.code;
+  }
+  return options.deep || !result.name ? result.code : result.name;
+};
 
 export const setComment = (ast: AST, options: GeneratorOptions) => {
+  let { comment } = ast;
+  if (ast.deepComment && options.deep) {
+    comment += ast.deepComment;
+  }
   const commenter = CommentHelper.load({
     type: options.commentType,
-    comment: ast.comment
+    comment
   });
+
   if (ast.deprecated) {
     commenter.add('[deprecated]');
   }
@@ -39,19 +51,19 @@ export async function normalizeCode(code: string, type: GeneratorResult['type'])
     type: {
       reg: /type Ts =(.*)/s,
       transform(code: string): string {
-        return `type Ts = ${code}`;
+        return getTsStr({ type: 'type', name: 'Ts', code });
       }
     },
     interface: {
       reg: /interface Ts (.*)/s,
       transform(code: string): string {
-        return `interface Ts ${code}`;
+        return getTsStr({ type: 'interface', name: 'Ts', code });
       }
     },
     enum: {
       reg: /enum Ts (.*)/s,
       transform(code: string): string {
-        return `enum Ts  ${code}`;
+        return getTsStr({ type: 'enum', name: 'Ts', code });
       }
     }
   };
@@ -61,3 +73,29 @@ export async function normalizeCode(code: string, type: GeneratorResult['type'])
   const resultFormat = typeMap[type].reg.exec(tsStrFormat)?.[1] ?? '';
   return resultFormat.trim();
 }
+
+export const getTsStr = (
+  genResult: GeneratorResult,
+  options?: {
+    export?: boolean;
+  }
+) => {
+  let result = genResult.code;
+  switch (genResult.type) {
+    case 'interface':
+      result = `interface ${genResult.name}  ${genResult.code}`;
+      break;
+    case 'type':
+      result = `type ${genResult.name} = ${genResult.code}`;
+      break;
+    case 'enum':
+      result = `enum ${genResult.name} ${genResult.code}`;
+      break;
+    default:
+      break;
+  }
+  if (options?.export) {
+    result = `export ${result}`;
+  }
+  return result;
+};

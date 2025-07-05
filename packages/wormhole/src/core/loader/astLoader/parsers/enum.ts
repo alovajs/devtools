@@ -1,8 +1,9 @@
 import { standardLoader } from '@/core/loader/standardLoader';
 import { logger } from '@/helper';
 import { AST, ASTType, SchemaObject, TEnum } from '@/type';
+import { getType } from '@/utils';
 import type { ASTParser, ParserCtx } from './type';
-import { getType, initAST } from './utils';
+import { initAST } from './utils';
 
 export const enumTypeParser = (schema: SchemaObject, ctx: ParserCtx): AST => {
   const result: TEnum = {
