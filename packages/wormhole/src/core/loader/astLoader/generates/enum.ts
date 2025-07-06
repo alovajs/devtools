@@ -40,7 +40,8 @@ const otherEnumTypeGenerator = (ast: TEnum, ctx: GeneratorCtx) => {
     .join(' | ');
   return result;
 };
-export const isNormalEnum = (ast: TEnum) =>
+export const isNormalEnum = (ast: TEnum, ctx: GeneratorCtx) =>
+  !ctx.options.noEnum &&
   ast.params.every(
     item =>
       item.ast.type === ASTType.LITERAL &&
@@ -48,7 +49,7 @@ export const isNormalEnum = (ast: TEnum) =>
       item.keyName
   );
 export const enumTypeGenerator = (ast: TEnum, ctx: GeneratorCtx) => {
-  if (ctx.path.length <= 1 && isNormalEnum(ast)) {
+  if (ctx.path.length <= 1 && isNormalEnum(ast, ctx)) {
     return normalEnumTypeGenerator(ast, ctx);
   }
   return otherEnumTypeGenerator(ast, ctx);

@@ -9,6 +9,7 @@ export interface Schema2TypeOptions {
   commentType?: CommentType; // Comment style
   preText?: string; // annotation prefix
   defaultRequire?: boolean; // If there is no nullbale or require, the default is require.
+  noEnum?: boolean;
 }
 export interface SchemaLoaderOptions extends Schema2TypeOptions {
   document: OpenAPIDocument;
@@ -29,7 +30,8 @@ export class SchemaLoader implements Loader<MaybeSchemaObject, Promise<string>, 
     const genOptions: GeneratorOptions = {
       deep: options.deep,
       shallowDeep: options.shallowDeep,
-      commentType: options.commentType ?? 'line'
+      commentType: options.commentType ?? 'line',
+      noEnum: options.noEnum
     };
     const result = await astLoader.transform(ast, {
       ...genOptions,

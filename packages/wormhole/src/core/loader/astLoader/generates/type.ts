@@ -20,5 +20,6 @@ export interface GeneratorResult {
 export interface GeneratorOptions {
   deep?: boolean;
   shallowDeep?: boolean;
+  noEnum?: boolean;
   commentType: CommentType;
 }

@@ -35,6 +35,7 @@ const getTsStr = (
   return schemaLoader.transform(originObj, {
     document,
     deep: false,
+    noEnum: true,
     commentType: 'doc',
     preText,
     defaultRequire: config.defaultRequire,
