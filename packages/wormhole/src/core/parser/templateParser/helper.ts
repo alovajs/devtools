@@ -121,88 +121,68 @@ const getContentKey = (content: Record<string, any> = {}, requireKey = 'applicat
   }
   return key;
 };
+
 export const parseParameters = async (
   parameters: (ReferenceObject | ParameterObject)[] | undefined,
   document: OpenAPIDocument,
   config: GeneratorConfig,
   schemasMap: Map<string, string>
 ) => {
-  const pathParameters: SchemaObject = {
+  const pathParametersSchema: SchemaObject = {
     type: 'object'
   };
-  const queryParameters: SchemaObject = {
+  const queryParametersSchema: SchemaObject = {
     type: 'object'
   };
+  const parseParameter = (parameter: ParameterObject, parameters: SchemaObject) => {
+    if (!parameters.properties) {
+      parameters.properties = {};
+    }
+    if (!parameters.required) {
+      parameters.required = [];
+    }
+    if (parameter.required) {
+      parameters.required.push(parameter.name);
+    }
+    parameters.properties[parameter.name] = {
+      ...parameter.schema,
+      description: parameter.description || '',
+      deprecated: !!parameter.deprecated
+    };
+  };
+  const parseParametersSchema = async (parameters: SchemaObject) => {
+    let parametersStr = '';
+    let parametersComment = '';
+    if (Object.keys(parameters.properties ?? {}).length) {
+      parametersStr = await getTsStr(parameters, {
+        document,
+        config,
+        schemasMap
+      });
+      parametersComment = await schemaLoader.transform(parameters, {
+        document,
+        deep: true,
+        preText: '* ',
+        defaultRequire: config.defaultRequire
+      });
+    }
+    return [parametersStr, parametersComment];
+  };
+
   for (const refParameter of parameters || []) {
-    const parameter = isReferenceObject(refParameter)
-      ? findBy$ref<ParameterObject>(refParameter.$ref, document)
-      : refParameter;
+    const parameter = parseReference(refParameter, document);
     if (parameter.in === 'path') {
-      if (!pathParameters.properties) {
-        pathParameters.properties = {};
-      }
-      if (!pathParameters.required) {
-        pathParameters.required = [];
-      }
-      if (parameter.required) {
-        pathParameters.required.push(parameter.name);
-      }
-      pathParameters.properties[parameter.name] = {
-        ...parameter.schema,
-        description: parameter.description || '',
-        deprecated: !!parameter.deprecated
-      };
-    }
-    if (parameter.in === 'query') {
-      if (!queryParameters.properties) {
-        queryParameters.properties = {};
-      }
-      if (!queryParameters.required) {
-        queryParameters.required = [];
-      }
-      if (parameter.required) {
-        queryParameters.required.push(parameter.name);
-      }
-      queryParameters.properties[parameter.name] = {
-        ...parameter.schema,
-        description: parameter.description || '',
-        deprecated: !!parameter.deprecated
-      };
+      parseParameter(parameter, pathParametersSchema);
+    } else if (parameter.in === 'query') {
+      parseParameter(parameter, queryParametersSchema);
     }
   }
-  let pathParametersStr = '';
-  let queryParametersStr = '';
-  let pathParametersComment = '';
-  let queryParametersComment = '';
-  if (Object.keys(pathParameters.properties ?? {}).length) {
-    pathParametersStr = await getTsStr(pathParameters, {
-      document,
-      config,
-      schemasMap
-    });
-    pathParametersComment = await schemaLoader.transform(pathParameters, {
-      document,
-      deep: true,
-      preText: '* ',
-      defaultRequire: config.defaultRequire
-    });
-  }
-  if (Object.keys(queryParameters.properties ?? {}).length) {
-    queryParametersStr = await getTsStr(queryParameters, {
-      document,
-      config,
-      schemasMap
-    });
-    queryParametersComment = await schemaLoader.transform(queryParameters, {
-      document,
-      deep: true,
-      preText: '* ',
-      defaultRequire: config.defaultRequire
-    });
-  }
+
+  const [pathParameters, pathParametersComment] = await parseParametersSchema(pathParametersSchema);
+  const [queryParameters, queryParametersComment] = await parseParametersSchema(queryParametersSchema);
   return {
-    pathParameters: pathParametersStr,
-    queryParameters: queryParametersStr,
+    pathParameters,
+    queryParameters,
     pathParametersComment,
     queryParametersComment
   };
