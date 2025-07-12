@@ -12,7 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "alova": "3.0.0-beta.10",
+    "alova": "^3.2.2",
     "vue": "^3.4.27"
   },
   "devDependencies": {

@@ -69,13 +69,33 @@ export const createApis = (alovaInstance, configMap) => {
   ({{{globalHost}}}).{{{global}}} = Apis;
   return Apis;
 }
-
 /**
  * @template T
- * @typedef {typeof import('./index')['alovaInstance'] extends import('alova').Alova<any, any, infer RC, any, infer RH> ? import('alova').AlovaMethodCreateConfig<any, T, RC, RH> : never} MethodConfig
+ * @typedef {typeof import('./index')['alovaInstance'] extends import('alova').Alova<any, any, infer RC, any, infer RH>
+ *  ? import('alova').AlovaMethodCreateConfig<any, T, RC, RH> 
+ *  : never
+ *} MethodConfig
  */
 /**
- * @typedef {{#raw "{{ " }}{{/raw}}[P in keyof typeof import('./apiDefinitions').default]?: MethodConfig<P extends `${infer Tag}.${infer Url}` ? Parameters<Parameters<{{{global}}}[Tag][Url]>[0]['transformData']>[0] : any>{{#raw " }}" }}{{/raw}} MethodsConfigMap
+ * @template {string} Tag
+ * @template {string} Url
+ * @typedef {Tag extends keyof {{{global}}}
+ *   ? Url extends keyof {{{global}}}[Tag]
+ *     ? {{{global}}}[Tag][Url] extends (...args: any) => any
+ *       ? Parameters<{{{global}}}[Tag][Url]>
+ *       : any
+ *     : any
+ *   : any
+ * } APISofParameters
+ */
+/**
+ * @typedef {{#raw "{{ " }}{{/raw}} 
+ *  [P in keyof typeof import('./apiDefinitions').default]?: MethodConfig<
+ *    P extends `${infer Tag}.${infer Url}` 
+ *      ? Parameters<NonNullable<APISofParameters<Tag,Url>[0]>['transformData']>[0] 
+ *      : any
+ *  > 
+ * {{#raw "}}" }}{{/raw}} MethodsConfigMap
  */
 /**
  * @template {MethodsConfigMap} Config
