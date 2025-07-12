@@ -1,5 +1,11 @@
 # @alova/wormhole
 
+## 1.0.8
+
+### Patch Changes
+
+- [#71](https://github.com/alovajs/devtools/pull/71) [`64848a1`](https://github.com/alovajs/devtools/commit/64848a1275dedc79ddda27c36ddefa0e64301a6c) Thanks [@MeetinaXD](https://github.com/MeetinaXD)! - fix: incorrect transform data type in method without params
+
 ## 1.0.7
 
 ### Patch Changes
