@@ -80,10 +80,34 @@ const mountApis = (Apis) =>{
 }
 /**
  * @template T
- * @typedef {import('alova').AlovaMethodCreateConfig<typeof import('./index')['alovaInstance'] extends import('alova').Alova<infer AG> ? AG : any, any, T>} MethodConfig
+ * @typedef {import('alova').AlovaMethodCreateConfig<
+ *  typeof import('./index')['alovaInstance'] extends import('alova').Alova<infer AG> 
+ *   ? AG 
+ *   : any,
+ *  any,
+ *  T
+ *>} MethodConfig
  */
 /**
- * @typedef {{#raw "{{ " }}{{/raw}}[P in keyof typeof import('./apiDefinitions')]?: MethodConfig<P extends `${infer Tag}.${infer Url}` ? Parameters<Parameters<{{{global}}}[Tag][Url]>[0]['transform']>[0] : any>{{#raw " }}" }}{{/raw}} MethodsConfigMap
+ * @template {string} Tag
+ * @template {string} Url
+ * @typedef {Tag extends keyof {{{global}}}
+ *   ? Url extends keyof {{{global}}}[Tag]
+ *     ? {{{global}}}[Tag][Url] extends (...args: any) => any
+ *       ? Parameters<{{{global}}}[Tag][Url]>
+ *       : any
+ *     : any
+ *   : any
+ * } APISofParameters
+ */
+/**
+ * @typedef {{#raw "{{ " }}{{/raw}} 
+ *  [P in keyof typeof import('./apiDefinitions')]?: MethodConfig<
+ *    P extends `${infer Tag}.${infer Url}` 
+ *      ? Parameters<NonNullable<APISofParameters<Tag,Url>[0]>['transform']>[0] 
+ *      : any
+ *  > 
+ * {{#raw "}}" }}{{/raw}} MethodsConfigMap
  */
 /**
  * @template {MethodsConfigMap} Config
