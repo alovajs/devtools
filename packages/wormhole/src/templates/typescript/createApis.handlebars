@@ -73,7 +73,7 @@ type APISofParameters<Tag extends string, Url extends string> = Tag extends keyo
   : any;
 type MethodsConfigMap = {
   [P in keyof typeof import('./apiDefinitions').default]?: MethodConfig<
-    P extends `${infer Tag}.${infer Url}` ? Parameters<APISofParameters<Tag, Url>[0]['transformData']>[0] : any
+    P extends `${infer Tag}.${infer Url}` ? Parameters<Exclude<APISofParameters<Tag, Url>[0]['transformData'], undefined>>[0] : any
   >;
 };
 export const withConfigType = <Config extends MethodsConfigMap>(config: Config) => config;
