@@ -1,3 +1,4 @@
+import { Commands } from '@/commands';
 import * as vscode from 'vscode';
 import { getAutocompleteCodeSnippet } from './autocomplete';
 // 代码片段类型定义
@@ -216,13 +217,13 @@ export function activate(context: vscode.ExtensionContext) {
   const snippetManager = new SnippetManager();
 
   // 注册快捷键命令
-  const openSearchCommand = vscode.commands.registerCommand('alova.snippetSearch.open', () => {
+  const openSearchCommand = vscode.commands.registerCommand(Commands.snippet_search_open, () => {
     snippetManager.openSnippetSearch();
     snippetManager.loadSnippets();
   });
 
   // 注册命令面板命令
-  const insertSnippetCommand = vscode.commands.registerCommand('alova.snippetSearch.insert', async () => {
+  const insertSnippetCommand = vscode.commands.registerCommand(Commands.snippet_search_insert, async () => {
     const snippets = snippetManager.getSnippetsForCommandPalette();
     const selected = await vscode.window.showQuickPick(snippets, {
       placeHolder: '选择要插入的代码片段',
@@ -244,7 +245,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   // 添加快捷键说明
   context.subscriptions.push(
-    vscode.commands.registerCommand('alova.snippetSearch.showHelp', () => {
+    vscode.commands.registerCommand(Commands.snippet_search_show_help, () => {
       vscode.window.showInformationMessage('使用 Ctrl+Alt+P (Win/Linux) 或 Cmd+Alt+P (Mac) 打开代码片段搜索');
     })
   );

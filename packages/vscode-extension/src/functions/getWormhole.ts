@@ -1,7 +1,6 @@
 import Error, { AlovaErrorConstructor } from '@/components/error';
-import { BAR_STATE, disable, enable } from '@/components/statusBar';
-import { removeConfiguration } from '@/helper/autoUpdate';
-import { TEMPLATE_DATA } from '@/helper/config';
+import { disable, enable } from '@/components/statusBar';
+import Global from '@/core/Global';
 import { getWorkspacePaths } from '@/utils/vscode';
 import { globSync } from 'glob';
 import importFresh from 'import-fresh';
@@ -30,19 +29,16 @@ export const getWormhole = () => {
       }
     } catch {}
   }
-  if (wormhole && BAR_STATE.value !== 'loading') {
-    enable();
-  }
-  if (!wormhole) {
-    disable();
-    removeConfiguration();
-  }
   if (wormhole) {
+    enable();
     // Global configuration
     wormhole.setGlobalConfig({
       Error: AlovaErrorConstructor,
-      templateData: TEMPLATE_DATA
+      templateData: Global.templateData
     });
+  } else {
+    disable();
+    Global.deleteConfig();
   }
   return wormhole;
 };
@@ -57,7 +53,7 @@ export default () =>
           return wormhole[key];
         }
         return () => {
-          removeConfiguration();
+          Global.deleteConfig();
           throw new Error('module `@alova/wormhole` is not found, please install via `npm i @alova/wormhole`');
         };
       }

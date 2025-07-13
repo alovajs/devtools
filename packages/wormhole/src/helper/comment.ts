@@ -33,6 +33,9 @@ export class CommentHelper {
       .map(span => span.replace(/^\/\*+|\*+\/|\*|\/\//, '').trim())
       .filter(span => span);
   }
+  static parseStr(comment: string) {
+    return this.parse(comment).join('\n');
+  }
   load(options: CommentOptions) {
     this.type = options.type;
     if (options.comment) {

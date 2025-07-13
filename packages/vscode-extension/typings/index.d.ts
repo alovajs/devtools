@@ -1,6 +1,6 @@
-declare interface Commonand {
+declare interface CommandType<U = [], T = void> {
   commandId: string;
-  handler: (context: import('vscode').ExtensionContext) => <T = void, U = []>(...args: U) => T | Promise<T>;
+  handler: (context: import('vscode').ExtensionContext) => (...args: U) => T | Promise<T>;
 }
 type UnionToIntersection<U> = (U extends any ? (x: U) => any : never) extends (x: infer R) => any ? R : never;
 

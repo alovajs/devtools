@@ -1,17 +1,13 @@
 import { getWormhole } from '@/functions/getWormhole';
-import readConfig, { updatedConfigPool } from '@/functions/readConfig';
-import { debounce } from '@/utils';
+import readConfig from '@/functions/readConfig';
+import { debounce, Log } from '@/utils';
 import { getCurrentWorkspacePath, getWorkspacePaths } from '@/utils/vscode';
 import * as vscode from 'vscode';
 import Error from './error';
-import message from './message';
 
 export const showError = (err: unknown) => {
   const error = err as Error;
-  message.logError(error);
-  if (error.ERROR_CODE) {
-    message.error(error.message);
-  }
+  Log.error(error, { prompt: !!error.ERROR_CODE });
 };
 export function registerEvent() {
   // listener workspace directory changes
@@ -24,7 +20,6 @@ export function registerEvent() {
     event.removed.forEach(() => {
       if (getWormhole()) {
         readConfig(getWorkspacePaths());
-        updatedConfigPool();
       }
     });
   });

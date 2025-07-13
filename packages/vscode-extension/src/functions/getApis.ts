@@ -1,10 +1,11 @@
-import { CONFIG_POOL } from '@/helper/config';
+import Global from '@/core/Global';
 import wormhole from '@/helper/wormhole';
 import { getFileNameByPath } from '@/utils';
 import path from 'node:path';
 
 export default async (filePath: string) => {
-  const [projectPath, config] = CONFIG_POOL.find(([projectPath]) => filePath.includes(path.resolve(projectPath))) ?? [];
+  const [projectPath, config] =
+    Global.getConfigs().find(([projectPath]) => filePath.includes(path.resolve(projectPath))) ?? [];
   if (!config) {
     return [];
   }
@@ -13,7 +14,7 @@ export default async (filePath: string) => {
 };
 export const getApiDocs = async () =>
   Promise.all(
-    CONFIG_POOL.map(async ([projectPath, config]) => ({
+    Global.getConfigs().map(async ([projectPath, config]) => ({
       name: getFileNameByPath(projectPath),
       apiDocs: await wormhole.getApiDocs(config, projectPath)
     }))

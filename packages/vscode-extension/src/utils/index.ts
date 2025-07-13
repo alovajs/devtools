@@ -4,7 +4,8 @@ export function highPrecisionInterval(callback: () => void, intervalInMillisecon
   if (immediate) {
     callback();
   }
-  const timer = setInterval(callback, intervalInMilliseconds);
+  const MAX_TIME = 2147483648;
+  const timer = setInterval(callback, Math.min(MAX_TIME, intervalInMilliseconds));
 
   return {
     isRunning() {
@@ -18,6 +19,7 @@ export function highPrecisionInterval(callback: () => void, intervalInMillisecon
     immediate
   };
 }
+export type Timer = ReturnType<typeof highPrecisionInterval>;
 export const getFileNameByPath = (path: string) => {
   const [, name] = /[/\\]([^/\\]+)([/\\])?$/.exec(path) ?? [];
   return name ?? '';
@@ -47,3 +49,4 @@ export function debounce<T extends (...args: any) => any>(func: T, delay: number
     }, delay);
   } as T;
 }
+export * from './Log';

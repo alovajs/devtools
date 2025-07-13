@@ -1,8 +1,8 @@
 import Error from '@/components/error';
-import { CONFIG_POOL } from '@/helper/config';
+import Global from '@/core/Global';
 import wormhole from '@/helper/wormhole';
 
-interface GenerateOption {
+export interface GenerateOption {
   force?: boolean;
   projectPath?: string;
   showError?: boolean;
@@ -11,7 +11,7 @@ export default async (option?: GenerateOption) => {
   const resultArr: Array<[string, boolean]> = [];
   const errorArr: Array<Error> = [];
   const { force = false, projectPath: projectPathValue, showError = false } = option ?? {};
-  for (const [projectPath, config] of CONFIG_POOL) {
+  for (const [projectPath, config] of Global.getConfigs()) {
     if (projectPathValue && projectPathValue !== projectPath) {
       continue;
     }

@@ -1,6 +1,8 @@
+import { Commands } from '@/commands';
+
 export const commandKeys = ['refresh'] as const;
-export const commandMap: Record<(typeof commandKeys)[number], Omit<Commonand, 'handler'>> = {
+export const commandMap: Record<(typeof commandKeys)[number], Omit<CommandType, 'handler'>> = {
   refresh: {
-    commandId: 'alova.apiDocs.refresh'
+    commandId: Commands.api_docs_refresh
   }
 };

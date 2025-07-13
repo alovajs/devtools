@@ -1,11 +1,11 @@
 import autocomplete from './autocomplete';
 import createConfig from './createConfig';
-import generateApi from './generateApi';
+import { generateApi, refresh } from './generate';
 import openDocs from './openDocs';
-import refresh from './refresh';
 import setup from './setup';
 import showStatusBarIcon from './showStatusBarIcon';
 
+export * from './commands';
 export const commandsMap = {
   setup,
   autocomplete,

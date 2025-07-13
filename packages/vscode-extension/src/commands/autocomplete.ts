@@ -1,11 +1,12 @@
 import * as vscode from 'vscode';
+import { Commands } from './commands';
 
 function countLeadingSpace(str: string): number {
   const match = str.match(/^\s+/);
   return match ? match[0].length : 0;
 }
-export default {
-  commandId: 'alova.autocomplete',
+export default <CommandType<[string]>>{
+  commandId: Commands.autocomplete,
   handler: () => (autoText: string) => {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
@@ -28,4 +29,4 @@ export default {
       );
     });
   }
-} as Commonand;
+};

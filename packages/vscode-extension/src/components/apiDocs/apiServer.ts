@@ -1,5 +1,5 @@
+import Global from '@/core/Global';
 import { getApiDocs } from '@/functions/getApis';
-import { waitConfigChange } from '@/helper/config';
 import type { Api } from '@alova/wormhole';
 import * as vscode from 'vscode';
 
@@ -30,7 +30,7 @@ export class ApiServerProvider implements vscode.TreeDataProvider<ApiTreeItem> {
   private items: ApiTreeItem[] = [];
 
   constructor(private context: vscode.ExtensionContext) {
-    waitConfigChange().then(() => {
+    Global.onDidChangeConfig(() => {
       this.loadItems();
     });
   }

@@ -1,4 +1,4 @@
-import { logger } from '@/helper';
+import { CommentHelper, logger } from '@/helper';
 import { AbstractAST, ASTType, SchemaObject, TIntersection, TUnion } from '@/type';
 import type { ASTParser, ParserCtx } from './type';
 import { initAST } from './utils';
@@ -7,11 +7,28 @@ export const groupTypeParser = (schema: SchemaObject, ctx: ParserCtx) => {
   const result: AbstractAST = {
     ...initAST(schema, ctx)
   };
+  const items = schema.anyOf || schema.oneOf || schema.allOf || [];
+  const params = items.map(value => ctx.next(value, ctx.options));
+  const deepCommenter = CommentHelper.load({
+    type: ctx.options.commentType
+  });
+  params.forEach((itemsAst, idx) => {
+    const comment = CommentHelper.parseStr(itemsAst.comment ?? '');
+    const deepComment = CommentHelper.parseStr(itemsAst.deepComment ?? '');
+    if (comment || deepComment) {
+      deepCommenter
+        .add(`[params${idx + 1}] start`)
+        .add(comment)
+        .add(deepComment)
+        .add(`[params${idx + 1}] end`);
+    }
+  });
+  result.deepComment = deepCommenter.end();
   if (schema.anyOf || schema.oneOf) {
     return {
       ...result,
       type: ASTType.UNION,
-      params: (schema.anyOf || schema.oneOf)?.map(value => ctx.next(value, ctx.options)) ?? []
+      params
     } as TUnion;
   }
   if (schema.allOf) {
@@ -19,7 +36,7 @@ export const groupTypeParser = (schema: SchemaObject, ctx: ParserCtx) => {
     return {
       ...result,
       type: ASTType.INTERSECTION,
-      params: schema.allOf.map(value => ctx.next(value, ctx.options))
+      params
     } as TIntersection;
   }
   throw logger.throwError('schema must contain anyOf, oneOf or allOf', {
