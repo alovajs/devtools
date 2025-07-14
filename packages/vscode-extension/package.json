@@ -121,7 +121,7 @@
     "build": "tsdown",
     "dev": "nr build --sourcemap --watch",
     "test": "vscode-test",
-    "update": "vscode-ext-gen --output src/generated/meta.ts",
+    "update": "vscode-ext-gen --output src/generated/meta.ts && eslint --fix src/generated/meta.ts",
     "prepare": "nr update",
     "vscode:prepublish": "nr typecheck && nr build",
     "pretest": "tsc -p . --outDir out && nr build",
