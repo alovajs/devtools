@@ -21,9 +21,9 @@
     "test": "run-s test:*",
     "test:e2e": "nr --filter=./packages/* test",
     "test:unit": "vitest run --exclude '**/e2e/**'",
-    "test:unit:coverage": "vitest run --coverage",
+    "test:unit:coverage": "vitest run --exclude '**/e2e/**' --coverage",
     "lint": "eslint",
-    "lint:fix": "eslint --fix",
+    "lintf": "eslint --fix",
     "api-test": "tsx scripts/api-test.ts",
     "commit": "tsx scripts/bump-version.ts && git-cz && git push",
     "prepare": "husky",
@@ -70,7 +70,7 @@
     "vitest": "^3.2.4"
   },
   "lint-staged": {
-    "*": "npm run lint:fix"
+    "*": "npm run lintf"
   },
   "config": {
     "commitizen": {
