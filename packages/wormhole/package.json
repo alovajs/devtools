@@ -36,10 +36,10 @@
     "typings"
   ],
   "scripts": {
-    "build": "npm run build:ts && npm run build:dts && npm run build:copy",
-    "build:copy": "ncp ./src/templates ./dist/templates",
+    "build": "run-s build:*",
     "build:ts": "tsc --build tsconfig.build.json && tsc-alias -p tsconfig.build.json",
-    "build:dts": "dts-bundle-generator -o typings/index.d.ts src/index.ts --no-check --no-banner --project tsconfig.build.json"
+    "build:dts": "dts-bundle-generator -o typings/index.d.ts src/index.ts --no-check --no-banner --project tsconfig.build.json",
+    "build:copy": "ncp ./src/templates ./dist/templates"
   },
   "publishConfig": {
     "access": "public"
