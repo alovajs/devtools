@@ -105,15 +105,12 @@
     "views": {
       "api-docs-sidebar": [
         {
+          "icon": "server-process",
           "id": "api-docs-server-view",
           "name": "Api Server",
           "type": "tree"
         },
-        {
-          "id": "api-docs-detail-view",
-          "name": "Api Detail",
-          "type": "webview"
-        }
+        { "icon": "symbol-constant", "id": "api-docs-detail-view", "name": "Api Detail", "type": "webview" }
       ]
     }
   },

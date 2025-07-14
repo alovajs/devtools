@@ -18,21 +18,23 @@
     "pnpm": ">=9.1.0"
   },
   "scripts": {
-    "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
+    "test": "run-s test:*",
+    "test:e2e": "nr --filter=./packages/* test",
+    "test:unit": "vitest run --exclude '**/e2e/**'",
+    "test:unit:coverage": "vitest run --coverage",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "api-test": "tsx scripts/api-test.ts",
     "commit": "tsx scripts/bump-version.ts && git-cz && git push",
     "prepare": "husky",
-    "coveralls": "pnpm run test:coverage && coveralls < coverage/lcov.info",
+    "coveralls": "nr run test:coverage && coveralls < coverage/lcov.info",
     "changeset": "changeset",
     "changeset:alpha": "changeset pre enter alpha",
     "changeset:beta": "changeset pre enter beta",
     "changeset:pre.exit": "changeset pre exit",
     "changeset:version": "changeset version",
-    "build": "pnpm --filter=./packages/* build",
-    "release": "pnpm run coveralls && pnpm build && changeset publish && pnpm --filter=alova-vscode-extension release"
+    "build": "nr --filter=./packages/* build",
+    "release": "nr coveralls && nr build && changeset publish && nr --filter=alova-vscode-extension release"
   },
   "dependencies": {
     "@eslint/eslintrc": "^3.3.1",

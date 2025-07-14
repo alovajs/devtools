@@ -1,7 +1,6 @@
 // Place your settings in this file to overwrite default and user settings.
 {
   "editor.tabSize": 2,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.suggestSelection": "recentlyUsedByPrefix",
   // Enable the ESlint flat config support
   // (remove this if your ESLint extension above v3.0.5)
