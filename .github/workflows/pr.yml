@@ -37,4 +37,9 @@ jobs:
         run: pnpm run lint
 
       - name: Unit tests
-        run: pnpm run test
+        run: pnpm run test:unit
+
+      - name: E2E tests (via GabrielBB/xvfb-action)
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          run: pnpm run test:e2e
