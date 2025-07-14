@@ -1,6 +1,6 @@
 import { Commands } from '@/commands';
+import autocomplete from '@/functions/autocomplete';
 import * as vscode from 'vscode';
-import { getAutocompleteCodeSnippet } from './autocomplete';
 // 代码片段类型定义
 export interface CodeSnippet {
   id: string;
@@ -10,6 +10,18 @@ export interface CodeSnippet {
   code: string;
   tags: string[];
 }
+export const getAutocompleteCodeSnippet = async (text: string, filePath: string): Promise<CodeSnippet[]> =>
+  (await autocomplete(text, filePath)).map(item => {
+    const codeSnippet: CodeSnippet = {
+      id: item.path,
+      name: `[${item.method}] ${item.summary}`,
+      description: item.path,
+      language: '*',
+      code: item.replaceText,
+      tags: ['alova']
+    };
+    return codeSnippet;
+  });
 
 class SnippetManager {
   private snippets: CodeSnippet[] = [];

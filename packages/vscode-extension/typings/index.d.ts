@@ -11,3 +11,8 @@ declare type UnionToTuple<T, L = LastOf<T>, N = [T] extends [never] ? true : fal
   ? []
   : [...UnionToTuple<Exclude<T, L>>, L];
 type Modify<T, R> = Omit<T, keyof R> & R;
+
+type MaybeArray<T> = T | T[];
+declare interface ExtensionModule {
+  (ctx: import('vscode').ExtensionContext): MaybeArray<import('vscode').Disposable>;
+}

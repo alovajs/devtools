@@ -1,17 +1,9 @@
-import { CommandKey, commandsMap } from '@/commands';
 import path from 'node:path';
 import * as vscode from 'vscode';
 // Get workspace path file
 export const getWorkspacePaths = () => {
   const workspaceFolders = vscode.workspace.workspaceFolders || [];
   return workspaceFolders.map(item => `${item.uri.fsPath}/`);
-};
-// Execute command
-export const executeCommand = <T extends any[]>(cmd: CommandKey, ...args: T) => {
-  const commandId = commandsMap[cmd]?.commandId;
-  if (commandId) {
-    vscode.commands.executeCommand(commandId, ...args);
-  }
 };
 // Get the current workspace path
 export const getCurrentWorkspacePath = (filePath?: string) => {
@@ -37,3 +29,6 @@ export const getCurrentDirectory = () => {
   }
   return path.dirname(editor.document.uri.fsPath);
 };
+
+export const registerCommand = <U = [], T = void>(command: CommandType<U, T>, ctx: vscode.ExtensionContext) =>
+  vscode.commands.registerCommand(command.commandId, command.handler(ctx));

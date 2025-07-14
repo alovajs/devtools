@@ -1,51 +1,16 @@
-import Error from '@/components/error';
 import { showError } from '@/components/event';
 import { endLoading, loading } from '@/components/statusBar';
-import generate, { type GenerateOption } from '@/functions/generate';
-import readConfig from '@/functions/readConfig';
-import { Log, getFileNameByPath } from '@/utils';
-
+import ApiGenerate from '@/core/ApiGenerate';
+import { registerCommand } from '@/utils/vscode';
 import Commands from './commands';
-
-class ApiGenerate {
-  static readErrorArr: Error[] = [];
-  static generateErrorArr: Error[] = [];
-  static async readConfig(path?: string | string[]) {
-    const { configNum, errorArr } = await readConfig(path);
-    this.readErrorArr.push(...errorArr);
-    return configNum;
-  }
-  static async generate(optins?: GenerateOption) {
-    const generateInfo = await generate(optins);
-    for (const [workspaceRootDir, isGenerate] of generateInfo.resultArr) {
-      if (isGenerate) {
-        Log.info(`[${getFileNameByPath(workspaceRootDir)}]: Your API is updated`, { prompt: true });
-      }
-    }
-    this.generateErrorArr.push(...generateInfo.errorArr);
-  }
-  static getErrorArr() {
-    return [...this.readErrorArr, ...this.generateErrorArr];
-  }
-  static showError() {
-    this.getErrorArr().forEach(error => {
-      showError(error);
-    });
-  }
-  static clear() {
-    this.readErrorArr = [];
-    this.generateErrorArr = [];
-  }
-}
 
 export const refresh: CommandType = {
   commandId: Commands.refresh,
   handler: () => async () => {
     try {
       loading();
-      if (!(await ApiGenerate.readConfig()) && !ApiGenerate.readErrorArr.length) {
-        throw new Error('Expected to create alova.config.js in root directory.');
-      }
+      await ApiGenerate.readConfig();
+      ApiGenerate.checkConfig();
       // Generate api file
       await ApiGenerate.generate({ force: true });
       ApiGenerate.showError();
@@ -72,4 +37,13 @@ export const generateApi: CommandType<[string]> = {
       ApiGenerate.clear();
     }
   }
+};
+
+export const createConfig: CommandType = {
+  commandId: Commands.create_config,
+  handler: () => () => ApiGenerate.createConfig()
+};
+
+export default <ExtensionModule>function (ctx) {
+  return [registerCommand(refresh, ctx), registerCommand(generateApi, ctx), registerCommand(createConfig, ctx)];
 };

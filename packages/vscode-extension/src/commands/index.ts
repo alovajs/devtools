@@ -1,13 +1,10 @@
-import autocomplete from './autocomplete';
-import createConfig from './createConfig';
-import { generateApi, refresh } from './generate';
-import openDocs from './openDocs';
-import setup from './setup';
-import showStatusBarIcon from './showStatusBarIcon';
+import auto, { autocomplete } from './autocomplete';
+import docs, { openDocs } from './docs';
+import generate, { createConfig, generateApi, refresh } from './generate';
+import statusBar, { showStatusBarIcon } from './statusBar';
 
 export * from './commands';
 export const commandsMap = {
-  setup,
   autocomplete,
   generateApi,
   refresh,
@@ -17,3 +14,8 @@ export const commandsMap = {
 };
 export const commands = Object.values(commandsMap);
 export type CommandKey = keyof typeof commandsMap;
+const m: ExtensionModule = function (ctx) {
+  return [auto(ctx), docs(ctx), generate(ctx), statusBar(ctx)].flat();
+};
+
+export default m;

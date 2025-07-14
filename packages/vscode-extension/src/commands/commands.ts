@@ -3,7 +3,6 @@ export const enum Commands {
   create_config = 'alova.create.config',
   generate_api = 'alova.generateApi',
   refresh = 'alova.refresh',
-  setup = 'alova.setup',
   show_status_bar_icon = 'alova.showStatusBarIcon',
   api_docs_refresh = 'alova.apiDocs.refresh',
   api_docs_open = 'alova.apiDocs.open',

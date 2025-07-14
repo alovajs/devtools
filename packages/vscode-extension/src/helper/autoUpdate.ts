@@ -1,8 +1,9 @@
+import { Commands } from '@/commands';
 import Global from '@/core/Global';
 import wormhole from '@/helper/wormhole';
 import { highPrecisionInterval } from '@/utils';
-import { executeCommand } from '@/utils/vscode';
 import { Config } from '@alova/wormhole';
+import { commands } from 'vscode';
 
 export async function refeshAutoUpdate(path: string, config: Config) {
   const { time, immediate, isStop } = await wormhole.getAutoUpdateConfig(config);
@@ -17,7 +18,7 @@ export async function refeshAutoUpdate(path: string, config: Config) {
       path,
       highPrecisionInterval(
         () => {
-          executeCommand('generateApi', path);
+          commands.executeCommand(Commands.generate_api, path);
         },
         timerTime,
         immediate

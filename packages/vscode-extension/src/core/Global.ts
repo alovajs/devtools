@@ -1,7 +1,10 @@
+import { registerEvent } from '@/components/event';
+import { getWormhole } from '@/functions/getWormhole';
 import { Timer } from '@/utils';
 import type { Config, TemplateData } from '@alova/wormhole';
 import type { Event, ExtensionContext } from 'vscode';
 import { EventEmitter } from 'vscode';
+import ApiGenerate from './ApiGenerate';
 
 export default class Global {
   static context: ExtensionContext;
@@ -14,6 +17,10 @@ export default class Global {
   static templateData = new Map<string, TemplateData>();
   static async init(context: ExtensionContext) {
     this.context = context;
+    registerEvent();
+    if (getWormhole()) {
+      await ApiGenerate.onlyReadConfig();
+    }
   }
   // enables
   static get enabled() {
