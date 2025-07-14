@@ -1,18 +1,19 @@
-import { astGenerate } from '@/core/loader/astLoader/generates';
-import { groupTypeGenerator } from '@/core/loader/astLoader/generates/group';
-import { GeneratorCtx, GeneratorOptions } from '@/core/loader/astLoader/generates/type';
-import { ASTType, TIntersection, TUnion } from '@/type';
-import { normalizeGeneratorResult } from './utils';
+import type { GeneratorCtx, GeneratorOptions } from '@/core/loader/astLoader/generates/type'
+import type { TIntersection, TUnion } from '@/type'
+import { astGenerate } from '@/core/loader/astLoader/generates'
+import { groupTypeGenerator } from '@/core/loader/astLoader/generates/group'
+import { ASTType } from '@/type'
+import { normalizeGeneratorResult } from './utils'
 
-describe('Group Type Generator', () => {
+describe('group Type Generator', () => {
   const defaultOptions: GeneratorOptions = {
-    commentType: 'doc'
-  };
+    commentType: 'doc',
+  }
   const defaultCtx: GeneratorCtx = {
     path: ['$'],
     options: defaultOptions,
-    next: astGenerate
-  };
+    next: astGenerate,
+  }
   it('should generate union type', async () => {
     const ast: TUnion = {
       type: ASTType.UNION,
@@ -21,15 +22,15 @@ describe('Group Type Generator', () => {
       params: [
         {
           type: ASTType.STRING,
-          comment: 'String status'
+          comment: 'String status',
         },
         {
           type: ASTType.NUMBER,
-          comment: 'Numeric status'
-        }
-      ]
-    };
-    const result = await normalizeGeneratorResult(groupTypeGenerator(ast, defaultCtx));
+          comment: 'Numeric status',
+        },
+      ],
+    }
+    const result = await normalizeGeneratorResult(groupTypeGenerator(ast, defaultCtx))
     const expectResult = await normalizeGeneratorResult({
       name: 'Status',
       comment: `
@@ -37,10 +38,10 @@ describe('Group Type Generator', () => {
        * Status type 
        */`,
       type: 'type',
-      code: 'string | number'
-    });
-    expect(result).toEqual(expectResult);
-  });
+      code: 'string | number',
+    })
+    expect(result).toEqual(expectResult)
+  })
 
   it('should generate intersection type', async () => {
     const ast: TIntersection = {
@@ -55,10 +56,10 @@ describe('Group Type Generator', () => {
               keyName: 'name',
               isRequired: false,
               ast: {
-                type: ASTType.STRING
-              }
-            }
-          ]
+                type: ASTType.STRING,
+              },
+            },
+          ],
         },
         {
           type: ASTType.INTERFACE,
@@ -67,14 +68,14 @@ describe('Group Type Generator', () => {
               keyName: 'role',
               isRequired: false,
               ast: {
-                type: ASTType.STRING
-              }
-            }
-          ]
-        }
-      ]
-    };
-    const result = await normalizeGeneratorResult(groupTypeGenerator(ast, defaultCtx));
+                type: ASTType.STRING,
+              },
+            },
+          ],
+        },
+      ],
+    }
+    const result = await normalizeGeneratorResult(groupTypeGenerator(ast, defaultCtx))
     const expectResult = await normalizeGeneratorResult({
       name: 'UserWithRole',
       comment: `
@@ -86,10 +87,10 @@ describe('Group Type Generator', () => {
         name?:string 
       } & { 
         role?:string 
-      }`
-    });
-    expect(result).toEqual(expectResult);
-  });
+      }`,
+    })
+    expect(result).toEqual(expectResult)
+  })
 
   it('should handle complex nested types', async () => {
     const ast: TUnion = {
@@ -106,10 +107,10 @@ describe('Group Type Generator', () => {
                   keyName: 'id',
                   isRequired: false,
                   ast: {
-                    type: ASTType.NUMBER
-                  }
-                }
-              ]
+                    type: ASTType.NUMBER,
+                  },
+                },
+              ],
             },
             {
               type: ASTType.INTERFACE,
@@ -118,12 +119,12 @@ describe('Group Type Generator', () => {
                   keyName: 'name',
                   isRequired: false,
                   ast: {
-                    type: ASTType.STRING
-                  }
-                }
-              ]
-            }
-          ]
+                    type: ASTType.STRING,
+                  },
+                },
+              ],
+            },
+          ],
         },
         {
           type: ASTType.INTERFACE,
@@ -132,14 +133,14 @@ describe('Group Type Generator', () => {
               keyName: 'code',
               isRequired: false,
               ast: {
-                type: ASTType.STRING
-              }
-            }
-          ]
-        }
-      ]
-    };
-    const result = await normalizeGeneratorResult(groupTypeGenerator(ast, defaultCtx));
+                type: ASTType.STRING,
+              },
+            },
+          ],
+        },
+      ],
+    }
+    const result = await normalizeGeneratorResult(groupTypeGenerator(ast, defaultCtx))
     const expectResult = await normalizeGeneratorResult({
       name: 'ComplexType',
       comment: '',
@@ -150,10 +151,10 @@ describe('Group Type Generator', () => {
         name?:string 
       } | {
         code?:string 
-      }`
-    });
-    expect(result).toEqual(expectResult);
-  });
+      }`,
+    })
+    expect(result).toEqual(expectResult)
+  })
 
   it('should handle deep option', async () => {
     const ast: TUnion = {
@@ -168,10 +169,10 @@ describe('Group Type Generator', () => {
               keyName: 'value',
               isRequired: false,
               ast: {
-                type: ASTType.STRING
-              }
-            }
-          ]
+                type: ASTType.STRING,
+              },
+            },
+          ],
         },
         {
           type: ASTType.INTERFACE,
@@ -181,16 +182,16 @@ describe('Group Type Generator', () => {
               keyName: 'value',
               isRequired: false,
               ast: {
-                type: ASTType.NUMBER
-              }
-            }
-          ]
-        }
-      ]
-    };
+                type: ASTType.NUMBER,
+              },
+            },
+          ],
+        },
+      ],
+    }
     const result = await normalizeGeneratorResult(
-      groupTypeGenerator(ast, { ...defaultCtx, options: { ...defaultOptions, deep: true } })
-    );
+      groupTypeGenerator(ast, { ...defaultCtx, options: { ...defaultOptions, deep: true } }),
+    )
     const expectResult = await normalizeGeneratorResult({
       name: 'DeepTest',
       comment: '',
@@ -199,8 +200,8 @@ describe('Group Type Generator', () => {
         value?:string 
       } | {
         value?:number 
-      }`
-    });
-    expect(result).toEqual(expectResult);
-  });
-});
+      }`,
+    })
+    expect(result).toEqual(expectResult)
+  })
+})

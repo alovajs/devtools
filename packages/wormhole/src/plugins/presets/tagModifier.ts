@@ -1,10 +1,10 @@
-import type { ApiDescriptor, ApiPlugin } from '@/type';
+import type { ApiDescriptor, ApiPlugin } from '@/type'
 
 /**
  * Tag modifier handler function type
  * Receives a tag string and returns the modified tag string, or null/undefined/void to remove the tag
  */
-export type ModifierHandler = (tag: string) => string | null | undefined | void;
+export type ModifierHandler = (tag: string) => string | null | undefined | void
 
 /**
  * Validates if tag name follows naming conventions
@@ -13,18 +13,18 @@ export type ModifierHandler = (tag: string) => string | null | undefined | void;
  */
 function isValidTagName(tag: string): boolean {
   if (!tag || typeof tag !== 'string') {
-    return false;
+    return false
   }
 
-  const trimmedTag = tag.trim();
+  const trimmedTag = tag.trim()
 
   if (!trimmedTag) {
-    return false;
+    return false
   }
 
   // Basic naming convention: allow letters, numbers, hyphens, underscores and Chinese characters
-  const validPattern = /^[\u4e00-\u9fa5a-zA-Z0-9_-]+$/;
-  return validPattern.test(trimmedTag);
+  const validPattern = /^[\u4E00-\u9FA5\w-]+$/
+  return validPattern.test(trimmedTag)
 }
 
 /**
@@ -34,13 +34,14 @@ function isValidTagName(tag: string): boolean {
  * @returns Modified API descriptor
  */
 export function processApiTags(apiDescriptor: ApiDescriptor, handler: ModifierHandler): ApiDescriptor {
-  if (!apiDescriptor) return apiDescriptor;
+  if (!apiDescriptor)
+    return apiDescriptor
 
-  const newDescriptor = { ...apiDescriptor };
+  const newDescriptor = { ...apiDescriptor }
 
   // Check if tags property exists and is an array
   if (!newDescriptor.tags || !Array.isArray(newDescriptor.tags)) {
-    return newDescriptor;
+    return newDescriptor
   }
 
   // Process each tag and filter out null/undefined results
@@ -48,26 +49,27 @@ export function processApiTags(apiDescriptor: ApiDescriptor, handler: ModifierHa
     .map((tag: string) => {
       try {
         // Call user provided handler function
-        const modifiedTag = handler(tag);
+        const modifiedTag = handler(tag)
 
         // If handler returns null/undefined/void, remove this tag
         if (modifiedTag == null) {
-          return null;
+          return null
         }
 
         // Validate if modified tag follows naming conventions
         if (!isValidTagName(modifiedTag)) {
-          return tag; // Keep original tag if invalid
+          return tag // Keep original tag if invalid
         }
 
-        return modifiedTag.trim(); // Return trimmed modified tag
-      } catch {
-        return tag; // Return original tag on error
+        return modifiedTag.trim() // Return trimmed modified tag
+      }
+      catch {
+        return tag // Return original tag on error
       }
     })
-    .filter((tag): tag is string => tag != null); // Filter out null/undefined values
+    .filter((tag): tag is string => tag != null) // Filter out null/undefined values
 
-  return newDescriptor;
+  return newDescriptor
 }
 
 /**
@@ -98,19 +100,20 @@ export function processApiTags(apiDescriptor: ApiDescriptor, handler: ModifierHa
  */
 export function tagModifier(handler: ModifierHandler): ApiPlugin {
   if (!handler || typeof handler !== 'function') {
-    throw new Error('tagModifier requires a valid handler function');
+    throw new Error('tagModifier requires a valid handler function')
   }
 
   return {
     name: 'tagModifier',
     extends: {
       handleApi: (apiDescriptor: ApiDescriptor) => {
-        if (!apiDescriptor) return null;
+        if (!apiDescriptor)
+          return null
 
-        return processApiTags(apiDescriptor, handler);
-      }
-    }
-  };
+        return processApiTags(apiDescriptor, handler)
+      },
+    },
+  }
 }
 
-export default tagModifier;
+export default tagModifier

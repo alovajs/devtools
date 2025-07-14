@@ -1,18 +1,18 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "resolveJsonModule": true,
     "target": "ES2022",
+    "lib": ["ES2022"],
     "module": "Node16",
     "moduleResolution": "NodeNext",
-    "outDir": "out",
-    "strictNullChecks": true,
-    "lib": ["ES2022"],
     "paths": {
       "~/*": ["./typings/*"],
       "@/*": ["./src/*"],
       "#/*": ["./*"]
-    }
+    },
+    "resolveJsonModule": true,
+    "strictNullChecks": true,
+    "outDir": "out"
   },
   "include": ["src/**/*.ts", "test/**/*.ts", "typings/**/*.d.ts"]
 }

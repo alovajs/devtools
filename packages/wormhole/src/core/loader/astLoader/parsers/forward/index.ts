@@ -1,16 +1,16 @@
-import { SchemaObject } from '@/type';
-import arrayForwarder from './array';
-import enumForwarder from './enum';
-import groupFowarder from './group';
-import objectForwarder from './object';
-import tupleFowarder from './tuple';
-import { Forwarder } from './type';
+import type { Forwarder } from './type'
+import type { SchemaObject } from '@/type'
+import arrayForwarder from './array'
+import enumForwarder from './enum'
+import groupFowarder from './group'
+import objectForwarder from './object'
+import tupleFowarder from './tuple'
 
-export const forwarders: Forwarder[] = [objectForwarder, enumForwarder, arrayForwarder, tupleFowarder, groupFowarder];
-export const forward = (schema: SchemaObject) => {
+export const forwarders: Forwarder[] = [objectForwarder, enumForwarder, arrayForwarder, tupleFowarder, groupFowarder]
+export function forward(schema: SchemaObject) {
   for (const forwarder of forwarders) {
     if (forwarder.is(schema)) {
-      return forwarder.to;
+      return forwarder.to
     }
   }
-};
+}

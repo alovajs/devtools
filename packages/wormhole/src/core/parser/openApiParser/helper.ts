@@ -1,136 +1,138 @@
-import { logger } from '@/helper';
-import type { OpenAPIDocument, OpenAPIV2Document, PlatformType } from '@/type';
-import { fetchData } from '@/utils';
-import importFresh from 'import-fresh';
-import YAML from 'js-yaml';
-import fs from 'node:fs/promises';
-import path from 'node:path';
-import swagger2openapi from 'swagger2openapi';
+import type { OpenAPIDocument, OpenAPIV2Document, PlatformType } from '@/type'
+import fs from 'node:fs/promises'
+import path from 'node:path'
+import importFresh from 'import-fresh'
+import YAML from 'js-yaml'
+import swagger2openapi from 'swagger2openapi'
+import { logger } from '@/helper'
+import { fetchData } from '@/utils'
 
-const supportedExtname = ['json', 'yaml'];
-const supportedPlatformType: PlatformType[] = ['swagger'];
+const supportedExtname = ['json', 'yaml']
+const supportedPlatformType: PlatformType[] = ['swagger']
 function isSwagger2(data: any): data is OpenAPIV2Document {
-  return !!data?.swagger;
+  return !!data?.swagger
 }
 // Parse local openapi files
 
 async function parseLocalFile(url: string, projectPath = process.cwd()) {
-  const [, extname] = /\.([^.]+)$/.exec(url) ?? [];
+  const [, extname] = /\.([^.]+)$/.exec(url) ?? []
   if (!supportedExtname.includes(extname)) {
     throw logger.throwError(`Unsupported file type: ${extname}`, {
       url,
-      projectPath
-    });
+      projectPath,
+    })
   }
   switch (extname) {
     case 'yaml': {
-      const file = await fs.readFile(path.resolve(projectPath, url), 'utf-8');
-      const data = YAML.load(file) as any;
-      return data;
+      const file = await fs.readFile(path.resolve(projectPath, url), 'utf-8')
+      const data = YAML.load(file) as any
+      return data
     }
     // Json
 
     default: {
-      const data = importFresh(path.resolve(projectPath, url));
-      return data;
+      const data = importFresh(path.resolve(projectPath, url))
+      return data
     }
   }
 }
 // Parse remote openapi files
 
 async function parseRemoteFile(url: string, platformType?: PlatformType) {
-  const [, , extname] = /^http(s)?:\/\/.+\/.+\.([^.]+)$/.exec(url) ?? [];
+  const [, , extname] = /^http(s)?:\/\/.[^\n\r/\u2028\u2029]*\/.+\.([^.]+)$/.exec(url) ?? []
   // no extension and platform type
 
   if (!extname && platformType) {
-    return getPlatformOpenApiData(url, platformType);
+    return getPlatformOpenApiData(url, platformType)
   }
   // No platform type and no extension
 
   if (!platformType && !extname) {
     logger.debug('No platform type and no extension', {
       url,
-      platformType
-    });
-    return;
+      platformType,
+    })
+    return
   }
   // There is no platform type and there is an extension
   if (!supportedExtname.includes(extname)) {
     throw logger.throwError(`Unsupported file type: ${extname}`, {
       url,
-      platformType
-    });
+      platformType,
+    })
   }
-  const dataText = (await fetchData(url)) ?? '';
-  let data: any;
+  const dataText = (await fetchData(url)) ?? ''
+  let data: any
   switch (extname) {
     case 'yaml': {
-      data = YAML.load(dataText) as any;
-      break;
+      data = YAML.load(dataText) as any
+      break
     }
     // Json
 
     default: {
-      data = JSON.parse(dataText);
-      break;
+      data = JSON.parse(dataText)
+      break
     }
   }
 
   // Validate if the data is valid (prevent server from returning error responses)
   if (!isValidOpenApiData(data)) {
-    throw new Error(`Data retrieved from URL ${url} is not a valid OpenAPI document`);
+    throw new Error(`Data retrieved from URL ${url} is not a valid OpenAPI document`)
   }
 
-  return data;
+  return data
 }
 
 // Parse platform openapi files
 function isValidOpenApiData(data: any): boolean {
   if (!data || typeof data !== 'object') {
-    return false;
+    return false
   }
 
   // Check if it's an error response format (e.g., {"code": -1, "msg": "URL does not exist", "data": null})
   if (data.code !== undefined && data.msg !== undefined) {
-    return false;
+    return false
   }
 
   // Check if it contains required OpenAPI/Swagger structure
-  return !!(data.openapi || data.swagger || data.info || data.paths);
+  return !!(data.openapi || data.swagger || data.info || data.paths)
 }
 
 export async function getPlatformOpenApiData(url: string, platformType: PlatformType) {
   if (!supportedPlatformType.includes(platformType)) {
     throw logger.throwError(`Platform type ${platformType} is not supported.`, {
       url,
-      platformType
-    });
+      platformType,
+    })
   }
   switch (platformType) {
     case 'swagger': {
-      const urlsToTry = [url, `${url}/openapi.json`, `${url}/v2/swagger.json`];
+      const urlsToTry = [url, `${url}/openapi.json`, `${url}/v2/swagger.json`]
 
       for (const tryUrl of urlsToTry) {
         try {
-          const dataText = await fetchData(tryUrl);
-          if (!dataText) continue;
+          const dataText = await fetchData(tryUrl)
+          if (!dataText)
+            continue
 
-          const data = JSON.parse(dataText);
+          const data = JSON.parse(dataText)
           if (isValidOpenApiData(data)) {
-            return data;
+            return data
           }
           // If data is invalid, continue to next URL
-        } catch {
+        }
+        catch {
           // If request or parsing fails, continue to next URL
-          continue;
+          continue
         }
       }
 
       // If all URLs fail or return invalid data, throw error
-      throw logger.throwError(`Unable to retrieve valid OpenAPI document from any URL: ${urlsToTry.join(', ')}`);
+      throw logger.throwError(`Unable to retrieve valid OpenAPI document from any URL: ${urlsToTry.join(', ')}`)
     }
     default:
-      break;
+      break
   }
 }
 // Parse openapi files
@@ -138,35 +140,37 @@ export async function getPlatformOpenApiData(url: string, platformType: Platform
 export async function getOpenApiData(
   url: string,
   projectPath?: string,
-  platformType?: PlatformType
+  platformType?: PlatformType,
 ): Promise<OpenAPIDocument> {
-  let data: OpenAPIDocument | null = null;
+  let data: OpenAPIDocument | null = null
   try {
-    if (!/^http(s)?:\/\//.test(url)) {
+    if (!/^https?:\/\//.test(url)) {
       // local file
-      data = await parseLocalFile(url, projectPath);
-    } else {
+      data = await parseLocalFile(url, projectPath)
+    }
+    else {
       // remote file
-      data = await parseRemoteFile(url, platformType);
+      data = await parseRemoteFile(url, platformType)
     }
     // If it is a swagger2 file
     if (isSwagger2(data)) {
-      data = (await swagger2openapi.convertObj(data, { warnOnly: true })).openapi as OpenAPIDocument;
+      data = (await swagger2openapi.convertObj(data, { warnOnly: true })).openapi as OpenAPIDocument
     }
-  } catch (error: any) {
+  }
+  catch (error: any) {
     throw logger.throwError(`Cannot read file from ${url}`, {
       error: error.message,
       projectPath,
       url,
-      platformType
-    });
+      platformType,
+    })
   }
   if (!data) {
     throw logger.throwError(`Cannot read file from ${url}`, {
       projectPath,
       url,
-      platformType
-    });
+      platformType,
+    })
   }
-  return data;
+  return data
 }

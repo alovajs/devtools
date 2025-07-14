@@ -1,18 +1,19 @@
-import { astGenerate } from '@/core/loader/astLoader/generates';
-import { tupleTypeGenerator } from '@/core/loader/astLoader/generates/tuple';
-import { GeneratorCtx, GeneratorOptions } from '@/core/loader/astLoader/generates/type';
-import { ASTType, TTuple } from '@/type';
-import { normalizeGeneratorResult } from './utils';
+import type { GeneratorCtx, GeneratorOptions } from '@/core/loader/astLoader/generates/type'
+import type { TTuple } from '@/type'
+import { astGenerate } from '@/core/loader/astLoader/generates'
+import { tupleTypeGenerator } from '@/core/loader/astLoader/generates/tuple'
+import { ASTType } from '@/type'
+import { normalizeGeneratorResult } from './utils'
 
-describe('Tuple Type Generator', () => {
+describe('tuple Type Generator', () => {
   const defaultOptions: GeneratorOptions = {
-    commentType: 'doc'
-  };
+    commentType: 'doc',
+  }
   const defaultCtx: GeneratorCtx = {
     path: ['$'],
     options: defaultOptions,
-    next: astGenerate
-  };
+    next: astGenerate,
+  }
   it('should generate basic tuple type', async () => {
     const ast: TTuple = {
       type: ASTType.TUPLE,
@@ -20,15 +21,15 @@ describe('Tuple Type Generator', () => {
       comment: 'Point tuple',
       params: [
         {
-          type: ASTType.NUMBER
+          type: ASTType.NUMBER,
         },
         {
-          type: ASTType.NUMBER
-        }
-      ]
-    };
-    const ts = tupleTypeGenerator(ast, defaultCtx);
-    const result = await normalizeGeneratorResult(ts);
+          type: ASTType.NUMBER,
+        },
+      ],
+    }
+    const ts = tupleTypeGenerator(ast, defaultCtx)
+    const result = await normalizeGeneratorResult(ts)
     const expectResult = await normalizeGeneratorResult({
       name: 'Point',
       comment: `
@@ -39,10 +40,10 @@ describe('Tuple Type Generator', () => {
       code: `[
       number,
       number
-      ]`
-    });
-    expect(result).toEqual(expectResult);
-  });
+      ]`,
+    })
+    expect(result).toEqual(expectResult)
+  })
 
   it('should handle minItems with spread parameter', async () => {
     const ast: TTuple = {
@@ -51,15 +52,15 @@ describe('Tuple Type Generator', () => {
       comment: 'Array with minimum items',
       params: [
         {
-          type: ASTType.STRING
-        }
+          type: ASTType.STRING,
+        },
       ],
       minItems: 3,
       spreadParam: {
-        type: ASTType.STRING
-      }
-    };
-    const result = await normalizeGeneratorResult(tupleTypeGenerator(ast, defaultCtx));
+        type: ASTType.STRING,
+      },
+    }
+    const result = await normalizeGeneratorResult(tupleTypeGenerator(ast, defaultCtx))
     const expectResult = await normalizeGeneratorResult({
       name: 'MinArray',
       comment: `
@@ -72,10 +73,10 @@ describe('Tuple Type Generator', () => {
         string,
         string,
         ...Array<string>
-      ]`
-    });
-    expect(result).toEqual(expectResult);
-  });
+      ]`,
+    })
+    expect(result).toEqual(expectResult)
+  })
 
   it('should handle maxItems with union types', async () => {
     const ast: TTuple = {
@@ -83,16 +84,16 @@ describe('Tuple Type Generator', () => {
       keyName: 'MaxArray',
       params: [
         {
-          type: ASTType.NUMBER
-        }
+          type: ASTType.NUMBER,
+        },
       ],
       minItems: 1,
       maxItems: 3,
       spreadParam: {
-        type: ASTType.NUMBER
-      }
-    };
-    const result = await normalizeGeneratorResult(tupleTypeGenerator(ast, defaultCtx));
+        type: ASTType.NUMBER,
+      },
+    }
+    const result = await normalizeGeneratorResult(tupleTypeGenerator(ast, defaultCtx))
     const expectResult = await normalizeGeneratorResult({
       name: 'MaxArray',
       comment: '',
@@ -106,10 +107,10 @@ describe('Tuple Type Generator', () => {
         number,
         number,
         number
-      ]`
-    });
-    expect(result).toEqual(expectResult);
-  });
+      ]`,
+    })
+    expect(result).toEqual(expectResult)
+  })
 
   it('should handle infinite spread with maxItems < minItems', async () => {
     const ast: TTuple = {
@@ -117,16 +118,16 @@ describe('Tuple Type Generator', () => {
       keyName: 'InfiniteArray',
       params: [
         {
-          type: ASTType.STRING
-        }
+          type: ASTType.STRING,
+        },
       ],
       minItems: 2,
       maxItems: 1,
       spreadParam: {
-        type: ASTType.STRING
-      }
-    };
-    const result = await normalizeGeneratorResult(tupleTypeGenerator(ast, defaultCtx));
+        type: ASTType.STRING,
+      },
+    }
+    const result = await normalizeGeneratorResult(tupleTypeGenerator(ast, defaultCtx))
     const expectResult = await normalizeGeneratorResult({
       name: 'InfiniteArray',
       comment: '',
@@ -135,10 +136,10 @@ describe('Tuple Type Generator', () => {
         string,
         string,
         ...Array<string>
-      ]`
-    });
-    expect(result).toEqual(expectResult);
-  });
+      ]`,
+    })
+    expect(result).toEqual(expectResult)
+  })
 
   it('should handle complex tuple elements', async () => {
     const ast: TTuple = {
@@ -146,7 +147,7 @@ describe('Tuple Type Generator', () => {
       keyName: 'ComplexTuple',
       params: [
         {
-          type: ASTType.STRING
+          type: ASTType.STRING,
         },
         {
           type: ASTType.INTERFACE,
@@ -156,22 +157,22 @@ describe('Tuple Type Generator', () => {
               isRequired: false,
               ast: {
                 comment: 'X coordinate',
-                type: ASTType.NUMBER
-              }
+                type: ASTType.NUMBER,
+              },
             },
             {
               keyName: 'y',
               isRequired: false,
               ast: {
                 comment: 'Y coordinate',
-                type: ASTType.NUMBER
-              }
-            }
-          ]
-        }
-      ]
-    };
-    const result = await normalizeGeneratorResult(tupleTypeGenerator(ast, defaultCtx));
+                type: ASTType.NUMBER,
+              },
+            },
+          ],
+        },
+      ],
+    }
+    const result = await normalizeGeneratorResult(tupleTypeGenerator(ast, defaultCtx))
     const expectResult = await normalizeGeneratorResult({
       name: 'ComplexTuple',
       comment: '',
@@ -188,8 +189,8 @@ describe('Tuple Type Generator', () => {
            */
           y?: number
         }
-      ]`
-    });
-    expect(result).toEqual(expectResult);
-  });
-});
+      ]`,
+    })
+    expect(result).toEqual(expectResult)
+  })
+})

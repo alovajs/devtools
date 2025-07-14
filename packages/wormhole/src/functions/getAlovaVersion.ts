@@ -1,23 +1,23 @@
-import type { AlovaVersion } from '@/type';
-import importFresh from 'import-fresh';
-import path from 'node:path';
-import { PackageJson } from 'type-fest';
+import type { PackageJson } from 'type-fest'
+import type { AlovaVersion } from '@/type'
+import path from 'node:path'
+import importFresh from 'import-fresh'
 
 export default function (projectPath: string) {
-  const packageJson: PackageJson = importFresh(path.resolve(projectPath, './package.json'));
+  const packageJson: PackageJson = importFresh(path.resolve(projectPath, './package.json'))
   if (!packageJson) {
-    return 'v3';
+    return 'v3'
   }
   // Find in dependencies
-  const alovaVersion = packageJson.dependencies?.alova;
+  const alovaVersion = packageJson.dependencies?.alova
   // Find in dev dependencies
   // Priority: Production dependencies > Development dependencies
-  const alovaDevVersion = packageJson.devDependencies?.alova;
+  const alovaDevVersion = packageJson.devDependencies?.alova
   // Framework technology stack tag vue | react
-  return getVersion(alovaVersion ?? alovaDevVersion);
+  return getVersion(alovaVersion ?? alovaDevVersion)
 }
 
-export const getVersion = (version?: string): AlovaVersion => {
-  const execArr = /(\d+)\./.exec(version ?? '') ?? [];
-  return `v${Number(execArr[1]) || 3}`;
-};
+export function getVersion(version?: string): AlovaVersion {
+  const execArr = /(\d+)\./.exec(version ?? '') ?? []
+  return `v${Number(execArr[1]) || 3}`
+}

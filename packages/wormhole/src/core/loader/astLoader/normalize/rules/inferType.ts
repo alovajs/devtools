@@ -1,53 +1,53 @@
-import type { SchemaObject, SchemaType } from '@/type';
-import { isMaybeArraySchemaObject } from '@/utils';
+import type { SchemaObject, SchemaType } from '@/type'
+import { isMaybeArraySchemaObject } from '@/utils'
 
 export default function inferType(schema: SchemaObject): SchemaObject | void {
   if (
-    Array.isArray(schema.type) ||
-    (typeof schema.type === 'string' &&
-      ['string', 'number', 'integer', 'boolean', 'null', 'array', 'object'].includes(schema.type))
+    Array.isArray(schema.type)
+    || (typeof schema.type === 'string'
+      && ['string', 'number', 'integer', 'boolean', 'null', 'array', 'object'].includes(schema.type))
   ) {
-    return;
+    return
   }
   if (schema.enum || schema.oneOf || schema.anyOf || schema.allOf) {
-    return;
+    return
   }
-  const type: SchemaType[] = [];
+  const type: SchemaType[] = []
   if (
-    schema.properties ||
-    schema.additionalProperties ||
-    schema.required ||
-    schema.minProperties !== undefined ||
-    schema.maxProperties !== undefined
+    schema.properties
+    || schema.additionalProperties
+    || schema.required
+    || schema.minProperties !== undefined
+    || schema.maxProperties !== undefined
   ) {
-    type.push('object');
-  }
-  if (
-    isMaybeArraySchemaObject(schema) ||
-    schema.minItems !== undefined ||
-    schema.maxItems !== undefined ||
-    schema.uniqueItems !== undefined ||
-    (schema as any).contains
-  ) {
-    type.push('array');
+    type.push('object')
   }
   if (
-    schema.minLength !== undefined ||
-    schema.maxLength !== undefined ||
-    schema.pattern ||
-    schema.format ||
-    schema.contentMediaType
+    isMaybeArraySchemaObject(schema)
+    || schema.minItems !== undefined
+    || schema.maxItems !== undefined
+    || schema.uniqueItems !== undefined
+    || (schema as any).contains
   ) {
-    type.push('string');
+    type.push('array')
   }
   if (
-    schema.minimum !== undefined ||
-    schema.maximum !== undefined ||
-    schema.multipleOf !== undefined ||
-    schema.exclusiveMinimum !== undefined ||
-    schema.exclusiveMaximum !== undefined
+    schema.minLength !== undefined
+    || schema.maxLength !== undefined
+    || schema.pattern
+    || schema.format
+    || schema.contentMediaType
   ) {
-    type.push('number');
+    type.push('string')
   }
-  return { ...schema, type };
+  if (
+    schema.minimum !== undefined
+    || schema.maximum !== undefined
+    || schema.multipleOf !== undefined
+    || schema.exclusiveMinimum !== undefined
+    || schema.exclusiveMaximum !== undefined
+  ) {
+    type.push('number')
+  }
+  return { ...schema, type }
 }

@@ -1,5 +1,5 @@
-import { logger } from '@/helper/logger';
-import type { ApiDescriptor, ApiPlugin } from '@/type';
+import type { ApiDescriptor, ApiPlugin } from '@/type'
+import { logger } from '@/helper/logger'
 /**
  * Filter configuration interface
  */
@@ -7,7 +7,7 @@ export interface FilterApiConfig {
   /**
    * Target scope for filtering, defaults to 'url'
    */
-  scope?: 'url' | 'tag';
+  scope?: 'url' | 'tag'
 
   /**
    * Include rule:
@@ -15,7 +15,7 @@ export interface FilterApiConfig {
    * - RegExp: target matches this pattern
    * - function: custom matching logic
    */
-  include?: string | RegExp | ((key: string) => boolean);
+  include?: string | RegExp | ((key: string) => boolean)
 
   /**
    * Exclude rule:
@@ -23,32 +23,34 @@ export interface FilterApiConfig {
    * - RegExp: target matches this pattern
    * - function: custom matching logic
    */
-  exclude?: string | RegExp | ((key: string) => boolean);
+  exclude?: string | RegExp | ((key: string) => boolean)
 }
 
 /**
  * Tests if value matches the specified rule
  */
 function isMatch(value: string, match?: string | RegExp | ((key: string) => boolean)): boolean {
-  if (!match) return true;
+  if (!match)
+    return true
 
   if (typeof match === 'string') {
-    return value.includes(match);
+    return value.includes(match)
   }
 
   if (match instanceof RegExp) {
-    return match.test(value);
+    return match.test(value)
   }
 
   if (typeof match === 'function') {
     try {
-      return match(value);
-    } catch {
-      return false; // Return false on error to exclude the item
+      return match(value)
+    }
+    catch {
+      return false // Return false on error to exclude the item
     }
   }
 
-  return false;
+  return false
 }
 
 /**
@@ -57,12 +59,12 @@ function isMatch(value: string, match?: string | RegExp | ((key: string) => bool
 function getApiProperty(apiDescriptor: ApiDescriptor, scope: 'url' | 'tag'): string {
   switch (scope) {
     case 'url':
-      return apiDescriptor.url || '';
+      return apiDescriptor.url || ''
     case 'tag':
       // Assume tags exist in tags array, join with comma if multiple tags
-      return Array.isArray(apiDescriptor.tags) ? apiDescriptor.tags.join(',') : '';
+      return Array.isArray(apiDescriptor.tags) ? apiDescriptor.tags.join(',') : ''
     default:
-      return '';
+      return ''
   }
 }
 
@@ -73,15 +75,15 @@ function getApiProperty(apiDescriptor: ApiDescriptor, scope: 'url' | 'tag'): str
  * @returns Whether it passes the filter (true means keep, false means filter out)
  */
 function applyFilterRule(apiDescriptor: ApiDescriptor, config: FilterApiConfig): boolean {
-  const scope = config.scope || 'url';
-  const value = getApiProperty(apiDescriptor, scope);
+  const scope = config.scope || 'url'
+  const value = getApiProperty(apiDescriptor, scope)
 
   // Handle include and exclude logic
-  const includeMatch = config.include ? isMatch(value, config.include) : true;
-  const excludeMatch = config.exclude ? isMatch(value, config.exclude) : false;
+  const includeMatch = config.include ? isMatch(value, config.include) : true
+  const excludeMatch = config.exclude ? isMatch(value, config.exclude) : false
 
   // If both include and exclude are specified, exclude matching items from include
-  return includeMatch && !excludeMatch;
+  return includeMatch && !excludeMatch
 }
 
 /**
@@ -92,7 +94,7 @@ function applyFilterRule(apiDescriptor: ApiDescriptor, config: FilterApiConfig):
  */
 function combineFilterResults(apiDescriptor: ApiDescriptor, configs: FilterApiConfig[]): boolean {
   // If any configuration matches, keep the API (union logic)
-  return configs.some(config => applyFilterRule(apiDescriptor, config));
+  return configs.some(config => applyFilterRule(apiDescriptor, config))
 }
 
 /**
@@ -102,12 +104,13 @@ function combineFilterResults(apiDescriptor: ApiDescriptor, configs: FilterApiCo
  * @returns Filtered API descriptor, or null if filtered out
  */
 export function filterApiDescriptor(apiDescriptor: ApiDescriptor, configs: FilterApiConfig[]): ApiDescriptor | null {
-  if (!apiDescriptor) return null;
+  if (!apiDescriptor)
+    return null
 
   // Use union logic to determine whether to keep the API
-  const shouldKeep = combineFilterResults(apiDescriptor, configs);
+  const shouldKeep = combineFilterResults(apiDescriptor, configs)
 
-  return shouldKeep ? apiDescriptor : null;
+  return shouldKeep ? apiDescriptor : null
 }
 
 /**
@@ -137,12 +140,12 @@ export function filterApiDescriptor(apiDescriptor: ApiDescriptor, configs: Filte
  * ```
  */
 export function apiFilter(config: FilterApiConfig | FilterApiConfig[]): ApiPlugin {
-  const configs = Array.isArray(config) ? config : [config];
+  const configs = Array.isArray(config) ? config : [config]
 
   // Validate configuration
   for (const conf of configs) {
     if (!conf.include && !conf.exclude) {
-      throw logger.throwError('at least one of `include` or `exclude` must be specified');
+      throw logger.throwError('at least one of `include` or `exclude` must be specified')
     }
   }
 
@@ -150,12 +153,13 @@ export function apiFilter(config: FilterApiConfig | FilterApiConfig[]): ApiPlugi
     name: 'filterApi',
     extends: {
       handleApi: (apiDescriptor: ApiDescriptor) => {
-        if (!apiDescriptor) return null;
+        if (!apiDescriptor)
+          return null
 
-        return filterApiDescriptor(apiDescriptor, configs);
-      }
-    }
-  };
+        return filterApiDescriptor(apiDescriptor, configs)
+      },
+    },
+  }
 }
 
-export default apiFilter;
+export default apiFilter

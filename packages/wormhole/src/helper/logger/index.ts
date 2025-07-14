@@ -1,87 +1,86 @@
-import { getGlobalConfig } from '@/config';
+import { getGlobalConfig } from '@/config'
 
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
-const DEFAULT_CONFIG = getGlobalConfig();
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+const DEFAULT_CONFIG = getGlobalConfig()
 export interface LoggerOptions {
-  level: LogLevel;
-  prefix?: string;
-  timestamp?: boolean;
-  colors?: boolean;
+  level: LogLevel
+  prefix?: string
+  timestamp?: boolean
+  colors?: boolean
 }
 
 class Logger {
   private options: LoggerOptions = {
     level: 'info',
     timestamp: true,
-    colors: true
-  };
+    colors: true,
+  }
 
   configure(options: Partial<LoggerOptions>) {
-    this.options = { ...this.options, ...options };
-    return this;
+    this.options = { ...this.options, ...options }
+    return this
   }
 
   private getTimestamp(): string {
-    return this.options.timestamp ? `[${new Date().toISOString()}] ` : '';
+    return this.options.timestamp ? `[${new Date().toISOString()}] ` : ''
   }
 
   private formatMessage(level: LogLevel, message: string, details?: unknown): string {
-    const timestamp = this.getTimestamp();
-    const prefix = this.options.prefix ? `[${this.options.prefix}] ` : '';
-    const detailsStr = details ? `\n${JSON.stringify(details, null, 2)}` : '';
+    const timestamp = this.getTimestamp()
+    const prefix = this.options.prefix ? `[${this.options.prefix}] ` : ''
+    const detailsStr = details ? `\n${JSON.stringify(details, null, 2)}` : ''
     if (this.options.colors) {
       const colors = {
-        debug: '\x1b[34m', // blue
-        info: '\x1b[32m', // green
-        warn: '\x1b[33m', // yellow
-        error: '\x1b[31m', // red
-        reset: '\x1b[0m'
-      };
-      return `${timestamp}${prefix}${colors[level]}[${level.toUpperCase()}]${colors.reset} ${message}${detailsStr}`;
+        debug: '\x1B[34m', // blue
+        info: '\x1B[32m', // green
+        warn: '\x1B[33m', // yellow
+        error: '\x1B[31m', // red
+        reset: '\x1B[0m',
+      }
+      return `${timestamp}${prefix}${colors[level]}[${level.toUpperCase()}]${colors.reset} ${message}${detailsStr}`
     }
 
-    return `${timestamp}${prefix}[${level.toUpperCase()}] ${message}${detailsStr}`;
+    return `${timestamp}${prefix}[${level.toUpperCase()}] ${message}${detailsStr}`
   }
 
   private shouldLog(level: LogLevel): boolean {
-    const levels: LogLevel[] = ['debug', 'info', 'warn', 'error'];
-    return levels.indexOf(level) >= levels.indexOf(this.options.level);
+    const levels: LogLevel[] = ['debug', 'info', 'warn', 'error']
+    return levels.indexOf(level) >= levels.indexOf(this.options.level)
   }
 
   debug(message: string, details?: unknown): void {
     if (this.shouldLog('debug')) {
       // eslint-disable-next-line no-console
-      console.debug(this.formatMessage('debug', message, details));
+      console.debug(this.formatMessage('debug', message, details))
     }
   }
 
   info(message: string, details?: unknown): void {
     if (this.shouldLog('info')) {
       // eslint-disable-next-line no-console
-      console.info(this.formatMessage('info', message, details));
+      console.info(this.formatMessage('info', message, details))
     }
   }
 
   warn(message: string, details?: unknown): void {
     if (this.shouldLog('warn')) {
-      // eslint-disable-next-line no-console
-      console.warn(this.formatMessage('warn', message, details));
+      console.warn(this.formatMessage('warn', message, details))
     }
   }
 
-  // eslint-disable-next-line class-methods-use-this
   private errorMsg(msg: string | Error) {
-    return msg instanceof Error ? msg.message : msg;
+    return msg instanceof Error ? msg.message : msg
   }
+
   error(message: string, details?: unknown) {
     if (this.shouldLog('error')) {
-      // eslint-disable-next-line no-console
-      console.error(this.formatMessage('error', message, details));
+      console.error(this.formatMessage('error', message, details))
     }
   }
+
   throwError(error: string | Error, details?: unknown) {
-    this.debug(this.errorMsg(error), details);
-    return new DEFAULT_CONFIG.Error(this.errorMsg(error));
+    this.debug(this.errorMsg(error), details)
+    return new DEFAULT_CONFIG.Error(this.errorMsg(error))
   }
 }
 
@@ -89,8 +88,8 @@ class Logger {
 export const logger = new Logger().configure({
   level: 'info',
   timestamp: true,
-  colors: true
-});
+  colors: true,
+})
 
 // 导出类型定义，方便用户扩展
-export type { Logger };
+export type { Logger }

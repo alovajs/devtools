@@ -1,29 +1,30 @@
-import { astGenerate } from '@/core/loader/astLoader/generates';
-import { arrayTypeGenerator } from '@/core/loader/astLoader/generates/array';
-import { GeneratorCtx, GeneratorOptions } from '@/core/loader/astLoader/generates/type';
-import { ASTType, TArray } from '@/type';
-import { normalizeGeneratorResult } from './utils';
+import type { GeneratorCtx, GeneratorOptions } from '@/core/loader/astLoader/generates/type'
+import type { TArray } from '@/type'
+import { astGenerate } from '@/core/loader/astLoader/generates'
+import { arrayTypeGenerator } from '@/core/loader/astLoader/generates/array'
+import { ASTType } from '@/type'
+import { normalizeGeneratorResult } from './utils'
 
-describe('Array Type Generator', () => {
+describe('array Type Generator', () => {
   const defaultOptions: GeneratorOptions = {
-    commentType: 'doc'
-  };
+    commentType: 'doc',
+  }
   const defaultCtx: GeneratorCtx = {
     path: ['$'],
     options: defaultOptions,
-    next: astGenerate
-  };
+    next: astGenerate,
+  }
   it('should generate array type with simple type', async () => {
     const ast: TArray = {
       type: ASTType.ARRAY,
       keyName: 'StringArray',
       comment: 'Array of strings',
       params: {
-        type: ASTType.STRING
-      }
-    };
+        type: ASTType.STRING,
+      },
+    }
 
-    const result = await normalizeGeneratorResult(arrayTypeGenerator(ast, defaultCtx));
+    const result = await normalizeGeneratorResult(arrayTypeGenerator(ast, defaultCtx))
     const expectResult = await normalizeGeneratorResult({
       name: 'StringArray',
       comment: `
@@ -32,10 +33,10 @@ describe('Array Type Generator', () => {
        */
       `,
       type: 'type',
-      code: `string[]`
-    });
-    expect(result).toEqual(expectResult);
-  });
+      code: `string[]`,
+    })
+    expect(result).toEqual(expectResult)
+  })
 
   it('should generate array type with interface type', async () => {
     const ast: TArray = {
@@ -49,21 +50,21 @@ describe('Array Type Generator', () => {
             keyName: 'id',
             isRequired: false,
             ast: {
-              type: ASTType.NUMBER
-            }
+              type: ASTType.NUMBER,
+            },
           },
           {
             keyName: 'name',
             isRequired: true,
             ast: {
-              type: ASTType.STRING
-            }
-          }
-        ]
-      }
-    };
+              type: ASTType.STRING,
+            },
+          },
+        ],
+      },
+    }
 
-    const result = await normalizeGeneratorResult(arrayTypeGenerator(ast, defaultCtx));
+    const result = await normalizeGeneratorResult(arrayTypeGenerator(ast, defaultCtx))
     const expectResult = await normalizeGeneratorResult({
       name: 'UserArray',
       comment: `
@@ -75,10 +76,10 @@ describe('Array Type Generator', () => {
       code: `Array<{
           id?:number
           name:string
-        }>`
-    });
-    expect(result).toEqual(expectResult);
-  });
+        }>`,
+    })
+    expect(result).toEqual(expectResult)
+  })
 
   it('should handle deep option', async () => {
     const ast: TArray = {
@@ -92,26 +93,26 @@ describe('Array Type Generator', () => {
             keyName: 'value',
             isRequired: false,
             ast: {
-              type: ASTType.STRING
-            }
-          }
-        ]
-      }
-    };
+              type: ASTType.STRING,
+            },
+          },
+        ],
+      },
+    }
 
     const result = await normalizeGeneratorResult(
-      arrayTypeGenerator(ast, { ...defaultCtx, options: { ...defaultOptions, deep: true } })
-    );
+      arrayTypeGenerator(ast, { ...defaultCtx, options: { ...defaultOptions, deep: true } }),
+    )
     const expectResult = await normalizeGeneratorResult({
       name: 'DeepArray',
       comment: ``,
       type: 'type',
       code: `Array<{
         value?:string 
-      }>`
-    });
-    expect(result).toEqual(expectResult);
-  });
+      }>`,
+    })
+    expect(result).toEqual(expectResult)
+  })
 
   it('should handle array of arrays', async () => {
     const ast: TArray = {
@@ -121,12 +122,12 @@ describe('Array Type Generator', () => {
       params: {
         type: ASTType.ARRAY,
         params: {
-          type: ASTType.NUMBER
-        }
-      }
-    };
+          type: ASTType.NUMBER,
+        },
+      },
+    }
 
-    const result = await normalizeGeneratorResult(arrayTypeGenerator(ast, defaultCtx));
+    const result = await normalizeGeneratorResult(arrayTypeGenerator(ast, defaultCtx))
     const expectResult = await normalizeGeneratorResult({
       name: 'Matrix',
       comment: `
@@ -135,10 +136,10 @@ describe('Array Type Generator', () => {
        */
       `,
       type: 'type',
-      code: `number[][]`
-    });
-    expect(result).toEqual(expectResult);
-  });
+      code: `number[][]`,
+    })
+    expect(result).toEqual(expectResult)
+  })
 
   it('should handle array of union types', async () => {
     const ast: TArray = {
@@ -148,22 +149,22 @@ describe('Array Type Generator', () => {
         type: ASTType.UNION,
         params: [
           {
-            type: ASTType.STRING
+            type: ASTType.STRING,
           },
           {
-            type: ASTType.NUMBER
-          }
-        ]
-      }
-    };
+            type: ASTType.NUMBER,
+          },
+        ],
+      },
+    }
 
-    const result = await normalizeGeneratorResult(arrayTypeGenerator(ast, defaultCtx));
+    const result = await normalizeGeneratorResult(arrayTypeGenerator(ast, defaultCtx))
     const expectResult = await normalizeGeneratorResult({
       name: 'MixedArray',
       comment: ``,
       type: 'type',
-      code: `(string | number)[]`
-    });
-    expect(result).toEqual(expectResult);
-  });
-});
+      code: `(string | number)[]`,
+    })
+    expect(result).toEqual(expectResult)
+  })
+})

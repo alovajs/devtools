@@ -1,2 +1,2 @@
-export * from './openApiParser';
-export * from './templateParser';
+export * from './openApiParser'
+export * from './templateParser'

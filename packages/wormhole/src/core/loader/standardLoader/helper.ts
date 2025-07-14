@@ -61,43 +61,44 @@ const reservedWords = new Set([
   'volatile',
   'while',
   'with',
-  'yield'
-]);
-export const makeIdentifier = (str: string, style: 'camelCas' | 'snakeCase') => {
+  'yield',
+])
+export function makeIdentifier(str: string, style: 'camelCas' | 'snakeCase') {
   // Removes all characters that are not letters, numbers, underscores, and dollar signs while splitting words
-  const words = str.split(/[^a-zA-Z0-9_$]+/).filter(Boolean);
+  const words = str.split(/[^\w$]+/).filter(Boolean)
 
   // Convert words to camelCase form
-  let identifier = '';
+  let identifier = ''
   switch (style) {
     case 'camelCas':
       identifier = words
         .map((word, index) => {
           if (index === 0) {
-            return word.toLowerCase();
+            return word.toLowerCase()
           }
-          return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+          return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
         })
-        .join('');
-      break;
+        .join('')
+      break
     case 'snakeCase':
-      identifier = words.join('_').toLowerCase();
-      break;
+      identifier = words.join('_').toLowerCase()
+      break
     default:
-      identifier = words.join('');
-      break;
+      identifier = words.join('')
+      break
   }
 
   // If the string starts with a number, replace it with an underscore
-  if (/^[0-9]/.test(identifier)) {
-    identifier = `_${identifier}`;
+  if (/^\d/.test(identifier)) {
+    identifier = `_${identifier}`
   }
 
   // If it is a reserved word, add a suffix
   if (reservedWords.has(identifier)) {
-    identifier += '_';
+    identifier += '_'
   }
-  return identifier;
-};
-export const isValidJSIdentifier = (str?: string) =>
-  !!str && /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(str) && !reservedWords.has(str);
+  return identifier
+}
+export function isValidJSIdentifier(str?: string) {
+  return !!str && /^[a-z_$][\w$]*$/i.test(str) && !reservedWords.has(str)
+}

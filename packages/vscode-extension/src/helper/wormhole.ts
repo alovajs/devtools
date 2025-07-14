@@ -1,3 +1,3 @@
-import getWormhole from '@/functions/getWormhole';
+import getWormhole from '@/functions/getWormhole'
 
-export default getWormhole();
+export default getWormhole()

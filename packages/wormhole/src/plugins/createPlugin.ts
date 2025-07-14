@@ -1,4 +1,4 @@
-import { ApiPlugin } from '@/type';
+import type { ApiPlugin } from '@/type'
 
 /**
  * Creates a plugin factory function with proper typing
@@ -24,7 +24,7 @@ import { ApiPlugin } from '@/type';
  * });
  */
 export function createPlugin<T extends any[]>(plugin: (...args: T) => ApiPlugin) {
-  return plugin;
+  return plugin
 }
 
-export default createPlugin;
+export default createPlugin

@@ -2,17 +2,15 @@
   "name": "@alova/wormhole",
   "version": "1.0.8",
   "description": "More modern openAPI generating solution for alova.js",
+  "author": "alova",
+  "license": "MIT",
   "homepage": "https://alova.js.org",
-  "main": "./dist/index.js",
-  "types": "./typings/index.d.ts",
-  "bin": {
-    "alova": "dist/bin/cli.js"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alovajs/devtools.git"
   },
-  "scripts": {
-    "build": "npm run build:ts && npm run build:dts && npm run build:copy",
-    "build:copy": "ncp ./src/templates ./dist/templates",
-    "build:ts": "tsc --build tsconfig.build.json && tsc-alias -p tsconfig.build.json",
-    "build:dts": "dts-bundle-generator -o typings/index.d.ts src/index.ts --no-check --no-banner --project tsconfig.build.json"
+  "bugs": {
+    "url": "https://github.com/alovajs/devtools/issues"
   },
   "keywords": [
     "openapi",
@@ -28,19 +26,21 @@
     "alova",
     "wormhole"
   ],
-  "author": "chenzhilin",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/alovajs/devtools.git"
-  },
-  "bugs": {
-    "url": "https://github.com/alovajs/devtools/issues"
+  "main": "./dist/index.js",
+  "types": "./typings/index.d.ts",
+  "bin": {
+    "alova": "dist/bin/cli.js"
   },
   "files": [
     "dist",
     "typings"
   ],
+  "scripts": {
+    "build": "npm run build:ts && npm run build:dts && npm run build:copy",
+    "build:copy": "ncp ./src/templates ./dist/templates",
+    "build:ts": "tsc --build tsconfig.build.json && tsc-alias -p tsconfig.build.json",
+    "build:dts": "dts-bundle-generator -o typings/index.d.ts src/index.ts --no-check --no-banner --project tsconfig.build.json"
+  },
   "publishConfig": {
     "access": "public"
   },

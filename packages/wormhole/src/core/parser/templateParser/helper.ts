@@ -1,4 +1,3 @@
-import { astLoader, schemaLoader } from '@/core/loader';
 import type {
   ApiDescriptor,
   ApiMethod,
@@ -10,28 +9,26 @@ import type {
   RequestBodyObject,
   ResponseObject,
   ResponsesObject,
-  SchemaObject
-} from '@/type';
+  SchemaObject,
+} from '@/type'
+import { cloneDeep, isEmpty } from 'lodash'
+import { astLoader, schemaLoader } from '@/core/loader'
 import {
   findBy$ref,
   getResponseSuccessKey,
   isReferenceObject,
   mergeObject,
   parseReference,
-  removeAll$ref
-} from '@/utils';
-import { cloneDeep, isEmpty } from 'lodash';
+  removeAll$ref,
+} from '@/utils'
 
-const getTsStr = (
-  originObj: SchemaObject | ReferenceObject,
-  options: {
-    document: OpenAPIDocument;
-    config: GeneratorConfig;
-    schemasMap?: Map<string, string>;
-    preText?: string;
-  }
-): Promise<string> => {
-  const { document, preText = '', config, schemasMap } = options;
+function getTsStr(originObj: SchemaObject | ReferenceObject, options: {
+  document: OpenAPIDocument
+  config: GeneratorConfig
+  schemasMap?: Map<string, string>
+  preText?: string
+}): Promise<string> {
+  const { document, preText = '', config, schemasMap } = options
   return schemaLoader.transform(originObj, {
     document,
     deep: false,
@@ -45,226 +42,207 @@ const getTsStr = (
           shallowDeep: true,
           commentType: 'doc',
           format: true,
-          export: true
-        });
-        schemasMap.set(ast.keyName, result);
+          export: true,
+        })
+        schemasMap.set(ast.keyName, result)
       }
-    }
-  });
-};
-export const parseResponse = async (
-  responses: ResponsesObject | undefined,
-  document: OpenAPIDocument,
-  config: GeneratorConfig,
-  schemasMap: Map<string, string>
-) => {
-  const successKey = getResponseSuccessKey(responses);
-  const responseInfo = responses?.[successKey];
+    },
+  })
+}
+export async function parseResponse(responses: ResponsesObject | undefined, document: OpenAPIDocument, config: GeneratorConfig, schemasMap: Map<string, string>) {
+  const successKey = getResponseSuccessKey(responses)
+  const responseInfo = responses?.[successKey]
   if (!responseInfo) {
     return {
       responseName: 'unknown',
-      responseComment: 'unknown'
-    };
+      responseComment: 'unknown',
+    }
   }
   const responseObject: ResponseObject = isReferenceObject(responseInfo)
     ? findBy$ref(responseInfo.$ref, document)
-    : responseInfo;
-  const key = getContentKey(responseObject.content, config.responseMediaType);
-  const responseSchema = responseObject?.content?.[key]?.schema ?? {};
+    : responseInfo
+  const key = getContentKey(responseObject.content, config.responseMediaType)
+  const responseSchema = responseObject?.content?.[key]?.schema ?? {}
   const responseName = await getTsStr(responseSchema, {
     document,
     config,
-    schemasMap
-  });
+    schemasMap,
+  })
   return {
     responseName,
     responseComment: await schemaLoader.transform(responseSchema, {
       document,
       deep: true,
       preText: '* ',
-      defaultRequire: config.defaultRequire
-    })
-  };
-};
-export const parseRequestBody = async (
-  requestBody: RequestBodyObject | ReferenceObject | undefined,
-  document: OpenAPIDocument,
-  config: GeneratorConfig,
-  schemasMap: Map<string, string>
-) => {
+      defaultRequire: config.defaultRequire,
+    }),
+  }
+}
+export async function parseRequestBody(requestBody: RequestBodyObject | ReferenceObject | undefined, document: OpenAPIDocument, config: GeneratorConfig, schemasMap: Map<string, string>) {
   if (!requestBody) {
     return {
       requestName: '',
-      requestComment: ''
-    };
+      requestComment: '',
+    }
   }
   const requestBodyObject: RequestBodyObject = isReferenceObject(requestBody)
     ? findBy$ref(requestBody.$ref, document)
-    : requestBody;
-  const key = getContentKey(requestBodyObject.content, config.bodyMediaType);
-  const requestBodySchema = requestBodyObject?.content?.[key]?.schema ?? {};
-  const requestName = await getTsStr(requestBodySchema, { document, config, schemasMap });
+    : requestBody
+  const key = getContentKey(requestBodyObject.content, config.bodyMediaType)
+  const requestBodySchema = requestBodyObject?.content?.[key]?.schema ?? {}
+  const requestName = await getTsStr(requestBodySchema, { document, config, schemasMap })
   return {
     requestName,
     requestComment: await schemaLoader.transform(requestBodySchema, {
       document,
       deep: true,
       preText: '* ',
-      defaultRequire: config.defaultRequire
-    })
-  };
-};
-const getContentKey = (content: Record<string, any> = {}, requireKey = 'application/json') => {
-  let key = Object.keys(content)[0] || requireKey;
-  if (content[requireKey]) {
-    key = requireKey;
+      defaultRequire: config.defaultRequire,
+    }),
   }
-  return key;
-};
+}
+function getContentKey(content: Record<string, any> = {}, requireKey = 'application/json') {
+  let key = Object.keys(content)[0] || requireKey
+  if (content[requireKey]) {
+    key = requireKey
+  }
+  return key
+}
 
-export const parseParameters = async (
-  parameters: (ReferenceObject | ParameterObject)[] | undefined,
-  document: OpenAPIDocument,
-  config: GeneratorConfig,
-  schemasMap: Map<string, string>
-) => {
+export async function parseParameters(parameters: (ReferenceObject | ParameterObject)[] | undefined, document: OpenAPIDocument, config: GeneratorConfig, schemasMap: Map<string, string>) {
   const pathParametersSchema: SchemaObject = {
-    type: 'object'
-  };
+    type: 'object',
+  }
   const queryParametersSchema: SchemaObject = {
-    type: 'object'
-  };
+    type: 'object',
+  }
   const parseParameter = (parameter: ParameterObject, parameters: SchemaObject) => {
     if (!parameters.properties) {
-      parameters.properties = {};
+      parameters.properties = {}
     }
     if (!parameters.required) {
-      parameters.required = [];
+      parameters.required = []
     }
     if (parameter.required) {
-      parameters.required.push(parameter.name);
+      parameters.required.push(parameter.name)
     }
     parameters.properties[parameter.name] = {
       ...parameter.schema,
       description: parameter.description || '',
-      deprecated: !!parameter.deprecated
-    };
-  };
+      deprecated: !!parameter.deprecated,
+    }
+  }
   const parseParametersSchema = async (parameters: SchemaObject) => {
-    let parametersStr = '';
-    let parametersComment = '';
+    let parametersStr = ''
+    let parametersComment = ''
     if (Object.keys(parameters.properties ?? {}).length) {
       parametersStr = await getTsStr(parameters, {
         document,
         config,
-        schemasMap
-      });
+        schemasMap,
+      })
       parametersComment = await schemaLoader.transform(parameters, {
         document,
         deep: true,
         preText: '* ',
-        defaultRequire: config.defaultRequire
-      });
+        defaultRequire: config.defaultRequire,
+      })
     }
-    return [parametersStr, parametersComment];
-  };
+    return [parametersStr, parametersComment]
+  }
 
   for (const refParameter of parameters || []) {
-    const parameter = parseReference(refParameter, document);
+    const parameter = parseReference(refParameter, document)
     if (parameter.in === 'path') {
-      parseParameter(parameter, pathParametersSchema);
-    } else if (parameter.in === 'query') {
-      parseParameter(parameter, queryParametersSchema);
+      parseParameter(parameter, pathParametersSchema)
+    }
+    else if (parameter.in === 'query') {
+      parseParameter(parameter, queryParametersSchema)
     }
   }
 
-  const [pathParameters, pathParametersComment] = await parseParametersSchema(pathParametersSchema);
-  const [queryParameters, queryParametersComment] = await parseParametersSchema(queryParametersSchema);
+  const [pathParameters, pathParametersComment] = await parseParametersSchema(pathParametersSchema)
+  const [queryParameters, queryParametersComment] = await parseParametersSchema(queryParametersSchema)
   return {
     pathParameters,
     queryParameters,
     pathParametersComment,
-    queryParametersComment
-  };
-};
+    queryParametersComment,
+  }
+}
 
-export const transformApiMethods = async (
-  apiMethod: ApiMethod,
-  options: {
-    document: OpenAPIDocument;
-    config: GeneratorConfig;
-    map?: Array<[string, any]>;
-  }
-) => {
-  const { handleApi } = options.config;
+export async function transformApiMethods(apiMethod: ApiMethod, options: {
+  document: OpenAPIDocument
+  config: GeneratorConfig
+  map?: Array<[string, any]>
+}) {
+  const { handleApi } = options.config
   if (!handleApi || typeof handleApi !== 'function') {
-    return apiMethod;
+    return apiMethod
   }
-  const { apiDescriptor, apiInfo } = apiMethod2ApiDescriptor(apiMethod, options);
-  let newApiDescriptor: ApiDescriptor | void | undefined | null = cloneDeep(apiDescriptor);
+  const { apiDescriptor, apiInfo } = apiMethod2ApiDescriptor(apiMethod, options)
+  let newApiDescriptor: ApiDescriptor | void | undefined | null = cloneDeep(apiDescriptor)
 
   try {
-    newApiDescriptor = handleApi(newApiDescriptor);
-  } catch {}
+    newApiDescriptor = handleApi(newApiDescriptor)
+  }
+  catch {}
   // TODO:插件处理handleApi
   if (!newApiDescriptor) {
-    return null;
+    return null
   }
   const newApiMethod = apiDescriptor2apiMethod(newApiDescriptor, {
     oldApiInfo: apiInfo,
-    operationObject: apiMethod.operationObject
-  });
+    operationObject: apiMethod.operationObject,
+  })
 
   newApiMethod.operationObject = mergeObject<OperationObject>(
     apiMethod.operationObject,
     newApiMethod.operationObject,
     options.document,
-    options.map
-  );
+    options.map,
+  )
 
-  return newApiMethod;
-};
+  return newApiMethod
+}
 
-export const apiMethod2ApiDescriptor = (
-  apiMethod: ApiMethod,
-  options: {
-    document: OpenAPIDocument;
-    config: GeneratorConfig;
-  }
-) => {
-  const { url, method } = apiMethod;
-  const { document, config } = options;
-  const operationObject = cloneDeep(apiMethod.operationObject);
-  const { requestBody, responses, parameters } = operationObject;
+export function apiMethod2ApiDescriptor(apiMethod: ApiMethod, options: {
+  document: OpenAPIDocument
+  config: GeneratorConfig
+}) {
+  const { url, method } = apiMethod
+  const { document, config } = options
+  const operationObject = cloneDeep(apiMethod.operationObject)
+  const { requestBody, responses, parameters } = operationObject
   const apiDescriptor: ApiDescriptor = {
     ...operationObject,
     requestBody: {},
     responses: {},
     parameters: [],
     url,
-    method
-  };
-  const successKey = getResponseSuccessKey(responses);
-  const responseSuccess = responses?.[successKey];
-  let requestBodyObject = requestBody as RequestBodyObject;
-  let responseObject = responseSuccess as ResponseObject;
-  let requestKey = 'application/json';
-  let responseKey = 'application/json';
+    method,
+  }
+  const successKey = getResponseSuccessKey(responses)
+  const responseSuccess = responses?.[successKey]
+  let requestBodyObject = requestBody as RequestBodyObject
+  let responseObject = responseSuccess as ResponseObject
+  let requestKey = 'application/json'
+  let responseKey = 'application/json'
   if (parameters) {
-    apiDescriptor.parameters = [];
-    parameters.forEach(parameter => {
-      apiDescriptor.parameters?.push(removeAll$ref<ParameterObject>(parameter, document));
-    });
+    apiDescriptor.parameters = []
+    parameters.forEach((parameter) => {
+      apiDescriptor.parameters?.push(removeAll$ref<ParameterObject>(parameter, document))
+    })
   }
   if (requestBody) {
-    requestBodyObject = parseReference(requestBody, document, true);
-    requestKey = getContentKey(requestBodyObject.content, config.bodyMediaType);
-    apiDescriptor.requestBody = removeAll$ref(requestBodyObject.content?.[requestKey].schema ?? {}, document);
+    requestBodyObject = parseReference(requestBody, document, true)
+    requestKey = getContentKey(requestBodyObject.content, config.bodyMediaType)
+    apiDescriptor.requestBody = removeAll$ref(requestBodyObject.content?.[requestKey].schema ?? {}, document)
   }
   if (responseSuccess) {
-    responseObject = parseReference(responseSuccess, document, true);
-    responseKey = getContentKey(responseObject.content, config.responseMediaType);
-    apiDescriptor.responses = removeAll$ref(responseObject.content?.[responseKey].schema ?? {}, document);
+    responseObject = parseReference(responseSuccess, document, true)
+    responseKey = getContentKey(responseObject.content, config.responseMediaType)
+    apiDescriptor.responses = removeAll$ref(responseObject.content?.[responseKey].schema ?? {}, document)
   }
   return {
     apiDescriptor,
@@ -276,63 +254,60 @@ export const apiMethod2ApiDescriptor = (
       response: responseObject,
       hasResponse: !!responseSuccess,
       hasRequestBody: !!requestBody,
-      hasParameters: !!parameters
-    }
-  };
-};
-export const apiDescriptor2apiMethod = (
-  apiDescriptor: ApiDescriptor,
-  options: {
-    operationObject: OperationObject;
-    oldApiInfo: {
-      successKey: string;
-      requestKey: string;
-      responseKey: string;
-      hasResponse: boolean;
-      hasRequestBody: boolean;
-      hasParameters: boolean;
-      requestBody: RequestBodyObject;
-      response: ResponseObject;
-    };
+      hasParameters: !!parameters,
+    },
   }
-) => {
-  const apiDescriptorValue = cloneDeep(apiDescriptor);
-  const operationObject = cloneDeep(options.operationObject);
-  const { url, method } = apiDescriptorValue;
-  const { successKey, requestKey, responseKey, hasResponse, hasParameters, hasRequestBody, requestBody, response } =
-    options.oldApiInfo;
+}
+export function apiDescriptor2apiMethod(apiDescriptor: ApiDescriptor, options: {
+  operationObject: OperationObject
+  oldApiInfo: {
+    successKey: string
+    requestKey: string
+    responseKey: string
+    hasResponse: boolean
+    hasRequestBody: boolean
+    hasParameters: boolean
+    requestBody: RequestBodyObject
+    response: ResponseObject
+  }
+}) {
+  const apiDescriptorValue = cloneDeep(apiDescriptor)
+  const operationObject = cloneDeep(options.operationObject)
+  const { url, method } = apiDescriptorValue
+  const { successKey, requestKey, responseKey, hasResponse, hasParameters, hasRequestBody, requestBody, response }
+    = options.oldApiInfo
   if (!isEmpty(apiDescriptorValue.requestBody) || hasRequestBody) {
-    operationObject.requestBody = requestBody || { content: {} };
-    const { content } = operationObject.requestBody;
+    operationObject.requestBody = requestBody || { content: {} }
+    const { content } = operationObject.requestBody
     if (!content[requestKey]) {
-      content[requestKey] = {};
+      content[requestKey] = {}
     }
-    content[requestKey].schema = apiDescriptorValue.requestBody;
+    content[requestKey].schema = apiDescriptorValue.requestBody
   }
   if (!isEmpty(apiDescriptorValue.responses) || hasResponse) {
     if (!operationObject.responses) {
-      operationObject.responses = {};
+      operationObject.responses = {}
     }
-    operationObject.responses[successKey] = response || { content: {} };
+    operationObject.responses[successKey] = response || { content: {} }
     if (!operationObject.responses[successKey].content) {
-      operationObject.responses[successKey].content = {};
+      operationObject.responses[successKey].content = {}
     }
-    const { content } = operationObject.responses[successKey];
+    const { content } = operationObject.responses[successKey]
     if (!content[responseKey]) {
-      content[responseKey] = {};
+      content[responseKey] = {}
     }
-    content[responseKey].schema = apiDescriptorValue.responses;
+    content[responseKey].schema = apiDescriptorValue.responses
   }
   if (!isEmpty(apiDescriptorValue.parameters) || hasParameters) {
-    operationObject.parameters = apiDescriptorValue.parameters;
+    operationObject.parameters = apiDescriptorValue.parameters
   }
-  delete apiDescriptorValue.requestBody;
-  delete apiDescriptorValue.responses;
-  delete apiDescriptorValue.parameters;
-  Object.assign(operationObject, apiDescriptorValue);
+  delete apiDescriptorValue.requestBody
+  delete apiDescriptorValue.responses
+  delete apiDescriptorValue.parameters
+  Object.assign(operationObject, apiDescriptorValue)
   return {
     url,
     method,
-    operationObject
-  } as ApiMethod;
-};
+    operationObject,
+  } as ApiMethod
+}

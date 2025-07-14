@@ -3,15 +3,15 @@
   "compilerOptions": {
     "baseUrl": ".",
     "module": "CommonJS",
-    "resolveJsonModule": false,
-    "esModuleInterop": true,
-    "skipLibCheck": false,
-    "types": ["vitest/globals"],
     "paths": {
       "~/*": ["./typings/*"],
       "@/*": ["./src/*"],
       "#/*": ["./*"]
-    }
+    },
+    "resolveJsonModule": true,
+    "types": ["vitest/globals"],
+    "esModuleInterop": true,
+    "skipLibCheck": false
   },
   "include": ["src/**/*.ts", "test/**/*", "./*.ts", "typings/**/*.d.ts", "./scripts/**/*", "vitest.config.mts"]
 }

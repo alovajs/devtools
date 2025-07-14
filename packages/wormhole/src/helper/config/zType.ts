@@ -1,35 +1,36 @@
-import { standardLoader } from '@/core/loader';
-import { ApiPlugin } from '@/type';
-import path from 'node:path';
-import { z } from 'zod';
+import type { ApiPlugin } from '@/type'
+import path from 'node:path'
+import { z } from 'zod'
+import { standardLoader } from '@/core/loader'
 /**
  * Find the corresponding input attribute value
  */
-export const zConfigType = z.enum(['auto', 'ts', 'typescript', 'module', 'commonjs']);
+export const zConfigType = z.enum(['auto', 'ts', 'typescript', 'module', 'commonjs'])
 /**
  * template type
  */
-export const zTemplateType = z.enum(['typescript', 'module', 'commonjs']);
+export const zTemplateType = z.enum(['typescript', 'module', 'commonjs'])
 /**
  * platform type
  */
-export const zPlatformType = z.enum(['swagger', 'knife4j', 'yapi']);
+export const zPlatformType = z.enum(['swagger', 'knife4j', 'yapi'])
 
-export const zApiDescriptor = z.any();
+export const zApiDescriptor = z.any()
 
 export const zHandleApi = z
   .function()
   .args(zApiDescriptor)
-  .returns(z.union([zApiDescriptor, z.undefined(), z.null(), z.void()]));
+  .returns(z.union([zApiDescriptor, z.undefined(), z.null(), z.void()]))
 
 export const zPlugin: z.ZodSchema<ApiPlugin> = z.object({
   name: z.string().optional(),
   get extends() {
     return z
+      // eslint-disable-next-line ts/no-use-before-define
       .union([zGeneratorConfig.partial(), z.function().args(zGeneratorConfig).returns(zGeneratorConfig.partial())])
-      .optional();
-  }
-});
+      .optional()
+  },
+})
 
 export const zGeneratorConfig = z.object({
   /**
@@ -43,7 +44,7 @@ export const zGeneratorConfig = z.object({
    */
   input: z
     .string({
-      required_error: 'Field input is required in `config.generator`'
+      required_error: 'Field input is required in `config.generator`',
     })
     .nonempty('Field input is required in `config.generator`'),
   /**
@@ -58,7 +59,7 @@ export const zGeneratorConfig = z.object({
    */
   output: z
     .string({
-      required_error: 'Field output is required in `config.generator`'
+      required_error: 'Field output is required in `config.generator`',
     })
     .nonempty('Field output is required in `config.generator`'),
   /**
@@ -99,8 +100,8 @@ export const zGeneratorConfig = z.object({
     .refine(
       data => !data || standardLoader.validate(data),
       data => ({
-        message: `\`${data}\` does not match variable specification`
-      })
+        message: `\`${data}\` does not match variable specification`,
+      }),
     ),
   /**
    * The host object of global mounting, default is `globalThis`, it means `window` in browser and `global` in nodejs
@@ -152,8 +153,8 @@ export const zGeneratorConfig = z.object({
    * }
    * ```
    */
-  handleApi: zHandleApi.optional()
-});
+  handleApi: zHandleApi.optional(),
+})
 
 export const zConfig = z.object({
   /**
@@ -165,37 +166,37 @@ export const zConfig = z.object({
     .min(1, 'No items found in the `config.generator`')
     .superRefine((data, ctx) => {
       if (data.length < 2) {
-        return;
+        return
       }
-      const globalKeySet = new Set<string>();
-      const outputSet = new Set<string>();
-      data.forEach(item => {
+      const globalKeySet = new Set<string>()
+      const outputSet = new Set<string>()
+      data.forEach((item) => {
         if (outputSet.has(path.join(item.output))) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ['generator', 'output'],
-            message: `output \`${item.output}\` is repated`
-          });
-          return;
+            message: `output \`${item.output}\` is repated`,
+          })
+          return
         }
-        outputSet.add(path.join(item.output));
+        outputSet.add(path.join(item.output))
         if (!item.global) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ['generator', 'global'],
-            message: 'Field global is required in `config.generator`'
-          });
-          return;
+            message: 'Field global is required in `config.generator`',
+          })
+          return
         }
         if (globalKeySet.has(item.global)) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ['generator', 'global'],
-            message: `global \`${item.global}\` is repated`
-          });
+            message: `global \`${item.global}\` is repated`,
+          })
         }
-        globalKeySet.add(item.global);
-      });
+        globalKeySet.add(item.global)
+      })
     }),
 
   /**
@@ -216,30 +217,30 @@ export const zConfig = z.object({
           /**
            * Automatic update interval in milliseconds
            */
-          interval: z.number()
+          interval: z.number(),
         })
-        .catch(({ input }) => input)
+        .catch(({ input }) => input),
     ])
     .optional()
     .superRefine((data, ctx) => {
       if (typeof data === 'object') {
-        const { interval } = data;
-        const time = Number(interval);
+        const { interval } = data
+        const time = Number(interval)
         if (Number.isNaN(time)) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ['autoUpdate', 'interval'],
-            message: 'autoUpdate.interval must be a number'
-          });
-          return;
+            message: 'autoUpdate.interval must be a number',
+          })
+          return
         }
         if (time <= 0) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ['autoUpdate', 'interval'],
-            message: 'Expected to set number which great than 1 in `config.autoUpdate.interval`'
-          });
+            message: 'Expected to set number which great than 1 in `config.autoUpdate.interval`',
+          })
         }
       }
-    })
-});
+    }),
+})

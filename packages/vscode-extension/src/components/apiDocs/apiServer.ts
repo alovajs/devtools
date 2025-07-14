@@ -1,59 +1,60 @@
-import Global from '@/core/Global';
-import { getApiDocs } from '@/functions/getApis';
-import type { Api } from '@alova/wormhole';
-import * as vscode from 'vscode';
+import type { Api } from '@alova/wormhole'
+import * as vscode from 'vscode'
+import Global from '@/core/Global'
+import { getApiDocs } from '@/functions/getApis'
 
-export type ApiTreeItem = {
-  id: string;
-  label: string;
-  description?: string;
-  icon?: string;
-  parent?: string;
-  children?: ApiTreeItem[];
-  api?: Api;
-};
+export interface ApiTreeItem {
+  id: string
+  label: string
+  description?: string
+  icon?: string
+  parent?: string
+  children?: ApiTreeItem[]
+  api?: Api
+}
 export class ApiServerTreeItem extends vscode.TreeItem {
-  icon?: string;
-  children?: ApiServerTreeItem[];
+  icon?: string
+  children?: ApiServerTreeItem[]
 }
 function generateApiTooltipContent(api: Api): string {
   return `
 ## [${api.method}] ${api.path}
 ---
 ${api.summary}    
-`;
+`
 }
 export class ApiServerProvider implements vscode.TreeDataProvider<ApiTreeItem> {
-  private _onDidChangeTreeData = new vscode.EventEmitter<ApiTreeItem | undefined | null | void>();
-  readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
+  private _onDidChangeTreeData = new vscode.EventEmitter<ApiTreeItem | undefined | null | void>()
+  readonly onDidChangeTreeData = this._onDidChangeTreeData.event
 
-  private items: ApiTreeItem[] = [];
+  private items: ApiTreeItem[] = []
 
   constructor(private context: vscode.ExtensionContext) {
     Global.onDidChangeConfig(() => {
-      this.loadItems();
-    });
+      this.loadItems()
+    })
   }
 
   private loadItems() {
-    return new Promise<void>(resolve => {
+    return new Promise<void>((resolve) => {
       process.nextTick(() => {
         this.init().then(() => {
-          this._onDidChangeTreeData.fire();
-          resolve();
-        });
-      });
-    });
+          this._onDidChangeTreeData.fire()
+          resolve()
+        })
+      })
+    })
   }
+
   async init() {
-    const apiDocs = await getApiDocs();
-    const projects = apiDocs.map(data => {
+    const apiDocs = await getApiDocs()
+    const projects = apiDocs.map((data) => {
       const project: ApiTreeItem = {
         id: data.name,
         label: data.name,
         icon: 'project',
         children: data.apiDocs.map((apiDocs, idx) => {
-          const label = `SERVER-${idx + 1}`;
+          const label = `SERVER-${idx + 1}`
           const server: ApiTreeItem = {
             id: label,
             label,
@@ -69,71 +70,73 @@ export class ApiServerProvider implements vscode.TreeDataProvider<ApiTreeItem> {
                 id: `${api.global}.${api.pathKey}`,
                 label: `[${api.method}]${api.path}`,
                 icon: 'symbol-method',
-                api
-              }))
-            }))
-          };
-          return server;
-        })
-      };
-      return project;
-    });
-    this.items = projects;
+                api,
+              })),
+            })),
+          }
+          return server
+        }),
+      }
+      return project
+    })
+    this.items = projects
   }
 
   refresh() {
-    return this.loadItems();
+    return this.loadItems()
   }
+
   getItems(): ApiTreeItem[] {
-    return this.items;
+    return this.items
   }
+
   getItemById(id: string) {
     const findInNodes = (nodes: ApiTreeItem[]): ApiTreeItem | undefined => {
       for (const node of nodes) {
         if (node.id === id) {
-          return node;
+          return node
         }
         if (node.children?.length) {
-          const found = findInNodes(node.children);
+          const found = findInNodes(node.children)
           if (found) {
-            return found;
+            return found
           }
         }
       }
-    };
-    return findInNodes(this.items);
+    }
+    return findInNodes(this.items)
   }
 
-  // eslint-disable-next-line class-methods-use-this
   getTreeItem(element: ApiTreeItem): ApiServerTreeItem {
     const item = new ApiServerTreeItem(
       element.label,
-      element.children ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None
-    );
+      element.children ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None,
+    )
 
-    item.description = element.description;
-    item.id = element.id;
-    item.contextValue = 'tree-item';
+    item.description = element.description
+    item.id = element.id
+    item.contextValue = 'tree-item'
     // 设置 tooltip（支持 Markdown）
     if (element.api) {
-      item.tooltip = new vscode.MarkdownString(generateApiTooltipContent(element.api), true);
-      item.tooltip.supportHtml = true; // 启用 HTML 支持
-      item.tooltip.isTrusted = true; // 信任内容（允许执行命令）
+      item.tooltip = new vscode.MarkdownString(generateApiTooltipContent(element.api), true)
+      item.tooltip.supportHtml = true // 启用 HTML 支持
+      item.tooltip.isTrusted = true // 信任内容（允许执行命令）
     }
     if (element.icon) {
-      item.iconPath = new vscode.ThemeIcon(element.icon);
+      item.iconPath = new vscode.ThemeIcon(element.icon)
     }
 
-    return item;
+    return item
   }
 
   getChildren(element?: ApiTreeItem): Thenable<ApiTreeItem[]> {
     if (element) {
-      return Promise.resolve(element.children || []);
+      return Promise.resolve(element.children || [])
     }
-    return Promise.resolve(this.items);
+    return Promise.resolve(this.items)
   }
+
   getParent(element: ApiTreeItem): Thenable<ApiTreeItem | undefined> {
-    return Promise.resolve(this.getItemById(element.parent ?? ''));
+    return Promise.resolve(this.getItemById(element.parent ?? ''))
   }
 }

@@ -1,11 +1,11 @@
-import type { ApiDescriptor, ApiPlugin } from '@/type';
-import type { ConfigType, PlatformType } from '@/type/base';
+import type { ApiDescriptor, ApiPlugin } from '@/type'
+import type { ConfigType, PlatformType } from '@/type/base'
 
 export interface HandleApi {
-  (apiDescriptor: ApiDescriptor): ApiDescriptor | void | undefined | null;
+  (apiDescriptor: ApiDescriptor): ApiDescriptor | void | undefined | null
 }
 
-export type GeneratorConfig = {
+export interface GeneratorConfig {
   /**
    * Openapi file path, it supports json and yaml file, and network url
    * @requires true
@@ -16,33 +16,33 @@ export type GeneratorConfig = {
    * input: 'http://192.168.5.123:8080' -> When it does not point to the openapi file, it must be used with the `platform` parameter
    */
 
-  input: string;
+  input: string
 
   /**
    * Platforms that support openapi. Currently `swagger` are supported. The default is empty.
    * When this parameter is specified, the input field only needs to specify the url of the document and doesn't need to be specified to the openapi file, reducing the usage threshold.
    * @defualt undefined
    */
-  platform?: PlatformType;
+  platform?: PlatformType
 
   /**
    * The output path of the interface file and type file, multiple generators cannot have repeated addresses, otherwise the generated codes will cover each other, which is meaningless.
    * @requires true
    */
-  output: string;
+  output: string
 
   /**
    * Specify the media type of the generated response data. After specifying, use this data type to generate the response ts format of the 2xx status code.
    * @defualt 'application/json'
    */
 
-  responseMediaType?: string;
+  responseMediaType?: string
 
   /**
    * Specify the media type of the generated request body data. After specifying, use this data type to generate the ts format of the request body.
    * @default 'application/json'
    */
-  bodyMediaType?: string;
+  bodyMediaType?: string
 
   /**
    * The type of generated code. The optional value is `auto/ts/typescript/module/commonjs`.
@@ -55,12 +55,12 @@ export type GeneratorConfig = {
    *
    * @default 'auto'
    */
-  type?: ConfigType;
+  type?: ConfigType
 
   /**
    * Specify alova version, 2 or 3, if not specified, it will be automatically determined through the alova version in `package.json`
    */
-  version?: number;
+  version?: number
 
   /**
    * Globally exported api name, you can access the automatically generated api globally through this name.
@@ -68,31 +68,31 @@ export type GeneratorConfig = {
    *
    * @default 'Apis'
    */
-  global?: string;
+  global?: string
 
   /**
    * The host object of global mounting, default is `globalThis`, it means `window` in browser and `global` in nodejs
    *
    * @default 'globalThis'
    */
-  globalHost?: string;
+  globalHost?: string
 
   /**
    * Whether to use `import` statement to import the type. When this option is set to `true`, the generated apiDefinitions.ts file will use `import` statement to import types instead of ///<reference types="..." />
    *
    * @default false
    */
-  useImportType?: boolean;
+  useImportType?: boolean
 
   /**
    * When there is no require, it defaults to require, and only nullable takes effect.
    */
-  defaultRequire?: boolean;
+  defaultRequire?: boolean
 
   /**
    * plugin will be executed before `handleApi`
    */
-  plugins?: ApiPlugin[];
+  plugins?: ApiPlugin[]
 
   /**
    * Filter or convert the generated api function and return a new `apiDescriptor` to generate the api.
@@ -124,14 +124,14 @@ export type GeneratorConfig = {
    * }
    * ```
    */
-  handleApi?: HandleApi;
-};
-export type Config = {
+  handleApi?: HandleApi
+}
+export interface Config {
   /**
    * API generation settings are arrays. Each item represents an automatically generated rule, including the generated input and output directories, specification file addresses, etc.
    * Currently, only OpenAPI specifications are supported, including OpenAPI 2.0 and 3.0 specifications.
    */
-  generator: GeneratorConfig[];
+  generator: GeneratorConfig[]
 
   /**
    * Whether to automatically update the interface.
@@ -142,17 +142,17 @@ export type Config = {
   autoUpdate?:
     | boolean
     | {
-        /**
-         * Updated when the editor is opened
-         */
-        launchEditor?: boolean;
-        /**
-         * Automatic update interval in milliseconds
-         */
-        interval: number;
-      };
-};
-export type GenerateApiOptions = {
-  force?: boolean;
-  projectPath?: string;
-};
+      /**
+       * Updated when the editor is opened
+       */
+      launchEditor?: boolean
+      /**
+       * Automatic update interval in milliseconds
+       */
+      interval: number
+    }
+}
+export interface GenerateApiOptions {
+  force?: boolean
+  projectPath?: string
+}
