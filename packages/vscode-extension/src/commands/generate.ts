@@ -2,7 +2,7 @@ import { showError } from '@/components/event';
 import { endLoading, loading } from '@/components/statusBar';
 import ApiGenerate from '@/core/ApiGenerate';
 import { registerCommand } from '@/utils/vscode';
-import Commands from './commands';
+import { Commands } from './commands';
 
 export const refresh: CommandType = {
   commandId: Commands.refresh,
