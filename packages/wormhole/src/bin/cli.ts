@@ -2,8 +2,10 @@
 /* c8 ignore start */
 import { Command } from 'commander'
 
-import pkg from '../../package.json'
 import { actionGen, actionInit } from './actions'
+
+// eslint-disable-next-line perfectionist/sort-imports, ts/no-require-imports
+const pkg = require('../../package.json')
 
 const program = new Command()
 program.name('alova').description('CLI to generate api for alova.js').version(pkg.version)
