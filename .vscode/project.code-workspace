@@ -1,0 +1,22 @@
+{
+  "folders": [
+    {
+      "name": "ROOT",
+      "path": "../"
+    },
+    {
+      "name": "wormhole",
+      "path": "../packages/wormhole"
+    },
+    {
+      "name": "vscode-extension",
+      "path": "../packages/vscode-extension"
+    },
+  ],
+  "settings": {
+    "files.exclude": {
+      "node_modules/": true,
+      "packages/": true
+    },
+  }
+}

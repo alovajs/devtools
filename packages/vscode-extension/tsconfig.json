@@ -12,6 +12,8 @@
     },
     "resolveJsonModule": true,
     "strictNullChecks": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "outDir": "out"
   },
   "include": ["src/**/*.ts", "test/**/*.ts", "typings/**/*.d.ts"]

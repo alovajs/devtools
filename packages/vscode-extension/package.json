@@ -118,14 +118,14 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "pnpm run check-types && tsx esbuild.ts --production",
-    "compile": "pnpm run check-types && tsx esbuild.ts",
-    "watch": "npm-run-all -p watch:*",
-    "watch:esbuild": "tsx esbuild.ts --watch",
-    "pretest": "tsc -p . --outDir out && tsx esbuild.ts",
-    "watch-tests": "tsc -p . -w --outDir out",
-    "check-types": "tsc --noEmit",
+    "build": "tsdown",
+    "dev": "nr build --sourcemap --watch",
     "test": "vscode-test",
+    "update": "vscode-ext-gen --output src/generated/meta.ts",
+    "prepare": "nr update",
+    "vscode:prepublish": "nr typecheck && nr build",
+    "pretest": "tsc -p . --outDir out && nr build",
+    "typecheck": "tsc --noEmit",
     "pack:pre": "vsce package --no-dependencies --pre-release",
     "release:pre": "vsce publish --no-dependencies --pre-release",
     "pack": "vsce package --no-dependencies",
@@ -143,9 +143,9 @@
     "@vscode/test-cli": "^0.0.9",
     "@vscode/test-electron": "^2.3.9",
     "@vscode/vsce": "^2.29.0",
-    "esbuild": "^0.24.0",
-    "esbuild-plugin-alias": "^0.2.1",
     "ovsx": "^0.10.1",
-    "sinon": "^19.0.2"
+    "sinon": "^19.0.2",
+    "tsdown": "^0.12.9",
+    "vscode-ext-gen": "^1.1.0"
   }
 }

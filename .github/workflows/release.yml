@@ -32,9 +32,6 @@ jobs:
       - name: Lint check
         run: pnpm run lint
 
-      - name: Format
-        run: pnpm run format
-
   release:
     runs-on: ubuntu-latest
     needs: [quality]

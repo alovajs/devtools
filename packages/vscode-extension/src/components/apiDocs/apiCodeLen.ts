@@ -34,7 +34,7 @@ export class ApiCodeLensProvider implements vscode.CodeLensProvider {
     // 允许点前后有空格和换行
     const withSpaces = escaped.replace(/\\./g, `\\s*\\.\\s*`)
     // 允许整个表达式跨行
-    return new RegExp(withSpaces, 's')
+    return new RegExp(`${withSpaces}\\s*\\(`, 's')
   }
 
   private getMatchesWithPositionAndLine(text: string, target: string) {
@@ -115,6 +115,7 @@ export class ApiCodeLensProvider implements vscode.CodeLensProvider {
       target: string
     }> = []
     for (const target of TARGET_STRINGS) {
+      // Log.info(`[apiCodeLen] 正在匹配 ${target}`)
       matches.push({
         result: this.getMatchesWithPositionAndLine(documentText, target),
         target,
