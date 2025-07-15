@@ -20,8 +20,8 @@
   "scripts": {
     "test": "run-s test:*",
     "test:e2e": "nr build && nr --filter=./packages/* test:e2e",
-    "test:unit": "vitest run --exclude '**/^e2e/**'",
-    "test:unit:coverage": "vitest run --exclude '**/^e2e/**' --coverage",
+    "test:unit": "vitest run --exclude '**/e2e*/**'",
+    "test:unit:coverage": "vitest run --exclude '**/e2e*/**' --coverage",
     "lint": "eslint",
     "lintf": "eslint --fix",
     "api-test": "tsx scripts/api-test.ts",
