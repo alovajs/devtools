@@ -19,7 +19,7 @@
   },
   "scripts": {
     "test": "run-s test:*",
-    "test:e2e": "nr --filter=./packages/* test",
+    "test:e2e": "nr --filter=./packages/* test:e2e",
     "test:unit": "vitest run --exclude '**/e2e/**'",
     "test:unit:coverage": "vitest run --exclude '**/e2e/**' --coverage",
     "lint": "eslint",
@@ -57,6 +57,7 @@
     "dts-bundle-generator": "^9.5.1",
     "eslint": "^9.31.0",
     "eslint-plugin-format": "^0.1.3",
+    "fast-glob": "^3.3.3",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.2",
     "msw": "^2.10.4",
