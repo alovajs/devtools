@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "types": ["mocha", "node"],
-    "outDir": "./out"
+    "outDir": "../e2e-out"
   },
   "exclude": [
     "../../src/",

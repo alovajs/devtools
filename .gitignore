@@ -9,8 +9,8 @@ node_modules
 out
 dist
 *.vsix
-.vscode-test/
-
+.vscode-test
+e2e-out
 # testing
 /coverage
 

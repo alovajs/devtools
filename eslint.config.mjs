@@ -7,11 +7,12 @@ export default antfu({
     '**/__mocks__',
     '**/*.handlebars',
     '**/.vscode-test',
-    '**/.vscode-test.mjs',
     '*.{js,mjs,cjs}',
+    '**/e2e-out',
     'packages/wormhole/typings',
     'design',
-    'test/**/*'
+    'test/**/src/*',
+    'test/**/{*openapi*.*,*swagger*.*,alova_tmp*.*}',
   ],
   markdown: false,
   formatters: true

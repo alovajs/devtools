@@ -1,4 +1,4 @@
-import type { Config } from '@alova/wormhole';
+import type { Config } from '@alova/wormhole'
 // alova.config.js
 export default <Config>{
   // api生成设置，为数组，每项代表一个自动生成的规则，包含生成的输入输出目录、规范文件地址等等
@@ -37,7 +37,7 @@ export default <Config>{
       // 未指定此函数时则不转换apiDescripor对象
       // apiDescriptor的格式与openapi文件的接口对象格式相同
       // 对类型生成也同样适用123
-      handleApi: apiDescriptor => {
+      handleApi: (apiDescriptor) => {
         // 返回空表示过滤掉此api
         // if (!apiDescriptor.url.startsWith('/generate')) {
         //   return;
@@ -58,9 +58,9 @@ export default <Config>{
         //     type: 'string'
         //   };
         // }
-        return apiDescriptor;
-      }
-    }
+        return apiDescriptor
+      },
+    },
   ],
 
   // 是否自动更新接口，默认开启，每5分钟检查一次，false时关闭
@@ -69,6 +69,6 @@ export default <Config>{
     // 编辑器开启时更新，默认false
     launchEditor: true,
     // 自动更新间隔，单位秒
-    interval: 10
-  }
-};
+    interval: 10,
+  },
+}

@@ -122,8 +122,8 @@
   "scripts": {
     "build": "tsdown",
     "dev": "nr build --sourcemap --watch",
-    "test:e2e": "node ./test/e2e/out/index.js",
-    "pretest:e2e": "nr build && rimraf test/e2e/out && tsc -p test/e2e",
+    "test:e2e": "node ./test/e2e-out/index.js",
+    "pretest:e2e": "nr build && rimraf test/e2e-out && tsc -p test/e2e",
     "update": "vscode-ext-gen --output src/generated/meta.ts && eslint --fix src/generated/meta.ts",
     "prepare": "nr update",
     "vscode:prepublish": "nr typecheck && nr build",

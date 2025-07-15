@@ -1,22 +1,22 @@
 {
   "name": "api-v3-ts-test",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
   "private": true,
-  "scripts": {
-    "test": "tsx src/main.ts"
-  },
-  "keywords": [],
+  "description": "",
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "@alova/wormhole": "workspace:^",
-    "typescript": "^5.4.5"
+  "keywords": [],
+  "main": "index.js",
+  "scripts": {
+    "test": "tsx src/main.ts"
   },
   "dependencies": {
     "@alova/adapter-xhr": "2.0.10",
     "@alova/mock": "^2.0.9",
     "alova": "^3.2.2"
+  },
+  "devDependencies": {
+    "@alova/wormhole": "workspace:^",
+    "typescript": "^5.4.5"
   }
 }

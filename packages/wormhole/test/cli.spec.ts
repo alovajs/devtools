@@ -18,7 +18,6 @@ vi.mock('@/index', () => ({
   readConfig: vi.fn().mockImplementation(() => generatingConfig),
   resolveWorkspaces: vi.fn().mockImplementation(() => ['./packages/test-pkg-1', './packages/test-pkg-2']),
 }))
-
 describe('cli', () => {
   it('should get the right `init` cli args', async () => {
     await actionInit({ type: 'commonjs' })

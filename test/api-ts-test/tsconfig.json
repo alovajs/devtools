@@ -1,11 +1,11 @@
 {
-  "include": ["src/**/*"],
   "compilerOptions": {
     "baseUrl": ".",
-    "esModuleInterop": true,
-    "skipLibCheck": true,
     "paths": {
       "@/*": ["./src/*"]
-    }
-  }
+    },
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*"]
 }
