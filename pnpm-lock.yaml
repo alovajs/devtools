@@ -127,6 +127,9 @@ catalogs:
     js-yaml:
       specifier: ^4.1.0
       version: 4.1.0
+    jsdom:
+      specifier: ^26.1.0
+      version: 26.1.0
     lodash:
       specifier: ^4.17.21
       version: 4.17.21
@@ -434,7 +437,7 @@ importers:
         specifier: 'workspace:'
         version: link:../vscode-extension
       jsdom:
-        specifier: ^26.1.0
+        specifier: 'catalog:'
         version: 26.1.0
       vite:
         specifier: ^7.0.4
