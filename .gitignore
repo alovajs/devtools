@@ -7,11 +7,11 @@ public/assets/fonts
 # Generated files
 .psci
 out
+*-out
 dist
 dist-ssr
 *.vsix
 .vscode-test
-e2e-out
 .vite-ssg-dist
 .vite-ssg-temp
 .DS_Store

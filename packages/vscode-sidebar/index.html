@@ -2,23 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <base target="_top" href="/" />
+    <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="apple-touch-icon" href="/pwa-192x192.png" />
-    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#00aba9" />
-    <meta name="msapplication-TileColor" content="#00aba9" />
-    <script>
-      ;(function () {
-        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-        const setting = localStorage.getItem('vueuse-color-scheme') || 'auto'
-        if (setting === 'dark' || (prefersDark && setting !== 'light'))
-          document.documentElement.classList.toggle('dark', true)
-      })()
-    </script>
+    <title>Vite App</title>
     <!-- don't remove !! __webview_public_path__ -->
   </head>
-  <body class="font-sans">
-    <div id="app"></div>
+  <body>
+    <div id="app">555</div>
     <script type="module" src="/src/main.ts"></script>
-    <noscript> This website requires JavaScript to function properly. Please enable JavaScript to continue. </noscript>
   </body>
 </html>

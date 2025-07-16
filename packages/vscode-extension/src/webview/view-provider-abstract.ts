@@ -54,7 +54,7 @@ export abstract class AbstractViewProvider {
     const { extensionUri, extensionPath } = this.context
 
     // 前端应用的打包结果所在的目录，形如：https://file%2B.vscode-resource.vscode-cdn.net/d%3A/AAAAA/self/vscode-webview-example/packages/extension/out/view-vue
-    const webviewUri = webview.asWebviewUri(Uri.joinPath(extensionUri, distDir)).toString()
+    const webviewUri = webview.asWebviewUri(Uri.joinPath(extensionUri, ...distDir.split('/')))
 
     // 读取 index.html 文件内容
     const htmlText = readFileSync(join(extensionPath, indexPath), { encoding: 'utf8' }).toString()
@@ -71,7 +71,7 @@ export abstract class AbstractViewProvider {
         for (const elem of elements) {
           const attrValue = elem.getAttribute?.(attr)
           if (attrValue) {
-            elem.setAttribute(attr, join(webviewUri, attrValue))
+            elem.setAttribute(attr, Uri.joinPath(webviewUri, ...attrValue.split('/')).toString())
           }
         }
       }

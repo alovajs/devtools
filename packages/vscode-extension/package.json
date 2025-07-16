@@ -16,6 +16,11 @@
   "categories": [
     "Other"
   ],
+  "exports": {
+    "./handlers": {
+      "import": "./src/handlers/index.ts"
+    }
+  },
   "main": "out/extension.js",
   "icon": "resources/icon.png",
   "engines": {
@@ -104,6 +109,12 @@
     },
     "views": {
       "api-docs-sidebar": [
+        {
+          "icon": "symbol-constant",
+          "id": "sidebar-view-container",
+          "type": "webview",
+          "name": "sidebar view"
+        },
         {
           "icon": "server-process",
           "id": "api-docs-server-view",
