@@ -1,6 +1,6 @@
-import type { ApiPlugin } from '@/type'
+import type { ApiDescriptor, ApiPlugin } from '@/type'
 import path from 'node:path'
-import { z } from 'zod'
+import { z } from 'zod/v3' // v4版本不稳定，暂时使用v3
 import { standardLoader } from '@/core/loader'
 /**
  * Find the corresponding input attribute value
@@ -15,14 +15,14 @@ export const zTemplateType = z.enum(['typescript', 'module', 'commonjs'])
  */
 export const zPlatformType = z.enum(['swagger', 'knife4j', 'yapi'])
 
-export const zApiDescriptor = z.any()
+export const zApiDescriptor = z.any() as z.ZodSchema<ApiDescriptor>
 
 export const zHandleApi = z
   .function()
   .args(zApiDescriptor)
   .returns(z.union([zApiDescriptor, z.undefined(), z.null(), z.void()]))
 
-export const zPlugin: z.ZodSchema<ApiPlugin> = z.object({
+export const zPlugin = z.object({
   name: z.string().optional(),
   get extends() {
     return z
@@ -30,7 +30,7 @@ export const zPlugin: z.ZodSchema<ApiPlugin> = z.object({
       .union([zGeneratorConfig.partial(), z.function().args(zGeneratorConfig).returns(zGeneratorConfig.partial())])
       .optional()
   },
-})
+}) as z.ZodSchema<ApiPlugin>
 
 export const zGeneratorConfig = z.object({
   /**

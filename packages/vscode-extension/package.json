@@ -135,19 +135,21 @@
   },
   "dependencies": {
     "@alova/wormhole": "workspace:*",
-    "glob": "^11.0.0",
-    "import-fresh": "^3.3.0"
+    "@jsonrpc-rx/server": "catalog:",
+    "glob": "catalog:",
+    "import-fresh": "catalog:",
+    "node-html-parser": "catalog:"
   },
   "devDependencies": {
-    "@types/mocha": "^10.0.9",
-    "@types/sinon": "^17.0.3",
-    "@types/vscode": "^1.89.0",
-    "@vscode/test-electron": "^2.3.9",
-    "@vscode/vsce": "^2.29.0",
-    "mocha": "^11.7.1",
-    "ovsx": "^0.10.1",
-    "sinon": "^19.0.2",
-    "tsdown": "^0.12.9",
-    "vscode-ext-gen": "^1.1.0"
+    "@types/mocha": "catalog:",
+    "@types/sinon": "catalog:",
+    "@types/vscode": "catalog:",
+    "@vscode/test-electron": "catalog:",
+    "@vscode/vsce": "catalog:",
+    "mocha": "catalog:",
+    "ovsx": "catalog:",
+    "sinon": "catalog:",
+    "tsdown": "catalog:",
+    "vscode-ext-gen": "catalog:"
   }
 }

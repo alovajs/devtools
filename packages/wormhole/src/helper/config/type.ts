@@ -1,4 +1,4 @@
-import type { z } from 'zod'
+import type { z } from 'zod/v3'
 // import { ApiPlugin } from '@/type';
 import type { zConfigType, zPlatformType, zTemplateType } from './zType'
 import type { ApiDescriptor } from '@/type/api'

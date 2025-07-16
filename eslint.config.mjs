@@ -1,3 +1,4 @@
+// @ts-check
 import antfu from '@antfu/eslint-config';
 
 export default antfu({
@@ -15,5 +16,7 @@ export default antfu({
     'test/**/{*openapi*.*,*swagger*.*,alova_tmp*.*}',
   ],
   markdown: false,
-  formatters: true
+  unocss: true,
+  formatters: true,
+  pnpm: true,
 }).removeRules('node/prefer-global/process');

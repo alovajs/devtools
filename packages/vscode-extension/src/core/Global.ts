@@ -1,5 +1,5 @@
 import type { Config, TemplateData } from '@alova/wormhole'
-import type { Event, ExtensionContext } from 'vscode'
+import type { ExtensionContext } from 'vscode'
 import type { Timer } from '@/utils'
 import { EventEmitter } from 'vscode'
 import { registerEvent } from '@/components/event'
@@ -12,11 +12,14 @@ export default class Global {
   private static _loading = false
   private static _configMap = new Map<string, Config>()
   private static _timerMap = new Map<string, Timer>()
-  private static _onDidChangeConfig: EventEmitter<string> = new EventEmitter()
-  static readonly onDidChangeConfig: Event<string> = Global._onDidChangeConfig.event
+  private static _onDidChangeConfig = new EventEmitter<string>()
+  static readonly onDidChangeConfig = Global._onDidChangeConfig.event
   static templateData = new Map<string, TemplateData>()
-  static async init(context: ExtensionContext) {
+  static init(context: ExtensionContext) {
     this.context = context
+  }
+
+  static async setup() {
     registerEvent()
     if (getWormhole()) {
       await ApiGenerate.onlyReadConfig()

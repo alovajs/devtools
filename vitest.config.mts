@@ -6,6 +6,8 @@ export default defineConfig({
     coverage: {
       include: ['packages/wormhole/src/**/*'],
       reporter: ['lcov', 'html'],
+      exclude: ['**/e2e*/**'],
     },
+    exclude: ['**/e2e*/**'],
   },
 })

@@ -62,5 +62,33 @@
   "[handlebars]": {
     "editor.defaultFormatter": "monosans.djlint"
   },
-  "cSpell.words": ["ALOVA", "APIV", "nodefs", "yapi"]
+  "cSpell.words": [
+    "ALOVA",
+    "antfu",
+    "APIV",
+    "commitlint",
+    "esbuild",
+    "intlify",
+    "keytar",
+    "lintf",
+    "memfs",
+    "nodefs",
+    "nprogress",
+    "ovsx",
+    "pinia",
+    "rimraf",
+    "rollup",
+    "shiki",
+    "shikijs",
+    "sizecheck",
+    "taze",
+    "unhead",
+    "unocss",
+    "unplugin",
+    "vite",
+    "vitejs",
+    "vitest",
+    "vueuse",
+    "yapi"
+  ]
 }

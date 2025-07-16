@@ -5,7 +5,7 @@ export default class AlovaError extends Error {
   private path?: string
   constructor(message?: string, path?: string) {
     super(message)
-    this.name = 'AlovaError'
+    this.name = 'wormhole'
     this.path = path
   }
 
@@ -13,7 +13,7 @@ export default class AlovaError extends Error {
     if (!this.path) {
       return this.message
     }
-    return `[${getFileNameByPath(this.path)}]: ${this.message}`
+    return `[${getFileNameByPath(this.path)}]🚨${this.message}`
   }
 
   setPath(path: string) {

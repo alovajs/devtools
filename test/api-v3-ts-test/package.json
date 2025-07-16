@@ -11,12 +11,12 @@
     "test": "tsx src/main.ts"
   },
   "dependencies": {
-    "@alova/adapter-xhr": "2.0.10",
-    "@alova/mock": "^2.0.9",
-    "alova": "^3.2.2"
+    "@alova/adapter-xhr": "catalog:",
+    "@alova/mock": "catalog:",
+    "alova": "catalog:"
   },
   "devDependencies": {
     "@alova/wormhole": "workspace:^",
-    "typescript": "^5.4.5"
+    "typescript": "catalog:dev"
   }
 }

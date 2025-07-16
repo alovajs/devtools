@@ -13,9 +13,9 @@
     "gen": "openapi --input ./openapi.yaml --output ./src/api"
   },
   "dependencies": {
-    "@alova/mock": "^1.5.2",
-    "alova": "^2.21.5",
-    "vue": "^3.4.27"
+    "@alova/mock": "catalog:",
+    "alova": "catalog:",
+    "vue": "catalog:frontend"
   },
   "devDependencies": {
     "@alova/wormhole": "workspace:^"

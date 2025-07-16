@@ -110,6 +110,9 @@
       "APIV",
       "nodefs",
       "yapi"
+    ],
+    "i18n-ally.localesPaths": [
+      "packages/vscode-extension/src/webview/view-sidebar/locales"
     ]
   }
 }
