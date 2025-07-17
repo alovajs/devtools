@@ -3,11 +3,13 @@ import type { Publisher } from '@jsonrpc-rx/server'
 import type { ExtensionContext, TextDocument } from 'vscode'
 import { asBehaviorSubject, asNotify, asSubject } from '@jsonrpc-rx/server'
 import { commands, window, workspace } from 'vscode'
+import { getApiDocs } from '@/functions/getApis'
 // import { AxiosService } from '../service/axios.service'
 import { MessageService } from '@/service/message.service'
 import { toPromise } from '@/utils/to-promise'
 
 const messageService = new MessageService()
+export type ApiProject = Awaited<ReturnType<typeof getApiDocs>>[number]
 export function getHandlers(context: ExtensionContext) {
   return {
     /** ---关于 showMessage-------------------------------------------------------------------------------- */
@@ -20,6 +22,9 @@ export function getHandlers(context: ExtensionContext) {
       window.showInformationMessage(message)
     }),
 
+    getApiDocs: (): Promise<ApiProject[]> => {
+      return getApiDocs()
+    },
     /** ---关于主题----------------------------------------------------------------------------------------- */
 
     /**
@@ -169,3 +174,5 @@ export function getHandlers(context: ExtensionContext) {
 }
 
 export type HandlersType = ReturnType<typeof getHandlers>
+
+export type { Api, ApiDoc } from '@alova/wormhole'

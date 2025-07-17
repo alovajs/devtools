@@ -5,6 +5,7 @@ import { AbstractViewProvider } from './view-provider-abstract'
 export class ViewProviderSidebar extends AbstractViewProvider implements WebviewViewProvider {
   constructor(context: ExtensionContext, handlers: HandlerConfig) {
     super(context, handlers, {
+      path: '/sidebar',
       distDir: 'sidebar-out',
       indexPath: 'sidebar-out/index.html',
     })

@@ -20,7 +20,7 @@ function generateApiTooltipContent(api: Api): string {
   return `
 ## [${api.method}] ${api.path}
 ---
-${api.summary}    
+${api.summary}
 `
 }
 export class ApiServerProvider implements vscode.TreeDataProvider<ApiTreeItem> {

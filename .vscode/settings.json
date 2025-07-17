@@ -76,7 +76,9 @@
     "browserify",
     "commitlint",
     "esbuild",
+    "hoverable",
     "intlify",
+    "ionicons",
     "keytar",
     "lintf",
     "memfs",
@@ -93,9 +95,11 @@
     "unhead",
     "unocss",
     "unplugin",
+    "vicons",
     "vite",
     "vitejs",
     "vitest",
+    "vnode",
     "vueuse",
     "yapi"
   ]

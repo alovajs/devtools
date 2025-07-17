@@ -7,6 +7,8 @@ import { parse as htmlParser } from 'node-html-parser'
 import { Uri } from 'vscode'
 
 export interface ViewProviderOptions {
+  // 初始化路由位置
+  path?: string
   distDir: string
   indexPath: string
 }
@@ -16,7 +18,8 @@ export abstract class AbstractViewProvider {
   static WEBVIEW_INJECT_IN_MARK = '__webview_uri__'
   // 用于判断是否使用 vite 插件的一个标识
   static VSCODE_WEBVIEW_HMR_MARK = 'vite-plugin-vscode-webview-hmr'
-
+  // 初始路由地址
+  static INITIAL_PATH = '__webview_path__'
   /**
    * 构造方法
    * @param context 该插件的上下文，在插件激活时可以获取
@@ -50,7 +53,7 @@ export abstract class AbstractViewProvider {
    * @returns 处理好的 index.html 文本内容
    */
   protected async getWebviewHtml(webview: Webview) {
-    const { distDir, indexPath } = this.wiewProviderOptions
+    const { distDir, indexPath, path = '/' } = this.wiewProviderOptions
     const { extensionUri, extensionPath } = this.context
 
     // 前端应用的打包结果所在的目录，形如：https://file%2B.vscode-resource.vscode-cdn.net/d%3A/AAAAA/self/vscode-webview-example/packages/extension/out/view-vue
@@ -78,7 +81,10 @@ export abstract class AbstractViewProvider {
     }
 
     // 需要在前端应用中插入的脚本，目的是：将上述 webviewUri 传递给前端应用，前端应用在定位资源时需要
-    const injectScript = `<script> window.${AbstractViewProvider.WEBVIEW_INJECT_IN_MARK} = "${webviewUri}"</script>`
+    const injectScript = `<script>
+      window.${AbstractViewProvider.WEBVIEW_INJECT_IN_MARK} = "${webviewUri.toString()}"
+      window.${AbstractViewProvider.INITIAL_PATH} = "${path}"
+    </script>`
     root.querySelector('head')!.insertAdjacentHTML('afterbegin', injectScript)
 
     return root.toString()

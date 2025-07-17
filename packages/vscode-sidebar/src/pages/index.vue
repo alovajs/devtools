@@ -18,7 +18,7 @@ useHead({
 </script>
 
 <template>
-  <div>
+  <div text-center>
     <div text-4xl>
       <div i-carbon-campsite inline-block />
     </div>
@@ -43,6 +43,7 @@ useHead({
 
     <div>
       <button
+        id="go-btn"
         m-3 btn text-sm
         :disabled="!name"
         @click="go"

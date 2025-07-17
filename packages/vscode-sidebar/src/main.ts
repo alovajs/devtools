@@ -6,7 +6,7 @@ import { createMemoryHistory } from 'vue-router'
 import { routes } from 'vue-router/auto-routes'
 
 import App from './App.vue'
-import '@unocss/reset/tailwind.css'
+import '@unocss/reset/tailwind-compat.css'
 import './styles/main.css'
 import 'uno.css'
 

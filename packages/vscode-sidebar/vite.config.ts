@@ -3,9 +3,11 @@ import VueI18n from '@intlify/unplugin-vue-i18n/vite'
 import Shiki from '@shikijs/markdown-it'
 import { unheadVueComposablesImports } from '@unhead/vue'
 import Vue from '@vitejs/plugin-vue'
+import VueJsx from '@vitejs/plugin-vue-jsx'
 import LinkAttributes from 'markdown-it-link-attributes'
 import Unocss from 'unocss/vite'
 import AutoImport from 'unplugin-auto-import/vite'
+import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
 import Components from 'unplugin-vue-components/vite'
 import VueMacros from 'unplugin-vue-macros/vite'
 import Markdown from 'unplugin-vue-markdown/vite'
@@ -45,6 +47,7 @@ export default defineConfig({
         vue: Vue({
           include: [/\.vue$/, /\.md$/],
         }),
+        vueJsx: VueJsx(),
       },
     }),
 
@@ -64,6 +67,14 @@ export default defineConfig({
           // add any other imports you were relying on
           'vue-router/auto': ['useLink'],
         },
+        {
+          'naive-ui': [
+            'useDialog',
+            'useMessage',
+            'useNotification',
+            'useLoadingBar',
+          ],
+        },
       ],
       dts: 'src/auto-imports.d.ts',
       dirs: [
@@ -80,6 +91,7 @@ export default defineConfig({
       // allow auto import and register components used in markdown
       include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
       dts: 'src/components.d.ts',
+      resolvers: [NaiveUiResolver()],
     }),
 
     // https://github.com/antfu/unocss

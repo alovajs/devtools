@@ -3,6 +3,7 @@
   "compilerOptions": {
     "target": "ESNext",
     "jsx": "preserve",
+    "jsxImportSource": "vue",
     "lib": ["DOM", "ESNext"],
     "baseUrl": ".",
     "module": "ESNext",
@@ -30,5 +31,5 @@
     "isolatedModules": true,
     "skipLibCheck": true
   },
-  "exclude": ["dist", "node_modules"]
+  "exclude": ["dist", "node_modules", "../vscode-extension/src/handlers/index.ts"]
 }

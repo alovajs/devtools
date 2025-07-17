@@ -37,7 +37,7 @@ async function toggleLocales() {
     </RouterLink>
     <RouterLink
       icon-btn
-      to="/vscode"
+      to="/sidebar"
       :title="t('button.vscode')"
       data-test-id="vscode"
     >

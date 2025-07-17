@@ -8,6 +8,14 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    ApiTree: typeof import('./components/ApiTree.vue')['default']
+    NButton: typeof import('naive-ui')['NButton']
+    NCard: typeof import('naive-ui')['NCard']
+    NConfigProvider: typeof import('naive-ui')['NConfigProvider']
+    NInput: typeof import('naive-ui')['NInput']
+    NInputGroup: typeof import('naive-ui')['NInputGroup']
+    NMessageProvider: typeof import('naive-ui')['NMessageProvider']
+    NTree: typeof import('naive-ui')['NTree']
     README: typeof import('./components/README.md')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
