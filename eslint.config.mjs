@@ -16,7 +16,8 @@ export default antfu({
     'test/**/{*openapi*.*,*swagger*.*,alova_tmp*.*}',
   ],
   markdown: false,
-  unocss: false,
+  unocss: true,
   formatters: true,
   pnpm: true,
+  vue: true
 }).removeRules('node/prefer-global/process');

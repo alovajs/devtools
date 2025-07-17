@@ -36,6 +36,7 @@
     "typings"
   ],
   "scripts": {
+    "test": "vitest",
     "build": "run-s build:*",
     "build:ts": "tsc --build tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "build:dts": "dts-bundle-generator -o typings/index.d.ts src/index.ts --no-check --no-banner --project tsconfig.build.json",

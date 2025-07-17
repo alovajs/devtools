@@ -13,6 +13,10 @@
       "name": "vscode-extension",
       "path": "../packages/vscode-extension"
     },
+    {
+      "name": "vscode-sidebar",
+      "path": "../packages/vscode-sidebar"
+    }
   ],
   "settings": {
     "files.exclude": {

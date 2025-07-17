@@ -14,7 +14,11 @@
     "types": [
       "vitest",
       "vite/client",
-      "vitest/globals"
+      "vitest/globals",
+      "vite-plugin-vue-layouts/client",
+      "vite-plugin-pwa/client",
+      "unplugin-vue-macros/macros-global",
+      "unplugin-vue-router/client"
     ],
     "allowJs": true,
     "strict": true,

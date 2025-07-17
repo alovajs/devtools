@@ -51,7 +51,10 @@
     "@types/js-yaml": "catalog:",
     "@types/lodash": "catalog:",
     "@types/node": "catalog:",
+    "@unocss/eslint-config": "catalog:build",
+    "@unocss/preset-web-fonts": "catalog:",
     "@vitest/coverage-v8": "catalog:",
+    "@vueuse/core": "catalog:frontend",
     "commitizen": "catalog:",
     "coveralls": "catalog:",
     "cz-conventional-changelog": "catalog:",
@@ -70,6 +73,7 @@
     "tsx": "catalog:",
     "type-fest": "catalog:",
     "typescript": "catalog:dev",
+    "unocss": "catalog:build",
     "vitest": "catalog:dev"
   },
   "resolutions": {

@@ -1,8 +1,3 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`component TheCounter.vue > should render 1`] = `
-"<div data-v-e17ea971="" class="greetings">
-  <h1 data-v-e17ea971="" class="green">Hello</h1>
-  <h3 data-v-e17ea971=""> You’ve successfully created a project with <a data-v-e17ea971="" href="https://vitejs.dev/" target="_blank" rel="noopener">Vite</a> + <a data-v-e17ea971="" href="https://vuejs.org/" target="_blank" rel="noopener">Vue 3</a>. What's next? </h3>
-</div>"
-`;
+exports[`component TheCounter.vue > should render 1`] = `"<div>10 <button class="inc"> + </button><button class="dec"> - </button></div>"`;

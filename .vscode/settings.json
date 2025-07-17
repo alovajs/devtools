@@ -1,5 +1,12 @@
 // Place your settings in this file to overwrite default and user settings.
 {
+  // i8n-ally
+  "i18n-ally.sourceLanguage": "en",
+  "i18n-ally.keystyle": "nested",
+  "i18n-ally.localesPaths": ["packages/vscode-sidebar/locales"],
+  "i18n-ally.enabledParsers": ["yaml"],
+  "i18n-ally.enabledFrameworks": ["vue", "vue-sfc"],
+  "i18n-ally.sortKeys": true,
   "editor.tabSize": 2,
   "editor.suggestSelection": "recentlyUsedByPrefix",
   // Enable the ESlint flat config support
