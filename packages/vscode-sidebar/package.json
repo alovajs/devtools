@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "vite build",
+    "build": "vite-ssg build",
     "build:sidebar": "vite build --outDir ../vscode-extension/out/sidebar",
     "watch": "vite build --watch",
     "watch:sidebar": "vite build --watch --outDir ../vscode-extension/out/sidebar",

@@ -40,14 +40,14 @@ async function listeningMessage(listener: (value?: any, from?: string) => void) 
 }
 
 // 在关闭页面(panel)时取消监听
-window.addEventListener('unload', () => {
+globalThis.addEventListener?.('unload', () => {
   for (const rmListener of rmListenerSet) {
     rmListenerSet.delete(rmListener)
     rmListener()
   }
 })
 
-export function useMessage() {
+export function useVscodeMessage() {
   return {
     listeningMessage,
     sendMessage,

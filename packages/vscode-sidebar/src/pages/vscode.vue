@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useHandlers } from '@/hooks/use-handlers'
-import { useMessage } from '@/hooks/use-message'
+import { useVscodeMessage } from '@/hooks/use-message'
 import { useOnDidOpenTextDocument } from '@/hooks/use-on-did-open-text-document'
 import { useVscTheme, vscColorThemeOptions } from '@/hooks/use-vsc-theme'
 import { joinWebviewUri } from '@/utils/join-webview-uri'
@@ -34,7 +34,7 @@ async function onAxiosRequestClick() {
 const messgeSend = ref('')
 const messageRecevice = ref('')
 const messageFrom = ref('')
-const { listeningMessage, sendMessageToReact } = useMessage()
+const { listeningMessage, sendMessageToReact } = useVscodeMessage()
 listeningMessage((val, from) => {
   messageRecevice.value = val
   messageFrom.value = from!
