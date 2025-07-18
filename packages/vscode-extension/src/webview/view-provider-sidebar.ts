@@ -6,8 +6,8 @@ export class ViewProviderSidebar extends AbstractViewProvider implements Webview
   constructor(context: ExtensionContext, handlers: HandlerConfig) {
     super(context, handlers, {
       path: '/sidebar',
-      distDir: 'sidebar-out',
-      indexPath: 'sidebar-out/index.html',
+      distDir: 'out/sidebar',
+      indexPath: 'out/sidebar/index.html',
     })
   }
 

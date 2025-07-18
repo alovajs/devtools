@@ -1,7 +1,7 @@
 import type { OutputChannel } from 'vscode'
 import util from 'node:util'
 import { window } from 'vscode'
-import { EXT_NAME, IGNORE_ERROR } from '@/meta'
+import { displayName, IGNORE_ERROR } from '@/meta'
 
 export interface LogOptions {
   prompt?: boolean
@@ -12,7 +12,7 @@ export class Log {
 
   static get outputChannel(): OutputChannel {
     if (!this._channel)
-      this._channel = window.createOutputChannel(EXT_NAME)
+      this._channel = window.createOutputChannel(displayName)
     return this._channel
   }
 
@@ -44,7 +44,7 @@ export class Log {
 
     if (options?.prompt) {
       const openOutputButton = '显示日志'
-      const message = typeof err === 'string' ? err : `${EXT_NAME} Error: ${err.toString()}`
+      const message = typeof err === 'string' ? err : `${displayName} Error: ${err.toString()}`
       const result = await window.showErrorMessage(message, openOutputButton)
       if (result === openOutputButton) {
         this.show()

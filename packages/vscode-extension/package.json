@@ -25,7 +25,7 @@
   "main": "out/extension.js",
   "icon": "resources/icon.png",
   "engines": {
-    "vscode": "^1.89.0",
+    "vscode": "^1.102.0",
     "node": ">=18.19.0",
     "pnpm": ">=8.6.12"
   },
@@ -132,8 +132,14 @@
     }
   },
   "scripts": {
-    "build": "tsdown",
-    "dev": "nr build --sourcemap --watch",
+    "prebuild": "rimraf out",
+    "build": "run-s build:*",
+    "build:extension": "tsdown",
+    "build:app": "nr --filter=../vscode-sidebar build:sidebar",
+    "build:handler": "tsdown ./src/handlers/index.ts -d ./out/handlers --dts",
+    "dev": "run-p dev:*",
+    "dev:extension": "nr build:handler && tsdown --sourcemap --watch",
+    "dev:app": "nr --filter=../vscode-sidebar watch:sidebar",
     "test:e2e": "node ./test/e2e-out/index.js",
     "pretest:e2e": "nr build && rimraf test/e2e-out && tsc -p test/e2e",
     "update": "vscode-ext-gen --output src/generated/meta.ts && eslint --fix src/generated/meta.ts",
@@ -145,20 +151,18 @@
     "pack": "vsce package --no-dependencies",
     "release": "vsce publish --no-dependencies && ovsx publish --no-dependencies"
   },
-  "dependencies": {
+  "devDependencies": {
     "@alova/wormhole": "workspace:*",
     "@jsonrpc-rx/server": "catalog:",
-    "glob": "catalog:",
-    "import-fresh": "catalog:",
-    "node-html-parser": "catalog:"
-  },
-  "devDependencies": {
     "@types/mocha": "catalog:",
     "@types/sinon": "catalog:",
-    "@types/vscode": "catalog:",
+    "@types/vscode": "^1.102.0",
     "@vscode/test-electron": "catalog:",
     "@vscode/vsce": "catalog:",
+    "glob": "catalog:",
+    "import-fresh": "catalog:",
     "mocha": "catalog:",
+    "node-html-parser": "catalog:",
     "ovsx": "catalog:",
     "sinon": "catalog:",
     "tsdown": "catalog:",

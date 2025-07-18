@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import { darkTheme } from 'naive-ui'
-import { isDark } from '@/composables/dark'
-import { useRouteStore } from '@/stores/route'
 // https://github.com/vueuse/head
 // you can use this to manipulate the document head in any components,
 // they will be rendered correctly in the html results with vite-ssg

@@ -14,6 +14,7 @@ import Markdown from 'unplugin-vue-markdown/vite'
 import { VueRouterAutoImports } from 'unplugin-vue-router'
 import VueRouter from 'unplugin-vue-router/vite'
 import { defineConfig } from 'vite'
+import mkcert from 'vite-plugin-mkcert'
 import { VitePWA } from 'vite-plugin-pwa'
 import vscodeWebviewHmr from 'vite-plugin-vscode-webview-hmr'
 import VueDevTools from 'vite-plugin-vue-devtools'
@@ -22,6 +23,9 @@ import generateSitemap from 'vite-ssg-sitemap'
 import 'vitest/config'
 
 export default defineConfig({
+  server: {
+    https: {},
+  },
   base: './',
   resolve: {
     alias: {
@@ -79,6 +83,7 @@ export default defineConfig({
       dts: 'src/auto-imports.d.ts',
       dirs: [
         'src/composables',
+        'src/hooks',
         'src/stores',
       ],
       vueTemplate: true,
@@ -157,11 +162,13 @@ export default defineConfig({
       fullInstall: true,
       include: [path.resolve(__dirname, 'locales/**')],
     }),
+    // mkcert(),
     vscodeWebviewHmr({
       linkDir: './src/assets',
     }),
     // https://github.com/webfansplz/vite-plugin-vue-devtools
     VueDevTools(),
+    mkcert(),
   ],
 
   // https://github.com/vitest-dev/vitest
