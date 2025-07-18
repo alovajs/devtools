@@ -10,7 +10,7 @@ info:
   contact:
     name: OpenAPI-Generator Contributors
     url: 'https://github.com/OpenAPITools/openapi-generator'
-    email: 'openapitools@googlegroups.com'
+    email: openapitools@googlegroups.com
   license:
     name: Apache-2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0.html'
@@ -55,7 +55,7 @@ paths:
       operationId: updatePet
       externalDocs:
         url: 'http://petstore.swagger.io/v2/doc/updatePet'
-        description: 'API documentation for the updatePet operation'
+        description: API documentation for the updatePet operation
       responses:
         '200':
           description: successful operation

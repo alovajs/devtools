@@ -1,0 +1,15 @@
+button:
+  about: შესახებ
+  back: უკან
+  go: დაწყება
+  home: მთავარი
+  toggle_dark: გადართე მუქი რეჟიმი
+  toggle_langs: ენის შეცვლა
+  vscode: vscode
+intro:
+  aka: ასევე ცნობილი როგორც
+  desc: Opinionated Vite Starter Template
+  dynamic-route: დინამიური როუტინგის დემო
+  hi: გამარჯობა, {name}!
+  whats-your-name: რა გქვია?
+not-found: ვერ მოიძებნა

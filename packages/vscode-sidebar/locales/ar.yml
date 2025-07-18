@@ -1,0 +1,15 @@
+button:
+  about: حول
+  back: رجوع
+  go: تجربة
+  home: الرئيسية
+  toggle_dark: التغيير إلى الوضع المظلم
+  toggle_langs: تغيير اللغة
+  vscode: vscode
+intro:
+  aka: معروف أيضا تحت مسمى
+  desc: vite مثال لتطبيق
+  dynamic-route: عرض لتوجيهات ديناميكية
+  hi: مرحبا {name}
+  whats-your-name: ما إسمك؟
+not-found: صفحة غير موجودة

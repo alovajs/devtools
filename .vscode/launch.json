@@ -10,14 +10,13 @@
       "type": "extensionHost",
       "request": "launch",
       "args": [
-        "--extensionDevelopmentPath=${workspaceFolder}/packages/vscode-extension",
-        "-u",
-        "tdd",
-        "--disable-extensions"
+        "--extensionDevelopmentPath=${workspaceFolder}/packages/vscode-extension"
       ],
       "cwd": "${workspaceFolder}/packages/vscode-extension",
-      "outFiles": ["${workspaceFolder}/packages/vscode-extension/out/**/*.js"],
-      "preLaunchTask": "${defaultBuildTask}"
+      "outFiles": [
+        "${workspaceFolder}/packages/vscode-extension/out/**/*.js"
+      ],
+      "preLaunchTask": "extension:dev"
     }
   ]
 }

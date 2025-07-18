@@ -12,7 +12,7 @@
 
 You can view the complted API information in the Editor with the IntelliSense feature.
 
-![](https://alova.js.org/img/vscode-api-doc.png)
+![VSCode API documentation screenshot](https://alova.js.org/img/vscode-api-doc.png)
 
 ## Quick access to API
 
@@ -20,8 +20,8 @@ Using the trigger word `a->` to trigger apis quick positioning.
 
 ### Search by url
 
-![](https://alova.js.org/img/vscode-query-with-url.png)
+![Search by url screenshot](https://alova.js.org/img/vscode-query-with-url.png)
 
 ### Search by description
 
-![](https://alova.js.org/img/vscode-query-with-description.png)
+![Search by description screenshot](https://alova.js.org/img/vscode-query-with-description.png)

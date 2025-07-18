@@ -4,22 +4,27 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "watch",
+      "label": "extension:dev",
       "type": "npm",
-      "script": "watch:esbuild",
-      "problemMatcher": "$esbuild-watch",
+      "script": "dev",
       "isBackground": true,
       "options": {
         "cwd": "${workspaceFolder}/packages/vscode-extension"
       },
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
       "presentation": {
-        "group": "watch",
         "reveal": "never"
-      }
+      },
+      "problemMatcher": [
+        {
+          "base": "$tsc-watch",
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": "build started",
+            "endsPattern": "built in"
+          }
+        }
+      ],
+      "group": "build"
     }
   ]
 }

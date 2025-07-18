@@ -1,10 +1,10 @@
 # See https://github.com/actions/labeler
 
-'🚨 action':
+🚨 action:
   - .github/workflows/**
 
-'wormhole':
+wormhole:
   - packages/wormhole/**
 
-'vscode':
+vscode:
   - packages/vscode-extension/**

@@ -1,15 +1,16 @@
-import { commands } from '@/commands';
-import setup from '@/commands/setup';
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode'
+import Global from '@/core/Global'
+import Setup from '@/core/Setup'
+import { Log } from '@/utils'
+import { version } from '../package.json'
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(ctx: vscode.ExtensionContext) {
+  Log.info(`🈶 Activated, v${version}`)
   // commands registration
-  commands.forEach(({ commandId, handler }) => {
-    context.subscriptions.push(vscode.commands.registerCommand(commandId, handler(context)));
-  });
-  vscode.commands.executeCommand(setup.commandId);
+  Global.init(ctx)
+  await Setup.init(ctx)
 }
 
-export default {
-  activate
-};
+export function deactivate() {
+  Log.info('🈚 Deactivated')
+}

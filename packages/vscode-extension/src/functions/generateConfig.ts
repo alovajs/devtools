@@ -1,3 +1,3 @@
-import womhole from '@/helper/wormhole';
+import womhole from '@/helper/wormhole'
 
-export default async (projectPath: string) => womhole.createConfig({ projectPath });
+export default async (projectPath: string) => womhole.createConfig({ projectPath })

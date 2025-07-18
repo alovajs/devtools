@@ -1,65 +1,63 @@
-import Error, { AlovaErrorConstructor } from '@/components/error';
-import { BAR_STATE, disable, enable } from '@/components/statusBar';
-import { removeConfiguration } from '@/helper/autoUpdate';
-import { TEMPLATE_DATA } from '@/helper/config';
-import { getWorkspacePaths } from '@/utils/vscode';
-import { globSync } from 'glob';
-import importFresh from 'import-fresh';
-import { existsSync } from 'node:fs';
-import path from 'node:path';
+import { existsSync } from 'node:fs'
+import path from 'node:path'
+import { globSync } from 'glob'
+import importFresh from 'import-fresh'
+import Error, { AlovaErrorConstructor } from '@/components/error'
+import { disable, enable } from '@/components/statusBar'
+import Global from '@/core/Global'
+import { getWorkspacePaths } from '@/utils/vscode'
 
-type Wormhole = typeof import('@alova/wormhole');
-export const getWormhole = () => {
-  let wormhole: Wormhole | null = null;
+type Wormhole = typeof import('@alova/wormhole')
+export function getWormhole() {
+  let wormhole: Wormhole | null = null
   for (const workspaceRootPath of getWorkspacePaths()) {
     if (wormhole) {
-      break;
+      break
     }
     try {
       const configPaths = globSync('**/alova.config.{js,cjs,mjs,ts,mts,cts}', {
         ignore: 'node_modules/**',
         cwd: workspaceRootPath,
-        absolute: true
-      }).concat(path.join(workspaceRootPath, './alova.config.js'));
+        absolute: true,
+      }).concat(path.join(workspaceRootPath, './alova.config.js'))
       for (const configPath of configPaths) {
-        const wormholePath = path.join(path.dirname(configPath), './node_modules/@alova/wormhole');
+        const wormholePath = path.join(path.dirname(configPath), './node_modules/@alova/wormhole')
         if (existsSync(wormholePath)) {
-          wormhole = importFresh(wormholePath);
-          break;
+          wormhole = importFresh(wormholePath)
+          break
         }
       }
-    } catch {}
-  }
-  if (wormhole && BAR_STATE.value !== 'loading') {
-    enable();
-  }
-  if (!wormhole) {
-    disable();
-    removeConfiguration();
+    }
+    catch {}
   }
   if (wormhole) {
+    enable()
     // Global configuration
     wormhole.setGlobalConfig({
       Error: AlovaErrorConstructor,
-      templateData: TEMPLATE_DATA
-    });
+      templateData: Global.templateData,
+    })
   }
-  return wormhole;
-};
+  else {
+    disable()
+    Global.deleteConfig()
+  }
+  return wormhole
+}
 
 export default () =>
   new Proxy(
     {},
     {
       get(_, key: keyof Wormhole) {
-        const wormhole = getWormhole();
+        const wormhole = getWormhole()
         if (wormhole) {
-          return wormhole[key];
+          return wormhole[key]
         }
         return () => {
-          removeConfiguration();
-          throw new Error('module `@alova/wormhole` is not found, please install via `npm i @alova/wormhole`');
-        };
-      }
-    }
-  ) as Wormhole;
+          Global.deleteConfig()
+          throw new Error('module `@alova/wormhole` is not found, please install via `npm i @alova/wormhole`')
+        }
+      },
+    },
+  ) as Wormhole
