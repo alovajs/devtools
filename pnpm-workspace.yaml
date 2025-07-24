@@ -2,7 +2,7 @@ packages:
   - test/*
   - packages/*
 
-catalog:
+catalog: null
 
 catalogs:
   build:
@@ -30,7 +30,6 @@ catalogs:
     vite-plugin-vue-devtools: ^7.7.7
     vite-plugin-vue-layouts: ^0.11.0
     vscode-ext-gen: ^1.1.0
-
   dev:
     '@antfu/eslint-config': ^4.17.0
     '@antfu/ni': ^25.0.0
@@ -74,7 +73,6 @@ catalogs:
     typescript: ^5.8.3
     vitest: ^3.2.4
     vue-tsc: ^3.0.2
-
   frontend:
     '@alova/adapter-xhr': ^2.2.0
     '@alova/mock': ^2.0.17
@@ -94,13 +92,13 @@ catalogs:
     pinia: ^3.0.3
     query-string: ^9.2.2
     reactive-vscode: ^0.3.1
+    sdm2: ^1.1.3
     swagger2openapi: ^7.0.8
     vue: ^3.5.17
     vue-i18n: ^11.1.10
     vue-router: ^4.5.1
     zod: ^3.25.68-alpha.11
     zod-validation-error: ^3.5.3
-
   types:
     '@types/fs-extra': ^11.0.4
     '@types/js-yaml': ^4.0.9

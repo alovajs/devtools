@@ -118,7 +118,7 @@ function codeCard({
           animated
           justify-content="space-evenly"
         >
-          <n-tab-pane name="'params'" :tab="$t('api-info.params')">
+          <n-tab-pane name="params" :tab="$t('api-info.params')">
             <n-scrollbar>
               <n-space vertical class="pb-10">
                 <code-card
@@ -141,7 +141,7 @@ function codeCard({
               </n-space>
             </n-scrollbar>
           </n-tab-pane>
-          <n-tab-pane name="'response'" :tab="$t('api-info.response')">
+          <n-tab-pane name="response" :tab="$t('api-info.response')">
             <n-scrollbar>
               <code-card
                 :code="typeCode('ResponseBody', props.api.responseComment)"
@@ -149,7 +149,7 @@ function codeCard({
               />
             </n-scrollbar>
           </n-tab-pane>
-          <n-tab-pane name="'demo'" :tab="$t('api-info.demo')">
+          <n-tab-pane name="demo" :tab="$t('api-info.demo')">
             <n-scrollbar>
               <code-card :code="props.api.defaultValue" :empty="$t('api-info.no-demo-code')" />
             </n-scrollbar>

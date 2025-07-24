@@ -17,9 +17,9 @@ const pattern = ref('')
 const search = ref('')
 const treeRef = ref<InstanceType<typeof ApiTree> | null>(null)
 
-function handleSearch() {
-  pattern.value = search.value
-}
+const handleSearch = useThrottleFn((value: string) => {
+  pattern.value = value
+}, 300)
 
 function handleDetail(data: Api) {
   sendMessageToVscode({
@@ -33,12 +33,12 @@ async function handleRefresh() {
   treeData.value = data
   search.value = ''
 }
-
 watchEffect(() => {
   if (!search.value) {
     pattern.value = ''
   }
 })
+watch(search, handleSearch)
 
 onVscodeType(MType.refreshDocs, () => {
   handleRefresh()
@@ -48,7 +48,6 @@ onVscodeType<string>(MType.openDocs, (key) => {
   const api = treeRef.value?.getApi(key)
   if (api) {
     search.value = api.path
-    handleSearch()
     treeRef.value?.selectApi(key)
     handleDetail(api)
   }
@@ -67,16 +66,12 @@ onMounted(() => {
         :placeholder="t('api-server.search-placeholder')"
         autosize
         clearable
-        class="w-3/4"
-        @keydown.enter="handleSearch"
+        class="w-full"
       >
         <template #prefix>
           <i i-carbon-flash />
         </template>
       </n-input>
-      <n-button class="w-1/4" type="info" @click="handleSearch">
-        {{ t('api-server.search') }}
-      </n-button>
     </n-input-group>
     <div flex-1 overflow-auto>
       <api-tree

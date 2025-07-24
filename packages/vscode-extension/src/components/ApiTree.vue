@@ -9,6 +9,7 @@ import {
   SwapVerticalOutline,
 } from '@vicons/ionicons5'
 import { NIcon, NPopover } from 'naive-ui'
+import { match } from 'sdm2'
 
 defineOptions({
   name: 'ApiTree',
@@ -123,7 +124,25 @@ function getApiNode(projects: ApiProject[]) {
   }
   return nodes
 }
+function normalizeTree(node: ApiNode) {
+  // 先递归处理所有子节点，确保子树已规范化
+  for (const child of node.children ?? []) {
+    normalizeTree(child)
+  }
 
+  // 检查当前节点是否需要调整
+  if (node.children?.length === 1) {
+    const child = node.children[0]
+    // 如果唯一的子节点还有子节点（非叶子）
+    if (child?.children?.length) {
+      // 将子节点的子节点提升到当前节点
+      node.children = child.children
+      // 递归处理调整后的当前节点，可能仍需进一步调整
+      normalizeTree(node)
+    }
+  }
+  // 其他情况（0个子或1个叶子子节点，或多于1个子节点）无需处理
+}
 function getData(apis: ApiNode[]): TreeOption[] {
   const data: TreeOption[] = []
   for (const apiNode of apis) {
@@ -179,38 +198,55 @@ function getNodeById(
   }
 }
 function filter(pattern: string, node: TreeOption) {
-  if (node.label?.includes(pattern) || `${node.key ?? ''}`?.includes(pattern)) {
-    return true
+  const result = getMachResult(pattern, node)
+  if (result) {
+    node.description = result.str
   }
-
+  return result !== null
+}
+function getMachResult(pattern: string, node: TreeOption) {
+  const strings: string[] = []
+  if (node.label) {
+    strings.push(node.label)
+  }
   const api = node?.api as Api
-  if (!api) {
-    return false
+  if (api) {
+    if (api.summary) {
+      strings.push(api.summary)
+    }
+    strings.push(`${api.global}.${api.pathKey}`)
   }
-  if (
-    api.summary.includes(pattern)
-    || api.path.includes(pattern)
-    || `${api.global}.${api.pathKey}`.includes(pattern)
-  ) {
-    return true
-  }
-  return false
+  return match(strings.join('\n'), pattern, {
+    onMatched(matchedStr) {
+      return `<span class="text-green-500">${matchedStr}</span>`
+    },
+  })
 }
 function renderLabel({ option }: { option: TreeOption }) {
   const api = option.api as Api | undefined
   const description = api
-    ? `[${api?.method}]${api?.path}\n${api?.summary}`
+    ? option.description || `[${api?.method}]${api?.path}\n${api.global}.${api.pathKey}\n${api?.summary}`
     : ''
   return (
     <NPopover disabled={!description} style="max-width: 300px" placement="top-start">
       {{
         trigger: () => <span>{option.label}</span>,
-        default: () => <pre style="white-space: pre-wrap; word-wrap: break-word;">{description}</pre>,
+        default: () => (
+          <pre style="white-space: pre-wrap; word-wrap: break-word;">
+            <div v-html={description}></div>
+          </pre>
+        ),
       }}
     </NPopover>
   )
 }
-const data = computed(() => getData(getApiNode(projects)))
+const data = computed(() => {
+  const apiNodes = getApiNode(projects)
+  for (const node of apiNodes) {
+    normalizeTree(node)
+  }
+  return getData(apiNodes)
+})
 defineExpose({
   getApi(key: string) {
     const { result: node } = getNodeById(key, data.value)

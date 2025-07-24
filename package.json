@@ -65,6 +65,7 @@
     "ncp": "catalog:build",
     "npm-run-all2": "catalog:dev",
     "rimraf": "catalog:dev",
+    "sdm2": "catalog:frontend",
     "taze": "catalog:dev",
     "tslib": "catalog:dev",
     "tsx": "catalog:dev",
