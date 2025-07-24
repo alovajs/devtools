@@ -4,8 +4,12 @@
   "displayName": "Alova",
   "version": "1.0.9",
   "private": true,
+  "packageManager": "pnpm@10.13.1",
   "description": "Generate and search APIs without API documentation any more",
+  "author": "czhlin",
   "license": "MIT",
+  "funding": "https://github.com/sponsors/czhlin",
+  "homepage": "https://github.com/alovajs/devtools#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/alovajs/devtools.git"
@@ -13,23 +17,25 @@
   "bugs": {
     "url": "https://github.com/alovajs/devtools/issues"
   },
+  "sponsor": {
+    "url": "https://github.com/sponsors/czhlin"
+  },
   "categories": [
     "Other"
   ],
-  "exports": {
-    "./handlers": {
-      "types": "./out/handlers/index.d.ts",
-      "import": "./out/handlers/index.js"
-    }
-  },
-  "main": "out/extension.js",
-  "icon": "resources/icon.png",
+  "main": "./dist/extension/index.js",
+  "icon": "res/icon.png",
+  "files": [
+    "LICENSE",
+    "dist/**",
+    "res"
+  ],
   "engines": {
-    "vscode": "^1.102.0",
-    "node": ">=18.19.0",
-    "pnpm": ">=8.6.12"
+    "node": ">=18",
+    "vscode": "^1.102.0"
   },
   "activationEvents": [
+    "onStartupFinished",
     "workspaceContains:package.json",
     "onView:myTreeView"
   ],
@@ -74,7 +80,6 @@
           "when": "view == api-docs-server-view"
         }
       ],
-      "view/item/context": [],
       "commandPalette": [
         {
           "command": "alova.snippetSearch.insert",
@@ -94,7 +99,7 @@
       "alova-icon-id": {
         "description": "alova icon",
         "default": {
-          "fontPath": "./resources/logo.ttf",
+          "fontPath": "./res/logo.ttf",
           "fontCharacter": "\\E64B"
         }
       }
@@ -104,23 +109,17 @@
         {
           "id": "api-docs-sidebar",
           "title": "Api docs",
-          "icon": "resources/icon.png"
+          "icon": "res/icon.png"
         }
       ]
     },
     "views": {
       "api-docs-sidebar": [
         {
-          "icon": "symbol-constant",
-          "id": "sidebar-view-container",
-          "type": "webview",
-          "name": "sidebar view"
-        },
-        {
           "icon": "server-process",
           "id": "api-docs-server-view",
           "name": "Api Server",
-          "type": "tree"
+          "type": "webview"
         },
         {
           "icon": "symbol-constant",
@@ -132,40 +131,80 @@
     }
   },
   "scripts": {
-    "prebuild": "rimraf out",
-    "build": "run-s build:*",
-    "build:extension": "tsdown",
-    "build:app": "nr --filter=../vscode-sidebar build:sidebar",
-    "build:handler": "tsdown ./src/handlers/index.ts -d ./out/handlers --dts",
-    "dev": "run-p dev:*",
-    "dev:extension": "nr build:handler && tsdown --sourcemap --watch",
-    "dev:app": "nr --filter=../vscode-sidebar watch:sidebar",
-    "test:e2e": "node ./test/e2e-out/index.js",
-    "pretest:e2e": "nr build && rimraf test/e2e-out && tsc -p test/e2e",
-    "update": "vscode-ext-gen --output src/generated/meta.ts && eslint --fix src/generated/meta.ts",
+    "dev:app": "vite",
+    "dev": "vite -m vscode",
+    "build": "vite build -m vscode",
     "prepare": "nr update",
-    "vscode:prepublish": "nr typecheck && nr build",
-    "typecheck": "tsc --noEmit",
-    "pack:pre": "vsce package --no-dependencies --pre-release",
-    "release:pre": "vsce publish --no-dependencies --pre-release",
+    "update": "vscode-ext-gen --output ext/meta/generated.ts && eslint ext/meta/generated.ts --fix",
+    "lint": "eslint .",
+    "lintf": "eslint . --fix",
+    "vscode:prepublish": "nr build",
+    "publish": "vsce publish --no-dependencies && ovsx publish --no-dependencies",
     "pack": "vsce package --no-dependencies",
+    "pack:pre": "vsce package --no-dependencies --pre-release",
+    "test": "vitest",
+    "test:e2e": "node ./e2e-out/index.js",
+    "pretest:e2e": "nr build && rimraf e2e-out && tsc -p e2e",
+    "test:unit": "vitest",
+    "typecheck": "vue-tsc --noEmit",
+    "sizecheck": "npx vite-bundle-visualizer",
+    "release:pre": "vsce publish --no-dependencies --pre-release",
     "release": "vsce publish --no-dependencies && ovsx publish --no-dependencies"
+  },
+  "dependencies": {
+    "@unhead/vue": "catalog:frontend",
+    "@unocss/reset": "catalog:frontend",
+    "@vicons/ionicons5": "catalog:",
+    "@vueuse/core": "catalog:frontend",
+    "glob": "catalog:",
+    "highlight.js": "catalog:",
+    "import-fresh": "catalog:",
+    "nprogress": "catalog:frontend",
+    "pinia": "catalog:frontend",
+    "query-string": "catalog:frontend",
+    "vue": "catalog:frontend",
+    "vue-i18n": "catalog:frontend",
+    "vue-router": "catalog:frontend"
   },
   "devDependencies": {
     "@alova/wormhole": "workspace:*",
+    "@czhlin/vite-plugin-vscode": "catalog:build",
+    "@iconify-json/carbon": "catalog:dev",
+    "@intlify/unplugin-vue-i18n": "catalog:build",
+    "@jsonrpc-rx/client": "catalog:",
     "@jsonrpc-rx/server": "catalog:",
+    "@shikijs/markdown-it": "catalog:build",
+    "@tomjs/tsconfig": "catalog:dev",
+    "@tomjs/vscode-webview": "catalog:frontend",
+    "@types/markdown-it-link-attributes": "catalog:types",
     "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@types/nprogress": "catalog:types",
     "@types/sinon": "catalog:",
     "@types/vscode": "^1.102.0",
+    "@types/vscode-webview": "catalog:types",
+    "@vitejs/plugin-vue": "catalog:build",
+    "@vitejs/plugin-vue-jsx": "catalog:",
     "@vscode/test-electron": "catalog:",
     "@vscode/vsce": "catalog:",
-    "glob": "catalog:",
-    "import-fresh": "catalog:",
+    "@vue/test-utils": "catalog:dev",
+    "markdown-it-link-attributes": "catalog:build",
     "mocha": "catalog:",
-    "node-html-parser": "catalog:",
+    "naive-ui": "catalog:",
     "ovsx": "catalog:",
+    "reactive-vscode": "catalog:frontend",
     "sinon": "catalog:",
-    "tsdown": "catalog:",
-    "vscode-ext-gen": "catalog:"
+    "unocss": "catalog:build",
+    "unplugin-auto-import": "catalog:build",
+    "unplugin-vue-components": "catalog:build",
+    "unplugin-vue-markdown": "catalog:build",
+    "unplugin-vue-router": "catalog:build",
+    "vite": "catalog:build",
+    "vite-bundle-visualizer": "catalog:build",
+    "vite-plugin-inspect": "catalog:build",
+    "vite-plugin-vue-devtools": "catalog:build",
+    "vite-plugin-vue-layouts": "catalog:build",
+    "vscode-ext-gen": "catalog:",
+    "vue-tsc": "catalog:dev"
   }
 }

@@ -6,16 +6,29 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run Extension",
+      "name": "Debug Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--disable-extensions",
+        "--extensionDevelopmentPath=${workspaceFolder}"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/dist/extension/*.js"
+      ],
+      "preLaunchTask": "extension: dev"
+    },
+    {
+      "name": "Preview Extension",
       "type": "extensionHost",
       "request": "launch",
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}"
       ],
       "outFiles": [
-        "${workspaceFolder}/out/**/*.js"
+        "${workspaceFolder}/dist/extension/*.js"
       ],
-      "preLaunchTask": "npm: dev"
+      "preLaunchTask": "extension: build"
     }
   ]
 }

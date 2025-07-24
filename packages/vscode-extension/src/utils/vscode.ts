@@ -1,35 +1,33 @@
-import path from 'node:path'
-import * as vscode from 'vscode'
-// Get workspace path file
-export function getWorkspacePaths() {
-  const workspaceFolders = vscode.workspace.workspaceFolders || []
-  return workspaceFolders.map(item => `${item.uri.fsPath}/`)
-}
-// Get the current workspace path
-export function getCurrentWorkspacePath(filePath?: string) {
-  // Get the currently active editor
-  const editor = vscode.window.activeTextEditor
-  if (!editor) {
-    return getWorkspacePaths()[0]
+import type { ParseOptions } from 'query-string'
+import { WebviewApi } from '@tomjs/vscode-webview'
+import qs from 'query-string'
+// Exports class singleton to prevent multiple invocations of acquireVsCodeApi.
+let webviewApi: WebviewApi | null = null
+export function getVscodeApi() {
+  if (!import.meta.env.VITE_IS_VSCODE) {
+    return null
   }
-  filePath = filePath ?? editor.document.uri.fsPath
-  // Get the workspace root directory where the current file is located
-  const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(filePath))
-  if (!workspaceFolder) {
-    return filePath
+  if (!webviewApi) {
+    webviewApi = new WebviewApi()
   }
-  return `${workspaceFolder.uri.fsPath}/`
+  return webviewApi
 }
-
-export function getCurrentDirectory() {
-  // Get the currently active editor
-  const editor = vscode.window.activeTextEditor
-  if (!editor) {
-    return getWorkspacePaths()[0]
+export function getWebViewUrl() {
+  if (globalThis.__URL__) {
+    return globalThis.__URL__
   }
-  return path.dirname(editor.document.uri.fsPath)
+  const parseOptions: ParseOptions = {
+    arrayFormat: 'comma',
+    parseNumbers: true,
+    parseBooleans: true,
+  }
+  const path = globalThis.location?.pathname ?? '/'
+  const query = qs.parse(globalThis.location?.search, parseOptions)
+  const fragment = qs.parse(globalThis.location?.hash, parseOptions)
+  return {
+    path,
+    query,
+    fragment,
+  }
 }
-
-export function registerCommand<U = [], T = void>(command: CommandType<U, T>, ctx: vscode.ExtensionContext) {
-  return vscode.commands.registerCommand(command.commandId, command.handler(ctx))
-}
+export const isVscode = () => import.meta.env.VITE_IS_VSCODE
