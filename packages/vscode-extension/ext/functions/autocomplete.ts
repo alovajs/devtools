@@ -1,4 +1,5 @@
 import type { Api } from '@alova/wormhole'
+import { match } from 'sdm2'
 import getApis from './getApis'
 
 interface AutoCompleteItem {
@@ -11,7 +12,7 @@ interface AutoCompleteItem {
 
 function filterAutoCompleteItem(text: string, apiArr: Api[]): AutoCompleteItem[] {
   const autoCompleteArr: AutoCompleteItem[] = []
-  const filter = (text: string, otherText: string) => otherText.includes(text)
+  const filter = (text: string, otherText: string) => !!match(otherText, text)
   apiArr.forEach((api) => {
     const replaceText = api.defaultValue ?? ''
     if (filter(text, api.path)) {

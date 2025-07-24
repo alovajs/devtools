@@ -134,7 +134,6 @@
     "dev:app": "vite",
     "dev": "vite -m vscode",
     "build": "vite build -m vscode",
-    "prepare": "nr update",
     "update": "vscode-ext-gen --output ext/meta/generated.ts && eslint ext/meta/generated.ts --fix",
     "lint": "eslint .",
     "lintf": "eslint . --fix",

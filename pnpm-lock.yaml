@@ -318,10 +318,6 @@ overrides:
 importers:
 
   .:
-    dependencies:
-      sdm2:
-        specifier: catalog:frontend
-        version: 1.1.3
     devDependencies:
       '@antfu/eslint-config':
         specifier: catalog:dev
@@ -404,6 +400,9 @@ importers:
       rimraf:
         specifier: catalog:dev
         version: 6.0.1
+      sdm2:
+        specifier: catalog:frontend
+        version: 1.1.3
       taze:
         specifier: catalog:dev
         version: 19.1.0

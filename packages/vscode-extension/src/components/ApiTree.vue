@@ -201,6 +201,7 @@ function filter(pattern: string, node: TreeOption) {
   const result = getMachResult(pattern, node)
   if (result) {
     node.description = result.str
+    node.filterLabel = result.str.split('\n')[0]
   }
   return result !== null
 }
@@ -222,15 +223,28 @@ function getMachResult(pattern: string, node: TreeOption) {
     },
   })
 }
-function renderLabel({ option }: { option: TreeOption }) {
+function getDescription(option: TreeOption) {
   const api = option.api as Api | undefined
-  const description = api
-    ? option.description || `[${api?.method}]${api?.path}\n${api.global}.${api.pathKey}\n${api?.summary}`
-    : ''
+  if (!api) {
+    return ''
+  }
+  if (pattern && option.description) {
+    return option.description
+  }
+  return `[${api?.method}]${api?.path}\n${api.global}.${api.pathKey}\n${api?.summary}`
+}
+function getLabel(option: TreeOption) {
+  if (pattern && option.filterLabel) {
+    return option.filterLabel
+  }
+  return option.label
+}
+function renderLabel({ option }: { option: TreeOption }) {
+  const description = getDescription(option)
   return (
     <NPopover disabled={!description} style="max-width: 300px" placement="top-start">
       {{
-        trigger: () => <span>{option.label}</span>,
+        trigger: () => <span v-html={getLabel(option)}></span>,
         default: () => (
           <pre style="white-space: pre-wrap; word-wrap: break-word;">
             <div v-html={description}></div>

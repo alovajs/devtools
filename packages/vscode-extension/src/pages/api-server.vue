@@ -17,7 +17,7 @@ const pattern = ref('')
 const search = ref('')
 const treeRef = ref<InstanceType<typeof ApiTree> | null>(null)
 
-const handleSearch = useThrottleFn((value: string) => {
+const handleSearch = useDebounceFn((value: string) => {
   pattern.value = value
 }, 300)
 
@@ -33,11 +33,6 @@ async function handleRefresh() {
   treeData.value = data
   search.value = ''
 }
-watchEffect(() => {
-  if (!search.value) {
-    pattern.value = ''
-  }
-})
 watch(search, handleSearch)
 
 onVscodeType(MType.refreshDocs, () => {
