@@ -1,7 +1,7 @@
 import type { Publisher } from '@jsonrpc-rx/server'
 import type { ExtensionContext, TextDocument } from 'vscode'
 import { asBehaviorSubject, asNotify, asSubject } from '@jsonrpc-rx/server'
-import { commands, window, workspace } from 'vscode'
+import { commands, env, window, workspace } from 'vscode'
 import { getApiDocs } from '@/functions/getApis'
 import { messageService } from '@/utils/message'
 import { toPromise } from '@/utils/to-promise'
@@ -28,6 +28,9 @@ export function getHandlers(context: ExtensionContext) {
         .getConfiguration()
         .update('workbench.colorTheme', theme)
       return toPromise(then)
+    },
+    getLanguage() {
+      return Promise.resolve(env.language)
     },
     onThemeChange: asBehaviorSubject(({ next }) => {
       const disposable = workspace.onDidChangeConfiguration(() => {

@@ -1,5 +1,6 @@
 <script lang="tsx" setup>
 import type { Api } from '~/types'
+import { useI18n } from 'vue-i18n'
 
 defineOptions({
   name: 'ApiInfo',
@@ -11,6 +12,7 @@ const props = defineProps<{
 
 const tabValue = ref('params')
 const message = useMessage()
+const { t } = useI18n()
 function typeCode(name: string, comment?: string) {
   if (!comment) {
     return ''
@@ -29,10 +31,10 @@ function handleCopy(code: string) {
   const { copy, copied } = useClipboard({ legacy: true })
   copy(code).then(() => {
     if (copied.value) {
-      message.success('复制成功!')
+      message.success(t('api-info.copy-success'))
     }
     else {
-      message.error('复制失败!')
+      message.error(t('api-info.copy-fail'))
     }
   })
 }
@@ -45,6 +47,8 @@ function codeCard({
   code?: string
   empty?: string
 }) {
+  const { t } = useI18n()
+  const defaultEmpty = t('api-info.no-data')
   const showCode = code
     ? (
         <div class="pos-relative">
@@ -63,7 +67,7 @@ function codeCard({
         </div>
       )
     : (
-        <n-empty description={empty} />
+        <n-empty description={empty || defaultEmpty} />
       )
   if (!name) {
     return showCode
@@ -82,7 +86,7 @@ function codeCard({
     <template v-if="!props?.api">
       <n-empty
         class="h-full flex-justify-center"
-        description="你什么也找不到"
+        :description="$t('api-info.empty')"
       />
     </template>
     <template v-else>
@@ -96,10 +100,10 @@ function codeCard({
               <span>{{ props.api.path }}</span>
             </n-space>
           </template>
-          <n-descriptions-item label="方法">
+          <n-descriptions-item :label="$t('api-info.method')">
             {{ props.api.pathKey }}
           </n-descriptions-item>
-          <n-descriptions-item label="描述">
+          <n-descriptions-item :label="$t('api-info.description')">
             <span break-all>
               {{ props.api.summary }}
             </span>
@@ -114,40 +118,40 @@ function codeCard({
           animated
           justify-content="space-evenly"
         >
-          <n-tab-pane name="params" tab="参数">
+          <n-tab-pane name="'params'" :tab="$t('api-info.params')">
             <n-scrollbar>
               <n-space vertical class="pb-10">
                 <code-card
-                  name="Path 参数"
+                  :name="$t('api-info.path-params')"
                   :code="typeCode('PathParams', props.api.pathParametersComment)"
-                  empty="无路径参数"
+                  :empty="$t('api-info.no-path-params')"
                 />
                 <code-card
-                  name="Query 参数"
+                  :name="$t('api-info.query-params')"
                   :code="
                     typeCode('QueryParams', props.api.queryParametersComment)
                   "
-                  empty="无查询参数"
+                  :empty="$t('api-info.no-query-params')"
                 />
                 <code-card
-                  name="请求体"
+                  :name="$t('api-info.request-body')"
                   :code="typeCode('RequestBody', props.api.requestComment)"
-                  empty="无请求体"
+                  :empty="$t('api-info.no-request-body')"
                 />
               </n-space>
             </n-scrollbar>
           </n-tab-pane>
-          <n-tab-pane name="response" tab="响应">
+          <n-tab-pane name="'response'" :tab="$t('api-info.response')">
             <n-scrollbar>
               <code-card
                 :code="typeCode('ResponseBody', props.api.responseComment)"
-                empty="无响应数据"
+                :empty="$t('api-info.no-response-data')"
               />
             </n-scrollbar>
           </n-tab-pane>
-          <n-tab-pane name="demo" tab="示例">
+          <n-tab-pane name="'demo'" :tab="$t('api-info.demo')">
             <n-scrollbar>
-              <code-card :code="props.api.defaultValue" empty="无示例代码" />
+              <code-card :code="props.api.defaultValue" :empty="$t('api-info.no-demo-code')" />
             </n-scrollbar>
           </n-tab-pane>
         </n-tabs>

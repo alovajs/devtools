@@ -8,6 +8,7 @@ defineOptions({
   name: 'ApiServerPage',
 })
 
+const { t } = useI18n()
 const handlers = useHandlers()
 const { onVscodeType, sendMessageToVscode } = useVscodeMessage()
 const treeData = ref<ApiProject[]>([])
@@ -63,7 +64,7 @@ onMounted(() => {
     <n-input-group>
       <n-input
         v-model:value="search"
-        placeholder="查找API"
+        :placeholder="t('api-server.search-placeholder')"
         autosize
         clearable
         class="w-3/4"
@@ -74,7 +75,7 @@ onMounted(() => {
         </template>
       </n-input>
       <n-button class="w-1/4" type="info" @click="handleSearch">
-        搜索
+        {{ t('api-server.search') }}
       </n-button>
     </n-input-group>
     <div flex-1 overflow-auto>

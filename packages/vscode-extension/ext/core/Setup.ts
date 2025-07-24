@@ -18,7 +18,6 @@ onDeactivate(() => {
 export default class Setup {
   static async init(ctx: ExtensionContext) {
     Log.info('🚀 Setup start');
-
     [commandsModules, apiDetail, apiServer]
       .map(m => m(ctx))
       .flat()

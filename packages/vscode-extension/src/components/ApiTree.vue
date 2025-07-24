@@ -18,9 +18,13 @@ const { projects = [], pattern = '' } = defineProps<{
   projects?: ApiProject[]
   pattern?: string
 }>()
+
 const emit = defineEmits<{
   (e: 'select', api: Api): void
 }>()
+
+const { t } = useI18n()
+
 const selectedKeys = defineModel<string[]>('selected', { default: [] })
 const expandedKeys = defineModel<string[]>('expanded', { default: [] })
 interface ApiNode {
@@ -175,9 +179,7 @@ function getNodeById(
   }
 }
 function filter(pattern: string, node: TreeOption) {
-  // eslint-disable-next-line no-console
-  console.log(pattern, node)
-  if (node.label.includes(pattern) || node.key.includes(pattern)) {
+  if (node.label?.includes(pattern) || `${node.key ?? ''}`?.includes(pattern)) {
     return true
   }
 
@@ -246,7 +248,7 @@ defineExpose({
   >
     <template #empty>
       <n-empty
-        description="你什么也找不到"
+        :description="t('api-info.empty')"
         class="h-full flex-justify-center"
       />
     </template>

@@ -19,7 +19,6 @@ declare module 'vue' {
     NEmpty: typeof import('naive-ui')['NEmpty']
     NFloatButton: typeof import('naive-ui')['NFloatButton']
     NH3: typeof import('naive-ui')['NH3']
-    NIcon: typeof import('naive-ui')['NIcon']
     NInput: typeof import('naive-ui')['NInput']
     NInputGroup: typeof import('naive-ui')['NInputGroup']
     NMessageProvider: typeof import('naive-ui')['NMessageProvider']
@@ -29,11 +28,8 @@ declare module 'vue' {
     NTabs: typeof import('naive-ui')['NTabs']
     NTag: typeof import('naive-ui')['NTag']
     NTree: typeof import('naive-ui')['NTree']
-    README: typeof import('./components/README.md')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     TheCounter: typeof import('./components/TheCounter.vue')['default']
-    TheFooter: typeof import('./components/TheFooter.vue')['default']
-    TheInput: typeof import('./components/TheInput.vue')['default']
   }
 }

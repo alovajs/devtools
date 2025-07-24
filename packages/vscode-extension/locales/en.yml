@@ -1,15 +1,28 @@
 button:
-  about: About
   back: Back
-  go: GO
-  home: Home
-  toggle_dark: Toggle dark mode
-  toggle_langs: Change languages
-  vscode: vscode
-intro:
-  aka: Also known as
-  desc: Opinionated Vite Starter Template
-  dynamic-route: Demo of dynamic route
-  hi: Hi, {name}!
-  whats-your-name: What's your name?
+  copy: Copy
+
 not-found: Not found
+
+api-info:
+  empty: You can't find anything
+  copy-success: Copied successfully!
+  copy-fail: Copy failed!
+  no-data: No data available
+  method: Method
+  description: Description
+  params: Parameters
+  response: Response
+  demo: Demo
+  path-params: Path Parameters
+  query-params: Query Parameters
+  request-body: Request Body
+  no-path-params: No path parameters
+  no-query-params: No query parameters
+  no-request-body: No request body
+  no-response-data: No response data
+  no-demo-code: No demo code
+
+api-server:
+  search-placeholder: Search API
+  search: Search

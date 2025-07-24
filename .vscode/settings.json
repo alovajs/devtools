@@ -3,7 +3,7 @@
   // i8n-ally
   "i18n-ally.sourceLanguage": "en",
   "i18n-ally.keystyle": "nested",
-  "i18n-ally.localesPaths": ["packages/vscode-sidebar/locales"],
+  "i18n-ally.localesPaths": ["packages/vscode-extension/locales"],
   "i18n-ally.enabledParsers": ["yaml"],
   "i18n-ally.enabledFrameworks": ["vue", "vue-sfc"],
   "i18n-ally.sortKeys": true,
