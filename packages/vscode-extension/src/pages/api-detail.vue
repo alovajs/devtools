@@ -13,6 +13,10 @@ const api = ref<Api | null>(null)
 onVscodeType(MType.openApiDetail, (data: Api) => {
   api.value = data
 })
+
+onVscodeType(MType.refreshDocs, () => {
+  api.value = null
+})
 </script>
 
 <template>

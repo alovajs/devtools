@@ -30,6 +30,7 @@ function handleDetail(data: Api) {
 async function handleRefresh() {
   const data = await handlers.getApiDocs()
   treeData.value = data
+  search.value = ''
 }
 
 watchEffect(() => {

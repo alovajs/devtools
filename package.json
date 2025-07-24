@@ -58,7 +58,6 @@
     "eslint": "catalog:dev",
     "eslint-plugin-format": "catalog:dev",
     "fast-glob": "catalog:dev",
-    "globals": "catalog:dev",
     "husky": "catalog:dev",
     "jsdom": "catalog:dev",
     "lint-staged": "catalog:dev",

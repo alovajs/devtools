@@ -6,6 +6,7 @@ import generateConfig from '@/functions/generateConfig'
 import readConfig from '@/functions/readConfig'
 import { getFileNameByPath, Log } from '@/utils'
 import { getCurrentDirectory } from '@/utils/vscode'
+import VscodeClient from './VscodeClient'
 
 export default class ApiGenerate {
   private static readErrorArr: Error[] = []
@@ -32,6 +33,7 @@ export default class ApiGenerate {
         Log.info(`[${getFileNameByPath(workspaceRootDir)}]: Your API is updated`, { prompt: true })
       }
     }
+    VscodeClient.refreshDocs()
     this.generateErrorArr.push(...generateInfo.errorArr)
   }
 

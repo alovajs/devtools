@@ -174,16 +174,36 @@ function getNodeById(
     keys: string[]
   }
 }
+function filter(pattern: string, node: TreeOption) {
+  // eslint-disable-next-line no-console
+  console.log(pattern, node)
+  if (node.label.includes(pattern) || node.key.includes(pattern)) {
+    return true
+  }
+
+  const api = node?.api as Api
+  if (!api) {
+    return false
+  }
+  if (
+    api.summary.includes(pattern)
+    || api.path.includes(pattern)
+    || `${api.global}.${api.pathKey}`.includes(pattern)
+  ) {
+    return true
+  }
+  return false
+}
 function renderLabel({ option }: { option: TreeOption }) {
   const api = option.api as Api | undefined
   const description = api
     ? `[${api?.method}]${api?.path}\n${api?.summary}`
     : ''
   return (
-    <NPopover disabled={!description}>
+    <NPopover disabled={!description} style="max-width: 300px" placement="top-start">
       {{
-        trigger: () => <span class="sticky top-50">{option.label}</span>,
-        default: () => <pre>{description}</pre>,
+        trigger: () => <span>{option.label}</span>,
+        default: () => <pre style="white-space: pre-wrap; word-wrap: break-word;">{description}</pre>,
       }}
     </NPopover>
   )
@@ -212,17 +232,17 @@ defineExpose({
   <n-tree
     ref="treeRef"
     :key="treeKey"
-
-    expand-on-click virtual-scroll block-line
+    v-model:selected-keys="selectedKeys"
+    v-model:expanded-keys="expandedKeys"
+    expand-on-click
+    virtual-scroll
+    block-line
     :data="data"
-    :selected-keys="selectedKeys"
-    :expanded-keys="expandedKeys"
     :show-irrelevant-nodes="false"
     :pattern="pattern"
     :render-label="renderLabel"
     :node-props="nodeProps"
-    @update-selected-keys="selectedKeys = $event"
-    @update-expanded-keys="expandedKeys = $event"
+    :filter="filter"
   >
     <template #empty>
       <n-empty

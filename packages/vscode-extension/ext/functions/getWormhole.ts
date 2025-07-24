@@ -5,6 +5,7 @@ import importFresh from 'import-fresh'
 import { disable, enable } from '@/commands/statusBar'
 import Error, { AlovaErrorConstructor } from '@/components/error'
 import Global from '@/core/Global'
+import { Log } from '@/utils'
 import { getWorkspacePaths } from '@/utils/vscode'
 
 type Wormhole = typeof import('@alova/wormhole')
@@ -28,7 +29,9 @@ export function getWormhole() {
         }
       }
     }
-    catch {}
+    catch (error) {
+      Log.error(error)
+    }
   }
   if (wormhole) {
     enable()

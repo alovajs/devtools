@@ -10,7 +10,7 @@ const props = defineProps<{
 }>()
 
 const tabValue = ref('params')
-
+const message = useMessage()
 function typeCode(name: string, comment?: string) {
   if (!comment) {
     return ''
@@ -25,6 +25,17 @@ function typeCode(name: string, comment?: string) {
   }
   return `type ${name ?? 'tsType'} = ${pureComment}`
 }
+function handleCopy(code: string) {
+  const { copy, copied } = useClipboard({ legacy: true })
+  copy(code).then(() => {
+    if (copied.value) {
+      message.success('复制成功!')
+    }
+    else {
+      message.error('复制失败!')
+    }
+  })
+}
 function codeCard({
   name,
   code,
@@ -36,7 +47,20 @@ function codeCard({
 }) {
   const showCode = code
     ? (
-        <n-code word-wrap={true} code={code} language="typescript" />
+        <div class="pos-relative">
+          <n-float-button
+            shape="square"
+            right={0}
+            width="2rem"
+            height="2rem"
+            position="absolute"
+            class="p-0"
+            onClick={() => handleCopy(code)}
+          >
+            <div class="i-carbon-copy"></div>
+          </n-float-button>
+          <n-code word-wrap={true} code={code} language="typescript" class="min-h-8" />
+        </div>
       )
     : (
         <n-empty description={empty} />
