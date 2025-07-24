@@ -13,8 +13,8 @@
     "gen": "openapi --input ./openapi.yaml --output ./src/api"
   },
   "dependencies": {
-    "@alova/adapter-xhr": "catalog:",
-    "alova": "catalog:",
+    "@alova/adapter-xhr": "catalog:frontend",
+    "alova": "catalog:frontend",
     "vue": "catalog:frontend"
   },
   "devDependencies": {

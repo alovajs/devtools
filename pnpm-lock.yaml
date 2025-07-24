@@ -18,12 +18,30 @@ catalogs:
     '@unocss/eslint-config':
       specifier: ^66.3.3
       version: 66.3.3
+    '@unocss/preset-web-fonts':
+      specifier: ^66.3.3
+      version: 66.3.3
     '@vitejs/plugin-vue':
       specifier: ^6.0.0
       version: 6.0.0
+    '@vitejs/plugin-vue-jsx':
+      specifier: ^5.0.1
+      version: 5.0.1
+    dts-bundle-generator:
+      specifier: ^9.5.1
+      version: 9.5.1
+    esbuild:
+      specifier: ^0.25.6
+      version: 0.25.8
     markdown-it-link-attributes:
       specifier: ^4.0.1
       version: 4.0.1
+    ncp:
+      specifier: ^2.0.0
+      version: 2.0.0
+    tsc-alias:
+      specifier: ^1.8.16
+      version: 1.8.16
     unocss:
       specifier: ^66.3.3
       version: 66.3.3
@@ -48,13 +66,13 @@ catalogs:
     vite-plugin-vue-layouts:
       specifier: ^0.11.0
       version: 0.11.0
-  default:
-    '@alova/adapter-xhr':
-      specifier: ^2.2.0
-      version: 2.2.1
-    '@alova/mock':
-      specifier: ^2.0.17
-      version: 2.0.17
+    vscode-ext-gen:
+      specifier: ^1.1.0
+      version: 1.1.0
+  dev:
+    '@antfu/eslint-config':
+      specifier: ^4.17.0
+      version: 4.18.0
     '@antfu/ni':
       specifier: ^25.0.0
       version: 25.0.0
@@ -70,45 +88,12 @@ catalogs:
     '@commitlint/config-conventional':
       specifier: ^19.8.1
       version: 19.8.1
-    '@eslint/eslintrc':
-      specifier: ^3.3.1
-      version: 3.3.1
-    '@jsonrpc-rx/client':
-      specifier: ^0.2.2
-      version: 0.2.2
-    '@jsonrpc-rx/server':
-      specifier: ^0.2.1
-      version: 0.2.1
-    '@types/fs-extra':
-      specifier: ^11.0.4
-      version: 11.0.4
-    '@types/js-yaml':
-      specifier: ^4.0.9
-      version: 4.0.9
-    '@types/lodash':
-      specifier: ^4.17.20
-      version: 4.17.20
-    '@types/mocha':
-      specifier: ^10.0.10
-      version: 10.0.10
-    '@types/node':
-      specifier: ^24.0.14
-      version: 24.1.0
-    '@types/sinon':
-      specifier: ^17.0.4
-      version: 17.0.4
-    '@types/swagger2openapi':
-      specifier: ^7.0.4
-      version: 7.0.4
-    '@unocss/preset-web-fonts':
-      specifier: ^66.3.3
-      version: 66.3.3
-    '@vicons/ionicons5':
-      specifier: ^0.13.0
-      version: 0.13.0
-    '@vitejs/plugin-vue-jsx':
-      specifier: ^5.0.1
-      version: 5.0.1
+    '@iconify-json/carbon':
+      specifier: ^1.2.10
+      version: 1.2.11
+    '@tomjs/tsconfig':
+      specifier: ^2.0.0
+      version: 2.0.0
     '@vitest/coverage-v8':
       specifier: ^3.2.4
       version: 3.2.4
@@ -118,9 +103,9 @@ catalogs:
     '@vscode/vsce':
       specifier: ^3.6.0
       version: 3.6.0
-    alova:
-      specifier: ^3.3.4
-      version: 3.3.4
+    '@vue/test-utils':
+      specifier: ^2.4.6
+      version: 2.4.6
     commander:
       specifier: ^14.0.0
       version: 14.0.0
@@ -133,12 +118,12 @@ catalogs:
     cz-conventional-changelog:
       specifier: ^3.3.0
       version: 3.3.0
-    dts-bundle-generator:
-      specifier: ^9.5.1
-      version: 9.5.1
-    esbuild:
-      specifier: ^0.25.6
-      version: 0.25.8
+    eslint:
+      specifier: ^9.31.0
+      version: 9.31.0
+    eslint-plugin-format:
+      specifier: ^1.0.1
+      version: 1.0.1
     fast-glob:
       specifier: ^3.3.3
       version: 3.3.3
@@ -151,12 +136,6 @@ catalogs:
     globals:
       specifier: ^16.3.0
       version: 16.3.0
-    handlebars:
-      specifier: ^4.7.8
-      version: 4.7.8
-    highlight.js:
-      specifier: ^11.11.1
-      version: 11.11.1
     husky:
       specifier: ^9.1.7
       version: 9.1.7
@@ -166,9 +145,12 @@ catalogs:
     js-yaml:
       specifier: ^4.1.0
       version: 4.1.0
-    lodash:
-      specifier: ^4.17.21
-      version: 4.17.21
+    jsdom:
+      specifier: ^26.1.0
+      version: 26.1.0
+    lint-staged:
+      specifier: ^16.1.2
+      version: 16.1.2
     memfs:
       specifier: ^4.17.2
       version: 4.17.2
@@ -178,21 +160,12 @@ catalogs:
     msw:
       specifier: ^2.10.4
       version: 2.10.4
-    naive-ui:
-      specifier: ^2.42.0
-      version: 2.42.0
-    ncp:
-      specifier: ^2.0.0
-      version: 2.0.0
     npm-run-all2:
       specifier: ^8.0.4
       version: 8.0.4
     openapi:
       specifier: ^1.0.1
       version: 1.0.1
-    openapi-types:
-      specifier: ^12.1.3
-      version: 12.1.3
     ora:
       specifier: ^8.2.0
       version: 8.2.0
@@ -208,55 +181,15 @@ catalogs:
     sinon:
       specifier: ^21.0.0
       version: 21.0.0
-    swagger2openapi:
-      specifier: ^7.0.8
-      version: 7.0.8
-    tsc-alias:
-      specifier: ^1.8.16
-      version: 1.8.16
+    taze:
+      specifier: ^19.1.0
+      version: 19.1.0
     tslib:
       specifier: ^2.8.1
       version: 2.8.1
     tsx:
       specifier: ^4.20.3
       version: 4.20.3
-    type-fest:
-      specifier: ^4.41.0
-      version: 4.41.0
-    vscode-ext-gen:
-      specifier: ^1.1.0
-      version: 1.1.0
-    zod:
-      specifier: ^3.25.68-alpha.11
-      version: 3.25.76
-    zod-validation-error:
-      specifier: ^3.5.3
-      version: 3.5.3
-  dev:
-    '@antfu/eslint-config':
-      specifier: ^4.17.0
-      version: 4.18.0
-    '@iconify-json/carbon':
-      specifier: ^1.2.10
-      version: 1.2.11
-    '@tomjs/tsconfig':
-      specifier: ^2.0.0
-      version: 2.0.0
-    '@vue/test-utils':
-      specifier: ^2.4.6
-      version: 2.4.6
-    eslint:
-      specifier: ^9.31.0
-      version: 9.31.0
-    eslint-plugin-format:
-      specifier: ^1.0.1
-      version: 1.0.1
-    lint-staged:
-      specifier: ^16.1.2
-      version: 16.1.2
-    taze:
-      specifier: ^19.1.0
-      version: 19.1.0
     typescript:
       specifier: ^5.8.3
       version: 5.8.3
@@ -267,6 +200,18 @@ catalogs:
       specifier: ^3.0.2
       version: 3.0.3
   frontend:
+    '@alova/adapter-xhr':
+      specifier: ^2.2.0
+      version: 2.2.1
+    '@alova/mock':
+      specifier: ^2.0.17
+      version: 2.0.17
+    '@jsonrpc-rx/client':
+      specifier: ^0.2.2
+      version: 0.2.2
+    '@jsonrpc-rx/server':
+      specifier: ^0.2.1
+      version: 0.2.1
     '@tomjs/vscode-webview':
       specifier: ^2.0.2
       version: 2.0.2
@@ -276,9 +221,27 @@ catalogs:
     '@unocss/reset':
       specifier: ^66.3.3
       version: 66.3.3
+    '@vicons/ionicons5':
+      specifier: ^0.13.0
+      version: 0.13.0
     '@vueuse/core':
       specifier: ^13.5.0
       version: 13.5.0
+    alova:
+      specifier: ^3.3.4
+      version: 3.3.4
+    handlebars:
+      specifier: ^4.7.8
+      version: 4.7.8
+    highlight.js:
+      specifier: ^11.11.1
+      version: 11.11.1
+    lodash:
+      specifier: ^4.17.21
+      version: 4.17.21
+    naive-ui:
+      specifier: ^2.42.0
+      version: 2.42.0
     nprogress:
       specifier: ^0.2.0
       version: 0.2.0
@@ -291,6 +254,9 @@ catalogs:
     reactive-vscode:
       specifier: ^0.3.1
       version: 0.3.1
+    swagger2openapi:
+      specifier: ^7.0.8
+      version: 7.0.8
     vue:
       specifier: ^3.5.17
       version: 3.5.18
@@ -300,16 +266,49 @@ catalogs:
     vue-router:
       specifier: ^4.5.1
       version: 4.5.1
+    zod:
+      specifier: ^3.25.68-alpha.11
+      version: 3.25.76
+    zod-validation-error:
+      specifier: ^3.5.3
+      version: 3.5.3
   types:
+    '@types/fs-extra':
+      specifier: ^11.0.4
+      version: 11.0.4
+    '@types/js-yaml':
+      specifier: ^4.0.9
+      version: 4.0.9
+    '@types/lodash':
+      specifier: ^4.17.20
+      version: 4.17.20
     '@types/markdown-it-link-attributes':
       specifier: ^3.0.5
       version: 3.0.5
+    '@types/mocha':
+      specifier: ^10.0.10
+      version: 10.0.10
+    '@types/node':
+      specifier: ^24.0.14
+      version: 24.1.0
     '@types/nprogress':
       specifier: ^0.2.3
       version: 0.2.3
+    '@types/sinon':
+      specifier: ^17.0.4
+      version: 17.0.4
+    '@types/swagger2openapi':
+      specifier: ^7.0.4
+      version: 7.0.4
     '@types/vscode-webview':
       specifier: ^1.57.5
       version: 1.57.5
+    openapi-types:
+      specifier: ^12.1.3
+      version: 12.1.3
+    type-fest:
+      specifier: ^4.41.0
+      version: 4.41.0
 
 overrides:
   unplugin: ^2.3.5
@@ -319,64 +318,57 @@ overrides:
 importers:
 
   .:
-    dependencies:
-      '@eslint/eslintrc':
-        specifier: 'catalog:'
-        version: 3.3.1
-      globals:
-        specifier: 'catalog:'
-        version: 16.3.0
     devDependencies:
       '@antfu/eslint-config':
         specifier: catalog:dev
-        version: 4.18.0(@unocss/eslint-plugin@66.3.3(eslint@9.31.0(jiti@2.5.0))(typescript@5.8.3))(@vue/compiler-sfc@3.5.18)(eslint-plugin-format@1.0.1(eslint@9.31.0(jiti@2.5.0)))(eslint@9.31.0(jiti@2.5.0))(typescript@5.8.3)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.1.0)(jiti@2.5.0)(msw@2.10.4(@types/node@24.1.0)(typescript@5.8.3))(tsx@4.20.3)(yaml@2.8.0))
+        version: 4.18.0(@unocss/eslint-plugin@66.3.3(eslint@9.31.0(jiti@2.5.0))(typescript@5.8.3))(@vue/compiler-sfc@3.5.18)(eslint-plugin-format@1.0.1(eslint@9.31.0(jiti@2.5.0)))(eslint@9.31.0(jiti@2.5.0))(typescript@5.8.3)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.1.0)(jiti@2.5.0)(jsdom@26.1.0)(msw@2.10.4(@types/node@24.1.0)(typescript@5.8.3))(tsx@4.20.3)(yaml@2.8.0))
       '@antfu/ni':
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 25.0.0
       '@changesets/changelog-github':
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 0.5.1
       '@changesets/cli':
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 2.29.5
       '@commitlint/cli':
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 19.8.1(@types/node@24.1.0)(typescript@5.8.3)
       '@commitlint/config-conventional':
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 19.8.1
       '@types/js-yaml':
-        specifier: 'catalog:'
+        specifier: catalog:types
         version: 4.0.9
       '@types/lodash':
-        specifier: 'catalog:'
+        specifier: catalog:types
         version: 4.17.20
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:types
         version: 24.1.0
       '@unocss/eslint-config':
         specifier: catalog:build
         version: 66.3.3(eslint@9.31.0(jiti@2.5.0))(typescript@5.8.3)
       '@unocss/preset-web-fonts':
-        specifier: 'catalog:'
+        specifier: catalog:build
         version: 66.3.3
       '@vitest/coverage-v8':
-        specifier: 'catalog:'
-        version: 3.2.4(vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.1.0)(jiti@2.5.0)(msw@2.10.4(@types/node@24.1.0)(typescript@5.8.3))(tsx@4.20.3)(yaml@2.8.0))
+        specifier: catalog:dev
+        version: 3.2.4(vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.1.0)(jiti@2.5.0)(jsdom@26.1.0)(msw@2.10.4(@types/node@24.1.0)(typescript@5.8.3))(tsx@4.20.3)(yaml@2.8.0))
       '@vueuse/core':
         specifier: catalog:frontend
         version: 13.5.0(vue@3.5.18(typescript@5.8.3))
       commitizen:
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 4.3.1(@types/node@24.1.0)(typescript@5.8.3)
       coveralls:
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 3.1.1
       cz-conventional-changelog:
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 3.3.0(@types/node@24.1.0)(typescript@5.8.3)
       dts-bundle-generator:
-        specifier: 'catalog:'
+        specifier: catalog:build
         version: 9.5.1
       eslint:
         specifier: catalog:dev
@@ -385,37 +377,43 @@ importers:
         specifier: catalog:dev
         version: 1.0.1(eslint@9.31.0(jiti@2.5.0))
       fast-glob:
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 3.3.3
+      globals:
+        specifier: catalog:dev
+        version: 16.3.0
       husky:
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 9.1.7
+      jsdom:
+        specifier: catalog:dev
+        version: 26.1.0
       lint-staged:
         specifier: catalog:dev
         version: 16.1.2
       msw:
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 2.10.4(@types/node@24.1.0)(typescript@5.8.3)
       ncp:
-        specifier: 'catalog:'
+        specifier: catalog:build
         version: 2.0.0
       npm-run-all2:
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 8.0.4
       rimraf:
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 6.0.1
       taze:
         specifier: catalog:dev
         version: 19.1.0
       tslib:
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 2.8.1
       tsx:
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 4.20.3
       type-fest:
-        specifier: 'catalog:'
+        specifier: catalog:types
         version: 4.41.0
       typescript:
         specifier: catalog:dev
@@ -425,7 +423,7 @@ importers:
         version: 66.3.3(postcss@8.5.6)(vite@7.0.5(@types/node@24.1.0)(jiti@2.5.0)(tsx@4.20.3)(yaml@2.8.0))(vue@3.5.18(typescript@5.8.3))
       vitest:
         specifier: catalog:dev
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.1.0)(jiti@2.5.0)(msw@2.10.4(@types/node@24.1.0)(typescript@5.8.3))(tsx@4.20.3)(yaml@2.8.0)
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.1.0)(jiti@2.5.0)(jsdom@26.1.0)(msw@2.10.4(@types/node@24.1.0)(typescript@5.8.3))(tsx@4.20.3)(yaml@2.8.0)
 
   packages/vscode-extension:
     dependencies:
@@ -436,19 +434,19 @@ importers:
         specifier: catalog:frontend
         version: 66.3.3
       '@vicons/ionicons5':
-        specifier: 'catalog:'
+        specifier: catalog:frontend
         version: 0.13.0
       '@vueuse/core':
         specifier: catalog:frontend
         version: 13.5.0(vue@3.5.18(typescript@5.8.3))
       glob:
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 11.0.3
       highlight.js:
-        specifier: 'catalog:'
+        specifier: catalog:frontend
         version: 11.11.1
       import-fresh:
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 3.3.1
       nprogress:
         specifier: catalog:frontend
@@ -482,10 +480,10 @@ importers:
         specifier: catalog:build
         version: 6.0.8(@vue/compiler-dom@3.5.18)(eslint@9.31.0(jiti@2.5.0))(rollup@4.45.1)(typescript@5.8.3)(vue-i18n@11.1.11(vue@3.5.18(typescript@5.8.3)))(vue@3.5.18(typescript@5.8.3))
       '@jsonrpc-rx/client':
-        specifier: 'catalog:'
+        specifier: catalog:frontend
         version: 0.2.2
       '@jsonrpc-rx/server':
-        specifier: 'catalog:'
+        specifier: catalog:frontend
         version: 0.2.1
       '@shikijs/markdown-it':
         specifier: catalog:build
@@ -500,16 +498,16 @@ importers:
         specifier: catalog:types
         version: 3.0.5
       '@types/mocha':
-        specifier: 'catalog:'
+        specifier: catalog:types
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:types
         version: 24.1.0
       '@types/nprogress':
         specifier: catalog:types
         version: 0.2.3
       '@types/sinon':
-        specifier: 'catalog:'
+        specifier: catalog:types
         version: 17.0.4
       '@types/vscode':
         specifier: ^1.102.0
@@ -521,13 +519,13 @@ importers:
         specifier: catalog:build
         version: 6.0.0(vite@7.0.5(@types/node@24.1.0)(jiti@2.5.0)(tsx@4.20.3)(yaml@2.8.0))(vue@3.5.18(typescript@5.8.3))
       '@vitejs/plugin-vue-jsx':
-        specifier: 'catalog:'
+        specifier: catalog:build
         version: 5.0.1(vite@7.0.5(@types/node@24.1.0)(jiti@2.5.0)(tsx@4.20.3)(yaml@2.8.0))(vue@3.5.18(typescript@5.8.3))
       '@vscode/test-electron':
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 2.5.2
       '@vscode/vsce':
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 3.6.0
       '@vue/test-utils':
         specifier: catalog:dev
@@ -536,19 +534,19 @@ importers:
         specifier: catalog:build
         version: 4.0.1
       mocha:
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 11.7.1
       naive-ui:
-        specifier: 'catalog:'
+        specifier: catalog:frontend
         version: 2.42.0(vue@3.5.18(typescript@5.8.3))
       ovsx:
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 0.10.5
       reactive-vscode:
         specifier: catalog:frontend
         version: 0.3.1(@types/vscode@1.102.0)
       sinon:
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 21.0.0
       unocss:
         specifier: catalog:build
@@ -581,7 +579,7 @@ importers:
         specifier: catalog:build
         version: 0.11.0(vite@7.0.5(@types/node@24.1.0)(jiti@2.5.0)(tsx@4.20.3)(yaml@2.8.0))(vue-router@4.5.1(vue@3.5.18(typescript@5.8.3)))(vue@3.5.18(typescript@5.8.3))
       vscode-ext-gen:
-        specifier: 'catalog:'
+        specifier: catalog:build
         version: 1.1.0
       vue-tsc:
         specifier: catalog:dev
@@ -590,71 +588,77 @@ importers:
   packages/wormhole:
     dependencies:
       alova:
-        specifier: 'catalog:'
+        specifier: catalog:frontend
         version: 3.3.4
       commander:
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 14.0.0
       esbuild:
-        specifier: 'catalog:'
+        specifier: catalog:build
         version: 0.25.8
       glob:
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 11.0.3
       handlebars:
-        specifier: 'catalog:'
+        specifier: catalog:frontend
         version: 4.7.8
       import-fresh:
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 3.3.1
       js-yaml:
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 4.1.0
       lodash:
-        specifier: 'catalog:'
+        specifier: catalog:frontend
         version: 4.17.21
       openapi-types:
-        specifier: 'catalog:'
+        specifier: catalog:types
         version: 12.1.3
       ora:
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 8.2.0
       prettier:
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 3.6.2
       swagger2openapi:
-        specifier: 'catalog:'
+        specifier: catalog:frontend
         version: 7.0.8
       zod:
-        specifier: 'catalog:'
+        specifier: catalog:frontend
         version: 3.25.76
       zod-validation-error:
-        specifier: 'catalog:'
+        specifier: catalog:frontend
         version: 3.5.3(zod@3.25.76)
     devDependencies:
       '@types/fs-extra':
-        specifier: 'catalog:'
+        specifier: catalog:types
         version: 11.0.4
+      '@types/js-yaml':
+        specifier: catalog:types
+        version: 4.0.9
+      '@types/lodash':
+        specifier: catalog:types
+        version: 4.17.20
       '@types/swagger2openapi':
-        specifier: 'catalog:'
+        specifier: catalog:types
         version: 7.0.4
       fs-extra:
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 11.3.0
       memfs:
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 4.17.2
       tsc-alias:
-        specifier: 'catalog:'
+        specifier: catalog:build
         version: 1.8.16
 
   test/api-common:
     dependencies:
       '@alova/mock':
-        specifier: 'catalog:'
+        specifier: catalog:frontend
         version: 2.0.17(alova@3.3.4)
       alova:
-        specifier: 'catalog:'
+        specifier: catalog:frontend
         version: 3.3.4
       vue:
         specifier: catalog:frontend
@@ -667,10 +671,10 @@ importers:
   test/api-js-commonjs-test:
     dependencies:
       '@alova/mock':
-        specifier: 'catalog:'
+        specifier: catalog:frontend
         version: 2.0.17(alova@3.3.4)
       alova:
-        specifier: 'catalog:'
+        specifier: catalog:frontend
         version: 3.3.4
       vue:
         specifier: catalog:frontend
@@ -683,7 +687,7 @@ importers:
   test/api-js-test:
     dependencies:
       alova:
-        specifier: 'catalog:'
+        specifier: catalog:frontend
         version: 3.3.4
       vue:
         specifier: catalog:frontend
@@ -696,10 +700,10 @@ importers:
   test/api-ts-test:
     dependencies:
       '@alova/mock':
-        specifier: 'catalog:'
+        specifier: catalog:frontend
         version: 2.0.17(alova@3.3.4)
       alova:
-        specifier: 'catalog:'
+        specifier: catalog:frontend
         version: 3.3.4
       vue:
         specifier: catalog:frontend
@@ -709,7 +713,7 @@ importers:
         specifier: workspace:^
         version: link:../../packages/wormhole
       openapi:
-        specifier: 'catalog:'
+        specifier: catalog:dev
         version: 1.0.1
       typescript:
         specifier: catalog:dev
@@ -718,10 +722,10 @@ importers:
   test/api-v3-js-commonjs-test:
     dependencies:
       '@alova/adapter-xhr':
-        specifier: 'catalog:'
+        specifier: catalog:frontend
         version: 2.2.1(alova@3.3.4)
       alova:
-        specifier: 'catalog:'
+        specifier: catalog:frontend
         version: 3.3.4
       vue:
         specifier: catalog:frontend
@@ -734,7 +738,7 @@ importers:
   test/api-v3-js-test:
     dependencies:
       alova:
-        specifier: 'catalog:'
+        specifier: catalog:frontend
         version: 3.3.4
       vue:
         specifier: catalog:frontend
@@ -747,13 +751,13 @@ importers:
   test/api-v3-ts-test:
     dependencies:
       '@alova/adapter-xhr':
-        specifier: 'catalog:'
+        specifier: catalog:frontend
         version: 2.2.1(alova@3.3.4)
       '@alova/mock':
-        specifier: 'catalog:'
+        specifier: catalog:frontend
         version: 2.0.17(alova@3.3.4)
       alova:
-        specifier: 'catalog:'
+        specifier: catalog:frontend
         version: 3.3.4
     devDependencies:
       '@alova/wormhole':
@@ -844,6 +848,9 @@ packages:
 
   '@antfu/utils@8.1.1':
     resolution: {integrity: sha512-Mex9nXf9vR6AhcXmMrlz/HVgYYZpVGJ6YlPgwl7UnaFpnshXs6EK/oa5Gpf3CzENMjkvEx2tQtntGnb7UtSTOQ==}
+
+  '@asamuzakjp/css-color@3.2.0':
+    resolution: {integrity: sha512-K1A6z8tS3XsmCMM86xoWdn7Fkdn9m6RSVtocUrJYIwZnFVkng/PvkEoWtOWmP+Scc6saYWHWZYbndEEXxl24jw==}
 
   '@azu/format-text@1.0.2':
     resolution: {integrity: sha512-Swi4N7Edy1Eqq82GxgEECXSSLyn6GOb5htRFPzBDdUkECGXtlf12ynO5oJSpWKPwCaUssOu7NfhDcCWpIC6Ywg==}
@@ -1197,6 +1204,34 @@ packages:
     resolution: {integrity: sha512-//8027GSbxE9n3QlD73xFY6z4ZbHbvrOVB7AO6hsmrEzGbg+h2A09HboUyDgu+xsmj7JnvJD39Irt+2D0+iV8g==}
     peerDependencies:
       vue: ^3.0.11
+
+  '@csstools/color-helpers@5.0.2':
+    resolution: {integrity: sha512-JqWH1vsgdGcw2RR6VliXXdA0/59LttzlU8UlRT/iUUsEeWfYq8I+K0yhihEUTTHLRm1EXvpsCx3083EU15ecsA==}
+    engines: {node: '>=18'}
+
+  '@csstools/css-calc@2.1.4':
+    resolution: {integrity: sha512-3N8oaj+0juUw/1H3YwmDDJXCgTB1gKU6Hc/bB502u9zR0q2vd786XJH9QfrKIEgFlZmhZiq6epXl4rHqhzsIgQ==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@csstools/css-parser-algorithms': ^3.0.5
+      '@csstools/css-tokenizer': ^3.0.4
+
+  '@csstools/css-color-parser@3.0.10':
+    resolution: {integrity: sha512-TiJ5Ajr6WRd1r8HSiwJvZBiJOqtH86aHpUjq5aEKWHiII2Qfjqd/HCWKPOW8EP4vcspXbHnXrwIDlu5savQipg==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@csstools/css-parser-algorithms': ^3.0.5
+      '@csstools/css-tokenizer': ^3.0.4
+
+  '@csstools/css-parser-algorithms@3.0.5':
+    resolution: {integrity: sha512-DaDeUkXZKjdGhgYaHNJTV9pV7Y9B3b644jCLs9Upc3VeNGg6LWARAT6O+Q+/COo+2gg/bM5rhpMAtf70WqfBdQ==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@csstools/css-tokenizer': ^3.0.4
+
+  '@csstools/css-tokenizer@3.0.4':
+    resolution: {integrity: sha512-Vd/9EVDiu6PPJt9yAh6roZP6El1xHrdvIVGjyBsHR0RYwNHgL7FJPyIIW4fANJNG6FtyZfvlRPpFI4ZM/lubvw==}
+    engines: {node: '>=18'}
 
   '@czhlin/vite-plugin-vscode@4.3.0':
     resolution: {integrity: sha512-08eINt+c1QcY6f3iYboroe/6nm/1fvsIUlTqPqPtntf/buYN5rjFpGBu9FTvLUuNWBtwyr6IR0R+qjfd+Rlntg==}
@@ -3146,6 +3181,10 @@ packages:
     engines: {node: '>=4'}
     hasBin: true
 
+  cssstyle@4.6.0:
+    resolution: {integrity: sha512-2z+rWdzbbSZv6/rhtvzvqeZQHrBaqgogqt85sqFNbabZOuFbCVFb8kPeEtZjiKkbrm395irpNKiYeFeLiQnFPg==}
+    engines: {node: '>=18'}
+
   csstype@3.0.11:
     resolution: {integrity: sha512-sa6P2wJ+CAbgyy4KFssIb/JNMLxFvKF1pCYCSXS8ZMuqZnMsrxqI2E5sPyoTpxoPU/gVZMzr2zjOfg8GIZOMsw==}
 
@@ -3163,6 +3202,10 @@ packages:
   dashdash@1.14.1:
     resolution: {integrity: sha512-jRFi8UDGo6j+odZiEpjazZaWqEal3w/basFjQHQEwVtZJGDpxbH1MeYluwCS8Xq5wmLJooDlMgvVarmWfGM44g==}
     engines: {node: '>=0.10'}
+
+  data-urls@5.0.0:
+    resolution: {integrity: sha512-ZYP5VBHshaDAiVZxjbRVcFJpc+4xGgT0bK3vzy1HLN8jTO975HEbuYzZJcHoQEY5K1a0z8YayJkyVETa08eNTg==}
+    engines: {node: '>=18'}
 
   dataloader@1.4.0:
     resolution: {integrity: sha512-68s5jYdlvasItOJnCuI2Q9s4q98g0pCyL3HrcKJu8KNugUl8ahgmZYg38ysLTgQjjXX3H8CJLkAvWrclWfcalw==}
@@ -3193,6 +3236,9 @@ packages:
   decamelize@4.0.0:
     resolution: {integrity: sha512-9iE1PgSik9HeIIw2JO94IidnE3eBoQrFJ3w7sFuzSX4DpmZ3v5sZpUiV5Swcf6mQEF+Y0ru8Neo+p+nyh2J+hQ==}
     engines: {node: '>=10'}
+
+  decimal.js@10.6.0:
+    resolution: {integrity: sha512-YpgQiITW3JXGntzdUmyUR1V812Hn8T1YVXhCu+wO3OpS4eU9l4YdD3qjyiKdV6mvV29zapkMeD390UVEf2lkUg==}
 
   decode-named-character-reference@1.2.0:
     resolution: {integrity: sha512-c6fcElNV6ShtZXmsgNgFFV5tVX2PaV4g+MOAkb8eXHvn6sryJBrZa9r0zV6+dtTyoCKxtDy5tyQ5ZwQuidtd+Q==}
@@ -4069,6 +4115,10 @@ packages:
     resolution: {integrity: sha512-puUZAUKT5m8Zzvs72XWy3HtvVbTWljRE66cP60bxJzAqf2DgICo7lYTY2IHUmLnNpjYvw5bvmoHvPc0QO2a62w==}
     engines: {node: ^16.14.0 || >=18.0.0}
 
+  html-encoding-sniffer@4.0.0:
+    resolution: {integrity: sha512-Y22oTqIU4uuPgEemfz7NDJz6OeKf12Lsu+QC+s3BVpda64lTiMYCyGwg5ki4vFxkMwQdeZDl2adZoqUgdFuTgQ==}
+    engines: {node: '>=18'}
+
   html-escaper@2.0.2:
     resolution: {integrity: sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==}
 
@@ -4262,6 +4312,9 @@ packages:
     resolution: {integrity: sha512-+Pgi+vMuUNkJyExiMBt5IlFoMyKnr5zhJ4Uspz58WOhBF5QoIZkFyNHIbBAtHwzVAgk5RtndVNsDRN61/mmDqg==}
     engines: {node: '>=12'}
 
+  is-potential-custom-element-name@1.0.1:
+    resolution: {integrity: sha512-bCYeRA2rVibKZd+s2625gGnGF/t7DSqDs4dP7CrLA1m7jKWz6pps0LpYLJN8Q64HtmPKJ1hrN3nzPNKFEKOUiQ==}
+
   is-stream@2.0.1:
     resolution: {integrity: sha512-hFoiJiTl63nn+kstHGBtewWSKnQLpyb155KHheA1l39uvtO9nWIop1p3udqPcUd/xbF1VLMO4n7OI6p7RbngDg==}
     engines: {node: '>=8'}
@@ -4396,6 +4449,15 @@ packages:
   jsdoc-type-pratt-parser@4.1.0:
     resolution: {integrity: sha512-Hicd6JK5Njt2QB6XYFS7ok9e37O8AYk3jTcppG4YVQnYjOemymvTcmc7OWsmq/Qqj5TdRFO5/x/tIPmBeRtGHg==}
     engines: {node: '>=12.0.0'}
+
+  jsdom@26.1.0:
+    resolution: {integrity: sha512-Cvc9WUhxSMEo4McES3P7oK3QaXldCfNWp7pl2NNeiIFlCoLr3kfq9kb1fxftiwk1FLV7CvpvDfonxtzUDeSOPg==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      canvas: ^3.0.0
+    peerDependenciesMeta:
+      canvas:
+        optional: true
 
   jsesc@3.0.2:
     resolution: {integrity: sha512-xKqzzWXDttJuOcawBt4KnKHHIf5oQ/Cxax+0PWFG+DFDgHNAdi+TXECADI+RYiFUMmx8792xsMbbgXj4CwnP4g==}
@@ -5044,6 +5106,9 @@ packages:
   nth-check@2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
 
+  nwsapi@2.2.20:
+    resolution: {integrity: sha512-/ieB+mDe4MrrKMT8z+mQL8klXydZWGR5Dowt4RAGKbJ3kIGEx3X4ljUo+6V73IXtUPWgfOlU5B9MlGxFO5T+cA==}
+
   oas-kit-common@1.0.8:
     resolution: {integrity: sha512-pJTS2+T0oGIwgjGpw7sIRU8RQMcUoKCDWFLdBqKB2BNmGpbBMH2sdqAaOXUg8OzonZHU0L7vfJu1mJFEiYDWOQ==}
 
@@ -5612,6 +5677,9 @@ packages:
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
     hasBin: true
 
+  rrweb-cssom@0.8.0:
+    resolution: {integrity: sha512-guoltQEx+9aMf2gDZ0s62EcV8lsXR+0w8915TC3ITdn2YueuNjdAYh/levpU9nFaoChh9RUS5ZdQMrKfVEN9tw==}
+
   run-applescript@7.0.0:
     resolution: {integrity: sha512-9by4Ij99JUr/MCFBUkDKLWK3G9HVXmabKz9U5MlIAIuvuzkiOicRYs8XJLxX+xahD+mLiiCYDqF9dKAgtzKP1A==}
     engines: {node: '>=18'}
@@ -5637,6 +5705,10 @@ packages:
 
   sax@1.4.1:
     resolution: {integrity: sha512-+aWOz7yVScEGoKNd4PA10LZ8sk0A/z5+nXQG5giUO5rprX9jgYsTdov9qCchZiPIZezbZH+jRut8nPodFAX4Jg==}
+
+  saxes@6.0.0:
+    resolution: {integrity: sha512-xAg7SOnEhrm5zI3puOOKyy1OMcMlIJZYNJY7xLBwSze0UjhPLnWfj2GF2EpT0jmzaJKIWKHLsaSSajf35bcYnA==}
+    engines: {node: '>=v12.22.7'}
 
   scslre@0.3.0:
     resolution: {integrity: sha512-3A6sD0WYP7+QrjbfNA2FN3FsOaGGFoekCVgTyypy53gPxhbkCIjtO6YWgdrfM+n/8sI8JeXZOIxsHjMTNxQ4nQ==}
@@ -5946,6 +6018,9 @@ packages:
     resolution: {integrity: sha512-upi/0ZGkYgEcLeGieoz8gT74oWHA0E7JivX7aN9mAf+Tc7BQoRBvnIGHoPDw+f9TXTW4s6kGYCZJtauP6OYp7g==}
     hasBin: true
 
+  symbol-tree@3.2.4:
+    resolution: {integrity: sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==}
+
   synckit@0.11.11:
     resolution: {integrity: sha512-MeQTA1r0litLUf0Rp/iisCaL8761lKAZHaimlbGK4j0HysC4PLfqygQj9srcs0m2RdtDYnF8UuYyKpbjHYp7Jw==}
     engines: {node: ^14.18.0 || >=16.0.0}
@@ -6030,6 +6105,13 @@ packages:
     resolution: {integrity: sha512-t2T/WLB2WRgZ9EpE4jgPJ9w+i66UZfDc8wHh0xrwiRNN+UwH98GIJkTeZqX9rg0i0ptwzqW+uYeIF0T4F8LR7A==}
     engines: {node: '>=14.0.0'}
 
+  tldts-core@6.1.86:
+    resolution: {integrity: sha512-Je6p7pkk+KMzMv2XXKmAE3McmolOQFdxkKw0R8EYNr7sELW46JqnNeTX8ybPiQgvg1ymCoF8LXs5fzFaZvJPTA==}
+
+  tldts@6.1.86:
+    resolution: {integrity: sha512-WMi/OQ2axVTf/ykqCQgXiIct+mSQDFdH2fkwhPwgEwvJ1kSzZRiinb0zF2Xb8u4+OqPChmyI6MEu4EezNJz+FQ==}
+    hasBin: true
+
   tmp@0.0.33:
     resolution: {integrity: sha512-jRCJlojKnZ3addtTOjdIqoRuPEKBvNXcGYqzO6zWZX8KfKEpnGY5jfggJQ3EjKuu8D4bJRr0y+cYJFmYbImXGw==}
     engines: {node: '>=0.6.0'}
@@ -6058,8 +6140,16 @@ packages:
     resolution: {integrity: sha512-Loo5UUvLD9ScZ6jh8beX1T6sO1w2/MpCRpEP7V280GKMVUQ0Jzar2U3UJPsrdbziLEMMhu3Ujnq//rhiFuIeag==}
     engines: {node: '>=6'}
 
+  tough-cookie@5.1.2:
+    resolution: {integrity: sha512-FVDYdxtnj0G6Qm/DhNPSb8Ju59ULcup3tuJxkFb5K8Bv2pUXILbf0xZWU8PX8Ov19OXljbUyveOFwRMwkXzO+A==}
+    engines: {node: '>=16'}
+
   tr46@0.0.3:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
+
+  tr46@5.1.1:
+    resolution: {integrity: sha512-hdF5ZgjTqgAntKkklYw0R03MG2x/bSzTtkxmIRw/sTNV8YXsCJ1tfLAX23lhxhHJlEf3CRCOCGGWw3vI3GaSPw==}
+    engines: {node: '>=18'}
 
   tree-dump@1.0.3:
     resolution: {integrity: sha512-il+Cv80yVHFBwokQSfd4bldvr1Md951DpgAGfmhydt04L+YzHgubm2tQ7zueWDcGENKHq0ZvGFR/hjvNXilHEg==}
@@ -6510,11 +6600,19 @@ packages:
     peerDependencies:
       vue: ^3.0.11
 
+  w3c-xmlserializer@5.0.0:
+    resolution: {integrity: sha512-o8qghlI8NZHU1lLPrpi2+Uq7abh4GGPpYANlalzWxyWteJOCsr/P+oPBA49TOLu5FTZO4d3F9MnWJfiMo4BkmA==}
+    engines: {node: '>=18'}
+
   wcwidth@1.0.1:
     resolution: {integrity: sha512-XHPEwS0q6TaxcvG85+8EYkbiCux2XtWG2mkc47Ng2A77BQu9+DqIOJldST4HgPkuea7dvKSj5VgX3P1d4rW8Tg==}
 
   webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
+
+  webidl-conversions@7.0.0:
+    resolution: {integrity: sha512-VwddBukDzu71offAQR975unBIGqfKZpM+8ZX6ySk8nYhVoo5CYaZyzt3YBvYtRtO+aoGlqxPg/B87NGVZ/fu6g==}
+    engines: {node: '>=12'}
 
   webpack-virtual-modules@0.6.2:
     resolution: {integrity: sha512-66/V2i5hQanC51vBQKPH4aI8NMAcBW59FVBs+rC7eGHupMyfn34q7rZIE+ETlJ+XTevqfUhVVBgSUNSW2flEUQ==}
@@ -6525,6 +6623,10 @@ packages:
 
   whatwg-mimetype@4.0.0:
     resolution: {integrity: sha512-QaKxh0eNIi2mE9p2vEdzfagOKHCcj1pJ56EEHGQOVxp8r9/iszLUUV7v89x9O1p/T+NlTM5W7jW6+cz4Fq1YVg==}
+    engines: {node: '>=18'}
+
+  whatwg-url@14.2.0:
+    resolution: {integrity: sha512-De72GdQZzNTUBBChsXueQUnPKDkg/5A5zp7pFDuQAj5UFoENpiACU0wlCvzpAGnTkj++ihpKwKyYewn/XNUbKw==}
     engines: {node: '>=18'}
 
   whatwg-url@5.0.0:
@@ -6578,6 +6680,18 @@ packages:
   wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
 
+  ws@8.18.3:
+    resolution: {integrity: sha512-PEIGCY5tSlUt50cqyMXfCzX+oOPqN0vuGqWzbcJ2xvnkzkq46oOpz7dQaTDBdfICb4N14+GARUDw2XV2N4tvzg==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
   wsl-utils@0.1.0:
     resolution: {integrity: sha512-h3Fbisa2nKGPxCpm89Hk33lBLsnaGBvctQopaBSOW/uIs6FTe1ATyAnKFJrzVs9vpGdsTe73WF3V4lIsk4Gacw==}
     engines: {node: '>=18'}
@@ -6586,6 +6700,10 @@ packages:
     resolution: {integrity: sha512-ICP2e+jsHvAj2E2lIHxa5tjXRlKDJo4IdvPvCXbXQGdzSfmSpNVyIKMvoZHjDY9DP0zV17iI85o90vRFXNccRw==}
     engines: {node: '>=12'}
 
+  xml-name-validator@5.0.0:
+    resolution: {integrity: sha512-EvGK8EJ3DhaHfbRlETOWAS5pO9MZITeauHKJyb8wyajUfQUenkIg2MvLDTZ4T/TgIcm3HU0TFBgWWboAZ30UHg==}
+    engines: {node: '>=18'}
+
   xml2js@0.5.0:
     resolution: {integrity: sha512-drPFnkQJik/O+uPKpqSgr22mpuFHqKdbS835iAQrUC73L2F5WkboIRd63ai/2Yg6I1jzifPFKH2NTK+cfglkIA==}
     engines: {node: '>=4.0.0'}
@@ -6593,6 +6711,9 @@ packages:
   xmlbuilder@11.0.1:
     resolution: {integrity: sha512-fDlsI/kFEx7gLvbecc0/ohLG50fugQp8ryHzMTuW9vSa1GJ0XYWKnhsUx7oie3G98+r56aTQIUB4kht42R3JvA==}
     engines: {node: '>=4.0'}
+
+  xmlchars@2.2.0:
+    resolution: {integrity: sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==}
 
   y18n@5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==}
@@ -6686,7 +6807,7 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.12
       '@jridgewell/trace-mapping': 0.3.29
 
-  '@antfu/eslint-config@4.18.0(@unocss/eslint-plugin@66.3.3(eslint@9.31.0(jiti@2.5.0))(typescript@5.8.3))(@vue/compiler-sfc@3.5.18)(eslint-plugin-format@1.0.1(eslint@9.31.0(jiti@2.5.0)))(eslint@9.31.0(jiti@2.5.0))(typescript@5.8.3)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.1.0)(jiti@2.5.0)(msw@2.10.4(@types/node@24.1.0)(typescript@5.8.3))(tsx@4.20.3)(yaml@2.8.0))':
+  '@antfu/eslint-config@4.18.0(@unocss/eslint-plugin@66.3.3(eslint@9.31.0(jiti@2.5.0))(typescript@5.8.3))(@vue/compiler-sfc@3.5.18)(eslint-plugin-format@1.0.1(eslint@9.31.0(jiti@2.5.0)))(eslint@9.31.0(jiti@2.5.0))(typescript@5.8.3)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.1.0)(jiti@2.5.0)(jsdom@26.1.0)(msw@2.10.4(@types/node@24.1.0)(typescript@5.8.3))(tsx@4.20.3)(yaml@2.8.0))':
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@clack/prompts': 0.11.0
@@ -6695,7 +6816,7 @@ snapshots:
       '@stylistic/eslint-plugin': 5.2.2(eslint@9.31.0(jiti@2.5.0))
       '@typescript-eslint/eslint-plugin': 8.38.0(@typescript-eslint/parser@8.38.0(eslint@9.31.0(jiti@2.5.0))(typescript@5.8.3))(eslint@9.31.0(jiti@2.5.0))(typescript@5.8.3)
       '@typescript-eslint/parser': 8.38.0(eslint@9.31.0(jiti@2.5.0))(typescript@5.8.3)
-      '@vitest/eslint-plugin': 1.3.4(eslint@9.31.0(jiti@2.5.0))(typescript@5.8.3)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.1.0)(jiti@2.5.0)(msw@2.10.4(@types/node@24.1.0)(typescript@5.8.3))(tsx@4.20.3)(yaml@2.8.0))
+      '@vitest/eslint-plugin': 1.3.4(eslint@9.31.0(jiti@2.5.0))(typescript@5.8.3)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.1.0)(jiti@2.5.0)(jsdom@26.1.0)(msw@2.10.4(@types/node@24.1.0)(typescript@5.8.3))(tsx@4.20.3)(yaml@2.8.0))
       ansis: 4.1.0
       cac: 6.7.14
       eslint: 9.31.0(jiti@2.5.0)
@@ -6755,6 +6876,14 @@ snapshots:
       tinyexec: 1.0.1
 
   '@antfu/utils@8.1.1': {}
+
+  '@asamuzakjp/css-color@3.2.0':
+    dependencies:
+      '@csstools/css-calc': 2.1.4(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)
+      '@csstools/css-color-parser': 3.0.10(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)
+      '@csstools/css-parser-algorithms': 3.0.5(@csstools/css-tokenizer@3.0.4)
+      '@csstools/css-tokenizer': 3.0.4
+      lru-cache: 10.4.3
 
   '@azu/format-text@1.0.2': {}
 
@@ -7338,6 +7467,26 @@ snapshots:
   '@css-render/vue3-ssr@0.15.14(vue@3.5.18(typescript@5.8.3))':
     dependencies:
       vue: 3.5.18(typescript@5.8.3)
+
+  '@csstools/color-helpers@5.0.2': {}
+
+  '@csstools/css-calc@2.1.4(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)':
+    dependencies:
+      '@csstools/css-parser-algorithms': 3.0.5(@csstools/css-tokenizer@3.0.4)
+      '@csstools/css-tokenizer': 3.0.4
+
+  '@csstools/css-color-parser@3.0.10(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)':
+    dependencies:
+      '@csstools/color-helpers': 5.0.2
+      '@csstools/css-calc': 2.1.4(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)
+      '@csstools/css-parser-algorithms': 3.0.5(@csstools/css-tokenizer@3.0.4)
+      '@csstools/css-tokenizer': 3.0.4
+
+  '@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4)':
+    dependencies:
+      '@csstools/css-tokenizer': 3.0.4
+
+  '@csstools/css-tokenizer@3.0.4': {}
 
   '@czhlin/vite-plugin-vscode@4.3.0(typescript@5.8.3)(vite@7.0.5(@types/node@24.1.0)(jiti@2.5.0)(tsx@4.20.3)(yaml@2.8.0))(vue-tsc@3.0.3(typescript@5.8.3))':
     dependencies:
@@ -8626,7 +8775,7 @@ snapshots:
       vite: 7.0.5(@types/node@24.1.0)(jiti@2.5.0)(tsx@4.20.3)(yaml@2.8.0)
       vue: 3.5.18(typescript@5.8.3)
 
-  '@vitest/coverage-v8@3.2.4(vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.1.0)(jiti@2.5.0)(msw@2.10.4(@types/node@24.1.0)(typescript@5.8.3))(tsx@4.20.3)(yaml@2.8.0))':
+  '@vitest/coverage-v8@3.2.4(vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.1.0)(jiti@2.5.0)(jsdom@26.1.0)(msw@2.10.4(@types/node@24.1.0)(typescript@5.8.3))(tsx@4.20.3)(yaml@2.8.0))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 1.0.2
@@ -8641,17 +8790,17 @@ snapshots:
       std-env: 3.9.0
       test-exclude: 7.0.1
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.1.0)(jiti@2.5.0)(msw@2.10.4(@types/node@24.1.0)(typescript@5.8.3))(tsx@4.20.3)(yaml@2.8.0)
+      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.1.0)(jiti@2.5.0)(jsdom@26.1.0)(msw@2.10.4(@types/node@24.1.0)(typescript@5.8.3))(tsx@4.20.3)(yaml@2.8.0)
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/eslint-plugin@1.3.4(eslint@9.31.0(jiti@2.5.0))(typescript@5.8.3)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.1.0)(jiti@2.5.0)(msw@2.10.4(@types/node@24.1.0)(typescript@5.8.3))(tsx@4.20.3)(yaml@2.8.0))':
+  '@vitest/eslint-plugin@1.3.4(eslint@9.31.0(jiti@2.5.0))(typescript@5.8.3)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.1.0)(jiti@2.5.0)(jsdom@26.1.0)(msw@2.10.4(@types/node@24.1.0)(typescript@5.8.3))(tsx@4.20.3)(yaml@2.8.0))':
     dependencies:
       '@typescript-eslint/utils': 8.38.0(eslint@9.31.0(jiti@2.5.0))(typescript@5.8.3)
       eslint: 9.31.0(jiti@2.5.0)
     optionalDependencies:
       typescript: 5.8.3
-      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.1.0)(jiti@2.5.0)(msw@2.10.4(@types/node@24.1.0)(typescript@5.8.3))(tsx@4.20.3)(yaml@2.8.0)
+      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.1.0)(jiti@2.5.0)(jsdom@26.1.0)(msw@2.10.4(@types/node@24.1.0)(typescript@5.8.3))(tsx@4.20.3)(yaml@2.8.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -9478,6 +9627,11 @@ snapshots:
 
   cssesc@3.0.0: {}
 
+  cssstyle@4.6.0:
+    dependencies:
+      '@asamuzakjp/css-color': 3.2.0
+      rrweb-cssom: 0.8.0
+
   csstype@3.0.11: {}
 
   csstype@3.1.3: {}
@@ -9502,6 +9656,11 @@ snapshots:
     dependencies:
       assert-plus: 1.0.0
 
+  data-urls@5.0.0:
+    dependencies:
+      whatwg-mimetype: 4.0.0
+      whatwg-url: 14.2.0
+
   dataloader@1.4.0: {}
 
   date-fns-tz@3.2.0(date-fns@3.6.0):
@@ -9521,6 +9680,8 @@ snapshots:
       supports-color: 8.1.1
 
   decamelize@4.0.0: {}
+
+  decimal.js@10.6.0: {}
 
   decode-named-character-reference@1.2.0:
     dependencies:
@@ -10514,6 +10675,10 @@ snapshots:
     dependencies:
       lru-cache: 10.4.3
 
+  html-encoding-sniffer@4.0.0:
+    dependencies:
+      whatwg-encoding: 3.1.1
+
   html-escaper@2.0.2: {}
 
   html-void-elements@3.0.0: {}
@@ -10678,6 +10843,8 @@ snapshots:
 
   is-plain-obj@4.1.0: {}
 
+  is-potential-custom-element-name@1.0.1: {}
+
   is-stream@2.0.1: {}
 
   is-stream@4.0.1: {}
@@ -10796,6 +10963,33 @@ snapshots:
   jsbn@0.1.1: {}
 
   jsdoc-type-pratt-parser@4.1.0: {}
+
+  jsdom@26.1.0:
+    dependencies:
+      cssstyle: 4.6.0
+      data-urls: 5.0.0
+      decimal.js: 10.6.0
+      html-encoding-sniffer: 4.0.0
+      http-proxy-agent: 7.0.2
+      https-proxy-agent: 7.0.6
+      is-potential-custom-element-name: 1.0.1
+      nwsapi: 2.2.20
+      parse5: 7.3.0
+      rrweb-cssom: 0.8.0
+      saxes: 6.0.0
+      symbol-tree: 3.2.4
+      tough-cookie: 5.1.2
+      w3c-xmlserializer: 5.0.0
+      webidl-conversions: 7.0.0
+      whatwg-encoding: 3.1.1
+      whatwg-mimetype: 4.0.0
+      whatwg-url: 14.2.0
+      ws: 8.18.3
+      xml-name-validator: 5.0.0
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - utf-8-validate
 
   jsesc@3.0.2: {}
 
@@ -11658,6 +11852,8 @@ snapshots:
     dependencies:
       boolbase: 1.0.0
 
+  nwsapi@2.2.20: {}
+
   oas-kit-common@1.0.8:
     dependencies:
       fast-safe-stringify: 2.1.1
@@ -12323,6 +12519,8 @@ snapshots:
       '@rollup/rollup-win32-x64-msvc': 4.45.1
       fsevents: 2.3.3
 
+  rrweb-cssom@0.8.0: {}
+
   run-applescript@7.0.0: {}
 
   run-async@2.4.1: {}
@@ -12342,6 +12540,10 @@ snapshots:
   safer-buffer@2.1.2: {}
 
   sax@1.4.1: {}
+
+  saxes@6.0.0:
+    dependencies:
+      xmlchars: 2.2.0
 
   scslre@0.3.0:
     dependencies:
@@ -12687,6 +12889,8 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
+  symbol-tree@3.2.4: {}
+
   synckit@0.11.11:
     dependencies:
       '@pkgr/core': 0.2.9
@@ -12782,6 +12986,12 @@ snapshots:
 
   tinyspy@4.0.3: {}
 
+  tldts-core@6.1.86: {}
+
+  tldts@6.1.86:
+    dependencies:
+      tldts-core: 6.1.86
+
   tmp@0.0.33:
     dependencies:
       os-tmpdir: 1.0.2
@@ -12810,7 +13020,15 @@ snapshots:
       universalify: 0.2.0
       url-parse: 1.5.10
 
+  tough-cookie@5.1.2:
+    dependencies:
+      tldts: 6.1.86
+
   tr46@0.0.3: {}
+
+  tr46@5.1.1:
+    dependencies:
+      punycode: 2.3.1
 
   tree-dump@1.0.3(tslib@2.8.1):
     dependencies:
@@ -13244,7 +13462,7 @@ snapshots:
       tsx: 4.20.3
       yaml: 2.8.0
 
-  vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.1.0)(jiti@2.5.0)(msw@2.10.4(@types/node@24.1.0)(typescript@5.8.3))(tsx@4.20.3)(yaml@2.8.0):
+  vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.1.0)(jiti@2.5.0)(jsdom@26.1.0)(msw@2.10.4(@types/node@24.1.0)(typescript@5.8.3))(tsx@4.20.3)(yaml@2.8.0):
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.4
@@ -13272,6 +13490,7 @@ snapshots:
     optionalDependencies:
       '@types/debug': 4.1.12
       '@types/node': 24.1.0
+      jsdom: 26.1.0
     transitivePeerDependencies:
       - jiti
       - less
@@ -13354,11 +13573,17 @@ snapshots:
       vooks: 0.2.12(vue@3.5.18(typescript@5.8.3))
       vue: 3.5.18(typescript@5.8.3)
 
+  w3c-xmlserializer@5.0.0:
+    dependencies:
+      xml-name-validator: 5.0.0
+
   wcwidth@1.0.1:
     dependencies:
       defaults: 1.0.4
 
   webidl-conversions@3.0.1: {}
+
+  webidl-conversions@7.0.0: {}
 
   webpack-virtual-modules@0.6.2: {}
 
@@ -13367,6 +13592,11 @@ snapshots:
       iconv-lite: 0.6.3
 
   whatwg-mimetype@4.0.0: {}
+
+  whatwg-url@14.2.0:
+    dependencies:
+      tr46: 5.1.1
+      webidl-conversions: 7.0.0
 
   whatwg-url@5.0.0:
     dependencies:
@@ -13422,11 +13652,15 @@ snapshots:
 
   wrappy@1.0.2: {}
 
+  ws@8.18.3: {}
+
   wsl-utils@0.1.0:
     dependencies:
       is-wsl: 3.1.0
 
   xml-name-validator@4.0.0: {}
+
+  xml-name-validator@5.0.0: {}
 
   xml2js@0.5.0:
     dependencies:
@@ -13434,6 +13668,8 @@ snapshots:
       xmlbuilder: 11.0.1
 
   xmlbuilder@11.0.1: {}
+
+  xmlchars@2.2.0: {}
 
   y18n@5.0.8: {}
 

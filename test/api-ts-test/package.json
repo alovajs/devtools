@@ -13,13 +13,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@alova/mock": "catalog:",
-    "alova": "catalog:",
+    "@alova/mock": "catalog:frontend",
+    "alova": "catalog:frontend",
     "vue": "catalog:frontend"
   },
   "devDependencies": {
     "@alova/wormhole": "workspace:^",
-    "openapi": "catalog:",
+    "openapi": "catalog:dev",
     "typescript": "catalog:dev"
   }
 }

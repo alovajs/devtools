@@ -11,9 +11,9 @@
     "test": "tsx src/main.ts"
   },
   "dependencies": {
-    "@alova/adapter-xhr": "catalog:",
-    "@alova/mock": "catalog:",
-    "alova": "catalog:"
+    "@alova/adapter-xhr": "catalog:frontend",
+    "@alova/mock": "catalog:frontend",
+    "alova": "catalog:frontend"
   },
   "devDependencies": {
     "@alova/wormhole": "workspace:^",

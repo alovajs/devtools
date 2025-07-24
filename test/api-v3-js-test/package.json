@@ -12,7 +12,7 @@
     "gen": "openapi --input ./openapi.yaml --output ./src/api"
   },
   "dependencies": {
-    "alova": "catalog:",
+    "alova": "catalog:frontend",
     "vue": "catalog:frontend"
   },
   "devDependencies": {

@@ -46,26 +46,28 @@
     "access": "public"
   },
   "dependencies": {
-    "alova": "catalog:",
-    "commander": "catalog:",
-    "esbuild": "catalog:",
-    "glob": "catalog:",
-    "handlebars": "catalog:",
-    "import-fresh": "catalog:",
-    "js-yaml": "catalog:",
-    "lodash": "catalog:",
-    "openapi-types": "catalog:",
-    "ora": "catalog:",
-    "prettier": "catalog:",
-    "swagger2openapi": "catalog:",
-    "zod": "catalog:",
-    "zod-validation-error": "catalog:"
+    "alova": "catalog:frontend",
+    "commander": "catalog:dev",
+    "esbuild": "catalog:build",
+    "glob": "catalog:dev",
+    "handlebars": "catalog:frontend",
+    "import-fresh": "catalog:dev",
+    "js-yaml": "catalog:dev",
+    "lodash": "catalog:frontend",
+    "openapi-types": "catalog:types",
+    "ora": "catalog:dev",
+    "prettier": "catalog:dev",
+    "swagger2openapi": "catalog:frontend",
+    "zod": "catalog:frontend",
+    "zod-validation-error": "catalog:frontend"
   },
   "devDependencies": {
-    "@types/fs-extra": "catalog:",
-    "@types/swagger2openapi": "catalog:",
-    "fs-extra": "catalog:",
-    "memfs": "catalog:",
-    "tsc-alias": "catalog:"
+    "@types/fs-extra": "catalog:types",
+    "@types/js-yaml": "catalog:types",
+    "@types/lodash": "catalog:types",
+    "@types/swagger2openapi": "catalog:types",
+    "fs-extra": "catalog:dev",
+    "memfs": "catalog:dev",
+    "tsc-alias": "catalog:build"
   }
 }
