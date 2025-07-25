@@ -1,7 +1,7 @@
 import type { CancellationToken, CodeLensProvider, ExtensionContext, TextDocument } from 'vscode'
 import { CodeLens, EventEmitter, languages, Position, Range, workspace } from 'vscode'
 import { commandsMap } from '@/commands'
-import getApis from '@/functions/getApis'
+import { getApis } from '@/functions/getApis'
 
 interface CodeLensMatch {
   text: string

@@ -4,4 +4,5 @@ export enum MType {
   openDocs = 'openDocs',
   openApiDetail = 'openApiDetail',
   refreshDocs = 'refreshDocs',
+  checkApiExists = 'checkApiExists',
 }

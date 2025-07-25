@@ -1,5 +1,6 @@
 import type { Api } from '@alova/wormhole'
 import type { ExtensionContext } from 'vscode'
+import { isApiExists } from '@/functions/getApis'
 import { MType } from '@/handlers/constant'
 import { Log } from '@/utils'
 import {
@@ -16,7 +17,6 @@ export default class VscodeClient {
   static init(_context: ExtensionContext) {
     register()
     onMessage(({ type, data }) => {
-      Log.$.info(type, data)
       this.methods.get(type)?.(data)
     })
   }
@@ -67,4 +67,11 @@ VscodeClient.createMethod<Api | null>(MType.openDocs, (api) => {
     focusView('api-docs-detail-view')
     VscodeClient.openApiDetail(api)
   }
+})
+
+VscodeClient.createMethod<Api | null>(MType.checkApiExists, async (api) => {
+  sendMessage({
+    type: MType.checkApiExists,
+    data: await isApiExists(api),
+  })
 })

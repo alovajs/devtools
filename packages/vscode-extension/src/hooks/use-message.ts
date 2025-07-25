@@ -85,7 +85,7 @@ export function useVscodeMessage() {
       on<T>(REACT_MESSAGE_CHANNEL, listener),
     onVscodeType: <T = unknown>(type: string, listener: (value: T) => void) =>
       onType<T>(REACT_MESSAGE_CHANNEL, type, listener),
-    sendAndReceiveToVscode: <T = unknown>(value: DataType<T>) =>
+    sendAndReceiveToVscode: <T = unknown>(value: DataType) =>
       sendAndReceive<T>(REACT_MESSAGE_CHANNEL, value),
     sendMessageToVscode: <T = any>(value: DataType<T>) =>
       sendMessage<T>(REACT_MESSAGE_CHANNEL, value),

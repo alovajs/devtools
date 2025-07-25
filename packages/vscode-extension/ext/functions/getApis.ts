@@ -1,9 +1,10 @@
+import type { Api } from '@alova/wormhole'
 import path from 'node:path'
 import Global from '@/core/Global'
 import wormhole from '@/helper/wormhole'
 import { getFileNameByPath } from '@/utils'
 
-export default async (filePath: string) => {
+export async function getApis(filePath: string) {
   const [projectPath, config]
     = Global.getConfigs().find(([projectPath]) => filePath.includes(path.resolve(projectPath))) ?? []
   if (!config) {
@@ -19,4 +20,13 @@ export async function getApiDocs() {
       apiDocs: await wormhole.getApiDocs(config, projectPath),
     })),
   )
+}
+
+export async function isApiExists(api: Api | null) {
+  if (!api) {
+    return false
+  }
+  const apiProjects = await getApiDocs()
+  const apis = apiProjects.flatMap(item => item.apiDocs.flatMap(item => item.flatMap(item => item.apis)))
+  return apis.some(item => item.global === api.global && item.pathKey === api.pathKey)
 }

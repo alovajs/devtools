@@ -203,6 +203,10 @@ function filter(pattern: string, node: TreeOption) {
     node.description = result.str
     node.filterLabel = result.str.split('\n')[0]
   }
+  else {
+    node.description = ''
+    node.filterLabel = ''
+  }
   return result !== null
 }
 function getMachResult(pattern: string, node: TreeOption) {
@@ -212,10 +216,10 @@ function getMachResult(pattern: string, node: TreeOption) {
   }
   const api = node?.api as Api
   if (api) {
+    strings.push(`${api.global}.${api.pathKey}`)
     if (api.summary) {
       strings.push(api.summary)
     }
-    strings.push(`${api.global}.${api.pathKey}`)
   }
   return match(strings.join('\n'), pattern, {
     onMatched(matchedStr) {

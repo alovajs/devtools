@@ -1,6 +1,6 @@
 import type { Api } from '@alova/wormhole'
 import { match } from 'sdm2'
-import getApis from './getApis'
+import { getApis } from './getApis'
 
 interface AutoCompleteItem {
   replaceText: string

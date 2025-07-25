@@ -6,7 +6,7 @@ defineOptions({
   name: 'ApiDetialPage',
 })
 
-const { onVscodeType } = useVscodeMessage()
+const { onVscodeType, sendAndReceiveToVscode } = useVscodeMessage()
 
 const api = ref<Api | null>(null)
 
@@ -15,7 +15,14 @@ onVscodeType(MType.openApiDetail, (data: Api) => {
 })
 
 onVscodeType(MType.refreshDocs, () => {
-  api.value = null
+  sendAndReceiveToVscode<boolean>({
+    type: MType.checkApiExists,
+    data: api.value,
+  }).then(({ type, data }) => {
+    if (type === MType.checkApiExists && !data) {
+      api.value = null
+    }
+  })
 })
 </script>
 
