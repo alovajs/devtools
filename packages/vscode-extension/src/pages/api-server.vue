@@ -42,7 +42,7 @@ onVscodeType(MType.refreshDocs, () => {
 onVscodeType<string>(MType.openDocs, (key) => {
   const api = treeRef.value?.getApi(key)
   if (api) {
-    search.value = api.path
+    search.value = `[${api.method}]${api.path}`
     treeRef.value?.selectApi(key)
     handleDetail(api)
   }
