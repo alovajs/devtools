@@ -1,18 +1,18 @@
 @import './markdown.css';
-
+@import './vscode.css';
 html,
 body,
 #app {
   height: 100%;
-  margin: 0;
-  padding: 0;
-}
-html {
-  background: #fff;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 html.dark {
-  background: #121212;
   color-scheme: dark;
+}
+
+.vs-bg {
+  background-color: var(--vscode-editor-background);
 }
 
 #nprogress {

@@ -16,7 +16,6 @@ const selectdKeys = ref<string[]>([])
 const pattern = ref('')
 const search = ref('')
 const treeRef = ref<InstanceType<typeof ApiTree> | null>(null)
-
 const handleSearch = useDebounceFn((value: string) => {
   pattern.value = value
 }, 300)
@@ -31,7 +30,6 @@ function handleDetail(data: Api) {
 async function handleRefresh() {
   const data = await handlers.getApiDocs()
   treeData.value = data
-  search.value = ''
 }
 watch(search, handleSearch)
 
@@ -54,21 +52,19 @@ onMounted(() => {
 </script>
 
 <template>
-  <div h-full flex flex-col>
-    <n-input-group>
+  <div class="server-container" pos-relative h-full overflow-auto pt-2>
+    <n-scrollbar style="max-height: 100%" content-class="px-3">
       <n-input
         v-model:value="search"
         :placeholder="t('api-server.search-placeholder')"
         autosize
         clearable
-        class="w-full"
+        class="sticky top-0 z-1 mt-1 w-full backdrop-blur-sm"
       >
         <template #prefix>
           <i i-carbon-flash />
         </template>
       </n-input>
-    </n-input-group>
-    <div flex-1 overflow-auto>
       <api-tree
         ref="treeRef"
         v-model:selected="selectdKeys"
@@ -76,7 +72,7 @@ onMounted(() => {
         :pattern="pattern"
         @select="handleDetail"
       />
-    </div>
+    </n-scrollbar>
   </div>
 </template>
 

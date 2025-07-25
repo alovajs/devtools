@@ -5,7 +5,8 @@ import generate from '@/functions/generate'
 import generateConfig from '@/functions/generateConfig'
 import readConfig from '@/functions/readConfig'
 import { getFileNameByPath, Log } from '@/utils'
-import { getCurrentDirectory } from '@/utils/vscode'
+import { getCurrentDirectory, getWorkspacePaths } from '@/utils/vscode'
+import Global from './Global'
 import VscodeClient from './VscodeClient'
 
 export default class ApiGenerate {
@@ -24,6 +25,20 @@ export default class ApiGenerate {
       configNum,
       errorArr,
     }
+  }
+
+  static async removeConfig(path?: string | string[]) {
+    await this.onlyReadConfig()
+    const dirs = path ? [path].flat() : getWorkspacePaths()
+    dirs.forEach((dir) => {
+      Global.deleteConfig(dir)
+    })
+    VscodeClient.refreshDocs()
+  }
+
+  static async addConfig(path?: string | string[]) {
+    await this.onlyReadConfig(path)
+    VscodeClient.refreshDocs()
   }
 
   static async generate(optins?: GenerateOption) {

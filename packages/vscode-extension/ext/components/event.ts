@@ -14,12 +14,12 @@ export function registerEvent() {
   vscode.workspace.onDidChangeWorkspaceFolders((event) => {
     event.added.forEach((workspacePath) => {
       if (getWormhole()) {
-        ApiGenerate.onlyReadConfig(`${workspacePath.uri.fsPath}/`)
+        ApiGenerate.addConfig(`${workspacePath.uri.fsPath}/`)
       }
     })
-    event.removed.forEach(() => {
+    event.removed.forEach((workspacePath) => {
       if (getWormhole()) {
-        ApiGenerate.onlyReadConfig()
+        ApiGenerate.removeConfig(`${workspacePath.uri.fsPath}/`)
       }
     })
   })

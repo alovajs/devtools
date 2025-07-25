@@ -260,10 +260,18 @@ function renderLabel({ option }: { option: TreeOption }) {
 }
 const data = computed(() => {
   const apiNodes = getApiNode(projects)
-  for (const node of apiNodes) {
-    normalizeTree(node)
+  const root: ApiNode = {
+    id: 'root',
+    level: 0,
+    type: 'project',
+    label: 'root',
+    children: apiNodes,
   }
-  return getData(apiNodes)
+  normalizeTree(root)
+  // eslint-disable-next-line no-console
+  console.log(root, 271)
+
+  return getData(root.children ?? [])
 })
 defineExpose({
   getApi(key: string) {
@@ -291,7 +299,6 @@ defineExpose({
     v-model:selected-keys="selectedKeys"
     v-model:expanded-keys="expandedKeys"
     expand-on-click
-    virtual-scroll
     block-line
     :data="data"
     :show-irrelevant-nodes="false"
