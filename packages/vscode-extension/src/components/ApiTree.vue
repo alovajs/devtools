@@ -230,10 +230,10 @@ function getLabel(option: TreeOption) {
 function renderLabel({ option }: { option: TreeOption }) {
   const description = getDescription(option)
   return (
-    <div data-key={option.key}>
+    <div>
       <NPopover disabled={!description} style="max-width: 300px" placement="top-start">
         {{
-          trigger: () => <div>{strRender(getLabel(option), option)}</div>,
+          trigger: () => <div data-key={option.key}>{strRender(getLabel(option), option)}</div>,
           default: () => (
             <pre style="white-space: pre-wrap; word-wrap: break-word;">
               {strRender(description, option)}
@@ -291,25 +291,28 @@ defineExpose({
 </script>
 
 <template>
-  <n-tree
-    ref="treeRef"
-    :key="treeKey"
-    v-model:selected-keys="selectedKeys"
-    v-model:expanded-keys="expandedKeys"
-    expand-on-click
-    block-line
-    :data="data"
-    :show-irrelevant-nodes="false"
-    :pattern="pattern"
-    :render-label="renderLabel"
-    :render-suffix="renderSuffix"
-    :node-props="nodeProps"
-    :filter="filter"
+  <div
     @mouseleave="treeHelper.handleMouseLeave"
     @mousemove="treeHelper.handleMouseMove"
   >
-    <template #empty>
-      <n-empty :description="t('api-info.empty')" class="h-full flex-justify-center" />
-    </template>
-  </n-tree>
+    <n-tree
+      ref="treeRef"
+      :key="treeKey"
+      v-model:selected-keys="selectedKeys"
+      v-model:expanded-keys="expandedKeys"
+      expand-on-click
+      block-line
+      :data="data"
+      :show-irrelevant-nodes="false"
+      :pattern="pattern"
+      :render-label="renderLabel"
+      :render-suffix="renderSuffix"
+      :node-props="nodeProps"
+      :filter="filter"
+    >
+      <template #empty>
+        <n-empty :description="t('api-info.empty')" class="h-full flex-justify-center" />
+      </template>
+    </n-tree>
+  </div>
 </template>

@@ -65,9 +65,9 @@ export class TreeHelper<N extends TreeOption> {
     if (!dom) {
       return
     }
-    this.hoverDone?.(dom, (value) => {
+    this.hoverDone?.(dom, useDebounceFn((value: string) => {
       this.listenersHover.forEach(v => v(value))
-    })
+    }, 100))
   }
 
   getNodeById(id: string, data: N[], path: Set<string> = new Set()) {
