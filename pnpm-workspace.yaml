@@ -2,8 +2,6 @@ packages:
   - test/*
   - packages/*
 
-catalog: null
-
 catalogs:
   build:
     '@czhlin/vite-plugin-vscode': ^4.3.0

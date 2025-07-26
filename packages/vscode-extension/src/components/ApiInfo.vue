@@ -1,6 +1,7 @@
 <script lang="tsx" setup>
-import type { Api } from '~/types'
+import type { Api, MethodType } from '~/types'
 import { useI18n } from 'vue-i18n'
+import { handleCopy } from '~/utils/web'
 
 defineOptions({
   name: 'ApiInfo',
@@ -11,8 +12,6 @@ const props = defineProps<{
 }>()
 
 const tabValue = ref('params')
-const message = useMessage()
-const { t } = useI18n()
 function typeCode(name: string, comment?: string) {
   if (!comment) {
     return ''
@@ -26,17 +25,6 @@ function typeCode(name: string, comment?: string) {
     return ''
   }
   return `type ${name ?? 'tsType'} = ${pureComment}`
-}
-function handleCopy(code: string) {
-  const { copy, copied } = useClipboard({ legacy: true })
-  copy(code).then(() => {
-    if (copied.value) {
-      message.success(t('api-info.copy-success'))
-    }
-    else {
-      message.error(t('api-info.copy-fail'))
-    }
-  })
 }
 function codeCard({
   name,
@@ -82,7 +70,7 @@ function codeCard({
 </script>
 
 <template>
-  <div class="info-container" pos-relative h-full overflow-auto pt-2>
+  <div class="info-container" pos-relative h-full overflow-hidden pt-2>
     <n-scrollbar style="max-height: 100%" content-class="px-3">
       <template v-if="!props?.api">
         <n-empty
@@ -95,9 +83,7 @@ function codeCard({
           <n-descriptions label-placement="left" :column="1">
             <template #header>
               <n-space>
-                <n-tag type="primary">
-                  {{ props.api.method }}
-                </n-tag>
+                <ApiMethod :method="props.api.method as MethodType" />
                 <span>{{ props.api.path }}</span>
               </n-space>
             </template>

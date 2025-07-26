@@ -1,15 +1,17 @@
 <script setup lang="tsx">
 import type { TreeInst, TreeOption } from 'naive-ui'
 import type { VNodeChild } from 'vue'
-import type { Api, ApiProject, ApiType } from '~/types'
+import type { Api, ApiProject, ApiType, MethodType } from '~/types'
 import {
   Folder,
   HardwareChipOutline,
   ServerOutline,
   SwapVerticalOutline,
 } from '@vicons/ionicons5'
-import { NIcon, NPopover } from 'naive-ui'
+import { NButton, NIcon, NPopover } from 'naive-ui'
 import { match } from 'sdm2'
+import { handleCopy } from '~/utils/web'
+import ApiMethod from './ApiMethod.vue'
 
 defineOptions({
   name: 'ApiTree',
@@ -28,6 +30,7 @@ const { t } = useI18n()
 
 const selectedKeys = defineModel<string[]>('selected', { default: [] })
 const expandedKeys = defineModel<string[]>('expanded', { default: [] })
+const hoverKey = ref('')
 interface ApiNode {
   id: string
   level: number
@@ -115,7 +118,7 @@ function getApiNode(projects: ApiProject[]) {
             id: `${api.global}.${api.pathKey}`,
             level: 4,
             type: 'api',
-            label: `[${api.method}]${api.path}`,
+            label: `${api.method}\n${api.path}`,
             api,
           })
         })
@@ -200,8 +203,9 @@ function getNodeById(
 function filter(pattern: string, node: TreeOption) {
   const result = getMachResult(pattern, node)
   if (result) {
+    const [method, path] = result.str.split('\n')
     node.description = result.str
-    node.filterLabel = result.str.split('\n')[0]
+    node.filterLabel = `${method}\n${path}`
   }
   else {
     node.description = ''
@@ -222,10 +226,25 @@ function getMachResult(pattern: string, node: TreeOption) {
     }
   }
   return match(strings.join('\n'), pattern, {
+    ignoreCase: true,
     onMatched(matchedStr) {
-      return `<span class="text-green-500">${matchedStr}</span>`
+      return matchedStr.split('\n').map(line => `<span class="text-green-5">${line}</span>`).join('\n')
     },
   })
+}
+function strRender(str: string, option: TreeOption) {
+  const api = option.api as Api | undefined
+  if (!api) {
+    return <div v-html={str} />
+  }
+  const [method, url, ...rest] = str.split('\n')
+  return (
+    <>
+      <ApiMethod method={api.method as MethodType} html={method} />
+      <span class="ml-2" v-html={url} />
+      <div v-html={rest.join('\n')} />
+    </>
+  )
 }
 function getDescription(option: TreeOption) {
   const api = option.api as Api | undefined
@@ -233,29 +252,55 @@ function getDescription(option: TreeOption) {
     return ''
   }
   if (pattern && option.description) {
-    return option.description
+    return option.description as string
   }
-  return `[${api?.method}]${api?.path}\n${api.global}.${api.pathKey}\n${api?.summary}`
+  return `${api?.method}\n${api?.path}\n${api.global}.${api.pathKey}\n${api?.summary}`
 }
 function getLabel(option: TreeOption) {
   if (pattern && option.filterLabel) {
-    return option.filterLabel
+    return option.filterLabel as string
   }
-  return option.label
+  return option.label ?? ''
 }
+
 function renderLabel({ option }: { option: TreeOption }) {
   const description = getDescription(option)
   return (
-    <NPopover disabled={!description} style="max-width: 300px" placement="top-start">
+    <div data-key={option.key}>
+      <NPopover disabled={!description} style="max-width: 300px" placement="top-start">
+        {{
+          trigger: () => <div>{strRender(getLabel(option), option)}</div>,
+          default: () => (
+            <pre style="white-space: pre-wrap; word-wrap: break-word;">
+              {strRender(description, option)}
+            </pre>
+          ),
+        }}
+      </NPopover>
+    </div>
+  )
+}
+
+function renderSuffix({ option }: { option: TreeOption }) {
+  const api = option.api as Api | undefined
+  if (!api || hoverKey.value !== option.key) {
+    return
+  }
+  return (
+    <NButton
+      text
+      onClick={(e) => {
+        e.stopPropagation()
+        e.preventDefault()
+        handleCopy(api.defaultValue ?? '')
+      }}
+    >
       {{
-        trigger: () => <span v-html={getLabel(option)}></span>,
-        default: () => (
-          <pre style="white-space: pre-wrap; word-wrap: break-word;">
-            <div v-html={description}></div>
-          </pre>
+        icon: () => (
+          <i class="i-carbon-copy" />
         ),
       }}
-    </NPopover>
+    </NButton>
   )
 }
 const data = computed(() => {
@@ -268,11 +313,25 @@ const data = computed(() => {
     children: apiNodes,
   }
   normalizeTree(root)
-  // eslint-disable-next-line no-console
-  console.log(root, 271)
-
   return getData(root.children ?? [])
 })
+function handleMouseMove(e: MouseEvent) {
+  const dom = e.target as HTMLElement | null
+  if (!dom) {
+    return
+  }
+  const keyDom = dom.querySelector('[data-key]')
+  if (!keyDom) {
+    return
+  }
+  const datakey = keyDom.getAttribute('data-key')
+  if (hoverKey.value !== datakey && datakey) {
+    hoverKey.value = datakey
+  }
+}
+function handleMouseLeave() {
+  hoverKey.value = ''
+}
 defineExpose({
   getApi(key: string) {
     const { result: node } = getNodeById(key, data.value)
@@ -304,14 +363,14 @@ defineExpose({
     :show-irrelevant-nodes="false"
     :pattern="pattern"
     :render-label="renderLabel"
+    :render-suffix="renderSuffix"
     :node-props="nodeProps"
     :filter="filter"
+    @mouseleave="handleMouseLeave"
+    @mousemove="handleMouseMove"
   >
     <template #empty>
-      <n-empty
-        :description="t('api-info.empty')"
-        class="h-full flex-justify-center"
-      />
+      <n-empty :description="t('api-info.empty')" class="h-full flex-justify-center" />
     </template>
   </n-tree>
 </template>

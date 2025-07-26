@@ -1,5 +1,4 @@
 {
-
   "folders": [
     {
       "name": "ROOT",
@@ -20,6 +19,20 @@
       "packages/": true,
       "out": false
     },
+    // i8n-ally
+    "i18n-ally.sourceLanguage": "en",
+    "i18n-ally.keystyle": "nested",
+    "i18n-ally.localesPaths": [
+      "packages/vscode-extension/locales"
+    ],
+    "i18n-ally.enabledParsers": [
+      "yaml"
+    ],
+    "i18n-ally.enabledFrameworks": [
+      "vue",
+      "vue-sfc"
+    ],
+    "i18n-ally.sortKeys": true,
     "editor.tabSize": 2,
     "editor.suggestSelection": "recentlyUsedByPrefix",
     // Enable the ESlint flat config support
@@ -107,12 +120,40 @@
     },
     "cSpell.words": [
       "ALOVA",
+      "antfu",
       "APIV",
+      "Attributify",
+      "browserify",
+      "commitlint",
+      "esbuild",
+      "hoverable",
+      "intlify",
+      "ionicons",
+      "jsdom",
+      "keytar",
+      "lintf",
+      "memfs",
+      "mkcert",
       "nodefs",
+      "nprogress",
+      "ovsx",
+      "pinia",
+      "rimraf",
+      "rollup",
+      "shiki",
+      "shikijs",
+      "sizecheck",
+      "taze",
+      "unhead",
+      "unocss",
+      "unplugin",
+      "vicons",
+      "vite",
+      "vitejs",
+      "vitest",
+      "vnode",
+      "vueuse",
       "yapi"
-    ],
-    "i18n-ally.localesPaths": [
-      "packages/vscode-extension/src/webview/view-sidebar/locales"
     ]
   }
 }

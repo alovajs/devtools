@@ -7,3 +7,4 @@ export interface ApiProject {
 }
 
 export type { Api, ApiDoc, HandlersType }
+export type MethodType = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'TRACE'

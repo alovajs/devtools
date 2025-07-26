@@ -6,6 +6,7 @@ import hljs from '~/utils/hljs'
 import { normalizeLocale } from '~/utils/i18n'
 
 const handlers = useHandlers()
+
 const observer = new MutationObserver((mutations) => {
   mutations.forEach((mutation) => {
     if (mutation.attributeName === 'data-vscode-theme-kind') {
@@ -39,8 +40,16 @@ onUnmounted(() => {
 
 <template>
   <n-config-provider :theme="theme" :hljs="hljs">
-    <n-message-provider>
-      <slot />
-    </n-message-provider>
+    <n-dialog-provider>
+      <n-loading-bar-provider>
+        <n-notification-provider>
+          <n-modal-provider>
+            <n-message-provider>
+              <slot />
+            </n-message-provider>
+          </n-modal-provider>
+        </n-notification-provider>
+      </n-loading-bar-provider>
+    </n-dialog-provider>
   </n-config-provider>
 </template>

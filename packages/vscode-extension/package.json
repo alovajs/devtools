@@ -32,7 +32,7 @@
   ],
   "engines": {
     "node": ">=18",
-    "vscode": "^1.102.0"
+    "vscode": "^1.89.0"
   },
   "activationEvents": [
     "onStartupFinished",
@@ -180,7 +180,7 @@
     "@types/node": "catalog:types",
     "@types/nprogress": "catalog:types",
     "@types/sinon": "catalog:types",
-    "@types/vscode": "^1.102.0",
+    "@types/vscode": "^1.89.0",
     "@types/vscode-webview": "catalog:types",
     "@vitejs/plugin-vue": "catalog:build",
     "@vitejs/plugin-vue-jsx": "catalog:build",

@@ -32,6 +32,8 @@ useHead({
 
 <template>
   <AppProvider>
-    <RouterView />
+    <AppUse>
+      <RouterView />
+    </AppUse>
   </AppProvider>
 </template>

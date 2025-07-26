@@ -65,6 +65,7 @@ export default defineConfig(({ mode }) => {
             'naive-ui': [
               'useDialog',
               'useMessage',
+              'useModal',
               'useNotification',
               'useLoadingBar',
             ],

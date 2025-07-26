@@ -40,7 +40,7 @@ onVscodeType(MType.refreshDocs, () => {
 onVscodeType<string>(MType.openDocs, (key) => {
   const api = treeRef.value?.getApi(key)
   if (api) {
-    search.value = `[${api.method}]${api.path}`
+    search.value = `${api.method}${api.path}`
     treeRef.value?.selectApi(key)
     handleDetail(api)
   }
@@ -52,7 +52,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="server-container" pos-relative h-full overflow-auto pt-2>
+  <div class="server-container" pos-relative h-full overflow-hidden pt-2>
     <n-scrollbar style="max-height: 100%" content-class="px-3">
       <n-input
         v-model:value="search"
