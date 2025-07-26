@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import type { TreeInst, TreeOption } from 'naive-ui'
+import type { TreeOption } from 'naive-ui'
 import type { VNodeChild } from 'vue'
 import type { Api, ApiProject, ApiType, MethodType } from '~/types'
 import {
@@ -9,7 +9,7 @@ import {
   SwapVerticalOutline,
 } from '@vicons/ionicons5'
 import { NButton, NIcon, NPopover } from 'naive-ui'
-import { match } from 'sdm2'
+import { useTreeNode } from '~/hooks/use-tree-node'
 import { handleCopy } from '~/utils/web'
 import ApiMethod from './ApiMethod.vue'
 
@@ -26,12 +26,7 @@ const emit = defineEmits<{
   (e: 'select', api: Api): void
 }>()
 
-const { t } = useI18n()
-
-const selectedKeys = defineModel<string[]>('selected', { default: [] })
-const expandedKeys = defineModel<string[]>('expanded', { default: [] })
-const hoverKey = ref('')
-interface ApiNode {
+interface ApiNode extends TreeOption {
   id: string
   level: number
   type: ApiType
@@ -39,6 +34,12 @@ interface ApiNode {
   api?: Api
   children?: ApiNode[]
 }
+const { t } = useI18n()
+
+const selectedKeys = defineModel<string[]>('selected', { default: [] })
+const expandedKeys = defineModel<string[]>('expanded', { default: [] })
+const hoverKey = ref('')
+
 const iconMap = readonly<Record<ApiType, () => VNodeChild>>({
   project() {
     return (
@@ -70,8 +71,29 @@ const iconMap = readonly<Record<ApiType, () => VNodeChild>>({
   },
 })
 
-const treeRef = ref<TreeInst | null>(null)
-const treeKey = ref(0)
+const { treeRef, treeKey, selectNode, treeHelper } = useTreeNode({
+  setExpandedKeys(keys) {
+    expandedKeys.value = keys
+  },
+  setSelectedKeys(keys) {
+    selectedKeys.value = keys
+  },
+})
+const offHover = treeHelper.setupHover((target, setHover) => {
+  const keyDom = target.querySelector('[data-key]')
+  if (!keyDom) {
+    return
+  }
+  const datakey = keyDom.getAttribute('data-key')
+  if (hoverKey.value !== datakey && datakey) {
+    setHover(datakey)
+  }
+}).onHover((key) => {
+  hoverKey.value = key
+})
+
+onUnmounted(offHover)
+
 function nodeProps({ option }: { option: TreeOption }) {
   return {
     onClick() {
@@ -127,25 +149,6 @@ function getApiNode(projects: ApiProject[]) {
   }
   return nodes
 }
-function normalizeTree(node: ApiNode) {
-  // 先递归处理所有子节点，确保子树已规范化
-  for (const child of node.children ?? []) {
-    normalizeTree(child)
-  }
-
-  // 检查当前节点是否需要调整
-  if (node.children?.length === 1) {
-    const child = node.children[0]
-    // 如果唯一的子节点还有子节点（非叶子）
-    if (child?.children?.length) {
-      // 将子节点的子节点提升到当前节点
-      node.children = child.children
-      // 递归处理调整后的当前节点，可能仍需进一步调整
-      normalizeTree(node)
-    }
-  }
-  // 其他情况（0个子或1个叶子子节点，或多于1个子节点）无需处理
-}
 function getData(apis: ApiNode[]): TreeOption[] {
   const data: TreeOption[] = []
   for (const apiNode of apis) {
@@ -161,47 +164,27 @@ function getData(apis: ApiNode[]): TreeOption[] {
   }
   return data
 }
-function getNodeById(
-  id: string,
-  data: TreeOption[],
-  path: Set<string> = new Set(),
-) {
-  let result: TreeOption | null = null
-  let keys: string[] = []
-  for (const node of data) {
-    if (node.key) {
-      path.add(`${node.key}`)
-    }
-    if (node.key === id) {
-      result = node
-      keys = [...path]
-      break
-    }
-    if (node.children?.length) {
-      const { result: nextResult, keys: nextKeys } = getNodeById(
-        id,
-        node.children,
-        path,
-      )
-      result = nextResult
-      keys = nextKeys
-    }
-    if (result) {
-      break
-    }
-    path.delete(`${node.key}`)
-    keys = []
-  }
-  return {
-    result,
-    keys,
-  } as {
-    result: TreeOption | null
-    keys: string[]
-  }
-}
 function filter(pattern: string, node: TreeOption) {
-  const result = getMachResult(pattern, node)
+  const result = treeHelper.match(pattern, node, {
+    onMatch(node) {
+      const strings: string[] = []
+      const api = node?.api as Api
+      if (node.label) {
+        strings.push(node.label)
+      }
+      if (api) {
+        strings.push(`${api.global}.${api.pathKey}`)
+        if (api.summary) {
+          strings.push(api.summary)
+        }
+      }
+      return strings
+    },
+    ignoreCase: true,
+    onMatched(matchedStr) {
+      return `<span class="text-green-5">${matchedStr}</span>`
+    },
+  })
   if (result) {
     const [method, path] = result.str.split('\n')
     node.description = result.str
@@ -212,25 +195,6 @@ function filter(pattern: string, node: TreeOption) {
     node.filterLabel = ''
   }
   return result !== null
-}
-function getMachResult(pattern: string, node: TreeOption) {
-  const strings: string[] = []
-  if (node.label) {
-    strings.push(node.label)
-  }
-  const api = node?.api as Api
-  if (api) {
-    strings.push(`${api.global}.${api.pathKey}`)
-    if (api.summary) {
-      strings.push(api.summary)
-    }
-  }
-  return match(strings.join('\n'), pattern, {
-    ignoreCase: true,
-    onMatched(matchedStr) {
-      return matchedStr.split('\n').map(line => `<span class="text-green-5">${line}</span>`).join('\n')
-    },
-  })
 }
 function strRender(str: string, option: TreeOption) {
   const api = option.api as Api | undefined
@@ -312,41 +276,16 @@ const data = computed(() => {
     label: 'root',
     children: apiNodes,
   }
-  normalizeTree(root)
+  treeHelper.normalizeTree(root)
   return getData(root.children ?? [])
 })
-function handleMouseMove(e: MouseEvent) {
-  const dom = e.target as HTMLElement | null
-  if (!dom) {
-    return
-  }
-  const keyDom = dom.querySelector('[data-key]')
-  if (!keyDom) {
-    return
-  }
-  const datakey = keyDom.getAttribute('data-key')
-  if (hoverKey.value !== datakey && datakey) {
-    hoverKey.value = datakey
-  }
-}
-function handleMouseLeave() {
-  hoverKey.value = ''
-}
+
 defineExpose({
   getApi(key: string) {
-    const { result: node } = getNodeById(key, data.value)
-    return node?.api as Api | null
+    return treeHelper.getNodeById(key, data.value).result?.api as Api | null
   },
   selectApi(key: string) {
-    const { result, keys } = getNodeById(key, data.value)
-    if (result) {
-      selectedKeys.value = [key]
-      expandedKeys.value = keys
-      treeRef.value?.scrollTo({ key })
-      nextTick(() => {
-        treeKey.value++
-      })
-    }
+    selectNode(key, data.value)
   },
 })
 </script>
@@ -366,8 +305,8 @@ defineExpose({
     :render-suffix="renderSuffix"
     :node-props="nodeProps"
     :filter="filter"
-    @mouseleave="handleMouseLeave"
-    @mousemove="handleMouseMove"
+    @mouseleave="treeHelper.handleMouseLeave"
+    @mousemove="treeHelper.handleMouseMove"
   >
     <template #empty>
       <n-empty :description="t('api-info.empty')" class="h-full flex-justify-center" />

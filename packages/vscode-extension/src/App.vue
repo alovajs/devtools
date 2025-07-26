@@ -7,17 +7,11 @@ useHead({
   meta: [
     {
       name: 'description',
-      content: 'Opinionated Vite Starter Template',
+      content: 'Generate and search APIs without API documentation any more',
     },
     {
       name: 'theme-color',
       content: () => isDark.value ? '#00aba9' : '#ffffff',
-    },
-    {
-      name: 'naive-ui-style',
-    },
-    {
-      name: 'vueuc-style',
     },
   ],
   link: [

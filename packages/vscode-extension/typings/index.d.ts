@@ -16,3 +16,5 @@ type MaybeArray<T> = T | T[]
 declare interface ExtensionModule {
   (ctx: import('vscode').ExtensionContext): MaybeArray<import('vscode').Disposable>
 }
+
+type MaybeNull<T> = T | null

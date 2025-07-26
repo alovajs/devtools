@@ -17,7 +17,7 @@ function sendMessage<T = any>(channel: string, value: DataType<T>) {
   return handlers.sendMessage(channel, msgBody)
 }
 
-function sendAndReceive<T = unknown>(channel: string, value: DataType<any>) {
+function sendAndReceive<T = unknown>(channel: string, value: DataType) {
   return new Promise<DataType<T>>((resolve) => {
     let rmListener = () => {}
     on<T>(channel, (data) => {
@@ -30,11 +30,11 @@ function sendAndReceive<T = unknown>(channel: string, value: DataType<any>) {
   })
 }
 async function onMessage(
-  listener: (value?: DataType<any>, from?: string) => void,
+  listener: (value?: DataType, from?: string) => void,
 ) {
   const id = await handlers.addMessageListener(
     MESSAGE_CHANNEL,
-    (msg: MessageType<any>) => {
+    (msg: MessageType) => {
       const { value, from } = msg ?? {}
       listener(value, from)
     },
@@ -73,7 +73,20 @@ async function onType<T = unknown>(
     }
   })
 }
+async function onVscode<T = unknown>(listener: (value: DataType<T>) => void) {
+  return on<T>(REACT_MESSAGE_CHANNEL, listener)
+}
 
+async function onVscodeType<T = unknown>(type: string, listener: (value: T) => void) {
+  return onType<T>(REACT_MESSAGE_CHANNEL, type, listener)
+}
+
+async function sendAndReceiveToVscode<T = unknown>(value: DataType) {
+  return sendAndReceive<T>(REACT_MESSAGE_CHANNEL, value)
+}
+async function sendMessageToVscode<T = any>(value: DataType<T>) {
+  return sendMessage<T>(REACT_MESSAGE_CHANNEL, value)
+}
 export function useVscodeMessage() {
   return {
     on,
@@ -81,14 +94,10 @@ export function useVscodeMessage() {
     onMessage,
     sendMessage,
     sendAndReceive,
-    onVscode: <T = unknown>(listener: (value: DataType<T>) => void) =>
-      on<T>(REACT_MESSAGE_CHANNEL, listener),
-    onVscodeType: <T = unknown>(type: string, listener: (value: T) => void) =>
-      onType<T>(REACT_MESSAGE_CHANNEL, type, listener),
-    sendAndReceiveToVscode: <T = unknown>(value: DataType) =>
-      sendAndReceive<T>(REACT_MESSAGE_CHANNEL, value),
-    sendMessageToVscode: <T = any>(value: DataType<T>) =>
-      sendMessage<T>(REACT_MESSAGE_CHANNEL, value),
+    onVscode,
+    onVscodeType,
+    sendAndReceiveToVscode,
+    sendMessageToVscode,
   }
 }
 

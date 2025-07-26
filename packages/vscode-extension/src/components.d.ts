@@ -8,12 +8,13 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    ApiCodeCard: typeof import('./components/ApiCodeCard.vue')['default']
     ApiInfo: typeof import('./components/ApiInfo.vue')['default']
     ApiMethod: typeof import('./components/ApiMethod.vue')['default']
     ApiTree: typeof import('./components/ApiTree.vue')['default']
     AppProvider: typeof import('./components/AppProvider.vue')['default']
     AppUse: typeof import('./components/AppUse.vue')['default']
-    NAffix: typeof import('naive-ui')['NAffix']
+    DynamicSlots: typeof import('./components/DynamicSlots.vue')['default']
     NButton: typeof import('naive-ui')['NButton']
     NCode: typeof import('naive-ui')['NCode']
     NConfigProvider: typeof import('naive-ui')['NConfigProvider']
@@ -23,9 +24,7 @@ declare module 'vue' {
     NEmpty: typeof import('naive-ui')['NEmpty']
     NFloatButton: typeof import('naive-ui')['NFloatButton']
     NH3: typeof import('naive-ui')['NH3']
-    NIcon: typeof import('naive-ui')['NIcon']
     NInput: typeof import('naive-ui')['NInput']
-    NInputGroup: typeof import('naive-ui')['NInputGroup']
     NLoadingBarProvider: typeof import('naive-ui')['NLoadingBarProvider']
     NMessageProvider: typeof import('naive-ui')['NMessageProvider']
     NModalProvider: typeof import('naive-ui')['NModalProvider']
@@ -33,7 +32,6 @@ declare module 'vue' {
     NScrollbar: typeof import('naive-ui')['NScrollbar']
     NSpace: typeof import('naive-ui')['NSpace']
     NTab: typeof import('naive-ui')['NTab']
-    NTabPane: typeof import('naive-ui')['NTabPane']
     NTabs: typeof import('naive-ui')['NTabs']
     NTag: typeof import('naive-ui')['NTag']
     NTree: typeof import('naive-ui')['NTree']
