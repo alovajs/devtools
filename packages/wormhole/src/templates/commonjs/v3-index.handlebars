@@ -6,7 +6,7 @@ const vueHook = require('alova/vue');
 {{#react}}
 const reactHook = require('alova/react');
 {{/react}}
-const { createApis, withConfigType } = require('./createApis'); 
+const { createApis, withConfigType, mountApis } = require('./createApis'); 
 const alovaInstance = createAlova({ 
   baseURL: "{{{baseUrl}}}",
 {{#vue}}
@@ -27,6 +27,8 @@ const $$userConfigMap = withConfigType({});
  * @type {{#raw "{ " }}{{/raw}}{{{global}}}{{#raw " }" }}{{/raw}}
  */
 const Apis = createApis(alovaInstance, $$userConfigMap);
+
+mountApis(Apis);
 
 module.exports = {
   Apis,

@@ -1,0 +1,159 @@
+{
+  "folders": [
+    {
+      "name": "ROOT",
+      "path": "../",
+    },
+    {
+      "name": "wormhole",
+      "path": "../packages/wormhole"
+    },
+    {
+      "name": "vscode-extension",
+      "path": "../packages/vscode-extension"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "node_modules/": true,
+      "packages/": true,
+      "out": false
+    },
+    // i8n-ally
+    "i18n-ally.sourceLanguage": "en",
+    "i18n-ally.keystyle": "nested",
+    "i18n-ally.localesPaths": [
+      "packages/vscode-extension/locales"
+    ],
+    "i18n-ally.enabledParsers": [
+      "yaml"
+    ],
+    "i18n-ally.enabledFrameworks": [
+      "vue",
+      "vue-sfc"
+    ],
+    "i18n-ally.sortKeys": true,
+    "editor.tabSize": 2,
+    "editor.suggestSelection": "recentlyUsedByPrefix",
+    // Enable the ESlint flat config support
+    // (remove this if your ESLint extension above v3.0.5)
+    "eslint.useFlatConfig": true,
+    // Disable the default formatter, use eslint instead
+    "prettier.enable": false,
+    "editor.formatOnSave": false,
+    // Auto fix
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+      "source.organizeImports": "never"
+    },
+    // Silent the stylistic rules in you IDE, but still auto fix them
+    "eslint.rules.customizations": [
+      {
+        "rule": "style/*",
+        "severity": "off"
+      },
+      {
+        "rule": "format/*",
+        "severity": "off"
+      },
+      {
+        "rule": "*-indent",
+        "severity": "off"
+      },
+      {
+        "rule": "*-spacing",
+        "severity": "off"
+      },
+      {
+        "rule": "*-spaces",
+        "severity": "off"
+      },
+      {
+        "rule": "*-order",
+        "severity": "off"
+      },
+      {
+        "rule": "*-dangle",
+        "severity": "off"
+      },
+      {
+        "rule": "*-newline",
+        "severity": "off"
+      },
+      {
+        "rule": "*quotes",
+        "severity": "off"
+      },
+      {
+        "rule": "*semi",
+        "severity": "off"
+      }
+    ],
+    // Enable eslint for all supported languages
+    "eslint.validate": [
+      "javascript",
+      "javascriptreact",
+      "typescript",
+      "typescriptreact",
+      "vue",
+      "html",
+      "markdown",
+      "json",
+      "jsonc",
+      "yaml",
+      "toml",
+      "xml",
+      "gql",
+      "graphql",
+      "astro",
+      "css",
+      "less",
+      "scss",
+      "pcss",
+      "postcss"
+    ],
+    "search.exclude": {
+      "out": true // set this to false to include "out" folder in search results
+    },
+    "[handlebars]": {
+      "editor.defaultFormatter": "monosans.djlint"
+    },
+    "cSpell.words": [
+      "ALOVA",
+      "antfu",
+      "APIV",
+      "Attributify",
+      "browserify",
+      "commitlint",
+      "esbuild",
+      "hoverable",
+      "intlify",
+      "ionicons",
+      "jsdom",
+      "keytar",
+      "lintf",
+      "memfs",
+      "mkcert",
+      "nodefs",
+      "nprogress",
+      "ovsx",
+      "pinia",
+      "rimraf",
+      "rollup",
+      "shiki",
+      "shikijs",
+      "sizecheck",
+      "taze",
+      "unhead",
+      "unocss",
+      "unplugin",
+      "vicons",
+      "vite",
+      "vitejs",
+      "vitest",
+      "vnode",
+      "vueuse",
+      "yapi"
+    ]
+  }
+}

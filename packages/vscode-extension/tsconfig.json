@@ -1,18 +1,20 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "@tomjs/tsconfig/vue.json",
   "compilerOptions": {
-    "resolveJsonModule": true,
-    "target": "ES2022",
-    "module": "Node16",
-    "moduleResolution": "NodeNext",
-    "outDir": "out",
-    "strictNullChecks": true,
-    "lib": ["ES2022"],
     "paths": {
-      "~/*": ["./typings/*"],
-      "@/*": ["./src/*"],
-      "#/*": ["./*"]
-    }
+      "~/*": ["./src/*"],
+      "@/*": ["./ext/*"],
+      "#/*": ["./typings/*"]
+    },
+    "types": [
+      "vitest",
+      "vite/client",
+      "naive-ui/volar",
+      "vite-plugin-vue-layouts/client",
+      "unplugin-vue-router/client"
+    ]
   },
-  "include": ["src/**/*.ts", "test/**/*.ts", "typings/**/*.d.ts"]
+  "references": [{ "path": "./tsconfig.node.json" }],
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue", "./typings/*"],
+  "exclude": ["dist", "node_modules"]
 }

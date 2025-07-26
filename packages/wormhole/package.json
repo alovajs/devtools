@@ -2,17 +2,15 @@
   "name": "@alova/wormhole",
   "version": "1.0.8",
   "description": "More modern openAPI generating solution for alova.js",
+  "author": "alova",
+  "license": "MIT",
   "homepage": "https://alova.js.org",
-  "main": "./dist/index.js",
-  "types": "./typings/index.d.ts",
-  "bin": {
-    "alova": "dist/bin/cli.js"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alovajs/devtools.git"
   },
-  "scripts": {
-    "build": "npm run build:ts && npm run build:dts && npm run build:copy",
-    "build:copy": "ncp ./src/templates ./dist/templates",
-    "build:ts": "tsc --build tsconfig.build.json && tsc-alias -p tsconfig.build.json",
-    "build:dts": "dts-bundle-generator -o typings/index.d.ts src/index.ts --no-check --no-banner --project tsconfig.build.json"
+  "bugs": {
+    "url": "https://github.com/alovajs/devtools/issues"
   },
   "keywords": [
     "openapi",
@@ -28,41 +26,48 @@
     "alova",
     "wormhole"
   ],
-  "author": "chenzhilin",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/alovajs/devtools.git"
-  },
-  "bugs": {
-    "url": "https://github.com/alovajs/devtools/issues"
+  "main": "./dist/index.js",
+  "types": "./typings/index.d.ts",
+  "bin": {
+    "alova": "dist/bin/cli.js"
   },
   "files": [
     "dist",
     "typings"
   ],
+  "scripts": {
+    "test": "vitest",
+    "build": "run-s build:*",
+    "build:ts": "tsc --build tsconfig.build.json && tsc-alias -p tsconfig.build.json",
+    "build:dts": "dts-bundle-generator -o typings/index.d.ts src/index.ts --no-check --no-banner --project tsconfig.build.json",
+    "build:copy": "ncp ./src/templates ./dist/templates"
+  },
   "publishConfig": {
     "access": "public"
   },
   "dependencies": {
-    "alova": "^3.1.0",
-    "commander": "^12.1.0",
-    "esbuild": "^0.24.0",
-    "glob": "^11.0.0",
-    "handlebars": "^4.7.8",
-    "import-fresh": "^3.3.0",
-    "js-yaml": "^4.1.0",
-    "lodash": "^4.17.21",
-    "openapi-types": "^12.1.3",
-    "ora": "^5.4.1",
-    "prettier": "^3.3.3",
-    "swagger2openapi": "^7.0.8"
+    "alova": "catalog:frontend",
+    "commander": "catalog:dev",
+    "esbuild": "catalog:build",
+    "glob": "catalog:dev",
+    "handlebars": "catalog:frontend",
+    "import-fresh": "catalog:dev",
+    "js-yaml": "catalog:dev",
+    "lodash": "catalog:frontend",
+    "openapi-types": "catalog:types",
+    "ora": "catalog:dev",
+    "prettier": "catalog:dev",
+    "swagger2openapi": "catalog:frontend",
+    "zod": "catalog:frontend",
+    "zod-validation-error": "catalog:frontend"
   },
   "devDependencies": {
-    "@types/fs-extra": "^11.0.4",
-    "@types/swagger2openapi": "^7.0.4",
-    "fs-extra": "^11.2.0",
-    "memfs": "^4.11.1",
-    "tsc-alias": "^1.8.10"
+    "@types/fs-extra": "catalog:types",
+    "@types/js-yaml": "catalog:types",
+    "@types/lodash": "catalog:types",
+    "@types/swagger2openapi": "catalog:types",
+    "fs-extra": "catalog:dev",
+    "memfs": "catalog:dev",
+    "tsc-alias": "catalog:build"
   }
 }

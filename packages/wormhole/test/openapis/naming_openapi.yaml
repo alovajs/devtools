@@ -1,0 +1,291 @@
+openapi: 3.0.0
+info:
+  title: Underscore Naming API
+  description: An API with underscore naming style for testing rename plugin
+  version: 1.0.0
+servers:
+  - url: https://api.example.com/v1
+    description: Production server
+paths:
+  /user_management:
+    get:
+      summary: Get all users
+      operationId: get_all_users
+      tags:
+        - user_management
+      parameters:
+        - name: page_number
+          in: query
+          description: Page number for pagination
+          required: false
+          schema:
+            type: integer
+        - name: items_per_page
+          in: query
+          description: Number of items per page
+          required: false
+          schema:
+            type: integer
+        - name: sort_by
+          in: query
+          description: Field to sort by
+          required: false
+          schema:
+            type: string
+            enum: [user_id, user_name, create_time]
+      responses:
+        '200':
+          description: A list of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_count:
+                    type: integer
+                  page_count:
+                    type: integer
+                  current_page:
+                    type: integer
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+  /user_management/{user_id}:
+    get:
+      summary: Get user by ID
+      operationId: get_user_by_id
+      tags:
+        - user_management
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: ID of the user to retrieve
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    put:
+      summary: Update user
+      operationId: update_user
+      tags:
+        - user_management
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: ID of the user to update
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /orderProcessing:
+    post:
+      summary: Create a new order
+      operationId: create_order
+      tags:
+        - order_processing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderCreate'
+      responses:
+        '201':
+          description: Created order
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+  /order_processing/{order_id}:
+    get:
+      summary: Get order details
+      operationId: get_order_details
+      tags:
+        - order_processing
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          description: ID of the order
+          schema:
+            type: string
+        - name: include_user_details
+          in: query
+          required: false
+          description: Whether to include user details
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Order details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDetails'
+components:
+  schemas:
+    User:
+      type: object
+      required:
+        - user_id
+        - user_name
+        - email_address
+      properties:
+        user_id:
+          type: string
+          description: Unique identifier for the user
+        user_name:
+          type: string
+          description: Name of the user
+        email_address:
+          type: string
+          format: email
+          description: Email address of the user
+        phone_number:
+          type: string
+          description: Phone number of the user
+        create_time:
+          type: string
+          format: date-time
+          description: When the user was created
+        last_login_time:
+          type: string
+          format: date-time
+          description: When the user last logged in
+    UserUpdate:
+      type: object
+      properties:
+        user_name:
+          type: string
+          description: New name of the user
+        email_address:
+          type: string
+          format: email
+          description: New email address of the user
+        phone_number:
+          type: string
+          description: New phone number of the user
+    OrderCreate:
+      type: object
+      required:
+        - user_id
+        - order_items
+      properties:
+        user_id:
+          type: string
+          description: ID of the user placing the order
+        order_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+        shipping_address:
+          $ref: '#/components/schemas/Address'
+        billing_address:
+          $ref: '#/components/schemas/Address'
+    Order:
+      type: object
+      required:
+        - order_id
+        - user_id
+        - order_status
+        - create_time
+      properties:
+        order_id:
+          type: string
+          description: Unique identifier for the order
+        user_id:
+          type: string
+          description: ID of the user who placed the order
+        order_status:
+          type: string
+          enum: [pending, processing, shipped, delivered, cancelled]
+          description: Current status of the order
+        total_price:
+          type: number
+          format: float
+          description: Total price of the order
+        create_time:
+          type: string
+          format: date-time
+          description: When the order was created
+    OrderDetails:
+      allOf:
+        - $ref: '#/components/schemas/Order'
+        - type: object
+          properties:
+            order_items:
+              type: array
+              items:
+                $ref: '#/components/schemas/OrderItem'
+            shipping_address:
+              $ref: '#/components/schemas/Address'
+            billing_address:
+              $ref: '#/components/schemas/Address'
+            user_details:
+              $ref: '#/components/schemas/User'
+    OrderItem:
+      type: object
+      required:
+        - product_id
+        - quantity
+        - item_price
+      properties:
+        product_id:
+          type: string
+          description: ID of the product
+        product_name:
+          type: string
+          description: Name of the product
+        quantity:
+          type: integer
+          minimum: 1
+          description: Quantity of the product
+        item_price:
+          type: number
+          format: float
+          description: Price of a single item
+    Address:
+      type: object
+      required:
+        - street_line1
+        - city
+        - postal_code
+        - country
+      properties:
+        street_line1:
+          type: string
+          description: First line of street address
+        street_line2:
+          type: string
+          description: Second line of street address
+        city:
+          type: string
+          description: City name
+        state_province:
+          type: string
+          description: State or province
+        postal_code:
+          type: string
+          description: Postal code or ZIP
+        country:
+          type: string
+          description: Country name

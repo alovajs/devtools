@@ -1,28 +1,37 @@
-import path from 'node:path';
-import getAlovaVersion, { AlovaVersion } from './functions/getAlovaVersion';
-import getAutoTemplateType from './functions/getAutoTemplateType';
-import { TemplateType } from './interface.type';
-import TemplateFile from './modules/TemplateFile';
+import type { TemplateType } from '@/type/lib'
+import path from 'node:path'
+import getAlovaVersion from '@/functions/getAlovaVersion'
+import getAutoTemplateType from '@/functions/getAutoTemplateType'
+import { templateHelper } from '@/helper'
 
 interface ConfigCreationOptions {
-  projectPath?: string;
-  type?: TemplateType;
+  projectPath?: string
+  type?: TemplateType
 }
 
 /**
- * create a templated configuration file
- * @param options config file create options
- * @returns Promise<void>
+ * Create a templated configuration file.
+ * @param options - Configuration file creation options
+ * @param options.projectPath - The root path of the project (optional)
+ * @param options.type - The template type to use (optional)
+ * @returns A promise that resolves when the config is created
  */
-const createConfig = ({ projectPath = '', type }: ConfigCreationOptions = {}) => {
-  projectPath = path.isAbsolute(projectPath) ? projectPath : path.resolve(process.cwd(), projectPath);
-  type = type || getAutoTemplateType(projectPath);
-  const moduleType = TemplateFile.getModuleType(type);
-  const alovaVersion: AlovaVersion = getAlovaVersion(projectPath);
-  const templateFile = new TemplateFile(type, alovaVersion);
-  return templateFile.outputFile({ type, moduleType }, 'alova.config', projectPath, {
+function createConfig({ projectPath = '', type }: ConfigCreationOptions = {}) {
+  projectPath = path.isAbsolute(projectPath) ? projectPath : path.resolve(process.cwd(), projectPath)
+  type = type || getAutoTemplateType(projectPath)
+  templateHelper.load({
+    type,
+    version: getAlovaVersion(projectPath),
+  })
+  return templateHelper.outputFile({
+    fileName: 'alova.config',
+    data: {
+      type,
+      moduleType: templateHelper.getModuleType(),
+    },
+    output: projectPath,
     root: true,
-    hasVersion: false
-  });
-};
-export default createConfig;
+    hasVersion: false,
+  })
+}
+export default createConfig

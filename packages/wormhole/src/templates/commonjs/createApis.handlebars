@@ -65,9 +65,15 @@ const createApis = (alovaInstance, configMap) => {
       }
     }
   );
+  return Apis;
+}
+/**
+ * @param {{#raw "{ " }}{{/raw}}{{{global}}}{{#raw " }" }}{{/raw}} Apis
+ * @returns { void }
+ */
+const mountApis = (Apis) =>{
   // define global variable `Apis`
   ({{{globalHost}}}).{{{global}}} = Apis;
-  return Apis;
 }
 /**
  * @template T
@@ -105,6 +111,7 @@ const withConfigType = config => config;
 
 module.exports = {
   createApis,
-  withConfigType
+  withConfigType,
+  mountApis
 };
 

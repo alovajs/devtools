@@ -4,8 +4,27 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "watch",
-      "dependsOn": ["npm: watch:esbuild"],
+      "label": "extension:dev",
+      "type": "npm",
+      "script": "dev",
+      "problemMatcher": {
+        "owner": "typescript",
+        "fileLocation": "relative",
+        "pattern": {
+          "regexp": "^([a-zA-Z]\\:/?([\\w\\-]/?)+\\.\\w+):(\\d+):(\\d+): (ERROR|WARNING)\\: (.*)$",
+          "file": 1,
+          "line": 3,
+          "column": 4,
+          "code": 5,
+          "message": 6
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^.*extension build start*$",
+          "endsPattern": "^.*extension (build|rebuild) success.*$"
+        }
+      },
+      "isBackground": true,
       "presentation": {
         "reveal": "never"
       },
@@ -15,32 +34,15 @@
       }
     },
     {
+      "label": "extension:build",
       "type": "npm",
-      "script": "watch:esbuild",
-      "group": "build",
-      "problemMatcher": "$esbuild-watch",
-      "isBackground": true,
-      "label": "npm: watch:esbuild",
-      "presentation": {
-        "group": "watch",
-        "reveal": "never"
-      }
-    },
-    {
-      "type": "npm",
-      "script": "watch-tests",
-      "problemMatcher": "$tsc-watch",
-      "isBackground": true,
-      "presentation": {
-        "reveal": "never",
-        "group": "watchers"
+      "script": "build",
+      "group": {
+        "kind": "build",
+        "isDefault": true
       },
-      "group": "build"
-    },
-    {
-      "label": "tasks: watch-tests",
-      "dependsOn": ["npm: watch", "npm: watch-tests"],
       "problemMatcher": []
+
     }
   ]
 }
