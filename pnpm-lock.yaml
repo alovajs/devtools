@@ -510,7 +510,7 @@ importers:
         specifier: catalog:types
         version: 17.0.4
       '@types/vscode':
-        specifier: ^1.102.0
+        specifier: ^1.89.0
         version: 1.102.0
       '@types/vscode-webview':
         specifier: catalog:types
