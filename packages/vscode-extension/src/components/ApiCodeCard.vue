@@ -24,17 +24,17 @@ function ShowCode({ code, empty }: {
     <div class="pos-relative">
       <n-float-button
         shape="square"
-        right={0}
+        right={6}
+        top={6}
+        position="absolute"
         width="2rem"
         height="2rem"
-        position="absolute"
-        class="p-0"
         onClick={() => handleCopy(code)}
       >
-        <i class="i-carbon-copy" />
+        <i class="i-carbon-copy text-sm" />
       </n-float-button>
       <n-code
-        class="min-h-8"
+        class="min-h-8 p-4"
         word-wrap={true}
         code={code}
         language="typescript"
@@ -47,13 +47,13 @@ function ShowCode({ code, empty }: {
 <template>
   <template v-if="name">
     <div>
-      <n-h3 prefix="bar">
+      <n-h4 prefix="bar">
         {{ name }}
-      </n-h3>
-      <ShowCode :code="code" :empty="empty" />
+      </n-h4>
+      <ShowCode :code :empty />
     </div>
   </template>
   <template v-else>
-    <ShowCode :code="code" :empty="empty" />
+    <ShowCode :code :empty />
   </template>
 </template>

@@ -27,9 +27,16 @@ function handleDetail(data: Api) {
   })
 }
 
+const loading = ref(false)
 async function handleRefresh() {
-  const data = await handlers.getApiDocs()
-  treeData.value = data
+  loading.value = true
+  try {
+    const data = await handlers.getApiDocs()
+    treeData.value = data
+  }
+  finally {
+    loading.value = false
+  }
 }
 watch(search, handleSearch)
 
@@ -52,28 +59,23 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="server-container" pos-relative h-full overflow-hidden pt-2>
-    <n-scrollbar style="max-height: 100%" content-class="px-3">
-      <n-input
-        v-model:value="search"
-        :placeholder="t('api-server.search-placeholder')"
-        autosize
-        clearable
-        class="sticky top-0 z-1 mt-1 w-full backdrop-blur-sm"
-      >
-        <template #prefix>
-          <i i-carbon-flash />
-        </template>
-      </n-input>
-      <api-tree
-        ref="treeRef"
-        v-model:selected="selectdKeys"
-        :projects="treeData"
-        :pattern="pattern"
-        @select="handleDetail"
-      />
-    </n-scrollbar>
-  </div>
+  <n-scrollbar class="pos-relative h-full overflow-hidden pt-2" content-class="px-3">
+    <n-input
+      v-model:value="search"
+      :placeholder="t('api-server.search-placeholder')"
+      size="small"
+      clearable
+      class="sticky top-0 z-1 my-1 w-full"
+    />
+    <api-tree
+      ref="treeRef"
+      v-model:selected="selectdKeys"
+      :loading
+      :pattern
+      :projects="treeData"
+      @select="handleDetail"
+    />
+  </n-scrollbar>
 </template>
 
 <route lang="yaml">

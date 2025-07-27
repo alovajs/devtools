@@ -4,8 +4,10 @@ button:
 
 not-found: Not found
 
+loading: Loading...
+
 api-info:
-  empty: You can't find anything
+  empty: Nothing here
   copy-success: Copied successfully!
   copy-fail: Copy failed!
   no-data: No data available

@@ -92,7 +92,6 @@ function typeCode(name: string, comment?: string) {
       </template>
       <template #demo>
         <ApiCodeCard
-          v-show="tabValue === 'demo'"
           :code="api.defaultValue"
           :empty="$t('api-info.no-demo-code')"
         />

@@ -4,8 +4,10 @@ button:
 
 not-found: 未找到页面
 
+loading: 加载中...
+
 api-info:
-  empty: 你什么也找不到
+  empty: 没有数据
   copy-success: 复制成功!
   copy-fail: 复制失败!
   no-data: 暂无数据

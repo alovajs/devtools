@@ -6,9 +6,8 @@ import {
   Folder,
   HardwareChipOutline,
   ServerOutline,
-  SwapVerticalOutline,
 } from '@vicons/ionicons5'
-import { NButton, NIcon, NPopover } from 'naive-ui'
+import { NButton, NIcon } from 'naive-ui'
 import { useTreeNode } from '~/hooks/use-tree-node'
 import { handleCopy } from '~/utils/web'
 import ApiMethod from './ApiMethod.vue'
@@ -20,6 +19,7 @@ defineOptions({
 const { projects = [], pattern = '' } = defineProps<{
   projects?: ApiProject[]
   pattern?: string
+  loading?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -40,7 +40,7 @@ const selectedKeys = defineModel<string[]>('selected', { default: [] })
 const expandedKeys = defineModel<string[]>('expanded', { default: [] })
 const hoverKey = ref('')
 
-const iconMap = readonly<Record<ApiType, () => VNodeChild>>({
+const iconMap = readonly<Record<ApiType, (() => VNodeChild) | undefined>>({
   project() {
     return (
       <NIcon>
@@ -62,13 +62,7 @@ const iconMap = readonly<Record<ApiType, () => VNodeChild>>({
       </NIcon>
     )
   },
-  api() {
-    return (
-      <NIcon>
-        <SwapVerticalOutline />
-      </NIcon>
-    )
-  },
+  api: undefined,
 })
 
 const { treeRef, treeKey, selectNode, treeHelper } = useTreeNode({
@@ -204,21 +198,11 @@ function strRender(str: string, option: TreeOption) {
   const [method, url, ...rest] = str.split('\n')
   return (
     <>
-      <ApiMethod method={api.method as MethodType} html={method} />
+      <ApiMethod method={api.method as MethodType} html={method} style="--n-padding: 0 4px; --n-font-size: 8px; --n-height: 16px;" />
       <span class="ml-2" v-html={url} />
       <div v-html={rest.join('\n')} />
     </>
   )
-}
-function getDescription(option: TreeOption) {
-  const api = option.api as Api | undefined
-  if (!api) {
-    return ''
-  }
-  if (pattern && option.description) {
-    return option.description as string
-  }
-  return `${api?.method}\n${api?.path}\n${api.global}.${api.pathKey}\n${api?.summary}`
 }
 function getLabel(option: TreeOption) {
   if (pattern && option.filterLabel) {
@@ -228,20 +212,8 @@ function getLabel(option: TreeOption) {
 }
 
 function renderLabel({ option }: { option: TreeOption }) {
-  const description = getDescription(option)
   return (
-    <div>
-      <NPopover disabled={!description} style="max-width: 300px" placement="top-start">
-        {{
-          trigger: () => <div data-key={option.key}>{strRender(getLabel(option), option)}</div>,
-          default: () => (
-            <pre style="white-space: pre-wrap; word-wrap: break-word;">
-              {strRender(description, option)}
-            </pre>
-          ),
-        }}
-      </NPopover>
-    </div>
+    <div class="flex items-center" data-key={option.key}>{strRender(getLabel(option), option)}</div>
   )
 }
 
@@ -261,7 +233,7 @@ function renderSuffix({ option }: { option: TreeOption }) {
     >
       {{
         icon: () => (
-          <i class="i-carbon-copy" />
+          <i class="i-carbon-copy text-sm" />
         ),
       }}
     </NButton>
@@ -302,16 +274,22 @@ defineExpose({
       v-model:expanded-keys="expandedKeys"
       expand-on-click
       block-line
-      :data="data"
+      :data
       :show-irrelevant-nodes="false"
-      :pattern="pattern"
-      :render-label="renderLabel"
-      :render-suffix="renderSuffix"
-      :node-props="nodeProps"
-      :filter="filter"
+      :pattern
+      :render-label
+      :render-suffix
+      :node-props
+      :filter
     >
       <template #empty>
-        <n-empty :description="t('api-info.empty')" class="h-full flex-justify-center" />
+        <div class="mt-24 h-full flex items-center justify-center">
+          <template v-if="loading">
+            <n-spin :size="14" class="mr-3" />
+            <span>{{ $t('loading') }}</span>
+          </template>
+          <n-empty v-else :description="t('api-info.empty')" />
+        </div>
       </template>
     </n-tree>
   </div>

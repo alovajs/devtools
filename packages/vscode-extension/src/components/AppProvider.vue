@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { GlobalThemeOverrides } from 'naive-ui'
 import { darkTheme } from 'naive-ui'
 import { useHandlers } from '~/hooks/use-handlers'
 import { availableLocales, loadLanguageAsync } from '~/plugins/i18n'
@@ -36,10 +37,31 @@ onMounted(async () => {
 onUnmounted(() => {
   observer.disconnect()
 })
+
+const themeOverrides: GlobalThemeOverrides = {
+  common: {
+    primaryColor: '#ccc',
+    primaryColorHover: 'var(--vscode-focusBorder)',
+    inputColor: 'var(--vscode-input-background)',
+  },
+  Input: {
+    colorFocus: 'var(--vscode-input-background)',
+  },
+  Tabs: {
+    tabColorSegment: 'var(--vscode-editor-background)',
+  },
+  Message: {
+    color: 'var(--vscode-editor-background)',
+    colorSuccess: 'var(--vscode-editor-background)',
+    colorInfo: 'var(--vscode-editor-background)',
+    colorWarning: 'var(--vscode-editor-background)',
+    colorError: 'var(--vscode-editor-background)',
+  },
+}
 </script>
 
 <template>
-  <n-config-provider :theme="theme" :hljs="hljs">
+  <n-config-provider :theme :theme-overrides :hljs>
     <n-dialog-provider>
       <n-loading-bar-provider>
         <n-notification-provider>
