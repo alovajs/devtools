@@ -28,7 +28,7 @@ onVscodeType(MType.refreshDocs, () => {
 
 <template>
   <n-scrollbar
-    class="pos-relative h-full max-h-full overflow-hidden pt-2"
+    class="pos-relative h-full overflow-hidden pt-2"
     content-class="px-3"
   >
     <template v-if="!api">
@@ -38,7 +38,7 @@ onVscodeType(MType.refreshDocs, () => {
       />
     </template>
     <template v-else>
-      <ApiInfo :api="api" tabs-class="sticky top-0 z-1 mt-5" />
+      <ApiInfo :api tabs-class="sticky top-0 z-1 mt-5" />
     </template>
   </n-scrollbar>
 </template>

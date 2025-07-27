@@ -50,10 +50,10 @@ function ShowCode({ code, empty }: {
       <n-h4 prefix="bar">
         {{ name }}
       </n-h4>
-      <ShowCode :code="code" :empty="empty" />
+      <ShowCode :code :empty />
     </div>
   </template>
   <template v-else>
-    <ShowCode :code="code" :empty="empty" />
+    <ShowCode :code :empty />
   </template>
 </template>

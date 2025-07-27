@@ -59,25 +59,23 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="server-container" pos-relative h-full overflow-hidden pt-2>
-    <n-scrollbar style="max-height: 100%" content-class="px-3">
-      <n-input
-        v-model:value="search"
-        :placeholder="t('api-server.search-placeholder')"
-        size="small"
-        clearable
-        class="sticky top-0 z-1 my-1 w-full"
-      />
-      <api-tree
-        ref="treeRef"
-        v-model:selected="selectdKeys"
-        :loading
-        :projects="treeData"
-        :pattern="pattern"
-        @select="handleDetail"
-      />
-    </n-scrollbar>
-  </div>
+  <n-scrollbar class="pos-relative h-full overflow-hidden pt-2" content-class="px-3">
+    <n-input
+      v-model:value="search"
+      :placeholder="t('api-server.search-placeholder')"
+      size="small"
+      clearable
+      class="sticky top-0 z-1 my-1 w-full"
+    />
+    <api-tree
+      ref="treeRef"
+      v-model:selected="selectdKeys"
+      :loading
+      :pattern
+      :projects="treeData"
+      @select="handleDetail"
+    />
+  </n-scrollbar>
 </template>
 
 <route lang="yaml">

@@ -61,7 +61,7 @@ const themeOverrides: GlobalThemeOverrides = {
 </script>
 
 <template>
-  <n-config-provider :theme="theme" :theme-overrides :hljs="hljs">
+  <n-config-provider :theme :theme-overrides :hljs>
     <n-dialog-provider>
       <n-loading-bar-provider>
         <n-notification-provider>

@@ -274,13 +274,13 @@ defineExpose({
       v-model:expanded-keys="expandedKeys"
       expand-on-click
       block-line
-      :data="data"
+      :data
       :show-irrelevant-nodes="false"
-      :pattern="pattern"
-      :render-label="renderLabel"
-      :render-suffix="renderSuffix"
-      :node-props="nodeProps"
-      :filter="filter"
+      :pattern
+      :render-label
+      :render-suffix
+      :node-props
+      :filter
     >
       <template #empty>
         <div class="mt-24 h-full flex items-center justify-center">
