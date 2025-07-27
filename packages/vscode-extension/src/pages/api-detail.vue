@@ -33,12 +33,12 @@ onVscodeType(MType.refreshDocs, () => {
   >
     <template v-if="!api">
       <n-empty
-        class="h-full flex-justify-center"
+        class="mt-24 h-full flex-justify-center"
         :description="$t('api-info.empty')"
       />
     </template>
     <template v-else>
-      <ApiInfo :api="api" tabs-class="sticky top-0 z-1 mt-5 backdrop-blur-sm" />
+      <ApiInfo :api="api" tabs-class="sticky top-0 z-1 mt-5" />
     </template>
   </n-scrollbar>
 </template>
