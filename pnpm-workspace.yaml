@@ -1,5 +1,5 @@
 packages:
-  - test/*
+  - examples/*
   - packages/*
 
 catalogs:

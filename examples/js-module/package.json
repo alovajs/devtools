@@ -1,6 +1,5 @@
 {
-  "name": "api-js-commonjs-test",
-  "type": "commonjs",
+  "name": "js-module-demo",
   "version": "1.0.0",
   "private": true,
   "description": "",
@@ -13,7 +12,6 @@
     "gen": "openapi --input ./openapi.yaml --output ./src/api"
   },
   "dependencies": {
-    "@alova/mock": "catalog:frontend",
     "alova": "catalog:frontend",
     "vue": "catalog:frontend"
   },

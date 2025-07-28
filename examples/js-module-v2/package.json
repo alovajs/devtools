@@ -1,5 +1,6 @@
 {
-  "name": "api-ts-test",
+  "name": "js-module-v2-demo",
+  "type": "module",
   "version": "1.0.0",
   "private": true,
   "description": "",
@@ -9,17 +10,13 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "gen": "openapi --input ./openapi.yaml --output ./src/api",
-    "typecheck": "tsc --noEmit"
+    "gen": "openapi --input ./openapi.yaml --output ./src/api"
   },
   "dependencies": {
-    "@alova/mock": "catalog:frontend",
     "alova": "catalog:frontend",
     "vue": "catalog:frontend"
   },
   "devDependencies": {
-    "@alova/wormhole": "workspace:^",
-    "openapi": "catalog:dev",
-    "typescript": "catalog:dev"
+    "@alova/wormhole": "workspace:^"
   }
 }

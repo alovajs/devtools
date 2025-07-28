@@ -25,7 +25,6 @@
     "lint": "eslint",
     "lintf": "eslint --fix",
     "up": "taze major -I",
-    "api-test": "tsx scripts/api-test.ts",
     "commit": "tsx scripts/bump-version.ts && git-cz && git push",
     "prepare": "husky",
     "coveralls": "nr run test:coverage && coveralls < coverage/lcov.info",
