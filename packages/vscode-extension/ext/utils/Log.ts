@@ -25,14 +25,16 @@ export class Log {
 
   static info(message: string, options?: LogOptions) {
     const { prompt = false, indent = 0 } = options ?? {}
-    if (prompt)
+    if (prompt) {
       window.showInformationMessage(message)
+    }
     this.outputChannel.appendLine(`${'\t'.repeat(indent)}${message}`)
   }
 
   static warn(message: string, options?: LogOptions) {
-    if (options?.prompt)
+    if (options?.prompt) {
       window.showWarningMessage(message)
+    }
     Log.info(`⚠ WARN: ${message}`, { ...options, prompt: false })
   }
 
@@ -67,15 +69,16 @@ export class Log {
     if (messageArr.some(item => IGNORE_ERROR.some(error => `${item}`.includes(error)))) {
       return
     }
+    let result = ''
     switch (type) {
       case 'log':
-        this.outputChannel.append(`🟢 [LOG] `)
+        result += `🟢 [LOG] `
         break
       case 'warn':
-        this.outputChannel.append(`🟡 [WARN] `)
+        result += `🟡 [WARN] `
         break
       case 'error':
-        this.outputChannel.append(`🔴 [ERROR] `)
+        result += `🔴 [ERROR] `
         break
       default:
         break
@@ -84,9 +87,9 @@ export class Log {
       if (typeof message === 'object') {
         message = util.inspect(message, { showHidden: true, depth: null, colors: false })
       }
-      this.outputChannel.append(`${message} `)
+      result += `${message} `
     })
-    this.outputChannel.append('\n')
+    this.outputChannel.appendLine(result)
   }
 }
 export default Log

@@ -3,7 +3,7 @@ import * as vscode from 'vscode'
 // Get workspace path file
 export function getWorkspacePaths() {
   const workspaceFolders = vscode.workspace.workspaceFolders || []
-  return workspaceFolders.map(item => `${item.uri.fsPath}/`)
+  return workspaceFolders.map(item => item.uri.fsPath)
 }
 // Get the current workspace path
 export function getCurrentWorkspacePath(filePath?: string) {
@@ -18,7 +18,7 @@ export function getCurrentWorkspacePath(filePath?: string) {
   if (!workspaceFolder) {
     return filePath
   }
-  return `${workspaceFolder.uri.fsPath}/`
+  return workspaceFolder.uri.fsPath
 }
 
 export function getCurrentDirectory() {

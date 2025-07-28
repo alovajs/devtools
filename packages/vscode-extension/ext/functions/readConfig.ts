@@ -13,7 +13,7 @@ async function resolveWorkspaces(workspaceRootPaths?: string | string[]) {
     .filter(item => item.status === 'fulfilled')
     .map(item => item.value)
     .flat()
-  return dirs
+  return [...new Set(dirs)]
 }
 export default async (workspaceRootPathArr?: string | string[]) => {
   let configNum = 0

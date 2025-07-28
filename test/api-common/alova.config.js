@@ -66,11 +66,11 @@ module.exports = {
   ],
 
   // 是否自动更新接口，默认开启，每5分钟检查一次，false时关闭
-  // autoUpdate: true
-  autoUpdate: {
-    // 编辑器开启时更新，默认false
-    launchEditor: true,
-    // 自动更新间隔，单位秒
-    interval: 10,
-  },
+  autoUpdate: false,
+  // autoUpdate: {
+  //   // 编辑器开启时更新，默认false
+  //   launchEditor: true,
+  //   // 自动更新间隔，单位秒
+  //   interval: 10,
+  // },
 }

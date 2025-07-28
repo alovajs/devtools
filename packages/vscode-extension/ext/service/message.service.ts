@@ -1,5 +1,3 @@
-import { Log } from '@/utils'
-
 export class MessageService {
   private channelListenerMap = new Map<
     string,
@@ -46,7 +44,6 @@ export class MessageService {
   }
 
   readyMessageListener(channel: string, listenerNumber: number) {
-    Log.info(`${channel} ready`)
     const listeners = this.channelListenerMap.get(channel)!
     const preMessages = this.preMessages.get(channel)
     if (preMessages?.length) {
