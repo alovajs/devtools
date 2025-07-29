@@ -1,39 +1,33 @@
-import { CommandKey, commandsMap } from '@/commands';
-import path from 'node:path';
-import * as vscode from 'vscode';
-// Get workspace path file
-export const getWorkspacePaths = () => {
-  const workspaceFolders = vscode.workspace.workspaceFolders || [];
-  return workspaceFolders.map(item => `${item.uri.fsPath}/`);
-};
-// Execute command
-export const executeCommand = <T extends any[]>(cmd: CommandKey, ...args: T) => {
-  const commandId = commandsMap[cmd]?.commandId;
-  if (commandId) {
-    vscode.commands.executeCommand(commandId, ...args);
+import type { ParseOptions } from 'query-string'
+import { WebviewApi } from '@tomjs/vscode-webview'
+import qs from 'query-string'
+// Exports class singleton to prevent multiple invocations of acquireVsCodeApi.
+let webviewApi: WebviewApi | null = null
+export function getVscodeApi() {
+  if (!import.meta.env.VITE_IS_VSCODE) {
+    return null
   }
-};
-// Get the current workspace path
-export const getCurrentWorkspacePath = (filePath?: string) => {
-  // Get the currently active editor
-  const editor = vscode.window.activeTextEditor;
-  if (!editor) {
-    return getWorkspacePaths()[0];
+  if (!webviewApi) {
+    webviewApi = new WebviewApi()
   }
-  filePath = filePath ?? editor.document.uri.fsPath;
-  // Get the workspace root directory where the current file is located
-  const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(filePath));
-  if (!workspaceFolder) {
-    return filePath;
+  return webviewApi
+}
+export function getWebViewUrl() {
+  if (globalThis.__URL__) {
+    return globalThis.__URL__
   }
-  return `${workspaceFolder.uri.fsPath}/`;
-};
-
-export const getCurrentDirectory = () => {
-  // Get the currently active editor
-  const editor = vscode.window.activeTextEditor;
-  if (!editor) {
-    return getWorkspacePaths()[0];
+  const parseOptions: ParseOptions = {
+    arrayFormat: 'comma',
+    parseNumbers: true,
+    parseBooleans: true,
   }
-  return path.dirname(editor.document.uri.fsPath);
-};
+  const path = globalThis.location?.pathname ?? '/'
+  const query = qs.parse(globalThis.location?.search, parseOptions)
+  const fragment = qs.parse(globalThis.location?.hash, parseOptions)
+  return {
+    path,
+    query,
+    fragment,
+  }
+}
+export const isVscode = () => import.meta.env.VITE_IS_VSCODE

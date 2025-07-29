@@ -45,7 +45,7 @@ paths:
       description: ''
       externalDocs:
         url: 'http://petstore.swagger.io/v2/doc/updatePet'
-        description: 'API documentation for the updatePet operation'
+        description: API documentation for the updatePet operation
       responses:
         '200':
           description: successful operation

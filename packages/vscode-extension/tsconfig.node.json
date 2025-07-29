@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "paths": {
+      "~/*": ["./src/*"],
+      "@/*": ["./ext/*"]
+    }
+  },
+  "include": ["ext", "vite.config.ts", "./typings/*"]
+}

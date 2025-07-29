@@ -1,0 +1,30 @@
+button:
+  back: 返回
+  copy: 复制
+
+not-found: 未找到页面
+
+loading: 加载中...
+
+api-info:
+  empty: 没有数据
+  copy-success: 复制成功!
+  copy-fail: 复制失败!
+  no-data: 暂无数据
+  method: 方法
+  description: 描述
+  params: 参数
+  response: 响应
+  demo: 示例
+  path-params: Path 参数
+  query-params: Query 参数
+  request-body: 请求体
+  no-path-params: 无路径参数
+  no-query-params: 无查询参数
+  no-request-body: 无请求体
+  no-response-data: 无响应数据
+  no-demo-code: 无示例代码
+
+api-server:
+  search-placeholder: 查找API
+  search: 搜索

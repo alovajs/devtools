@@ -1,18 +1,19 @@
-import importFresh from 'import-fresh';
-import path from 'node:path';
-import { PackageJson } from 'type-fest';
+import type { PackageJson } from 'type-fest'
+import type { FrameworkName } from '@/type'
+import path from 'node:path'
+import importFresh from 'import-fresh'
 
-export const frameworkName: ['vue', 'react'] = ['vue', 'react'];
-export default function (workspaceRootDir: string) {
-  const packageJson: PackageJson = importFresh(path.resolve(workspaceRootDir, './package.json'));
+export const frameworkNames: FrameworkName[] = ['vue', 'react']
+export default function (projectPath: string) {
+  const packageJson: PackageJson = importFresh(path.resolve(projectPath, './package.json'))
   if (!packageJson) {
-    return 'defaultKey';
+    return 'defaultKey'
   }
   // Framework technology stack tag vue | react
   // Find in dependencies
-  const frameTag = frameworkName.find(framework => packageJson.dependencies?.[framework]);
+  const frameTag = frameworkNames.find(framework => packageJson.dependencies?.[framework])
   // Find in dev dependencies
   // Priority: Production dependencies > Development dependencies
-  const devFrameTag = frameworkName.find(framework => packageJson.devDependencies?.[framework]);
-  return frameTag ?? devFrameTag ?? 'defaultKey';
+  const devFrameTag = frameworkNames.find(framework => packageJson.devDependencies?.[framework])
+  return frameTag ?? devFrameTag ?? 'defaultKey'
 }

@@ -1,0 +1,32 @@
+@import './markdown.css';
+@import './vscode.css';
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+html.dark {
+  color-scheme: dark;
+}
+
+.vs-bg {
+  background-color: var(--vscode-editor-background);
+}
+
+#nprogress {
+  pointer-events: none;
+}
+
+#nprogress .bar {
+  background: var(--vscode-focusBorder);
+  opacity: 0.75;
+  position: fixed;
+  z-index: 1031;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+}

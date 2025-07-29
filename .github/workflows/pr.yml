@@ -28,7 +28,7 @@ jobs:
         with:
           node-version: 20
           registry-url: 'https://registry.npmjs.org'
-          cache: 'pnpm'
+          cache: pnpm
 
       - name: Install deps
         run: pnpm install
@@ -36,8 +36,10 @@ jobs:
       - name: Lint check
         run: pnpm run lint
 
-      - name: Format
-        run: pnpm run format
-
       - name: Unit tests
-        run: pnpm run test
+        run: pnpm run test:unit
+
+      - name: E2E tests (via GabrielBB/xvfb-action)
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          run: pnpm run test:e2e

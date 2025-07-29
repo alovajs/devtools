@@ -1,0 +1,22 @@
+{
+  "name": "ts-demo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "",
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
+  "main": "index.js",
+  "scripts": {
+    "test": "tsx src/main.ts"
+  },
+  "dependencies": {
+    "@alova/adapter-xhr": "catalog:frontend",
+    "@alova/mock": "catalog:frontend",
+    "alova": "catalog:frontend"
+  },
+  "devDependencies": {
+    "@alova/wormhole": "workspace:^",
+    "typescript": "catalog:dev"
+  }
+}

@@ -3,25 +3,22 @@
 .spago
 bower_components
 node_modules
-
+public/assets/fonts
 # Generated files
 .psci
 out
+*-out
 dist
+dist-ssr
 *.vsix
-.vscode-test/
-
+.vscode-test
+.vite-ssg-dist
+.vite-ssg-temp
+.DS_Store
 # testing
 /coverage
-
 alova_tmp_*
-
+.idea/
+*.log
 # test files
-test/api-*/src/*
-test/api-*/*openapi*.*
-test/api-*/*swagger*.*
-test/api-*/alova.config.*
-!test/api-*/src/.gitkeep
-!test/api-common/*openapi*.*
-!test/api-common/*swagger*.*
-!test/api-common/alova.config.*
+cypress/downloads

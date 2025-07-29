@@ -64,9 +64,11 @@ export const createApis = (alovaInstance: Alova<AlovaGenerics>, configMap: any) 
       }
     }
   );
+  return Apis;
+}
+export const mountApis = (Apis: {{{global}}}) =>{
   // define global variable `Apis`
   (({{{globalHost}}}) as any).{{{global}}} = Apis;
-  return Apis;
 }
 type MethodConfig<T> = AlovaMethodCreateConfig<typeof import('./index')['alovaInstance'] extends Alova<infer AG> ? AG : any, any, T>;
 type APISofParameters<Tag extends string, Url extends string> = Tag extends keyof {{{global}}}
