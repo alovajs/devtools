@@ -37,6 +37,7 @@
     "release": "nr coveralls && nr build && changeset publish && nr --filter=alova-vscode-extension release"
   },
   "devDependencies": {
+    "@alova/wormhole": "workspace:*",
     "@antfu/eslint-config": "catalog:dev",
     "@antfu/ni": "catalog:dev",
     "@changesets/changelog-github": "catalog:dev",

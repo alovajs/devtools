@@ -319,6 +319,9 @@ importers:
 
   .:
     devDependencies:
+      '@alova/wormhole':
+        specifier: workspace:*
+        version: link:packages/wormhole
       '@antfu/eslint-config':
         specifier: catalog:dev
         version: 4.19.0(@unocss/eslint-plugin@66.3.3(eslint@9.31.0(jiti@2.5.0))(typescript@5.8.3))(@vue/compiler-sfc@3.5.18)(eslint-plugin-format@1.0.1(eslint@9.31.0(jiti@2.5.0)))(eslint@9.31.0(jiti@2.5.0))(typescript@5.8.3)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.1.0)(esbuild@0.25.8)(jiti@2.5.0)(jsdom@26.1.0)(msw@2.10.4(@types/node@24.1.0)(typescript@5.8.3))(tsx@4.20.3)(yaml@2.8.0))
@@ -424,6 +427,105 @@ importers:
       vitest:
         specifier: catalog:dev
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.1.0)(esbuild@0.25.8)(jiti@2.5.0)(jsdom@26.1.0)(msw@2.10.4(@types/node@24.1.0)(typescript@5.8.3))(tsx@4.20.3)(yaml@2.8.0)
+
+  examples/js-commonjs:
+    dependencies:
+      '@alova/adapter-xhr':
+        specifier: catalog:frontend
+        version: 2.2.1(alova@3.3.4)
+      alova:
+        specifier: catalog:frontend
+        version: 3.3.4
+      vue:
+        specifier: catalog:frontend
+        version: 3.5.18(typescript@5.8.3)
+    devDependencies:
+      '@alova/wormhole':
+        specifier: workspace:^
+        version: link:../../packages/wormhole
+
+  examples/js-commonjs-v2:
+    dependencies:
+      '@alova/mock':
+        specifier: catalog:frontend
+        version: 2.0.17(alova@3.3.4)
+      alova:
+        specifier: catalog:frontend
+        version: 3.3.4
+      vue:
+        specifier: catalog:frontend
+        version: 3.5.18(typescript@5.8.3)
+    devDependencies:
+      '@alova/wormhole':
+        specifier: workspace:^
+        version: link:../../packages/wormhole
+
+  examples/js-module:
+    dependencies:
+      alova:
+        specifier: catalog:frontend
+        version: 3.3.4
+      vue:
+        specifier: catalog:frontend
+        version: 3.5.18(typescript@5.8.3)
+    devDependencies:
+      '@alova/wormhole':
+        specifier: workspace:^
+        version: link:../../packages/wormhole
+
+  examples/js-module-v2:
+    dependencies:
+      alova:
+        specifier: catalog:frontend
+        version: 3.3.4
+      vue:
+        specifier: catalog:frontend
+        version: 3.5.18(typescript@5.8.3)
+    devDependencies:
+      '@alova/wormhole':
+        specifier: workspace:^
+        version: link:../../packages/wormhole
+
+  examples/ts:
+    dependencies:
+      '@alova/adapter-xhr':
+        specifier: catalog:frontend
+        version: 2.2.1(alova@3.3.4)
+      '@alova/mock':
+        specifier: catalog:frontend
+        version: 2.0.17(alova@3.3.4)
+      alova:
+        specifier: catalog:frontend
+        version: 3.3.4
+    devDependencies:
+      '@alova/wormhole':
+        specifier: workspace:^
+        version: link:../../packages/wormhole
+      typescript:
+        specifier: catalog:dev
+        version: 5.8.3
+
+  examples/ts-v2:
+    dependencies:
+      '@alova/mock':
+        specifier: catalog:frontend
+        version: 2.0.17(alova@3.3.4)
+      alova:
+        specifier: catalog:frontend
+        version: 3.3.4
+      vue:
+        specifier: catalog:frontend
+        version: 3.5.18(typescript@5.8.3)
+    devDependencies:
+      '@alova/wormhole':
+        specifier: workspace:^
+        version: link:../../packages/wormhole
+      openapi:
+        specifier: catalog:dev
+        version: 1.0.1
+      typescript:
+        specifier: catalog:dev
+        version: 5.8.3
 
   packages/vscode-extension:
     dependencies:
@@ -651,121 +753,6 @@ importers:
       tsc-alias:
         specifier: catalog:build
         version: 1.8.16
-
-  test/api-common:
-    dependencies:
-      '@alova/mock':
-        specifier: catalog:frontend
-        version: 2.0.17(alova@3.3.4)
-      alova:
-        specifier: catalog:frontend
-        version: 3.3.4
-      vue:
-        specifier: catalog:frontend
-        version: 3.5.18(typescript@5.8.3)
-    devDependencies:
-      '@alova/wormhole':
-        specifier: workspace:^
-        version: link:../../packages/wormhole
-
-  test/api-js-commonjs-test:
-    dependencies:
-      '@alova/mock':
-        specifier: catalog:frontend
-        version: 2.0.17(alova@3.3.4)
-      alova:
-        specifier: catalog:frontend
-        version: 3.3.4
-      vue:
-        specifier: catalog:frontend
-        version: 3.5.18(typescript@5.8.3)
-    devDependencies:
-      '@alova/wormhole':
-        specifier: workspace:^
-        version: link:../../packages/wormhole
-
-  test/api-js-test:
-    dependencies:
-      alova:
-        specifier: catalog:frontend
-        version: 3.3.4
-      vue:
-        specifier: catalog:frontend
-        version: 3.5.18(typescript@5.8.3)
-    devDependencies:
-      '@alova/wormhole':
-        specifier: workspace:^
-        version: link:../../packages/wormhole
-
-  test/api-ts-test:
-    dependencies:
-      '@alova/mock':
-        specifier: catalog:frontend
-        version: 2.0.17(alova@3.3.4)
-      alova:
-        specifier: catalog:frontend
-        version: 3.3.4
-      vue:
-        specifier: catalog:frontend
-        version: 3.5.18(typescript@5.8.3)
-    devDependencies:
-      '@alova/wormhole':
-        specifier: workspace:^
-        version: link:../../packages/wormhole
-      openapi:
-        specifier: catalog:dev
-        version: 1.0.1
-      typescript:
-        specifier: catalog:dev
-        version: 5.8.3
-
-  test/api-v3-js-commonjs-test:
-    dependencies:
-      '@alova/adapter-xhr':
-        specifier: catalog:frontend
-        version: 2.2.1(alova@3.3.4)
-      alova:
-        specifier: catalog:frontend
-        version: 3.3.4
-      vue:
-        specifier: catalog:frontend
-        version: 3.5.18(typescript@5.8.3)
-    devDependencies:
-      '@alova/wormhole':
-        specifier: workspace:^
-        version: link:../../packages/wormhole
-
-  test/api-v3-js-test:
-    dependencies:
-      alova:
-        specifier: catalog:frontend
-        version: 3.3.4
-      vue:
-        specifier: catalog:frontend
-        version: 3.5.18(typescript@5.8.3)
-    devDependencies:
-      '@alova/wormhole':
-        specifier: workspace:^
-        version: link:../../packages/wormhole
-
-  test/api-v3-ts-test:
-    dependencies:
-      '@alova/adapter-xhr':
-        specifier: catalog:frontend
-        version: 2.2.1(alova@3.3.4)
-      '@alova/mock':
-        specifier: catalog:frontend
-        version: 2.0.17(alova@3.3.4)
-      alova:
-        specifier: catalog:frontend
-        version: 3.3.4
-    devDependencies:
-      '@alova/wormhole':
-        specifier: workspace:^
-        version: link:../../packages/wormhole
-      typescript:
-        specifier: catalog:dev
-        version: 5.8.3
 
 packages:
 
