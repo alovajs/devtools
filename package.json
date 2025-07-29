@@ -27,7 +27,7 @@
     "up": "taze major -I",
     "commit": "tsx scripts/bump-version.ts && git-cz && git push",
     "prepare": "husky",
-    "coveralls": "nr run test:coverage && coveralls < coverage/lcov.info",
+    "coveralls": "nr test:coverage && coveralls < coverage/lcov.info",
     "changeset": "changeset",
     "changeset:alpha": "changeset pre enter alpha",
     "changeset:beta": "changeset pre enter beta",
