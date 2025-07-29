@@ -5,13 +5,12 @@
   "fixed": [],
   "linked": [],
   "ignore": [
-    "api-v3-js-commonjs-test",
-    "api-js-commonjs-test",
-    "api-v3-js-test",
-    "api-v3-ts-test",
-    "api-js-test",
-    "api-ts-test",
-    "api-common"
+    "js-commonjs-v2-demo",
+    "js-commonjs-demo",
+    "js-module-v2-demo",
+    "js-module-demo",
+    "ts-v2-demo",
+    "ts-demo"
   ],
   "access": "public",
   "baseBranch": "main",
