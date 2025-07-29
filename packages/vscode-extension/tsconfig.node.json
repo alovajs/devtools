@@ -1,5 +1,5 @@
 {
-  "extends": "@tomjs/tsconfig/node.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
     "paths": {

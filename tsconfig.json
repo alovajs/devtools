@@ -6,13 +6,10 @@
     "outDir": "./dist"
   },
   "include": [
-    "*.*js",
-    "packages/**/*.ts",
-    "*.*ts",
+    "packages/**/*.{js,ts,mts}",
+    "test/**/*",
     "scripts/**.*",
-    "typings/**/*.d.ts",
-    "./test/**/*",
-    "packages/wormhole/vitest.config.mts"
+    "typings/**/*.d.ts"
   ],
   "exclude": ["design/**"]
 }

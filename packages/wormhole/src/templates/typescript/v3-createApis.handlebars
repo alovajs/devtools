@@ -64,8 +64,6 @@ export const createApis = (alovaInstance: Alova<AlovaGenerics>, configMap: any) 
       }
     }
   );
-  // define global variable `Apis`
-  (({{{globalHost}}}) as any).{{{global}}} = Apis;
   return Apis;
 }
 export const mountApis = (Apis: {{{global}}}) =>{

@@ -41,6 +41,7 @@ function getTsStr(originObj: SchemaObject | ReferenceObject, options: {
         const result = await astLoader.transformTsStr(ast, {
           shallowDeep: true,
           commentType: 'doc',
+          noEnum: true,
           format: true,
           export: true,
         })

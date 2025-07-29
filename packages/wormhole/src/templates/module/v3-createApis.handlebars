@@ -68,8 +68,6 @@ export const createApis = (alovaInstance, configMap) => {
       }
     }
   );
-  // define global variable `Apis`
-  ({{{globalHost}}}).{{{global}}} = Apis;
   return Apis;
 }
 /**
@@ -83,8 +81,8 @@ export const mountApis = (Apis) =>{
 /**
  * @template T
  * @typedef {import('alova').AlovaMethodCreateConfig<
- *  typeof import('./index')['alovaInstance'] extends import('alova').Alova<infer AG> 
- *   ? AG 
+ *  typeof import('./index')['alovaInstance'] extends import('alova').Alova<infer AG>
+ *   ? AG
  *   : any,
  *  any,
  *  T
@@ -103,12 +101,12 @@ export const mountApis = (Apis) =>{
  * } APISofParameters
  */
 /**
- * @typedef {{#raw "{{ " }}{{/raw}} 
+ * @typedef {{#raw "{{ " }}{{/raw}}
  *  [P in keyof typeof import('./apiDefinitions').default]?: MethodConfig<
- *    P extends `${infer Tag}.${infer Url}` 
- *      ? Parameters<NonNullable<APISofParameters<Tag,Url>[0]>['transform']>[0] 
+ *    P extends `${infer Tag}.${infer Url}`
+ *      ? Parameters<NonNullable<APISofParameters<Tag,Url>[0]>['transform']>[0]
  *      : any
- *  > 
+ *  >
  * {{#raw "}}" }}{{/raw}} MethodsConfigMap
  */
 /**
