@@ -1,5 +1,12 @@
 # @alova/wormhole
 
+## 1.1.1
+
+### Patch Changes
+
+- [#75](https://github.com/alovajs/devtools/pull/75) [`bbf2fec`](https://github.com/alovajs/devtools/commit/bbf2fec7202576a619ae224bdba50f0421410c7b) Thanks [@czhlin](https://github.com/czhlin)! - 1.fix parse remote file error
+  2.back ora 5.4.1
+
 ## 1.1.0
 
 ### Minor Changes
