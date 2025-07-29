@@ -1,5 +1,12 @@
 # Change Log
 
+## 2.0.0
+
+### Major Changes
+
+- [#64](https://github.com/alovajs/devtools/pull/64) [`0baf380`](https://github.com/alovajs/devtools/commit/0baf380ec36c9bfef9e7b7b9b7568beda3e3909b) Thanks [@MeetinaXD](https://github.com/MeetinaXD)! - vscode extension adds primary sidebar
+  wormhole supports manual mounting of `Apis`
+
 ## 1.0.9
 
 ### Patch Changes
