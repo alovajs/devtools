@@ -60,7 +60,7 @@ catalogs:
     msw: ^2.10.4
     npm-run-all2: ^8.0.4
     openapi: ^1.0.1
-    ora: ^8.2.0
+    ora: 5.4.1
     ovsx: ^0.10.5
     prettier: ^3.6.2
     rimraf: ^6.0.1

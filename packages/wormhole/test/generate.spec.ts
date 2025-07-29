@@ -259,6 +259,21 @@ describe('generate API', () => {
     expect(await fs.readFile(resolve(outputDir2, 'index.ts'), 'utf-8')).toMatchSnapshot()
     expect(await fs.readFile(resolve(outputDir2, 'createApis.ts'), 'utf-8')).toMatchSnapshot()
     expect(await fs.readFile(resolve(outputDir2, 'globals.d.ts'), 'utf-8')).toMatchSnapshot()
+
+    const outputDir3 = resolve(__dirname, `./mock_output/generator_file${getSalt()}`)
+    await generate({
+      generator: [
+        {
+          input: 'https://generator3.swagger.io/v1.0/foo?test=1&bar=2#ccc',
+          platform: 'swagger',
+          output: outputDir3,
+        },
+      ],
+    })
+    expect(await fs.readFile(resolve(outputDir3, 'apiDefinitions.ts'), 'utf-8')).toMatchSnapshot()
+    expect(await fs.readFile(resolve(outputDir3, 'index.ts'), 'utf-8')).toMatchSnapshot()
+    expect(await fs.readFile(resolve(outputDir3, 'createApis.ts'), 'utf-8')).toMatchSnapshot()
+    expect(await fs.readFile(resolve(outputDir3, 'globals.d.ts'), 'utf-8')).toMatchSnapshot()
   })
 
   it('should generate target versioned code', async () => {
