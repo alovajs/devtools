@@ -39,7 +39,8 @@ async function parseLocalFile(url: string, projectPath = process.cwd()) {
 // Parse remote openapi files
 
 async function parseRemoteFile(url: string, platformType?: PlatformType) {
-  const [, , extname] = /^http(s)?:\/\/.[^\n\r/\u2028\u2029]*\/.+\.([^.]+)$/.exec(url) ?? []
+  const [, , extname] = /^http(s)?:\/\/.[^\n\r/\u2028\u2029]*\/.+\.([^./]+)$/.exec(url) ?? []
+
   // no extension and platform type
 
   if (!extname && platformType) {
