@@ -77,7 +77,7 @@ export interface GeneratorConfig {
   /**
    * Specify alova version, 2 or 3, if not specified, it will be automatically determined through the alova version in `package.json`
    */
-  version?: number
+  version?: number | string
 
   /**
    * Globally exported api name, you can access the automatically generated api globally through this name.

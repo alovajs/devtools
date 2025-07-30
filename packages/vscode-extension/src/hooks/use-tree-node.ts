@@ -16,7 +16,7 @@ export class TreeHelper<N extends TreeOption> {
     }
     if (node.children?.length === 1) {
       const child = node.children[0]
-      if (child?.children?.length) {
+      if (child?.children) {
         node.children = child.children
         this.normalizeTree(node)
       }

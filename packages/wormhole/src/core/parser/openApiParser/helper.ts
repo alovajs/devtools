@@ -39,41 +39,27 @@ async function parseLocalFile(url: string, projectPath = process.cwd()) {
 // Parse remote openapi files
 
 async function parseRemoteFile(url: string, platformType?: PlatformType) {
-  const [, , extname] = /^http(s)?:\/\/.[^\n\r/\u2028\u2029]*\/.+\.([^./]+)$/.exec(url) ?? []
-
-  // no extension and platform type
-
-  if (!extname && platformType) {
+  // no extension and platform types
+  if (platformType) {
     return getPlatformOpenApiData(url, platformType)
-  }
-  // No platform type and no extension
-
-  if (!platformType && !extname) {
-    logger.debug('No platform type and no extension', {
-      url,
-      platformType,
-    })
-    return
-  }
-  // There is no platform type and there is an extension
-  if (!supportedExtname.includes(extname)) {
-    throw logger.throwError(`Unsupported file type: ${extname}`, {
-      url,
-      platformType,
-    })
   }
   const dataText = (await fetchData(url)) ?? ''
   let data: any
-  switch (extname) {
-    case 'yaml': {
+  try {
+    // 尝试解析为 JSON 格式
+    data = JSON.parse(dataText)
+  }
+  catch (jsonError) {
+    try {
+      // 若 JSON 解析失败，尝试解析为 YAML 格式
       data = YAML.load(dataText) as any
-      break
     }
-    // Json
-
-    default: {
-      data = JSON.parse(dataText)
-      break
+    catch (yamlError) {
+      throw logger.throwError(`Only JSON and YAML formats are supported. Parsing failed:
+        ${jsonError instanceof Error ? jsonError.message : String(jsonError)}
+        ${yamlError instanceof Error ? yamlError.message : String(yamlError)}`, {
+        url,
+      })
     }
   }
 
