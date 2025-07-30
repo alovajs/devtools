@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.0.1
+
+### Patch Changes
+
+- [#78](https://github.com/alovajs/devtools/pull/78) [`ea242d6`](https://github.com/alovajs/devtools/commit/ea242d610b13958a69c342a5d3206ceff9ec4310) Thanks [@czhlin](https://github.com/czhlin)! -
+
 ## 2.0.0
 
 ### Major Changes
