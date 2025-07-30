@@ -87,7 +87,9 @@ export const zGeneratorConfig = z.object({
   /**
    * Specify alova version, 2 or 3, if not specified, it will be automatically determined through the alova version in `package.json`
    */
-  version: z.number().optional(),
+  version: z
+    .union([z.number(), z.string()])
+    .optional(),
   /**
    * Globally exported api name, you can access the automatically generated api globally through this name.
    * it is required when multiple generators are configured, and it cannot be repeated
