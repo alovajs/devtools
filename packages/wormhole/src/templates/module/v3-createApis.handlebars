@@ -1,6 +1,8 @@
 {{{commentText}}}
 import { Method } from 'alova';
 import apiDefinitions from './apiDefinitions';
+
+const cache = Object.create(null);
 /**
  * @typedef {import('alova').AlovaGenerics} AlovaGenerics
  */
@@ -12,8 +14,12 @@ import apiDefinitions from './apiDefinitions';
  * @returns {()=>void}
  */
 const createFunctionalProxy = (array, alovaInstance, configMap) => {
+  const apiPathKey = array.join('.');
+  if (cache[apiPathKey]) {
+    return cache[apiPathKey];
+  }
   // create a new proxy instance
-  return new Proxy(function () {}, {
+  const proxy = new Proxy(function () {}, {
     get(_, property) {
       // record the target property, so that it can get the completed accessing paths
       const newArray = [...array, property];
@@ -21,7 +27,6 @@ const createFunctionalProxy = (array, alovaInstance, configMap) => {
       return createFunctionalProxy(newArray, alovaInstance, configMap);
     },
     apply(_, __, [config]) {
-      const apiPathKey = array.join('.');
       const apiItem = apiDefinitions[apiPathKey];
       if (!apiItem) {
         throw new Error(`the api path of \`${apiPathKey}\` is not found`);
@@ -52,6 +57,8 @@ const createFunctionalProxy = (array, alovaInstance, configMap) => {
       return new Method(method.toUpperCase(), alovaInstance, urlReplaced, mergedConfig, data);
     }
   });
+  cache[apiPathKey] = proxy;
+  return proxy;
 };
 /**
  *

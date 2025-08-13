@@ -20,5 +20,8 @@ dist-ssr
 alova_tmp_*
 .idea/
 *.log
+examples/**/src
+examples/**/*openapi.*
+examples/**/*swagger.*
 # test files
 cypress/downloads

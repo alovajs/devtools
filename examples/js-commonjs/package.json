@@ -9,8 +9,7 @@
   "keywords": [],
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "gen": "openapi --input ./openapi.yaml --output ./src/api"
+    "gen": "alova gen -f"
   },
   "dependencies": {
     "@alova/adapter-xhr": "catalog:frontend",

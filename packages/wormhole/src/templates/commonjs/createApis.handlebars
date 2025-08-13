@@ -1,6 +1,8 @@
 {{{commentText}}}
 const { Method } = require('alova');
 const apiDefinitions = require('./apiDefinitions');
+
+const cache = Object.create(null);
 /**
  *
  * @param {(string|symbol)[]} array
@@ -9,8 +11,12 @@ const apiDefinitions = require('./apiDefinitions');
  * @returns {()=>void}
  */
 const createFunctionalProxy = (array, alovaInstance, configMap) => {
+  const apiPathKey = array.join('.');
+  if (cache[apiPathKey]) {
+    return cache[apiPathKey];
+  }
   // create a new proxy instance
-  return new Proxy(function () {}, {
+  const proxy = new Proxy(function () {}, {
     get(_, property) {
       // record the target property, so that it can get the completed accessing paths
       const newArray = [...array, property];
@@ -18,7 +24,6 @@ const createFunctionalProxy = (array, alovaInstance, configMap) => {
       return createFunctionalProxy(newArray, alovaInstance, configMap);
     },
     apply(_, __, [config]) {
-      const apiPathKey = array.join('.');
       const apiItem = apiDefinitions[apiPathKey];
       if (!apiItem) {
         throw new Error(`the api path of \`${apiPathKey}\` is not found`);
@@ -49,6 +54,8 @@ const createFunctionalProxy = (array, alovaInstance, configMap) => {
       return new Method(method.toUpperCase(), alovaInstance, urlReplaced, mergedConfig, data);
     }
   });
+  cache[apiPathKey] = proxy;
+  return proxy;
 };
 /**
  *
@@ -78,7 +85,7 @@ const mountApis = (Apis) =>{
 /**
  * @template T
  * @typedef {typeof import('./index')['alovaInstance'] extends import('alova').Alova<any, any, infer RC, any, infer RH>
- *  ? import('alova').AlovaMethodCreateConfig<any, T, RC, RH> 
+ *  ? import('alova').AlovaMethodCreateConfig<any, T, RC, RH>
  *  : never
  *} MethodConfig
  */
@@ -95,12 +102,12 @@ const mountApis = (Apis) =>{
  * } APISofParameters
  */
 /**
- * @typedef {{#raw "{{ " }}{{/raw}} 
+ * @typedef {{#raw "{{ " }}{{/raw}}
  *  [P in keyof typeof import('./apiDefinitions')]?: MethodConfig<
- *    P extends `${infer Tag}.${infer Url}` 
- *      ? Parameters<NonNullable<APISofParameters<Tag,Url>[0]>['transformData']>[0] 
+ *    P extends `${infer Tag}.${infer Url}`
+ *      ? Parameters<NonNullable<APISofParameters<Tag,Url>[0]>['transformData']>[0]
  *      : any
- *  > 
+ *  >
  * {{#raw "}}" }}{{/raw}} MethodsConfigMap
  */
  /**

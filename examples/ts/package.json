@@ -8,7 +8,8 @@
   "keywords": [],
   "main": "index.js",
   "scripts": {
-    "test": "tsx src/main.ts"
+    "gen": "alova gen -f",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@alova/adapter-xhr": "catalog:frontend",
