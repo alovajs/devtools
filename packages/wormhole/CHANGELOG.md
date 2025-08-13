@@ -1,5 +1,11 @@
 # @alova/wormhole
 
+## 1.1.3
+
+### Patch Changes
+
+- [#82](https://github.com/alovajs/devtools/pull/82) [`971af71`](https://github.com/alovajs/devtools/commit/971af71ee95e5a5a99035587df86ccb67ad510d6) Thanks [@czhlin](https://github.com/czhlin)! - Support API proxy object caching
+
 ## 1.1.2
 
 ### Patch Changes
