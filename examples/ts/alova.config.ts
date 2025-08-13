@@ -11,7 +11,7 @@ export default <Config>{
        * 1. openapi json file url
        * 2. local file
        */
-      input: './openapi.json',
+      input: 'https://generator3.swagger.io',
 
       /**
        * input file platform. Currently only swagger is supported.
@@ -38,7 +38,7 @@ export default <Config>{
       /**
        * the generated api version. options are `2` or `3`, default is `auto`.
        */
-      // version: 'auto',
+      version: 'auto',
 
       /**
        * type of generated code. The options are `auto/ts/typescript/module/commonjs`.
