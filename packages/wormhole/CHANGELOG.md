@@ -1,5 +1,11 @@
 # @alova/wormhole
 
+## 1.1.4
+
+### Patch Changes
+
+- [#80](https://github.com/alovajs/devtools/pull/80) [`fb41c05`](https://github.com/alovajs/devtools/commit/fb41c05cec81481fd74078db68c391cfa02418a9) Thanks [@wally94](https://github.com/wally94)! - Suport defineConfig
+
 ## 1.1.3
 
 ### Patch Changes
