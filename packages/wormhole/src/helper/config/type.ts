@@ -14,7 +14,7 @@ export type TemplateType = z.infer<typeof zTemplateType>
 /**
  * platform type
  */
-export type PlatformType = z.infer<typeof zPlatformType>
+export type PlatformType = z.infer<typeof zPlatformType> | (string & {})// When using defineConfig, you need to match the PlatformType.
 export interface ApiPlugin {
   name?: string
   extends?: Partial<GeneratorConfig> | ((config: GeneratorConfig) => Partial<GeneratorConfig>)
