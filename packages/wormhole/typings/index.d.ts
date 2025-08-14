@@ -33,7 +33,7 @@ export type TemplateType = z.infer<typeof zTemplateType>;
 /**
  * platform type
  */
-export type PlatformType = z.infer<typeof zPlatformType>;
+export type PlatformType = z.infer<typeof zPlatformType> | (string & {});
 export interface ApiPlugin {
 	name?: string;
 	extends?: Partial<GeneratorConfig> | ((config: GeneratorConfig) => Partial<GeneratorConfig>);
@@ -171,6 +171,11 @@ export interface Config {
 		interval: number;
 	};
 }
+export type UserConfig = Config;
+export type UserConfigFnObject = () => UserConfig;
+export type UserConfigFnPromise = () => Promise<UserConfig>;
+export type UserConfigFn = () => UserConfig | Promise<UserConfig>;
+export type UserConfigExport = UserConfig | Promise<UserConfig> | UserConfigFnObject | UserConfigFnPromise | UserConfigFn;
 export type AlovaVersion = `v${number}`;
 export type ModuleType = "commonJs" | "ESModule";
 export interface Api {
@@ -246,6 +251,16 @@ export interface ConfigCreationOptions {
  * @returns A promise that resolves when the config is created
  */
 export declare function createConfig({ projectPath, type }?: ConfigCreationOptions): Promise<void>;
+/**
+ * Type helper to make it easier to use alova.config.ts
+ * accepts a direct {@link UserConfig} object, or a function that returns it.
+ */
+export declare function defineConfig(config: UserConfig): UserConfig;
+export declare function defineConfig(config: Promise<UserConfig>): Promise<UserConfig>;
+export declare function defineConfig(config: UserConfigFnObject): UserConfigFnObject;
+export declare function defineConfig(config: UserConfigFnPromise): UserConfigFnPromise;
+export declare function defineConfig(config: UserConfigFn): UserConfigFn;
+export declare function defineConfig(config: UserConfigExport): UserConfigExport;
 /**
  * Generate relevant API information based on the configuration object. Generally, it needs to be used with `readConfig()`.
  * @param config generating config

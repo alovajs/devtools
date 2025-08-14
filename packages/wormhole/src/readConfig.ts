@@ -31,7 +31,7 @@ export async function readConfig(projectPath = process.cwd()) {
   // eslint-disable-next-line ts/no-require-imports
   const module = require(outfile)
   unlink(outfile)
-  const config: Config = module.default || module
+  const config = await configHelper.readUserConfig(module.default || module)
   // Read the cache file and save it
   await configHelper.load(config, projectPath)
   return config

@@ -14,7 +14,7 @@ export type TemplateType = z.infer<typeof zTemplateType>
 /**
  * platform type
  */
-export type PlatformType = z.infer<typeof zPlatformType>
+export type PlatformType = z.infer<typeof zPlatformType> | (string & {})// When using defineConfig, you need to match the PlatformType.
 export interface ApiPlugin {
   name?: string
   extends?: Partial<GeneratorConfig> | ((config: GeneratorConfig) => Partial<GeneratorConfig>)
@@ -169,3 +169,14 @@ export interface Config {
       interval: number
     }
 }
+export type UserConfig = Config
+export type UserConfigFnObject = () => UserConfig
+export type UserConfigFnPromise = () => Promise<UserConfig>
+export type UserConfigFn = () => UserConfig | Promise<UserConfig>
+
+export type UserConfigExport
+  = | UserConfig
+    | Promise<UserConfig>
+    | UserConfigFnObject
+    | UserConfigFnPromise
+    | UserConfigFn
