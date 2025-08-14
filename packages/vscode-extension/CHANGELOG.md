@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.0.2
+
+### Patch Changes
+
+- [#80](https://github.com/alovajs/devtools/pull/80) [`fb41c05`](https://github.com/alovajs/devtools/commit/fb41c05cec81481fd74078db68c391cfa02418a9) Thanks [@wally94](https://github.com/wally94)! - Suport defineConfig
+
 ## 2.0.1
 
 ### Patch Changes
