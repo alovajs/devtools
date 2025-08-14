@@ -52,7 +52,7 @@
     "@vitest/coverage-v8": "catalog:dev",
     "@vueuse/core": "catalog:frontend",
     "commitizen": "catalog:dev",
-    "coveralls": "catalog:dev",
+    "coveralls-next": "catalog:dev",
     "cz-conventional-changelog": "catalog:dev",
     "dts-bundle-generator": "catalog:build",
     "eslint": "catalog:dev",
