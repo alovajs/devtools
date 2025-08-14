@@ -1,4 +1,4 @@
-import type { Config, GeneratorConfig } from '@/type'
+import type { Config, GeneratorConfig, UserConfigExport } from '@/type'
 import { isArray, isObject } from 'lodash'
 import { TemplateHelper } from '@/helper'
 import { ConfigManager } from './ConfigManager'
@@ -19,6 +19,13 @@ export class ConfigHelper {
     this.projectPath = projectPath
     await this.configManager.load(config)
     await this.readAlovaJson()
+  }
+
+  public async readUserConfig(userConfig: UserConfigExport) {
+    if (typeof userConfig === 'function') {
+      return await userConfig()
+    }
+    return Promise.resolve(userConfig)
   }
 
   public getConfig() {

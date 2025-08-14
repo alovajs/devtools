@@ -169,3 +169,14 @@ export interface Config {
       interval: number
     }
 }
+export type UserConfig = Config
+export type UserConfigFnObject = () => UserConfig
+export type UserConfigFnPromise = () => Promise<UserConfig>
+export type UserConfigFn = () => UserConfig | Promise<UserConfig>
+
+export type UserConfigExport
+  = | UserConfig
+    | Promise<UserConfig>
+    | UserConfigFnObject
+    | UserConfigFnPromise
+    | UserConfigFn
