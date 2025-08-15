@@ -82,7 +82,7 @@ export default {
       type: 'module',
       version: 3
     }
-  ]        
+  ]
 }`,
       expectedConfig: {
         generator: [
@@ -106,7 +106,7 @@ module.exports = {
       type: 'commonjs',
       version: 3
     }
-  ]        
+  ]
 }`,
       expectedConfig: {
         generator: [
@@ -146,8 +146,8 @@ describe('config', () => {
     const initialTsConfig = await fs.readFile(tsConfigPath, {
       encoding: 'utf-8',
     })
-    expect(initialTsConfig).toMatch(`import type { Config } from '@alova/wormhole';`)
-    expect(initialTsConfig).toMatch(`export default <Config>{`)
+    expect(initialTsConfig).toMatch(`import { defineConfig } from '@alova/wormhole';`)
+    expect(initialTsConfig).toMatch(`export default defineConfig({`)
     expect(initialTsConfig).toMatch(`input: 'http://localhost:3000',`)
     // generate commonjs file
 
@@ -161,8 +161,8 @@ describe('config', () => {
     const initialCjsConfig = await fs.readFile(resolve(process.cwd(), 'alova.config.js'), {
       encoding: 'utf-8',
     })
-    expect(initialCjsConfig).toMatch(`@type { import('@alova/wormhole').Config }`)
-    expect(initialCjsConfig).toMatch(`module.exports = {`)
+    expect(initialCjsConfig).toMatch(`const { defineConfig } = require('@alova/wormhole');`)
+    expect(initialCjsConfig).toMatch(`module.exports = defineConfig({`)
 
     // generate module file
 
@@ -175,8 +175,8 @@ describe('config', () => {
     const initialEsmoduleConfig = await fs.readFile(resolve(process.cwd(), 'alova.config.js'), {
       encoding: 'utf-8',
     })
-    expect(initialEsmoduleConfig).toMatch(`@type { import('@alova/wormhole').Config }`)
-    expect(initialEsmoduleConfig).toMatch(`export default {`)
+    expect(initialEsmoduleConfig).toMatch(`import { defineConfig } from '@alova/wormhole';`)
+    expect(initialEsmoduleConfig).toMatch(`export default defineConfig({`)
 
     // generate file with target type
 
@@ -184,8 +184,8 @@ describe('config', () => {
     const initialTypedConfig = await fs.readFile(resolve(process.cwd(), 'alova.config.ts'), {
       encoding: 'utf-8',
     })
-    expect(initialTypedConfig).toMatch(`import type { Config } from '@alova/wormhole';`)
-    expect(initialTypedConfig).toMatch(`export default <Config>{`)
+    expect(initialTypedConfig).toMatch(`import { defineConfig } from '@alova/wormhole';`)
+    expect(initialTypedConfig).toMatch(`export default defineConfig({`)
     expect(initialTypedConfig).toMatch(`input: 'http://localhost:3000',`)
   })
 

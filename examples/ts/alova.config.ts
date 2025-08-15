@@ -1,9 +1,9 @@
-import type { Config } from '@alova/wormhole'
+import { defineConfig } from '@alova/wormhole'
 
 // For more config detailed visit:
 // https://alova.js.org/tutorial/getting-started/extension-integration
 
-export default <Config>{
+export default defineConfig({
   generator: [
     {
       /**
@@ -38,10 +38,10 @@ export default <Config>{
       /**
        * the generated api version. options are `2` or `3`, default is `auto`.
        */
-      version: 'auto',
+      // version: 'auto',
 
       /**
-       * type of generated code. The options are `auto/ts/typescript/module/commonjs`.
+       * type of generated code. The options are `auto/ts/typescript/module/commonjs`
        */
       // type: 'auto',
 
@@ -52,7 +52,7 @@ export default <Config>{
       // global: 'Apis',
 
       /**
-       * filter or convert the generated api information, return an apiDescriptor, if this function is not specified, the apiDescripor object is not converted
+       * filter or convert the generated api information, return an apiDescriptor, if this function is not specified, the apiDescriptor object is not converted
        */
       // handleApi: apiDescriptor => {
       //  return apiDescriptor;
@@ -64,5 +64,5 @@ export default <Config>{
    * extension only
    * whether to automatically update the interface, enabled by default, check every 5 minutes, closed when set to `false`
    */
-  autoUpdate: false,
-}
+  // autoUpdate: true
+})
