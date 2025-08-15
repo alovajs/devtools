@@ -1,8 +1,8 @@
 # @alova/wormhole
 
-## 1.1.5
+## 1.2.0
 
-### Patch Changes
+### Minor Changes
 
 - [#85](https://github.com/alovajs/devtools/pull/85) [`95d06ba`](https://github.com/alovajs/devtools/commit/95d06ba8d94ab63bbd7ec5cd9723894e8eaec925) Thanks [@czhlin](https://github.com/czhlin)! - Suport defineConfig
 
