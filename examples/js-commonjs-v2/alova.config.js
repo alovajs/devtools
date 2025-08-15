@@ -1,9 +1,9 @@
+const { defineConfig } = require('@alova/wormhole')
+
 // For more config detailed visit:
 // https://alova.js.org/tutorial/getting-started/extension-integration
-/**
- * @type { import('@alova/wormhole').Config }
- */
-module.exports = {
+
+module.exports = defineConfig({
   generator: [
     {
       /**
@@ -65,4 +65,4 @@ module.exports = {
    * whether to automatically update the interface, enabled by default, check every 5 minutes, closed when set to `false`
    */
   // autoUpdate: true
-}
+})

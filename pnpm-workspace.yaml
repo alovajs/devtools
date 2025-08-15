@@ -43,7 +43,7 @@ catalogs:
     '@vue/test-utils': ^2.4.6
     commander: ^14.0.0
     commitizen: ^4.3.1
-    coveralls: ^3.1.1
+    coveralls-next: ^5.0.0
     cz-conventional-changelog: ^3.3.0
     eslint: ^9.31.0
     eslint-plugin-format: ^1.0.1

@@ -1,12 +1,9 @@
-{{#if (eq type "typescript")}}import type { Config } from '@alova/wormhole';
+{{#if (eq moduleType "ESModule")}}import { defineConfig } from '@alova/wormhole'{{else if (eq moduleType "commonJs")}}const { defineConfig } = require('@alova/wormhole'){{/if}};
 
-
-{{/if}}// For more config detailed visit:
+// For more config detailed visit:
 // https://alova.js.org/tutorial/getting-started/extension-integration
-{{#if (not type "typescript")}}/**
- * @type {{#raw "{ " }}{{/raw}}import('@alova/wormhole').Config{{#raw " }" }}{{/raw}}
- */{{/if}}
- {{#if (eq moduleType "ESModule")}}export default {{#if (eq type "typescript")}}<Config>{{/if}}{{else if (eq moduleType "commonJs")}}module.exports ={{/if}}{{#raw "{ " }}{{/raw}}
+
+{{#if (eq moduleType "ESModule")}}export default {{else if (eq moduleType "commonJs")}}module.exports ={{/if}} defineConfig({
   generator: [
     {
       /**
@@ -68,4 +65,4 @@
    * whether to automatically update the interface, enabled by default, check every 5 minutes, closed when set to `false`
    */
   // autoUpdate: true
-{{#raw "};" }}{{/raw}}
+ });
