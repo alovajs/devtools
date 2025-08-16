@@ -1,6 +1,7 @@
 import type { z } from 'zod/v3'
-// import { ApiPlugin } from '@/type';
 import type { zConfigType, zPlatformType, zTemplateType } from './zType'
+// import { ApiPlugin } from '@/type';
+import type { OpenAPIDocument } from '@/type'
 import type { ApiDescriptor } from '@/type/api'
 
 /**
@@ -15,10 +16,40 @@ export type TemplateType = z.infer<typeof zTemplateType>
  * platform type
  */
 export type PlatformType = z.infer<typeof zPlatformType> | (string & {})// When using defineConfig, you need to match the PlatformType.
+
+export type MaybePromise<T> = T | Promise<T>
 export interface ApiPlugin {
   name?: string
   extends?: Partial<GeneratorConfig> | ((config: GeneratorConfig) => Partial<GeneratorConfig>)
+  /**
+   * Replaces or manipulates the options object passed to wormhole.
+   * Returning null does NOT replacing anything.
+   */
+  config?: (config: GeneratorConfig) => MaybePromise<GeneratorConfig | undefined | null | void>
+  /**
+   * Manipulate the input config before parsing the openapi file.
+   * Returning null does NOT replacing anything.
+   */
+  beforeOpenapiParse?: (
+    inputConfig: Pick<GeneratorConfig, 'input' | 'platform' | 'plugins'>
+  ) => MaybePromise<Pick<GeneratorConfig, 'input' | 'platform' | 'plugins'> | undefined | null | void>
+  /**
+   * Manipulate the openapi document after parsing.
+   * Returning null does NOT replacing anything.
+   */
+  afterOpenapiParse?: (document: OpenAPIDocument) => MaybePromise<OpenAPIDocument | undefined | null | void>
+  /**
+   * Manipulate the template code before generating.
+   * Returning null does NOT replacing anything.
+   */
+  beforeCodeGenerate?: (data: string, outputFile: string) => MaybePromise<string | undefined | null | void>
+  /**
+   * Called when wormhold has finished code generating.
+   */
+  afterCodeGenerate?: (error?: Error) => void
 }
+export type ApiPluginHooks = keyof Omit<ApiPlugin, 'name' | 'extends'>
+
 export interface HandleApi {
   (apiDescriptor: ApiDescriptor): ApiDescriptor | void | undefined | null
 }

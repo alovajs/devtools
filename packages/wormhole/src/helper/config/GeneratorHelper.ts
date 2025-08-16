@@ -1,13 +1,13 @@
 import type { OutputFileOptions } from '@/helper'
 import type { AlovaVersion, GeneratorConfig, TemplateType } from '@/type'
 import path from 'node:path'
-import { isEqual } from 'lodash'
+import { isEqual, pick } from 'lodash'
 import { fromError } from 'zod-validation-error'
 import { openApiParser, TemplateParser } from '@/core/parser'
 import getAlovaVersion from '@/functions/getAlovaVersion'
 import getAutoTemplateType from '@/functions/getAutoTemplateType'
 import prepareConfig from '@/functions/prepareConfig'
-import { logger, TemplateHelper } from '@/helper'
+import { logger, PluginDriver, TemplateHelper } from '@/helper'
 import { existsPromise, toCase as transformFileName } from '@/utils'
 import { zGeneratorConfig } from './zType'
 
@@ -15,6 +15,7 @@ export class GeneratorHelper {
   private static instance: GeneratorHelper
   private config: GeneratorConfig
   private readConfig: Readonly<GeneratorConfig>
+  private pluginDriver: PluginDriver
   private readonly defaultConfig: GeneratorConfig = Object.freeze({
     input: '',
     output: '',
@@ -55,6 +56,7 @@ export class GeneratorHelper {
     // 更新配置
     this.config = validatedConfig
     this.readConfig = Object.freeze(this.config)
+    this.pluginDriver = new PluginDriver(this.config.plugins)
     logger.debug('GeneratorConfig loaded successfully', this.config)
     return this
   }
@@ -65,6 +67,10 @@ export class GeneratorHelper {
 
   public getTemplateType(projectPath: string) {
     return GeneratorHelper.getTemplateType(this.config, projectPath)
+  }
+
+  public getPluginDriver() {
+    return this.pluginDriver
   }
 
   public openApiData(projectPath: string) {
@@ -125,12 +131,26 @@ export class GeneratorHelper {
       force?: boolean
     },
   ) {
-    // ! test
-    config = prepareConfig(config)
-    const document = await this.openApiData(config, options.projectPath)
+    // plugin: handle extends
+    config = await prepareConfig(config)
+
+    const pluginDriver = new PluginDriver(config.plugins)
+
+    // plugin: handle before parse openapi
+    const configBeforeParse = await pluginDriver.hookSeq(
+      'beforeOpenapiParse',
+      [pick(config, ['input', 'plugins', 'platform'])],
+    )
+    config = { ...config, ...(configBeforeParse ?? {}) }
+
+    let document = await this.openApiData(config, options.projectPath)
     if (!document) {
       return false
     }
+
+    // plugin: handle after parse openapi
+    document = await pluginDriver.hookSeq('afterOpenapiParse', [document]) ?? document
+
     const output = path.resolve(options.projectPath, config.output)
     const version = GeneratorHelper.getAlovaVersion(config, options.projectPath)
     const templateHelper = TemplateHelper.load({
@@ -211,6 +231,9 @@ export class GeneratorHelper {
       })
     }
     await templateHelper.outputFiles(generateFiles)
+
+    // plugin: handle after code gen
+    await pluginDriver.hookParallel('afterCodeGenerate', [])
     return true
   }
 }

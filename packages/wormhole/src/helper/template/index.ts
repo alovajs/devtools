@@ -142,6 +142,7 @@ export class TemplateHelper {
   }
 
   async outputFile(options: OutputFileOptions) {
+    // TODO: trigger beforeCodeGen hook
     return generateFile(
       options.output,
       `${options?.outFileName ?? options.fileName}${options?.ext ?? this.getExt()}`,
