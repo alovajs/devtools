@@ -3,7 +3,8 @@
   "compilerOptions": {
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "skipLibCheck": false
   },
   "include": [
     "packages/**/*.{js,ts,mts}",
