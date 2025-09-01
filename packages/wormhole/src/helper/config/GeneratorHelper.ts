@@ -8,7 +8,7 @@ import getAlovaVersion from '@/functions/getAlovaVersion'
 import getAutoTemplateType from '@/functions/getAutoTemplateType'
 import prepareConfig from '@/functions/prepareConfig'
 import { logger, PluginDriver, TemplateHelper } from '@/helper'
-import { existsPromise, toCase as transformFileName } from '@/utils'
+import { existsPromise, generateFile, toCase as transformFileName } from '@/utils'
 import { zGeneratorConfig } from './zType'
 
 export class GeneratorHelper {
@@ -230,7 +230,20 @@ export class GeneratorHelper {
         hasVersion: false,
       })
     }
-    await templateHelper.outputFiles(generateFiles)
+
+    // plugin: handle before code generate
+    const unhandledGenerateFiles: OutputFileOptions[] = []
+    for (const file of generateFiles) {
+      const data = await pluginDriver.hookFirst('beforeCodeGenerate', [file.data, file.outFileName ?? file.fileName])
+      if (!data) {
+        unhandledGenerateFiles.push(file)
+        return
+      }
+
+      generateFile(file.output, file.fileName, data)
+    }
+
+    await templateHelper.outputFiles(unhandledGenerateFiles)
 
     // plugin: handle after code gen
     await pluginDriver.hookParallel('afterCodeGenerate', [])
