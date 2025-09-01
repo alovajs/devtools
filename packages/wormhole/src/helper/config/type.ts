@@ -42,7 +42,7 @@ export interface ApiPlugin {
    * Manipulate the template code before generating.
    * Returning null does NOT replacing anything.
    */
-  beforeCodeGenerate?: (data: string, outputFile: string) => MaybePromise<string | undefined | null | void>
+  beforeCodeGenerate?: (data: any, outputFile: string) => MaybePromise<string | undefined | null | void>
   /**
    * Called when wormhold has finished code generating.
    */
