@@ -1,4 +1,5 @@
 import { defineExtension, onDeactivate } from 'reactive-vscode'
+import { Commands } from '@/commands'
 import Global from '@/core/Global'
 import Setup from '@/core/Setup'
 import { Log } from '@/utils'
@@ -15,4 +16,12 @@ const { activate, deactivate } = defineExtension(async (ctx) => {
   await Setup.init(ctx)
 })
 
+// for vscode
 export { activate, deactivate }
+
+// for test
+export {
+  Commands,
+  Global,
+  Log,
+}
