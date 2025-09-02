@@ -2,6 +2,7 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
+    "moduleResolution": "bundler",
     "paths": {
       "~/*": ["./src/*"],
       "@/*": ["./ext/*"]
