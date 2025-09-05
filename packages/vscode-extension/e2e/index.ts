@@ -4,14 +4,18 @@ import { runTests } from '@vscode/test-electron'
 import chalk from 'chalk'
 import fg from 'fast-glob'
 import fs from 'fs-extra'
+import { projectRoot, root } from './path'
+import { logger, run } from './utils'
 
 async function main() {
-  const root = join(__dirname, '../../..')
-  const projectRoot = join(__dirname, '..')
   const extensionDevelopmentPath = projectRoot
 
   // Frameworks
   const testFrameworksDir = join(projectRoot, './e2e-out/frameworks')
+  const fixtureTempPath = join(root, './e2e-fixtures-temp')
+  if (fs.existsSync(fixtureTempPath)) {
+    await fs.remove(fixtureTempPath)
+  }
   const frameworks = await fg('*', {
     onlyDirectories: true,
     cwd: testFrameworksDir,
@@ -20,12 +24,21 @@ async function main() {
     for (const framework of frameworks) {
       console.log(`\n\n${chalk.blue('Start E2E testing for framework')} ${chalk.magenta(framework)} ${chalk.blue('...\n')}`)
       const extensionTestsPath = join(testFrameworksDir, framework, 'index')
-      const fixtureTargetPath = join(root, 'examples', framework)
-      const fixtureTargetTestPath = join(root, 'examples', framework, 'src')
+      const fixtureSourcePath = join(root, 'examples', framework)
+      const fixtureTargetPath = join(fixtureTempPath, framework)
 
-      if (fs.existsSync(fixtureTargetTestPath)) {
-        await fs.remove(fixtureTargetTestPath)
-      }
+      await fs.copy(fixtureSourcePath, fixtureTargetPath, {
+        filter(src) {
+          if (src.includes('node_modules')) {
+            return false
+          }
+          return true
+        },
+      })
+
+      await run('pnpm i', {
+        cwd: fixtureTargetPath,
+      })
 
       await runTests({
         extensionDevelopmentPath,
@@ -39,7 +52,7 @@ async function main() {
     process.exit(0)
   }
   catch {
-    console.error('Failed to run tests')
+    logger.error('Failed to run tests')
     process.exit(1)
   }
 }

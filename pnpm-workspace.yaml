@@ -1,6 +1,7 @@
 packages:
   - examples/*
   - packages/*
+  - e2e-fixtures-temp/*
 
 catalogs:
   build:
@@ -65,6 +66,7 @@ catalogs:
     openapi: ^1.0.1
     ora: 5.4.1
     ovsx: ^0.10.5
+    pino: ^9.9.1
     prettier: ^3.6.2
     rimraf: ^6.0.1
     sinon: ^21.0.0

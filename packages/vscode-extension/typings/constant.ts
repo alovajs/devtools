@@ -1,4 +1,4 @@
-// 不要引入vscode
+// 不要引入vscode,这里是ext、src共用
 export enum MType {
   hello = 'hello',
   openDocs = 'openDocs',

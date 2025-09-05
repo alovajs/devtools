@@ -1,7 +1,7 @@
 import type { Api } from '@alova/wormhole'
 import type { ExtensionContext } from 'vscode'
+import { MType } from '#/constant'
 import { isApiExists } from '@/functions/getApis'
-import { MType } from '@/handlers/constant'
 import { Log } from '@/utils'
 import {
   onMessage,

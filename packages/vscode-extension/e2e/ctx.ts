@@ -2,26 +2,29 @@ import { deepStrictEqual as is, notStrictEqual as not } from 'node:assert'
 import { join } from 'node:path'
 import Chai from 'chai'
 import Snapshot from 'chai-jest-snapshot'
-import { extensions, Uri, window, workspace } from 'vscode'
+import sinon from 'sinon'
+import { commands, extensions, Uri, window, workspace } from 'vscode'
+import { Meta } from './test'
 
 Chai.use(Snapshot)
-
+export * from './test'
 export const expect = Chai.expect
 export { is, not }
-// @ts-expect-error export from dist/extension
-export { Commands, Global, Log } from '../dist/extension'
-
 export function timeout(ms = 1000) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 export function getExt() {
-  return extensions.getExtension('Alova.alova-vscode-extension')!
+  return extensions.getExtension(Meta.extensionId)!
 }
 
 export async function openFile(name: string) {
   const doc = await workspace.openTextDocument(Uri.file(join(workspace.workspaceFolders![0]!.uri.fsPath, name)))
   await window.showTextDocument(doc)
+  return doc.getText()
+}
+export async function executeCommand<T>(id: string) {
+  return commands.executeCommand<T>(id)
 }
 
 export function setupTest(name: string, fn: () => void) {
@@ -36,6 +39,10 @@ export function setupTest(name: string, fn: () => void) {
       Snapshot.setTestName(currentTest!.fullTitle())
     })
 
+    afterEach(() => {
+    // Restore all stubs
+      sinon.restore()
+    })
     fn()
   })
 }

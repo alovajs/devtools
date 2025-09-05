@@ -5,9 +5,6 @@
     "baseUrl": ".",
     "module": "commonjs",
     "moduleResolution": "node",
-    "paths": {
-      "~/*": ["../dist/*"]
-    },
     "strict": true,
     "outDir": "../e2e-out",
     "esModuleInterop": true,
