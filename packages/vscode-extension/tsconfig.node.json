@@ -4,9 +4,11 @@
     "composite": true,
     "moduleResolution": "bundler",
     "paths": {
-      "~/*": ["./src/*"],
-      "@/*": ["./ext/*"]
-    }
+      "@/*": ["./ext/*"],
+      "#/*": ["./typings/*"]
+    },
+    "types": ["./typings/index.d.ts", "./ext/env.d.ts"],
+    "noUnusedLocals": false
   },
-  "include": ["ext", "vite.config.ts", "./typings/*"]
+  "include": ["./ext/**/*", "vite.config.ts", "./typings/*"]
 }

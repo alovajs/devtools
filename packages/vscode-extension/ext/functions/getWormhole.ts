@@ -9,6 +9,10 @@ import { Log } from '@/utils'
 import { getWorkspacePaths } from '@/utils/vscode'
 
 type Wormhole = typeof import('@alova/wormhole')
+// 用于mock测试
+export const MockWormhole = {
+
+} as Wormhole
 export function getWormhole() {
   let wormhole: Wormhole | null = null
   for (const workspaceRootPath of getWorkspacePaths()) {
@@ -54,6 +58,9 @@ export default () =>
     {
       get(_, key: keyof Wormhole) {
         const wormhole = getWormhole()
+        if (MockWormhole[key]) {
+          return MockWormhole[key]
+        }
         if (wormhole) {
           return wormhole[key]
         }

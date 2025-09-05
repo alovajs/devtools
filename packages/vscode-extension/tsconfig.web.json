@@ -1,0 +1,19 @@
+{
+  "extends": "@tomjs/tsconfig/vue.json",
+  "compilerOptions": {
+    "paths": {
+      "~/*": ["./src/*"],
+      "@/*": ["./ext/*"],
+      "#/*": ["./typings/*"]
+    },
+    "types": [
+      "vitest",
+      "vite/client",
+      "naive-ui/volar",
+      "vite-plugin-vue-layouts/client",
+      "unplugin-vue-router/client"
+    ]
+  },
+  "include": ["src", "./typings/*"],
+  "exclude": ["dist", "node_modules"]
+}
