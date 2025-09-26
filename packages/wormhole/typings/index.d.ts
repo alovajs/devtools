@@ -147,6 +147,12 @@ export interface GeneratorConfig {
 	 * ```
 	 */
 	handleApi?: HandleApi;
+	/**
+	 * Control the format of output file names. Supports presets or a custom function.
+	 * Only affects the output file name, and does not affect template filename resolution.
+	 * Presets: 'camelCase' | 'pascalCase' | 'kebabCase' | 'snakeCase'
+	 */
+	fileNameCase?: "camelCase" | "pascalCase" | "kebabCase" | "snakeCase" | ((name: string) => string);
 }
 export interface Config {
 	/**

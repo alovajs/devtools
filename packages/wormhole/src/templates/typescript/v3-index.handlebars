@@ -1,4 +1,4 @@
-import { createAlova } from 'alova'; 
+import { createAlova } from 'alova';
 import fetchAdapter from 'alova/fetch';
 {{#vue}}
 import vueHook from 'alova/vue';
@@ -6,7 +6,7 @@ import vueHook from 'alova/vue';
 {{#react}}
 import reactHook from 'alova/react';
 {{/react}}
-import { createApis, withConfigType, mountApis } from './createApis'; 
+import { createApis, withConfigType, mountApis } from './{{createApisFileName}}';
 
 export const alovaInstance = createAlova({
   baseURL: "{{{baseUrl}}}",
@@ -18,14 +18,14 @@ export const alovaInstance = createAlova({
 {{/react}}
   requestAdapter: fetchAdapter(),
   beforeRequest: method => { },
-  responded: res => { 
-    return res.json(); 
+  responded: res => {
+    return res.json();
   }
 });
 
-export const $$userConfigMap = withConfigType({}); 
+export const $$userConfigMap = withConfigType({});
 
-const Apis = createApis(alovaInstance, $$userConfigMap); 
+const Apis = createApis(alovaInstance, $$userConfigMap);
 
 mountApis(Apis);
 

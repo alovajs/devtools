@@ -1,4 +1,4 @@
-import { createAlova } from 'alova'; 
+import { createAlova } from 'alova';
 import GlobalFetch from 'alova/GlobalFetch';
 {{#vue}}
 import vueHook from 'alova/vue';
@@ -6,7 +6,7 @@ import vueHook from 'alova/vue';
 {{#react}}
 import reactHook from 'alova/react';
 {{/react}}
-import { createApis, withConfigType, mountApis } from './createApis'; 
+import { createApis, withConfigType, mountApis } from './{{createApisFileName}}';
 
 export const alovaInstance = createAlova({
   baseURL: "{{{baseUrl}}}",
@@ -18,8 +18,8 @@ export const alovaInstance = createAlova({
 {{/react}}
   requestAdapter: GlobalFetch(),
   beforeRequest: method => { },
-  responded: res => { 
-    return res.json(); 
+  responded: res => {
+    return res.json();
   }
 });
 

@@ -122,6 +122,15 @@ export const zGeneratorConfig = z.object({
    */
   defaultRequire: z.boolean().optional(),
   /**
+   * Control the format of output file names. Supports presets or a custom function.
+   */
+  fileNameCase: z
+    .union([
+      z.enum(['camelCase', 'pascalCase', 'kebabCase', 'snakeCase']),
+      z.function().args(z.string()).returns(z.string()),
+    ])
+    .optional(),
+  /**
    * plugin will be executed before `handleApi`
    */
   plugins: z.array(zPlugin).optional(),

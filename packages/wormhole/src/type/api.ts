@@ -68,4 +68,8 @@ export interface TemplateData extends Omit<OpenAPIDocument, ''> {
   commentText: string
   useImportType: boolean
   type: TemplateType
+  createApisFileName?: string
+  apiDefinitionsFileName?: string
+  globalsDFileName?: string
+  indexFileName?: string
 }

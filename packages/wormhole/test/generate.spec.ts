@@ -1123,4 +1123,34 @@ describe('generate API', () => {
   }`),
     )
   })
+
+  it('should generate api files according to the fileNameCase config', async () => {
+    const outputDir = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`)
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/openapi_301.json'),
+          output: outputDir,
+          fileNameCase: 'kebabCase',
+        },
+      ],
+    })
+
+    expect(await fs.readFile(resolve(outputDir, 'api-definitions.ts'), 'utf-8')).toMatchSnapshot()
+    expect(await fs.readFile(resolve(outputDir, 'index.ts'), 'utf-8')).toMatchSnapshot()
+    expect(await fs.readFile(resolve(outputDir, 'create-apis.ts'), 'utf-8')).toMatchSnapshot()
+    expect(await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8')).toMatchSnapshot()
+
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/openapi_301.json'),
+          output: outputDir,
+          fileNameCase: 'pascalCase',
+        },
+      ],
+    })
+
+    expect(await fs.readFile(resolve(outputDir, 'CreateApis.ts'), 'utf-8')).toMatchSnapshot()
+  })
 })
