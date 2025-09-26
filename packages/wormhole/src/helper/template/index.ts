@@ -1,7 +1,10 @@
 import type { AlovaVersion, TemplateData, TemplateType } from '@/type'
+import { unlink } from 'node:fs/promises'
+import path from 'node:path'
 import { cloneDeep, merge } from 'lodash'
 import { getGlobalConfig } from '@/config'
 import { getAlovaJsonPath, readAlovaJson, writeAlovaJson } from '@/functions/alovaJson'
+import { logger } from '@/helper/logger'
 import { generateFile, readAndRenderTemplate } from '@/utils'
 
 const DEFAULT_CONFIG = getGlobalConfig()
@@ -16,6 +19,10 @@ export interface OutputFileOptions extends RenderTemplateOptions {
   data: Record<string, any>
   output: string
 }
+export interface UnlickOptions {
+  output: string
+}
+export interface UnlickFile { fileName: string, ext?: string, output?: string }
 const DEFAULT_OPTIONS = {
   root: false,
   hasVersion: true,
@@ -108,6 +115,30 @@ export class TemplateHelper {
       default:
         return 'commonJs'
     }
+  }
+
+  unlink(_files: Array<UnlickFile | string>, { output }: UnlickOptions) {
+    const files: Required<UnlickFile>[] = _files.filter(Boolean).map((item) => {
+      const common = {
+        output,
+        ext: this.getExt(),
+      }
+      if (typeof item === 'string') {
+        return {
+          fileName: item,
+          ...common,
+        }
+      }
+      return Object.assign(common, item)
+    })
+    return Promise.all(files.map(async ({ output, fileName, ext }) => {
+      try {
+        await unlink(path.join(output, `${fileName}${ext}`))
+      }
+      catch (err) {
+        logger.warn((err as Error).message)
+      }
+    }))
   }
 
   async outputFile(options: OutputFileOptions) {

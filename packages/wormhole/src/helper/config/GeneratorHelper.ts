@@ -8,7 +8,7 @@ import getAlovaVersion from '@/functions/getAlovaVersion'
 import getAutoTemplateType from '@/functions/getAutoTemplateType'
 import prepareConfig from '@/functions/prepareConfig'
 import { logger, TemplateHelper } from '@/helper'
-import { existsPromise } from '@/utils'
+import { existsPromise, toCase as transformFileName } from '@/utils'
 import { zGeneratorConfig } from './zType'
 
 export class GeneratorHelper {
@@ -141,20 +141,48 @@ export class GeneratorHelper {
       projectPath: options.projectPath,
       generatorConfig: config,
     })
-    // Do you need to generate api files?
+    const oldTemplateData = TemplateHelper.getData(options.projectPath, config.output)
+    // Transform output filename by config.fileNameCase without changing template filename
+    const toCase = (name: string) => transformFileName(name, config.fileNameCase)
+    // Inject computed filenames into template render data for templates to reference
+    Object.assign(templateData, {
+      createApisFileName: toCase('createApis'),
+      apiDefinitionsFileName: toCase('apiDefinitions'),
+      globalsDFileName: toCase('globals.d'),
+      indexFileName: toCase('index'),
+    })
 
-    if (!options.force && isEqual(templateData, TemplateHelper.getData(options.projectPath, config.output))) {
+    // Do you need to generate api files?
+    if (!options.force && isEqual(templateData, oldTemplateData)) {
       return false
     }
+
+    if (oldTemplateData) {
+      await templateHelper.unlink([
+        // Delete old API creation file
+        oldTemplateData.createApisFileName ?? '',
+        // Delete old API definition file
+        oldTemplateData.apiDefinitionsFileName ?? '',
+        // Delete old global type declaration file (.d.ts)
+        {
+          fileName: oldTemplateData.globalsDFileName ?? '',
+          ext: '.ts',
+        },
+      ], { output })
+    }
+
     await TemplateHelper.setData(templateData, options.projectPath, config.output)
+
     const generateFiles: OutputFileOptions[] = [
       {
         fileName: 'createApis',
+        outFileName: templateData.createApisFileName,
         data: templateData,
         output,
       },
       {
         fileName: 'apiDefinitions',
+        outFileName: templateData.apiDefinitionsFileName,
         data: templateData,
         output,
         root: true,
@@ -162,15 +190,17 @@ export class GeneratorHelper {
       },
       {
         fileName: 'globals.d',
+        outFileName: templateData.globalsDFileName,
         data: templateData,
         output,
         ext: '.ts',
         root: true,
       },
     ]
-    if (!(await existsPromise(path.join(output, `index${templateHelper.getExt()}`)))) {
+    if (!(await existsPromise(path.join(output, `${templateData.indexFileName}${templateHelper.getExt()}`)))) {
       generateFiles.push({
         fileName: 'index',
+        outFileName: templateData.indexFileName,
         data: templateData,
         output,
       })

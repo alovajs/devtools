@@ -6,8 +6,8 @@ const vueHook = require('alova/vue');
 {{#react}}
 const reactHook = require('alova/react');
 {{/react}}
-const { createApis, withConfigType, mountApis } = require('./createApis'); 
-const alovaInstance = createAlova({ 
+const { createApis, withConfigType, mountApis } = require('./{{createApisFileName}}');
+const alovaInstance = createAlova({
   baseURL: "{{{baseUrl}}}",
 {{#vue}}
   statesHook: vueHook,

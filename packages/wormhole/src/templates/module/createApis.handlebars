@@ -1,6 +1,6 @@
 {{{commentText}}}
 import { Method } from 'alova';
-import apiDefinitions from './apiDefinitions';
+import apiDefinitions from './{{apiDefinitionsFileName}}';
 
 const cache = Object.create(null);
 /**
@@ -84,7 +84,7 @@ export const mountApis = (Apis) =>{
 }
 /**
  * @template T
- * @typedef {typeof import('./index')['alovaInstance'] extends import('alova').Alova<any, any, infer RC, any, infer RH>
+ * @typedef {typeof import('./{{indexFileName}}')['alovaInstance'] extends import('alova').Alova<any, any, infer RC, any, infer RH>
  *  ? import('alova').AlovaMethodCreateConfig<any, T, RC, RH>
  *  : never
  *} MethodConfig
@@ -103,7 +103,7 @@ export const mountApis = (Apis) =>{
  */
 /**
  * @typedef {{#raw "{{ " }}{{/raw}}
- *  [P in keyof typeof import('./apiDefinitions').default]?: MethodConfig<
+ *  [P in keyof typeof import('./{{apiDefinitionsFileName}}').default]?: MethodConfig<
  *    P extends `${infer Tag}.${infer Url}`
  *      ? Parameters<NonNullable<APISofParameters<Tag,Url>[0]>['transformData']>[0]
  *      : any

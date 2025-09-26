@@ -1,7 +1,7 @@
 {{{commentText}}}
 import type { Alova, MethodType, AlovaMethodCreateConfig } from 'alova';
 import { Method } from 'alova';
-import apiDefinitions from './apiDefinitions';
+import apiDefinitions from './{{apiDefinitionsFileName}}';
 
 const cache = Object.create(null);
 const createFunctionalProxy = (
@@ -72,7 +72,7 @@ export const mountApis = (Apis: {{{global}}}) =>{
   // define global variable `Apis`
   (({{{globalHost}}}) as any).{{{global}}} = Apis;
 }
-type MethodConfig<T> = typeof import('./index')['alovaInstance'] extends Alova<any, any, infer RC, any, infer RH> ? import('alova').AlovaMethodCreateConfig<any, T, RC, RH> : never;
+type MethodConfig<T> = typeof import('./{{indexFileName}}')['alovaInstance'] extends Alova<any, any, infer RC, any, infer RH> ? import('alova').AlovaMethodCreateConfig<any, T, RC, RH> : never;
 type APISofParameters<Tag extends string, Url extends string> = Tag extends keyof {{{global}}}
   ? Url extends keyof {{{global}}}[Tag]
     ? {{{global}}}[Tag][Url] extends (...args: any) => any
@@ -81,7 +81,7 @@ type APISofParameters<Tag extends string, Url extends string> = Tag extends keyo
     : any
   : any;
 type MethodsConfigMap = {
-  [P in keyof typeof import('./apiDefinitions').default]?: MethodConfig<
+  [P in keyof typeof import('./{{apiDefinitionsFileName}}').default]?: MethodConfig<
     P extends `${infer Tag}.${infer Url}` ? Parameters<NonNullable<APISofParameters<Tag, Url>[0]>['transformData']>[0] : any
   >;
 };
