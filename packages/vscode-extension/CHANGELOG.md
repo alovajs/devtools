@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.0.3
+
+### Patch Changes
+
+- [#91](https://github.com/alovajs/devtools/pull/91) [`0b7eaff`](https://github.com/alovajs/devtools/commit/0b7eaffa8c11cfd072c608be0171b358f734b143) Thanks [@moecasts](https://github.com/moecasts)! - custom file name case transform
+
 ## 2.0.2
 
 ### Patch Changes
