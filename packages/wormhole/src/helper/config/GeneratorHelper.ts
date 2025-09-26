@@ -141,7 +141,7 @@ export class GeneratorHelper {
       projectPath: options.projectPath,
       generatorConfig: config,
     })
-
+    const oldTemplateData = TemplateHelper.getData(options.projectPath, config.output)
     // Transform output filename by config.fileNameCase without changing template filename
     const toCase = (name: string) => transformFileName(name, config.fileNameCase)
     // Inject computed filenames into template render data for templates to reference
@@ -153,10 +153,24 @@ export class GeneratorHelper {
     })
 
     // Do you need to generate api files?
-
-    if (!options.force && isEqual(templateData, TemplateHelper.getData(options.projectPath, config.output))) {
+    if (!options.force && isEqual(templateData, oldTemplateData)) {
       return false
     }
+
+    if (oldTemplateData) {
+      await templateHelper.unlink([
+        // Delete old API creation file
+        oldTemplateData.createApisFileName ?? '',
+        // Delete old API definition file
+        oldTemplateData.apiDefinitionsFileName ?? '',
+        // Delete old global type declaration file (.d.ts)
+        {
+          fileName: oldTemplateData.globalsDFileName ?? '',
+          ext: '.ts',
+        },
+      ], { output })
+    }
+
     await TemplateHelper.setData(templateData, options.projectPath, config.output)
 
     const generateFiles: OutputFileOptions[] = [
