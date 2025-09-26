@@ -34,7 +34,7 @@
     "changeset:pre.exit": "changeset pre exit",
     "changeset:version": "changeset version",
     "build": "nr --filter=./packages/* build",
-    "release": "nr coveralls && nr build && changeset publish && nr --filter=alova-vscode-extension release"
+    "release": "nr test:unit:coverage && nr build && changeset publish && nr --filter=alova-vscode-extension release"
   },
   "devDependencies": {
     "@alova/wormhole": "workspace:*",
