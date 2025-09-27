@@ -301,7 +301,7 @@ function unCircular(
     seen.set(obj, oldRefObj)
   }
   const $ref = `#/components/schemas/${standardLoader.transform(standardLoader.transformRadomVariable(objPath), {
-    style: 'camelCas',
+    style: 'camelCase',
   })}`
   setSeen(obj, { $ref })
   if (isBaseReferenceObject(obj)) {

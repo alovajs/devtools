@@ -3,14 +3,14 @@ import { isValidJSIdentifier, makeIdentifier } from './helper'
 import { getRandomVariable, getStandardOperationId, getStandardRefName, getStandardTags } from './standards'
 
 export interface StandardLoaderOptions {
-  style: 'camelCas' | 'snakeCase'
+  style: 'camelCase' | 'snakeCase'
 }
 
 export class StandardLoader implements Loader<string, string, StandardLoaderOptions> {
   name = 'standardLoader'
 
   transform(input: string, options?: StandardLoaderOptions) {
-    return makeIdentifier(input, options?.style ?? 'camelCas')
+    return makeIdentifier(input, options?.style ?? 'camelCase')
   }
 
   validate(input?: string): boolean {

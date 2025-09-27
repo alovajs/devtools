@@ -63,14 +63,52 @@ const reservedWords = new Set([
   'with',
   'yield',
 ])
-export function makeIdentifier(str: string, style: 'camelCas' | 'snakeCase') {
-  // Removes all characters that are not letters, numbers, underscores, and dollar signs while splitting words
-  const words = str.split(/[^\w$]+/).filter(Boolean)
+function splitIntoWords(str: string) {
+  const words: string[] = []
+  const UPPERCASE_REGEX = /^[A-Z]$/
+  const LOWERCASE_OR_DIGIT_REGEX = /^[a-z\d]$/
+  const LETTER_REGEX = /[a-z]/i
+  const DIGIT_REGEX = /^\d$/
+  let currentWord = ''
+  for (let i = 0; i < str.length; i++) {
+    const char = str[i]
+    const lastChar = str[i - 1] ?? ''
+    const nextChar = str[i + 1] ?? ''
+    // 如果遇到非单词字符，结束当前单词
+    if (/[^\w$]/.test(char) || ['_'].includes(char)) {
+      if (currentWord) {
+        words.push(currentWord)
+      }
+      currentWord = ''
+      continue
+    }
 
+    const isStartOfCamelCase = !UPPERCASE_REGEX.test(lastChar) && UPPERCASE_REGEX.test(char)
+    const isUppercaseFollowedByLowercase = UPPERCASE_REGEX.test(char) && LOWERCASE_OR_DIGIT_REGEX.test(nextChar)
+    const isTransitionFromDigitToNonDigit = LETTER_REGEX.test(currentWord) && DIGIT_REGEX.test(lastChar) && !DIGIT_REGEX.test(char)
+
+    if (isStartOfCamelCase || isUppercaseFollowedByLowercase || isTransitionFromDigitToNonDigit) {
+      if (currentWord) {
+        words.push(currentWord)
+      }
+      currentWord = char
+    }
+    else {
+      currentWord += char
+    }
+  }
+  if (currentWord) {
+    words.push(currentWord)
+  }
+  return words
+}
+export function makeIdentifier(str: string, style: 'camelCase' | 'snakeCase') {
+  // Removes all characters that are not letters, numbers, underscores, and dollar signs while splitting words
+  const words = splitIntoWords(str).filter(Boolean)
   // Convert words to camelCase form
   let identifier = ''
   switch (style) {
-    case 'camelCas':
+    case 'camelCase':
       identifier = words
         .map((word, index) => {
           if (index === 0) {
