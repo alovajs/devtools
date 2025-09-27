@@ -4,7 +4,7 @@
 // Meta info
 export const publisher = 'Alova'
 export const name = 'alova-vscode-extension'
-export const version = '1.0.9'
+export const version = '2.0.2'
 export const displayName = 'Alova'
 export const description = 'Generate and search APIs without API documentation any more'
 export const extensionId = `${publisher}.${name}`
