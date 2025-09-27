@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.0.4
+
+### Patch Changes
+
+- [#93](https://github.com/alovajs/devtools/pull/93) [`9360f9c`](https://github.com/alovajs/devtools/commit/9360f9cc5b118fbf23e122505253d675a6597842) Thanks [@czhlin](https://github.com/czhlin)! - fix makeIdentifier camelCase
+
 ## 2.0.3
 
 ### Patch Changes
