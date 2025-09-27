@@ -19,7 +19,7 @@ export function getStandardOperationId(
   let operationId = ''
   if (pathObject.operationId) {
     operationId = standardLoader.transform(pathObject.operationId as string, {
-      style: 'camelCas',
+      style: 'camelCase',
     })
   }
   if (!operationId) {
@@ -57,7 +57,7 @@ export function getStandardTags(
     let newTag = ''
     if (tag) {
       newTag = standardLoader.transform(tag, {
-        style: 'camelCas',
+        style: 'camelCase',
       })
     }
     if (tagsSet.has(newTag)) {
