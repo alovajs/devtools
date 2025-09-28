@@ -12,7 +12,7 @@
     "gen": "alova gen -f"
   },
   "dependencies": {
-    "alova": "catalog:frontend",
+    "alova": "^2.21.5",
     "vue": "catalog:frontend"
   },
   "devDependencies": {
