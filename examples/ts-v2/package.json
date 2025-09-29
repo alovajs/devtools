@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@alova/mock": "catalog:frontend",
-    "alova": "catalog:frontend",
+    "alova": "^2.21.5",
     "vue": "catalog:frontend"
   },
   "devDependencies": {

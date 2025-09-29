@@ -1,0 +1,10 @@
+{{#if (not type "typescript")}}
+/**
+ * @param {{#raw "{ " }}{{/raw}}{{{global}}}{{#raw " }" }}{{/raw}} Apis
+ * @returns { void }
+ */
+{{/if}}
+{{#if (eq moduleType "ESModule")}}export {{/if}}const mountApis = (Apis{{#if (eq type "typescript")}}: {{{global}}}{{/if}}) =>{
+  // define global variable `Apis`
+  {{#if (eq type "typescript")}}({{/if}}({{{globalHost}}}){{#if (eq type "typescript")}} as any){{/if}}.{{{global}}} = Apis;
+}

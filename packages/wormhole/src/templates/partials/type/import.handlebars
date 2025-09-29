@@ -1,0 +1,5 @@
+{{#if (eq moduleType "ESModule")}}
+import {{{imports}}} from '{{{from}}}';
+{{else if (eq moduleType "commonJs")}}
+const {{{imports}}} = require('{{{from}}}');
+{{/if}}

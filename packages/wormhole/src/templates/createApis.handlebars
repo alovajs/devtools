@@ -1,0 +1,34 @@
+{{{commentText}}}
+{{#and (eq alovaVersion "v3") (eq type "typescript")}}
+import type {
+  Alova,
+  MethodType,
+  AlovaGenerics,
+  AlovaMethodCreateConfig,
+} from 'alova';
+{{else and (eq alovaVersion "v2") (eq type "typescript")}}
+import type { Alova, MethodType, AlovaMethodCreateConfig } from 'alova';
+{{/and}}
+{{#if (eq type "commonjs")}}
+const { Method } = require('alova');
+const apiDefinitions = require('./{{apiDefinitionsFileName}}');
+{{else}}
+import { Method } from 'alova';
+import apiDefinitions from './{{apiDefinitionsFileName}}';
+{{/if}}
+
+{{>function/createFunctionalProxy}}
+
+{{>function/createApis}}
+
+{{>function/mountApis}}
+
+{{>function/withConfigType}}
+
+{{#if (eq moduleType "commonJs")}}
+module.exports = {
+  createApis,
+  withConfigType,
+  mountApis
+};
+{{/if}}
