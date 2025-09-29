@@ -6,7 +6,7 @@ import groupFowarder from './group'
 import objectForwarder from './object'
 import tupleFowarder from './tuple'
 
-export const forwarders: Forwarder[] = [objectForwarder, enumForwarder, arrayForwarder, tupleFowarder, groupFowarder]
+export const forwarders: Forwarder[] = [objectForwarder, enumForwarder, tupleFowarder, arrayForwarder, groupFowarder]
 export function forward(schema: SchemaObject) {
   for (const forwarder of forwarders) {
     if (forwarder.is(schema)) {
