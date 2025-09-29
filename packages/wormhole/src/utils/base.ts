@@ -160,7 +160,7 @@ export function getUserInstalledDependencies(projectPath: string): string[] {
     return [...new Set([...dependencies, ...devDependencies, ...peerDependencies])]
   }
   catch (error) {
-    console.warn('Failed to read package.json:', error)
+    logger.warn('Failed to read package.json:', error)
     return []
   }
 }
