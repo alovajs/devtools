@@ -1,12 +1,38 @@
 import type { HelperOptions } from 'handlebars'
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import { glob } from 'glob'
 import handlebars from 'handlebars'
 import { getGlobalConfig } from '@/config'
+import { logger } from '@/helper/logger'
 import { existsPromise } from './base'
 import { format } from './format'
 
 const DEFAULT_CONFIG = getGlobalConfig()
+
+// Register partials for template reuse
+async function registerPartials() {
+  const partialsDir = path.resolve(DEFAULT_CONFIG.templatePath, 'partials')
+  try {
+    const partialFiles = await glob('**/*.handlebars', {
+      ignore: 'node_modules/**',
+      cwd: partialsDir,
+    })
+    for (const file of partialFiles) {
+      if (file.endsWith('.handlebars')) {
+        const partialName = file.replace('.handlebars', '').replace(/\\/g, '/')
+        const partialContent = await fs.readFile(path.join(partialsDir, file), 'utf-8')
+        handlebars.registerPartial(partialName, partialContent)
+      }
+    }
+  }
+  catch (err) {
+    logger.error('Error registering partials:', err)
+  }
+}
+
+// Initialize partials registration
+registerPartials()
 
 const getType = (obj: any) => Object.prototype.toString.call(obj).slice(8, -1).toLowerCase()
 
@@ -40,6 +66,12 @@ handlebars.registerHelper('or', function (this: any, ...rest) {
 })
 handlebars.registerHelper('eq', (a, b) => a === b)
 handlebars.registerHelper('not', (a, b) => a !== b)
+// Register concat helper for string concatenation
+handlebars.registerHelper('concat', (...rest) => {
+  const args = Array.prototype.slice.call(rest, 0, -1)
+  // Remove the options object from the end
+  return args.join('')
+})
 // Register custom helper function 'raw'
 
 handlebars.registerHelper(

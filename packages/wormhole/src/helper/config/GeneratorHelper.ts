@@ -179,6 +179,8 @@ export class GeneratorHelper {
         outFileName: templateData.createApisFileName,
         data: templateData,
         output,
+        root: true,
+        hasVersion: false,
       },
       {
         fileName: 'apiDefinitions',
@@ -195,6 +197,7 @@ export class GeneratorHelper {
         output,
         ext: '.ts',
         root: true,
+        hasVersion: false,
       },
     ]
     if (!(await existsPromise(path.join(output, `${templateData.indexFileName}${templateHelper.getExt()}`)))) {
@@ -203,6 +206,8 @@ export class GeneratorHelper {
         outFileName: templateData.indexFileName,
         data: templateData,
         output,
+        root: true,
+        hasVersion: false,
       })
     }
     await templateHelper.outputFiles(generateFiles)

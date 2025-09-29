@@ -1,0 +1,49 @@
+{{> type/import imports="{ createAlova }" from="alova"}}
+{{#if (eq alovaVersion "v3")}}
+{{> type/import imports="fetchAdapter" from="alova/fetch"}}
+{{else if (eq alovaVersion "v2")}}
+{{> type/import imports="GlobalFetch" from="alova/GlobalFetch"}}
+{{/if}}
+{{#vue}}
+{{> type/import imports="vueHook" from="alova/vue"}}
+{{/vue}}
+{{#react}}
+{{> type/import imports="reactHook" from="alova/react"}}
+{{/react}}
+{{> type/import imports="{ createApis, withConfigType, mountApis }" from=(concat "./" createApisFileName)}}
+
+{{#if (eq moduleType "ESModule")}}export {{/if}}const alovaInstance = createAlova({
+  baseURL: "{{{baseUrl}}}",
+{{#vue}}
+  statesHook: vueHook,
+{{/vue}}
+{{#react}}
+  statesHook: reactHook,
+{{/react}}
+  requestAdapter: {{#if (eq alovaVersion "v3")}}fetchAdapter{{else}}GlobalFetch{{/if}}(),
+  beforeRequest: method => { },
+  responded: res => {
+    return res.json();
+  }
+});
+
+{{#if (eq moduleType "ESModule")}}export {{/if}}const $$userConfigMap = withConfigType({});
+
+{{#if (not type "typescript")}}
+/**
+ * @type {{#raw "{ " }}{{/raw}}{{{global}}}{{#raw " }" }}{{/raw}}
+ */
+{{/if}}
+const Apis = createApis(alovaInstance, $$userConfigMap);
+
+mountApis(Apis);
+
+{{#if (eq moduleType "ESModule")}}export default Apis;
+{{else if (eq moduleType "commonJs")}}
+module.exports = {
+  Apis,
+  alovaInstance,
+  $$userConfigMap
+};
+{{/if}}
+

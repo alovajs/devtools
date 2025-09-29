@@ -29,7 +29,7 @@ catalogs:
     vite-plugin-vue-layouts: ^0.11.0
     vscode-ext-gen: ^1.1.0
   dev:
-    '@antfu/eslint-config': ^4.17.0
+    '@antfu/eslint-config': ^5.4.1
     '@antfu/ni': ^25.0.0
     '@changesets/changelog-github': ^0.5.1
     '@changesets/cli': ^2.29.5

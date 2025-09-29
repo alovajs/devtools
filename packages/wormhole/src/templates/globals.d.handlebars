@@ -1,11 +1,83 @@
 {{{commentText}}}
+{{#if (eq alovaVersion "v3")}}
+import type { Alova, AlovaMethodCreateConfig, AlovaGenerics, Method } from 'alova';
+{{else if (eq alovaVersion "v2")}}
 import type { Alova, AlovaMethodCreateConfig, Method } from 'alova';
+{{/if}}
 import type { $$userConfigMap, alovaInstance } from './{{indexFileName}}';
 import type apiDefinitions from './{{apiDefinitionsFileName}}';
 
 type CollapsedAlova = typeof alovaInstance;
 type UserMethodConfigMap = typeof $$userConfigMap;
 
+{{#if (eq alovaVersion "v3")}}
+type Alova2MethodConfig<Responded> =
+  CollapsedAlova extends Alova<
+    AlovaGenerics<
+      any,
+      any,
+      infer RequestConfig,
+      infer Response,
+      infer ResponseHeader,
+      infer L1Cache,
+      infer L2Cache,
+      infer SE
+    >
+  >
+    ? Omit<
+        AlovaMethodCreateConfig<
+          AlovaGenerics<Responded, any, RequestConfig, Response, ResponseHeader, L1Cache, L2Cache, SE>,
+          any,
+          Responded
+        >,
+        'params'
+      >
+    : never;
+
+// Extract the return type of transform function that define in $$userConfigMap, if it not exists, use the default type.
+type ExtractUserDefinedTransformed<
+  DefinitionKey extends keyof typeof apiDefinitions,
+  Default
+> = DefinitionKey extends keyof UserMethodConfigMap
+  ? UserMethodConfigMap[DefinitionKey]['transform'] extends (...args: any[]) => any
+    ? Awaited<ReturnType<UserMethodConfigMap[DefinitionKey]['transform']>>
+    : Default
+  : Default;
+type Alova2Method<
+  Responded,
+  DefinitionKey extends keyof typeof apiDefinitions,
+  CurrentConfig extends Alova2MethodConfig<any>
+> =
+  CollapsedAlova extends Alova<
+    AlovaGenerics<
+      any,
+      any,
+      infer RequestConfig,
+      infer Response,
+      infer ResponseHeader,
+      infer L1Cache,
+      infer L2Cache,
+      infer SE
+    >
+  >
+    ? Method<
+        AlovaGenerics<
+          CurrentConfig extends undefined
+            ? ExtractUserDefinedTransformed<DefinitionKey, Responded>
+            : CurrentConfig['transform'] extends (...args: any[]) => any
+              ? Awaited<ReturnType<CurrentConfig['transform']>>
+              : ExtractUserDefinedTransformed<DefinitionKey, Responded>,
+          any,
+          RequestConfig,
+          Response,
+          ResponseHeader,
+          L1Cache,
+          L2Cache,
+          SE
+        >
+      >
+    : never;
+{{else if (eq alovaVersion "v2")}}
 type Alova2MethodConfig<Responded> =
   CollapsedAlova extends Alova<any, any, infer RequestConfig, any, infer ResponseHeader>
     ? Omit<AlovaMethodCreateConfig<any, Responded, RequestConfig, ResponseHeader>,"params">
@@ -40,6 +112,8 @@ type Alova2Method<
         ResponseHeader
       >
     : never;
+{{/if}}
+
 
 {{#schemas}}
 {{{.}}}

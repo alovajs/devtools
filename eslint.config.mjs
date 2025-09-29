@@ -26,12 +26,14 @@ export default antfu({
     "pnpm/json-enforce-catalog": [
       "error",
       {
+        ignores: [
+          "alova",
+          "@types/vscode"
+        ],
         allowedProtocols: [
           "workspace",
           "link",
-          "file",
-          // @types/vscode keep version in packge.json
-          "^1.89.0"
+          "file"
         ],
       },
     ],

@@ -1,0 +1,19 @@
+{{#if (not type "typescript")}}
+/**
+ *
+ * @param {{#raw "{ " }}{{/raw}}{{>type/alovaType}}{{#raw " }" }}{{/raw}} alovaInstance
+ * @param {any} configMap
+ * @returns {{#raw "{ " }}{{/raw}}{{{global}}}{{#raw " }" }}{{/raw}}
+ */
+{{/if}}
+{{#if (eq moduleType "ESModule")}}export {{/if}}const createApis = (alovaInstance{{#if (eq type "typescript")}}: {{>type/alovaType}}{{/if}}, configMap{{#if (eq type "typescript")}}: any{{/if}}) =>{
+  const Apis = new Proxy(
+    {}{{#if (eq type "typescript")}} as {{{global}}}{{/if}},
+    {
+      get(_, property) {
+        return createFunctionalProxy([property], alovaInstance, configMap);
+      }
+    }
+  );
+  return Apis;
+}

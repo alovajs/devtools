@@ -1,0 +1,61 @@
+const cache = Object.create(null);
+{{#if (not type "typescript")}}
+/**
+ *
+ * @param {(string|symbol)[]} array
+ * @param {{#raw "{ " }}{{/raw}}{{>type/alovaType}}{{#raw " }" }}{{/raw}} alovaInstance
+ * @param {any} configMap
+ * @returns {()=>void}
+ */
+{{/if}}
+const createFunctionalProxy = ({{#if (eq type "typescript")}}
+  array: (string | symbol)[],
+  alovaInstance: {{>type/alovaType}},
+  configMap: any
+{{else}}array, alovaInstance, configMap{{/if}}) => {
+  const apiPathKey = array.join('.'){{#if (eq type "typescript")}} as keyof typeof apiDefinitions{{/if}};
+  if (cache[apiPathKey]) {
+    return cache[apiPathKey];
+  }
+  // create a new proxy instance
+  const proxy = new Proxy(function () {}, {
+    get(_, property) {
+      // record the target property, so that it can get the completed accessing paths
+      const newArray = [...array, property];
+      // always return a new proxy to continue recording accessing paths.
+      return createFunctionalProxy(newArray, alovaInstance, configMap);
+    },
+    apply(_, __, [config]) {
+      const apiItem = apiDefinitions[apiPathKey];
+      if (!apiItem) {
+        throw new Error(`the api path of \`${apiPathKey}\` is not found`);
+      }
+      const mergedConfig = {
+        ...configMap[apiPathKey],
+        ...config
+      };
+      const [method, url] = apiItem;
+      const pathParams = mergedConfig.pathParams;
+      const urlReplaced = url{{#if (eq type "typescript")}}!{{/if}}.replace(/\{([^}]+)\}/g, (_, key) => {
+        const pathParam = pathParams[key];
+        return pathParam;
+      });
+      delete mergedConfig.pathParams;
+      let data = mergedConfig.data;
+      if (Object.prototype.toString.call(data) === '[object Object]' && typeof FormData !== 'undefined') {
+        let hasBlobData = false;
+        const formData = new FormData();
+        for (const key in data) {
+          formData.append(key, data[key]);
+          if (data[key] instanceof Blob) {
+            hasBlobData = true;
+          }
+        }
+        data = hasBlobData ? formData : data;
+      }
+      return new Method(method{{#if (eq type "typescript")}}!{{/if}}.toUpperCase(){{#if (eq type "typescript")}} as MethodType{{/if}}, alovaInstance, urlReplaced, mergedConfig, data);
+    }
+  });
+  cache[apiPathKey] = proxy;
+  return proxy;
+};
