@@ -2,7 +2,7 @@
   "publisher": "Alova",
   "name": "alova-vscode-extension",
   "displayName": "Alova",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "private": true,
   "packageManager": "pnpm@10.13.1",
   "description": "Generate and search APIs without API documentation any more",
