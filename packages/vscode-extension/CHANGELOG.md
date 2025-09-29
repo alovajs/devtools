@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.0.5
+
+### Patch Changes
+
+- [#95](https://github.com/alovajs/devtools/pull/95) [`6eb547b`](https://github.com/alovajs/devtools/commit/6eb547bcf0ba09f55540e443239254d510125065) Thanks [@czhlin](https://github.com/czhlin)! - refactor template files
+
 ## 2.0.4
 
 ### Patch Changes
