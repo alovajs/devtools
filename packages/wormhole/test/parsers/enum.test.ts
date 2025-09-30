@@ -1,19 +1,17 @@
 import type { ParserCtx, ParserOptions } from '@/core/loader/astLoader/parsers/type'
 import type { SchemaObject, TEnum, TLiteral } from '@/type'
 import { enumTypeParser } from '@/core/loader/astLoader/parsers/enum'
+import { logger } from '@/helper'
 import { ASTType } from '@/type'
 
-// Mock CommentHelper and logger
-const mockLogger = {
-  throwError: vi.fn((message: string, data?: any) => {
-    const error = new Error(message)
-    ;(error as any).data = data
-    throw error
-  }),
-}
-
 vi.mock('@/helper', () => ({
-  logger: mockLogger,
+  logger: {
+    throwError: vi.fn((message: string, data?: any) => {
+      const error = new Error(message)
+    ;(error as any).data = data
+      throw error
+    }),
+  },
   CommentHelper: {
     load: vi.fn(() => ({
       add: vi.fn().mockReturnThis(),
@@ -251,7 +249,7 @@ describe('enum Type Parser', () => {
         enumTypeParser(schema, ctx)
       }).toThrow()
 
-      expect(mockLogger.throwError).toHaveBeenCalledWith(
+      expect(logger.throwError).toHaveBeenCalledWith(
         'enum Invalid Enum type error',
         {
           enum: ['valid', 123, 'another'],
@@ -274,7 +272,7 @@ describe('enum Type Parser', () => {
         enumTypeParser(schema, ctx)
       }).toThrow()
 
-      expect(mockLogger.throwError).toHaveBeenCalledWith(
+      expect(logger.throwError).toHaveBeenCalledWith(
         'enum Multi Type Enum type error',
         {
           enum: ['valid', 123, true],

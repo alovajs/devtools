@@ -39,7 +39,7 @@ export const getSalt = () => `_${Math.random().toString(36).slice(2)}`
 export async function generateWithPlugin(inputFile: string, plugins: ApiPlugin[], outputDir?: string) {
   outputDir ??= resolve(__dirname, `./mock_output/plugin_test${getSalt()}`)
   await generate({
-    generator: [{ input: inputFile, output: outputDir, plugins }],
+    generator: [{ input: inputFile, output: outputDir, plugins, type: 'ts' }],
   })
 
   const apiDefinitionsFile = await fs.readFile(resolve(outputDir, 'apiDefinitions.ts'), 'utf-8')
