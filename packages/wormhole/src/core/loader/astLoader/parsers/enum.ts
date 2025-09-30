@@ -13,9 +13,23 @@ export function enumTypeParser(schema: SchemaObject, ctx: ParserCtx): AST {
     params: [],
   }
   const enumArray = schema.enum ?? []
-  const typeArray = [schema.type ?? []].flat() as string[]
-  if (enumArray.some(item => !typeArray.includes(getType(item)))) {
-    throw logger.throwError(`enum ${schema.title} type error`, {
+  let typeArray = [schema.type ?? []].flat() as string[]
+
+  // 如果没有指定type，从enum值中推断类型
+  if (typeArray.length === 0 && enumArray.length > 0) {
+    typeArray = [...new Set(enumArray.map(item => getType(item)))]
+  }
+
+  // 类型兼容性检查函数
+  const isTypeCompatible = (itemType: string, allowedTypes: string[]): boolean => {
+    return allowedTypes.includes(itemType)
+      || (allowedTypes.includes('number') && itemType === 'integer')
+  }
+
+  // 验证所有枚举值的类型
+  const hasInvalidType = enumArray.some(item => !isTypeCompatible(getType(item), typeArray))
+  if (hasInvalidType) {
+    throw logger.throwError(`enum ${schema.title ?? 'undefined'} type error`, {
       enum: enumArray,
       type: typeArray,
     })

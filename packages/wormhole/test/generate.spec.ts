@@ -1,4 +1,4 @@
-import type { SchemaObject } from '@/type'
+import type { Config, SchemaObject } from '@/type'
 import fs from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { setupServer } from 'msw/node'
@@ -147,6 +147,7 @@ describe('generate API', () => {
         {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir,
+          type: 'ts',
         },
       ],
     })
@@ -162,6 +163,7 @@ describe('generate API', () => {
         {
           input: resolve(__dirname, './openapis/swagger_2.json'),
           output: outputDir2,
+          type: 'ts',
         },
       ],
     })
@@ -176,6 +178,7 @@ describe('generate API', () => {
         {
           input: resolve(__dirname, './openapis/openapi_300.yaml'),
           output: outputDir3,
+          type: 'ts',
         },
       ],
     })
@@ -187,11 +190,12 @@ describe('generate API', () => {
 
   it('shouldn\'t replace `index` file if it is generated', async () => {
     const outputDir = resolve(__dirname, './mock_output/openapi_301')
-    const config = {
+    const config: Config = {
       generator: [
         {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir,
+          type: 'ts',
         },
       ],
     }
@@ -237,6 +241,7 @@ describe('generate API', () => {
         {
           input: 'https://generator3.swagger.io/openapi.json',
           output: outputDir,
+          type: 'ts',
         },
       ],
     })
@@ -252,6 +257,7 @@ describe('generate API', () => {
           input: 'https://generator3.swagger.io',
           platform: 'swagger',
           output: outputDir2,
+          type: 'ts',
         },
       ],
     })
@@ -267,6 +273,7 @@ describe('generate API', () => {
           input: 'https://generator3.swagger.io/v1.0/foo?test=1&bar=2#ccc',
           platform: 'swagger',
           output: outputDir3,
+          type: 'ts',
         },
       ],
     })
@@ -284,6 +291,7 @@ describe('generate API', () => {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir,
           version: 2,
+          type: 'ts',
         },
       ],
     })
@@ -299,6 +307,7 @@ describe('generate API', () => {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir2,
           version: 3,
+          type: 'ts',
         },
       ],
     })
@@ -316,6 +325,7 @@ describe('generate API', () => {
         {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir,
+          type: 'ts',
         },
       ],
     })
@@ -339,6 +349,7 @@ describe('generate API', () => {
           output: outputDir2,
           bodyMediaType: 'application/json',
           responseMediaType: 'application/json',
+          type: 'ts',
         },
       ],
     })
@@ -363,6 +374,7 @@ describe('generate API', () => {
           output: outputDir3,
           bodyMediaType: 'application/xml',
           responseMediaType: 'application/xml',
+          type: 'ts',
         },
       ],
     })
@@ -387,6 +399,7 @@ describe('generate API', () => {
           output: outputDir,
           bodyMediaType: 'application/xml',
           responseMediaType: 'application/xml',
+          type: 'ts',
         },
       ],
     })
@@ -412,6 +425,7 @@ describe('generate API', () => {
         {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir,
+          type: 'ts',
         },
       ],
     })
@@ -541,6 +555,7 @@ describe('generate API', () => {
         {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir,
+          type: 'ts',
         },
       ],
     })
@@ -634,6 +649,7 @@ describe('generate API', () => {
         {
           input: resolve(__dirname, './openapis/non_variable_specification_openapi.yaml'),
           output: outputDir,
+          type: 'ts',
         },
       ],
     })
@@ -651,6 +667,7 @@ describe('generate API', () => {
         {
           input: resolve(__dirname, './openapis/tag_general_openapi.yaml'),
           output: outputDir,
+          type: 'ts',
         },
       ],
     })
@@ -667,6 +684,7 @@ describe('generate API', () => {
         {
           input: resolve(__dirname, './openapis/multiple_tag_openapi.yaml'),
           output: outputDir,
+          type: 'ts',
         },
       ],
     })
@@ -685,6 +703,7 @@ describe('generate API', () => {
         {
           input: resolve(__dirname, './openapis/endless_loop_openapi.yaml'),
           output: outputDir,
+          type: 'ts',
           handleApi(apiDescriptor) {
             if (apiDescriptor.responses?.properties) {
               const testObject: SchemaObject = {
@@ -761,6 +780,7 @@ describe('generate API', () => {
         {
           input: resolve(__dirname, './openapis/file_upload_openapi.yaml'),
           output: outputDir,
+          type: 'ts',
         },
       ],
     })
@@ -866,6 +886,7 @@ describe('generate API', () => {
               return apiDescriptor
             }
           },
+          type: 'ts',
         },
       ],
     })
@@ -1132,6 +1153,7 @@ describe('generate API', () => {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir,
           fileNameCase: 'kebabCase',
+          type: 'ts',
         },
       ],
     })
@@ -1147,6 +1169,7 @@ describe('generate API', () => {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir,
           fileNameCase: 'pascalCase',
+          type: 'ts',
         },
       ],
     })

@@ -237,34 +237,44 @@ describe('config', () => {
 
   it('should read config file under project root path', async () => {
     // write mock config file
-
-    const projectRoot = process.cwd()
+    const projectRoot = resolve(__dirname, './mockdir_config_root')
     if (!(await existsPromise(projectRoot))) {
       await fs.mkdir(projectRoot, { recursive: true })
     }
-    // read ts file
 
-    await fs.writeFile(resolve(projectRoot, configMap.ts.file), configMap.ts.content, 'utf-8')
-    requireResult.set(projectRoot, null) // require()=> throw error
+    // Create mock package.json file
+    const mockPackageJson = {
+      name: 'alova-devtools',
+      version: '1.0.0',
+    }
+    await fs.writeFile(resolve(projectRoot, 'package.json'), JSON.stringify(mockPackageJson, null, 2), 'utf-8')
 
-    const tsConfig = await readConfig()
+    try {
+      // read ts file
+      await fs.writeFile(resolve(projectRoot, configMap.ts.file), configMap.ts.content, 'utf-8')
+      requireResult.set(resolve(projectRoot, './package.json'), mockPackageJson)
 
-    expect(tsConfig).toStrictEqual(configMap.ts.expectedConfig)
+      const tsConfig = await readConfig(projectRoot)
+      expect(tsConfig).toStrictEqual(configMap.ts.expectedConfig)
 
-    // read module config file
+      // read module config file
+      await fs.writeFile(resolve(projectRoot, configMap.module.file), configMap.module.content, 'utf-8')
+      requireResult.set(resolve(projectRoot, './package.json'), mockPackageJson)
 
-    await fs.writeFile(resolve(projectRoot, configMap.module.file), configMap.module.content, 'utf-8')
-    requireResult.set(projectRoot, null) // require()=> throw error
+      const moduleConfig = await readConfig(projectRoot)
+      expect(moduleConfig).toEqual(configMap.module.expectedConfig)
 
-    const moduleConfig = await readConfig()
-    expect(moduleConfig).toEqual(configMap.module.expectedConfig)
-    // read commonjs config file
+      // read commonjs config file
+      await fs.writeFile(resolve(projectRoot, configMap.commonjs.file), configMap.commonjs.content, 'utf-8')
+      requireResult.set(resolve(projectRoot, './package.json'), mockPackageJson)
 
-    await fs.writeFile(resolve(projectRoot, configMap.commonjs.file), configMap.commonjs.content, 'utf-8')
-    requireResult.set(projectRoot, configMap.commonjs.expectedConfig) // require()=> return config
-
-    const cjsConfig = await readConfig()
-    expect(cjsConfig).toStrictEqual(configMap.commonjs.expectedConfig)
+      const cjsConfig = await readConfig(projectRoot)
+      expect(cjsConfig).toStrictEqual(configMap.commonjs.expectedConfig)
+    }
+    finally {
+      // Clean up temporary directory
+      await rimraf(projectRoot)
+    }
   })
 
   it('should read config file under target path', async () => {
