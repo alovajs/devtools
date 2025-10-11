@@ -1,22 +1,58 @@
-import * as path from 'node:path'
-
+/* eslint-disable no-console */
+import { join } from 'node:path'
 import { runTests } from '@vscode/test-electron'
+import chalk from 'chalk'
+import fg from 'fast-glob'
+import fs from 'fs-extra'
+import { projectRoot, root } from './path'
+import { logger, run } from './utils'
 
 async function main() {
+  const extensionDevelopmentPath = projectRoot
+
+  // Frameworks
+  const testFrameworksDir = join(projectRoot, './e2e-out/frameworks')
+  const fixtureTempPath = join(root, './e2e-fixtures-temp')
+  if (fs.existsSync(fixtureTempPath)) {
+    await fs.remove(fixtureTempPath)
+  }
+  const frameworks = await fg('*', {
+    onlyDirectories: true,
+    cwd: testFrameworksDir,
+  })
   try {
-    // The folder containing the Extension Manifest package.json
-    // Passed to `--extensionDevelopmentPath`
-    const extensionDevelopmentPath = path.resolve(__dirname, '../../')
+    for (const framework of frameworks) {
+      console.log(`\n\n${chalk.blue('Start E2E testing for framework')} ${chalk.magenta(framework)} ${chalk.blue('...\n')}`)
+      const extensionTestsPath = join(testFrameworksDir, framework, 'index')
+      const fixtureSourcePath = join(root, 'examples', framework)
+      const fixtureTargetPath = join(fixtureTempPath, framework)
 
-    // The path to the extension test script
-    // Passed to --extensionTestsPath
-    const extensionTestsPath = path.resolve(__dirname, './suite/index')
+      await fs.copy(fixtureSourcePath, fixtureTargetPath, {
+        filter(src) {
+          if (src.includes('node_modules')) {
+            return false
+          }
+          return true
+        },
+      })
 
-    // Download VS Code, unzip it and run the integration test
-    await runTests({ extensionDevelopmentPath, extensionTestsPath })
+      await run('pnpm i', {
+        cwd: fixtureTargetPath,
+      })
+
+      await runTests({
+        extensionDevelopmentPath,
+        extensionTestsPath,
+        version: '1.89.0',
+        launchArgs: [fixtureTargetPath, '--disable-extensions'],
+      })
+
+      console.log(chalk.green(`E2E tests for framework ${framework} finished.\n`))
+    }
+    process.exit(0)
   }
   catch {
-    console.error('Failed to run tests')
+    logger.error('Failed to run tests')
     process.exit(1)
   }
 }

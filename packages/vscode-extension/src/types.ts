@@ -1,4 +1,4 @@
-import type { Api, ApiDoc, HandlersType } from '@/handlers'
+import type { Api, ApiDoc, HandlersType } from '#/handlers'
 
 export type ApiType = 'project' | 'server' | 'group' | 'api'
 export interface ApiProject {

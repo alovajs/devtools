@@ -25,6 +25,7 @@ export default defineConfig(({ mode }) => {
       alias: {
         '~/': `${path.resolve(__dirname, 'src')}/`,
         '@/': `${path.resolve(__dirname, 'ext')}/`,
+        '#/': `${path.resolve(__dirname, 'typings')}/`,
       },
     },
     plugins: [
