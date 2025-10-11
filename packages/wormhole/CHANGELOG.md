@@ -1,5 +1,11 @@
 # @alova/wormhole
 
+## 1.3.3
+
+### Patch Changes
+
+- [#99](https://github.com/alovajs/devtools/pull/99) [`1451a2a`](https://github.com/alovajs/devtools/commit/1451a2a9053be783b57d2546abe1c71d9562ab7f) Thanks [@czhlin](https://github.com/czhlin)! - Add missing HTTP methods: PATCH, HEAD, OPTIONS
+
 ## 1.3.2
 
 ### Patch Changes
