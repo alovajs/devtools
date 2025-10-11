@@ -5,7 +5,7 @@ import { PluginDriver } from '@/helper'
 export function extendsConfig(config: GeneratorConfig, newConfig: Partial<GeneratorConfig>): GeneratorConfig {
   const mergedConfig = cloneDeep(config)
 
-  return mergeWith(mergedConfig, newConfig, (newValue, srcValue, key) => {
+  return mergeWith(mergedConfig, newConfig, (srcValue, newValue, key) => {
     if (key !== 'handleApi') {
       return newValue ?? srcValue // fallback to default merge behavior
     }

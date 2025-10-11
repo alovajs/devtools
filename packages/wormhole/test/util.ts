@@ -1,4 +1,4 @@
-import type { ApiPlugin } from '@/type'
+import type { ApiPlugin, GeneratorConfig } from '@/type'
 import fs from 'node:fs/promises'
 import { resolve } from 'node:path'
 import isEqualWith from 'lodash/isEqualWith'
@@ -36,12 +36,11 @@ export function createStrReg(str: string) {
 
 export const getSalt = () => `_${Math.random().toString(36).slice(2)}`
 
-export async function generateWithPlugin(inputFile: string, plugins: ApiPlugin[], outputDir?: string) {
-  outputDir ??= resolve(__dirname, `./mock_output/plugin_test${getSalt()}`)
+export async function generateWithPlugin(inputFile: string, plugins: ApiPlugin[], config?: Partial<Omit<GeneratorConfig, 'input' | 'plugins' | 'type'>>) {
+  const outputDir = config?.output ?? resolve(__dirname, `./mock_output/plugin_test${getSalt()}`)
   await generate({
-    generator: [{ input: inputFile, output: outputDir, plugins, type: 'ts' }],
+    generator: [{ ...config, input: inputFile, output: outputDir, plugins, type: 'ts' }],
   })
-
   const apiDefinitionsFile = await fs.readFile(resolve(outputDir, 'apiDefinitions.ts'), 'utf-8')
   const globalsFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8')
 

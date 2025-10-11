@@ -1,4 +1,5 @@
-import type { ApiDescriptor, ApiPlugin } from '@/type'
+/* eslint-disable ts/no-use-before-define */
+import type { ApiDescriptor, ApiPlugin, GeneratorConfig, OpenAPIDocument } from '@/type'
 import path from 'node:path'
 import { z } from 'zod/v3' // v4版本不稳定，暂时使用v3
 import { standardLoader } from '@/core/loader'
@@ -22,17 +23,57 @@ export const zHandleApi = z
   .args(zApiDescriptor)
   .returns(z.union([zApiDescriptor, z.undefined(), z.null(), z.void()]))
 
-export const zPlugin = z.object({
+// Helper function for MaybePromise return types
+function zMaybePromise<T extends z.ZodTypeAny>(schema: T) {
+  return z.union([schema, z.promise(schema)])
+}
+
+// Common return type for plugin hooks
+function zPluginReturn<T extends z.ZodTypeAny>(schema: T) {
+  return zMaybePromise(z.union([schema, z.undefined(), z.null(), z.void()]))
+}
+
+// 定义 beforeOpenapiParse 的输入配置类型
+const zInputConfig = z.lazy(() => z.object({
+  input: z.string(),
+  platform: zPlatformType.optional(),
+  plugins: z.array(zApiPlugin).optional(),
+})) as z.ZodSchema<Pick<GeneratorConfig, 'input' | 'platform' | 'plugins'>>
+
+// 定义 OpenAPIDocument 类型（简化版本，因为完整的 OpenAPI 规范非常复杂）
+const zOpenAPIDocument = z.any() as z.ZodSchema<OpenAPIDocument>
+
+export const zApiPlugin = z.object({
   name: z.string().optional(),
-  get extends() {
-    return z
-      // eslint-disable-next-line ts/no-use-before-define
-      .union([zGeneratorConfig.partial(), z.function().args(zGeneratorConfig).returns(zGeneratorConfig.partial())])
-      .optional()
-  },
+  extends: z.lazy(
+    () => z.union([
+      _zGeneratorConfig.partial(),
+      z.function().args(_zGeneratorConfig).returns(_zGeneratorConfig.partial()),
+    ])
+      .optional(),
+  ),
+  config: z.lazy(
+    () => z.function().args(_zGeneratorConfig).returns(zPluginReturn(_zGeneratorConfig)).optional(),
+  ),
+  beforeOpenapiParse: z.function()
+    .args(zInputConfig)
+    .returns(zPluginReturn(zInputConfig))
+    .optional(),
+  afterOpenapiParse: z.function()
+    .args(zOpenAPIDocument)
+    .returns(zPluginReturn(zOpenAPIDocument))
+    .optional(),
+  beforeCodeGenerate: z.function()
+    .args(z.any(), z.string())
+    .returns(zPluginReturn(z.string()))
+    .optional(),
+  afterCodeGenerate: z.function()
+    .args(z.instanceof(Error).optional())
+    .returns(z.void())
+    .optional(),
 }) as z.ZodSchema<ApiPlugin>
 
-export const zGeneratorConfig = z.object({
+export const _zGeneratorConfig = z.object({
   /**
    * Openapi file path, it supports json and yaml file, and network url
    * @requires true
@@ -133,7 +174,7 @@ export const zGeneratorConfig = z.object({
   /**
    * plugin will be executed before `handleApi`
    */
-  plugins: z.array(zPlugin).optional(),
+  plugins: z.array(zApiPlugin).optional(),
   /**
    * Filter or convert the generated api function and return a new `apiDescriptor` to generate the api.
    * When this function is not specified, `apiDescriptor` object is not converted.
@@ -166,6 +207,8 @@ export const zGeneratorConfig = z.object({
    */
   handleApi: zHandleApi.optional(),
 })
+
+export const zGeneratorConfig = _zGeneratorConfig as z.ZodSchema<GeneratorConfig>
 
 export const zConfig = z.object({
   /**

@@ -141,7 +141,7 @@ export class GeneratorHelper {
       'beforeOpenapiParse',
       [pick(config, ['input', 'plugins', 'platform'])],
     )
-    config = { ...config, ...(configBeforeParse ?? {}) }
+    config = { ...config, ...configBeforeParse }
 
     let document = await this.openApiData(config, options.projectPath)
     if (!document) {
@@ -230,23 +230,26 @@ export class GeneratorHelper {
         hasVersion: false,
       })
     }
-
     // plugin: handle before code generate
-    const unhandledGenerateFiles: OutputFileOptions[] = []
-    for (const file of generateFiles) {
-      const data = await pluginDriver.hookFirst('beforeCodeGenerate', [file.data, file.outFileName ?? file.fileName])
-      if (!data) {
-        unhandledGenerateFiles.push(file)
-        return
+    let codeGenError: Error | undefined
+    try {
+      const unhandledGenerateFiles: OutputFileOptions[] = []
+      for (const file of generateFiles) {
+        const fileName = `${file.outFileName ?? file.fileName}${file.ext ?? templateHelper.getExt()}`
+        const data = await pluginDriver.hookFirst('beforeCodeGenerate', [file.data, fileName])
+        if (!data) {
+          unhandledGenerateFiles.push(file)
+          continue
+        }
+        await generateFile(file.output, fileName, data)
       }
-
-      generateFile(file.output, file.fileName, data)
+      await templateHelper.outputFiles(unhandledGenerateFiles)
     }
-
-    await templateHelper.outputFiles(unhandledGenerateFiles)
-
+    catch (error) {
+      codeGenError = error as Error
+    }
     // plugin: handle after code gen
-    await pluginDriver.hookParallel('afterCodeGenerate', [])
+    await pluginDriver.hookParallel('afterCodeGenerate', [codeGenError])
     return true
   }
 }
