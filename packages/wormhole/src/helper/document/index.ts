@@ -1,7 +1,19 @@
 import type { ApiMethod, OpenAPIDocument } from '@/type'
 import { HttpMethod } from '@/type'
 
-export const supportedApiMethods: HttpMethod[] = [HttpMethod.GET, HttpMethod.PUT, HttpMethod.POST, HttpMethod.DELETE]
+/**
+ * 支持的API方法列表
+ * @see https://github.com/alovajs/alova/blob/main/packages/alova/typings/index.d.ts#L640
+ */
+export const supportedApiMethods: HttpMethod[] = [
+  HttpMethod.GET,
+  HttpMethod.PUT,
+  HttpMethod.POST,
+  HttpMethod.DELETE,
+  HttpMethod.PATCH,
+  HttpMethod.HEAD,
+  HttpMethod.OPTIONS,
+]
 
 export class OpenApiHelper {
   private document: OpenAPIDocument

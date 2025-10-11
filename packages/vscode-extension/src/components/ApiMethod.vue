@@ -13,6 +13,8 @@ const TagMap: Record<MethodType, TagProps['type']> = {
   DELETE: 'error',
   PATCH: 'default',
   TRACE: 'info',
+  HEAD: 'default',
+  OPTIONS: 'default',
 }
 </script>
 
