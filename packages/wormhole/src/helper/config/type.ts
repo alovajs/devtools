@@ -20,7 +20,6 @@ export type PlatformType = z.infer<typeof zPlatformType> | (string & {})// When 
 export type MaybePromise<T> = T | Promise<T>
 export interface ApiPlugin {
   name?: string
-  extends?: Partial<GeneratorConfig> | ((config: GeneratorConfig) => Partial<GeneratorConfig>)
   /**
    * Replaces or manipulates the options object passed to wormhole.
    * Returning null does NOT replacing anything.

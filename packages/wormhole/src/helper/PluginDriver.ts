@@ -36,10 +36,11 @@ export class PluginDriver {
   async hookSeq<H extends ApiPluginHooks, P extends NonNullable<ApiPlugin[H]>>(
     name: H,
     args: Parameters<P>,
+    resultFn: (result: Awaited<ReturnType<P>>, args: Parameters<P>) => Parameters<P>,
   ): Promise<ExcludeNull<Awaited<ReturnType<P>>>> {
     let promise: Promise<unknown> = Promise.resolve()
     for (const plugin of this.plugins) {
-      promise = promise.then(() => this.runHook(name, args, plugin))
+      promise = promise.then(result => this.runHook(name, resultFn(result as any, args), plugin))
     }
 
     return promise as Promise<ExcludeNull<Awaited<ReturnType<P>>>>
@@ -52,12 +53,13 @@ export class PluginDriver {
     name: H,
     args: Parameters<P>,
   ): Promise<ExcludeNull<ReturnType<P>>> {
-    let promise: Promise<unknown> = Promise.resolve()
     for (const plugin of this.plugins) {
-      promise = this.runHook(name, args, plugin)
+      const result = await this.runHook(name, args, plugin)
+      if (result) {
+        return result as ExcludeNull<ReturnType<P>>
+      }
     }
-
-    return promise as Promise<ExcludeNull<ReturnType<P>>>
+    return Promise.resolve(null) as Promise<ExcludeNull<ReturnType<P>>>
   }
 
   /**

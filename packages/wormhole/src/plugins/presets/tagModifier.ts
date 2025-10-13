@@ -1,5 +1,5 @@
 import type { ApiDescriptor, ApiPlugin } from '@/type'
-
+import { extend } from './utils'
 /**
  * Tag modifier handler function type
  * Receives a tag string and returns the modified tag string, or null/undefined/void to remove the tag
@@ -105,13 +105,15 @@ export function tagModifier(handler: ModifierHandler): ApiPlugin {
 
   return {
     name: 'tagModifier',
-    extends: {
-      handleApi: (apiDescriptor: ApiDescriptor) => {
-        if (!apiDescriptor)
-          return null
+    config(config) {
+      return extend(config, {
+        handleApi: (apiDescriptor: ApiDescriptor) => {
+          if (!apiDescriptor)
+            return null
 
-        return processApiTags(apiDescriptor, handler)
-      },
+          return processApiTags(apiDescriptor, handler)
+        },
+      })
     },
   }
 }

@@ -1,4 +1,5 @@
 import type { ApiDescriptor, ApiPlugin, Parameter } from '@/type'
+import { extend } from './utils'
 /**
  * Rename style options
  */
@@ -257,18 +258,20 @@ export function rename(config: RenameConfig | RenameConfig[]): ApiPlugin {
 
   return {
     name: 'rename',
-    extends: {
-      handleApi: (apiDescriptor: ApiDescriptor) => {
-        if (!apiDescriptor)
-          return null
-
-        // Apply each configuration in sequence
-        return configs.reduce<ApiDescriptor | null>((desc, conf) => {
-          if (!desc)
+    config(config) {
+      return extend(config, {
+        handleApi: (apiDescriptor: ApiDescriptor) => {
+          if (!apiDescriptor)
             return null
-          return renameApiDescriptor(desc, conf)
-        }, apiDescriptor)
-      },
+
+          // Apply each configuration in sequence
+          return configs.reduce<ApiDescriptor | null>((desc, conf) => {
+            if (!desc)
+              return null
+            return renameApiDescriptor(desc, conf)
+          }, apiDescriptor)
+        },
+      })
     },
   }
 }

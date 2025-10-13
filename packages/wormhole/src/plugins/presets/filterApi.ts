@@ -1,5 +1,6 @@
 import type { ApiDescriptor, ApiPlugin } from '@/type'
 import { logger } from '@/helper/logger'
+import { extend } from './utils'
 /**
  * Filter configuration interface
  */
@@ -151,13 +152,15 @@ export function apiFilter(config: FilterApiConfig | FilterApiConfig[]): ApiPlugi
 
   return {
     name: 'filterApi',
-    extends: {
-      handleApi: (apiDescriptor: ApiDescriptor) => {
-        if (!apiDescriptor)
-          return null
+    config(config) {
+      return extend(config, {
+        handleApi: (apiDescriptor: ApiDescriptor) => {
+          if (!apiDescriptor)
+            return null
 
-        return filterApiDescriptor(apiDescriptor, configs)
-      },
+          return filterApiDescriptor(apiDescriptor, configs)
+        },
+      })
     },
   }
 }

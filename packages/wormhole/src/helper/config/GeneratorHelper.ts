@@ -140,6 +140,9 @@ export class GeneratorHelper {
     const configBeforeParse = await pluginDriver.hookSeq(
       'beforeOpenapiParse',
       [pick(config, ['input', 'plugins', 'platform'])],
+      (result, args) => {
+        return result ? [result] : args
+      },
     )
     config = { ...config, ...configBeforeParse }
 
@@ -149,7 +152,9 @@ export class GeneratorHelper {
     }
 
     // plugin: handle after parse openapi
-    document = await pluginDriver.hookSeq('afterOpenapiParse', [document]) ?? document
+    document = await pluginDriver.hookSeq('afterOpenapiParse', [document], (result, args) => {
+      return result ? [result] : args
+    }) ?? document
 
     const output = path.resolve(options.projectPath, config.output)
     const version = GeneratorHelper.getAlovaVersion(config, options.projectPath)

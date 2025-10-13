@@ -33,17 +33,11 @@ export async function prepareConfig(config: GeneratorConfig): Promise<GeneratorC
 
   const plugins = _config.plugins || []
 
-  for (const plugin of plugins) {
-    if (plugin.extends) {
-      const pluginExtendsConfig = typeof plugin.extends === 'function' ? plugin.extends(_config) : plugin.extends
-      _config = extendsConfig(_config, pluginExtendsConfig)
-    }
-  }
-
   const pluginDriver = new PluginDriver(plugins)
   // plugin: handle config hook
-  _config = await pluginDriver.hookSeq('config', [_config]) ?? _config
-
+  _config = await pluginDriver.hookSeq('config', [_config], (result, args) => {
+    return result ? [result] : args
+  }) ?? _config
   return _config
 }
 
