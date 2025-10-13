@@ -1,5 +1,6 @@
 import { resolve } from 'node:path'
 import { createPlugin } from '@/plugins'
+import { extend } from '@/plugins/presets/utils'
 import { generateWithPlugin } from '../util'
 
 vi.mock('node:fs')
@@ -9,11 +10,13 @@ describe('plugin test', () => {
   it('should apply plugin correctly', async () => {
     const applyFn = vi.fn()
     const nullPlugin = createPlugin(() => ({
-      extends: {
-        handleApi: (apiDescriptor) => {
-          applyFn(apiDescriptor)
-          return null
-        },
+      config(config) {
+        return extend(config, {
+          handleApi: (apiDescriptor) => {
+            applyFn(apiDescriptor)
+            return null
+          },
+        })
       },
     }))
 
@@ -162,14 +165,16 @@ describe('plugin test', () => {
   it('should handle plugin with extends configuration', async () => {
     const extendsPlugin = createPlugin(() => ({
       name: 'extendsPlugin',
-      extends: {
-        global: 'ExtendsApis',
-        handleApi: (apiDescriptor) => {
-          if (apiDescriptor?.method === 'get') {
-            return null // Filter out get operations
-          }
-          return apiDescriptor
-        },
+      config(config) {
+        return extend(config, {
+          global: 'ExtendsApis',
+          handleApi: (apiDescriptor) => {
+            if (apiDescriptor?.method === 'get') {
+              return null // Filter out get operations
+            }
+            return apiDescriptor
+          },
+        })
       },
     }))
 
@@ -190,7 +195,14 @@ describe('plugin test', () => {
       name: 'plugin1',
       config: (config) => {
         plugin1HookFn('plugin1-config')
-        return { ...config, global: 'Plugin1Apis' }
+        return { ...config, global: 'Plugin1Apis', globalHost: 'Plugin1Host' }
+      },
+      beforeCodeGenerate(data, outputFile) {
+        if (outputFile === 'apiDefinitions.ts') {
+          return `// Custom header added by plugin1
+          // ${JSON.stringify(data)}`
+        }
+        return null // Let other files be handled normally
       },
       afterOpenapiParse: (document) => {
         plugin1HookFn('plugin1-afterParse')
@@ -204,13 +216,20 @@ describe('plugin test', () => {
         plugin2HookFn('plugin2-config')
         return { ...config, global: 'Plugin2Apis' } // This should override plugin1
       },
+      beforeCodeGenerate(data, outputFile) {
+        if (outputFile === 'index.ts') {
+          return `// Custom header added by plugin2
+          // ${JSON.stringify(data)}`
+        }
+        return null // Let other files be handled normally
+      },
       afterOpenapiParse: (document) => {
         plugin2HookFn('plugin2-afterParse')
         return document
       },
     }))
 
-    const { globalsFile } = await generateWithPlugin(
+    const { globalsFile, apiDefinitionsFile, createApisFile, indexFile } = await generateWithPlugin(
       resolve(__dirname, '../openapis/openapi_301.json'),
       [plugin1(), plugin2()],
     )
@@ -220,6 +239,9 @@ describe('plugin test', () => {
     expect(plugin2HookFn).toHaveBeenCalledWith('plugin2-config')
     expect(plugin2HookFn).toHaveBeenCalledWith('plugin2-afterParse')
     expect(globalsFile).toMatch('interface Plugin2Apis') // Last plugin wins
+    expect(createApisFile).toMatch('(Plugin1Host as any).Plugin2Apis = Apis')
+    expect(apiDefinitionsFile).toContain('// Custom header added by plugin1')
+    expect(indexFile).toContain('// Custom header added by plugin2')
   })
 
   it('should handle plugin that returns null/undefined', async () => {
@@ -242,19 +264,21 @@ describe('plugin test', () => {
   it('should handle plugin with function-based extends', async () => {
     const functionExtendsPlugin = createPlugin(() => ({
       name: 'functionExtendsPlugin',
-      extends: config => ({
-        global: `Dynamic${config.type?.toUpperCase()}Apis`,
-        handleApi: (apiDescriptor) => {
-          // Add a prefix to operation IDs
-          if (apiDescriptor?.operationId) {
-            return {
-              ...apiDescriptor,
-              operationId: `dynamic_${apiDescriptor.operationId}`,
+      config(config) {
+        return extend(config, {
+          global: `Dynamic${config.type?.toUpperCase()}Apis`,
+          handleApi: (apiDescriptor) => {
+            // Add a prefix to operation IDs
+            if (apiDescriptor?.operationId) {
+              return {
+                ...apiDescriptor,
+                operationId: `dynamic_${apiDescriptor.operationId}`,
+              }
             }
-          }
-          return apiDescriptor
-        },
-      }),
+            return apiDescriptor
+          },
+        })
+      },
     }))
 
     const { globalsFile } = await generateWithPlugin(

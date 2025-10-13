@@ -43,6 +43,8 @@ export async function generateWithPlugin(inputFile: string, plugins: ApiPlugin[]
   })
   const apiDefinitionsFile = await fs.readFile(resolve(outputDir, 'apiDefinitions.ts'), 'utf-8')
   const globalsFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8')
+  const createApisFile = await fs.readFile(resolve(outputDir, 'createApis.ts'), 'utf-8')
+  const indexFile = await fs.readFile(resolve(outputDir, 'index.ts'), 'utf-8')
 
-  return { apiDefinitionsFile, globalsFile }
+  return { apiDefinitionsFile, globalsFile, createApisFile, indexFile }
 }
