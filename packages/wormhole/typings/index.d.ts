@@ -1,3 +1,4 @@
+import { MethodType, RequestBody } from 'alova';
 import { OpenAPIV3_1 } from 'openapi-types';
 import { z } from 'zod/v3';
 
@@ -5,6 +6,15 @@ export type OpenAPIDocument = OpenAPIV3_1.Document;
 export type SchemaObject = OpenAPIV3_1.SchemaObject;
 export type Parameter = OpenAPIV3_1.ParameterObject;
 export type OperationObject = OpenAPIV3_1.OperationObject;
+export interface FetchOptions {
+	headers?: Record<string, string>;
+	/** timeout in milliseconds */
+	timeout?: number;
+	method?: MethodType;
+	data?: RequestBody;
+	/** when true, do not throw on non-2xx but still return text; default false */
+	insecure?: boolean;
+}
 declare const zConfigType: z.ZodEnum<[
 	"auto",
 	"ts",
@@ -37,7 +47,6 @@ export type PlatformType = z.infer<typeof zPlatformType> | (string & {});
 export type MaybePromise<T> = T | Promise<T>;
 export interface ApiPlugin {
 	name?: string;
-	extends?: Partial<GeneratorConfig> | ((config: GeneratorConfig) => Partial<GeneratorConfig>);
 	/**
 	 * Replaces or manipulates the options object passed to wormhole.
 	 * Returning null does NOT replacing anything.
@@ -47,7 +56,7 @@ export interface ApiPlugin {
 	 * Manipulate the input config before parsing the openapi file.
 	 * Returning null does NOT replacing anything.
 	 */
-	beforeOpenapiParse?: (inputConfig: Pick<GeneratorConfig, "input" | "platform" | "plugins">) => MaybePromise<Pick<GeneratorConfig, "input" | "platform" | "plugins"> | undefined | null | void>;
+	beforeOpenapiParse?: (inputConfig: Pick<GeneratorConfig, "input" | "platform" | "plugins" | "fetchOptions">) => MaybePromise<Pick<GeneratorConfig, "input" | "platform" | "plugins" | "fetchOptions"> | undefined | null | void>;
 	/**
 	 * Manipulate the openapi document after parsing.
 	 * Returning null does NOT replacing anything.
@@ -63,7 +72,6 @@ export interface ApiPlugin {
 	 */
 	afterCodeGenerate?: (error?: Error) => void;
 }
-export type ApiPluginHooks = keyof Omit<ApiPlugin, 'name' | 'extends'>
 export interface HandleApi {
 	(apiDescriptor: ApiDescriptor): ApiDescriptor | void | undefined | null;
 }
@@ -78,6 +86,7 @@ export interface GeneratorConfig {
 	 * input: 'http://192.168.5.123:8080' -> When it does not point to the openapi file, it must be used with the `platform` parameter
 	 */
 	input: string;
+	fetchOptions?: FetchOptions;
 	/**
 	 * Platforms that support openapi. Currently `swagger` are supported. The default is empty.
 	 * When this parameter is specified, the input field only needs to specify the url of the document and doesn't need to be specified to the openapi file, reducing the usage threshold.
@@ -328,6 +337,29 @@ export declare function generate(config: Config, rules?: GenerateApiOptions): Pr
  * });
  */
 export declare function createPlugin<T extends any[]>(plugin: (...args: T) => ApiPlugin): (...args: T) => ApiPlugin;
+export interface APIFoxBody {
+	scope?: {
+		type?: "ALL" | "SELECTED_TAGS";
+		selectedTags?: string[];
+		excludedByTags?: string[];
+	};
+	options?: {
+		includeApifoxExtensionProperties?: boolean;
+		addFoldersToTags?: boolean;
+	};
+	oasVersion?: "2.0" | "3.0" | "3.1";
+	exportFormat?: "JSON" | "YAML";
+	environmentIds?: string[];
+}
+export interface ApifoxOptions extends Pick<APIFoxBody, "oasVersion" | "exportFormat">, Pick<NonNullable<APIFoxBody["options"]>, "includeApifoxExtensionProperties" | "addFoldersToTags"> {
+	projectId: string;
+	apifoxToken: string;
+	locale?: string;
+	apifoxVersion?: string;
+	selectedTags?: string[];
+	excludedByTags?: string[];
+}
+export declare function apifox({ projectId, locale, apifoxVersion, selectedTags, excludedByTags, apifoxToken, oasVersion, exportFormat, includeApifoxExtensionProperties, addFoldersToTags, }: ApifoxOptions): ApiPlugin;
 /**
  * Filter configuration interface
  */
