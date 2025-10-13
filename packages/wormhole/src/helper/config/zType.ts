@@ -1,5 +1,6 @@
 /* eslint-disable ts/no-use-before-define */
 import type { ApiDescriptor, ApiPlugin, GeneratorConfig, OpenAPIDocument } from '@/type'
+import type { FetchOptions } from '@/utils/base'
 import path from 'node:path'
 import { z } from 'zod/v3' // v4版本不稳定，暂时使用v3
 import { standardLoader } from '@/core/loader'
@@ -22,7 +23,7 @@ export const zHandleApi = z
   .function()
   .args(zApiDescriptor)
   .returns(z.union([zApiDescriptor, z.undefined(), z.null(), z.void()]))
-
+export const zFetchOptions = z.record(z.string(), z.any()) as z.ZodSchema<FetchOptions>
 // Helper function for MaybePromise return types
 function zMaybePromise<T extends z.ZodTypeAny>(schema: T) {
   return z.union([schema, z.promise(schema)])
@@ -38,20 +39,14 @@ const zInputConfig = z.lazy(() => z.object({
   input: z.string(),
   platform: zPlatformType.optional(),
   plugins: z.array(zApiPlugin).optional(),
-})) as z.ZodSchema<Pick<GeneratorConfig, 'input' | 'platform' | 'plugins'>>
+  fetchOptions: zFetchOptions.optional(),
+})) as z.ZodSchema<Pick<GeneratorConfig, 'input' | 'platform' | 'plugins' | 'fetchOptions'>>
 
 // 定义 OpenAPIDocument 类型（简化版本，因为完整的 OpenAPI 规范非常复杂）
 const zOpenAPIDocument = z.any() as z.ZodSchema<OpenAPIDocument>
 
 export const zApiPlugin = z.object({
   name: z.string().optional(),
-  extends: z.lazy(
-    () => z.union([
-      _zGeneratorConfig.partial(),
-      z.function().args(_zGeneratorConfig).returns(_zGeneratorConfig.partial()),
-    ])
-      .optional(),
-  ),
   config: z.lazy(
     () => z.function().args(_zGeneratorConfig).returns(zPluginReturn(_zGeneratorConfig)).optional(),
   ),
@@ -88,6 +83,8 @@ export const _zGeneratorConfig = z.object({
       required_error: 'Field input is required in `config.generator`',
     })
     .nonempty('Field input is required in `config.generator`'),
+  // Fetch options used by remote OpenAPI retrieval (headers, timeout, insecure). See FetchOptions in '@/utils/base'.
+  fetchOptions: zFetchOptions.optional(),
   /**
    * Platforms that support openapi. Currently `swagger` are supported. The default is empty.
    * When this parameter is specified, the input field only needs to specify the url of the document and doesn't need to be specified to the openapi file, reducing the usage threshold.

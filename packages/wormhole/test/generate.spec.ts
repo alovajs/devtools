@@ -1,15 +1,8 @@
 import type { Config, SchemaObject } from '@/type'
 import fs from 'node:fs/promises'
 import { resolve } from 'node:path'
-import { setupServer } from 'msw/node'
 import { generate } from '@/index'
-import handlers from './mocks/handlers'
 import { createStrReg } from './util'
-
-const server = setupServer(...handlers)
-beforeAll(() => server.listen())
-afterEach(() => server.resetHandlers())
-afterAll(() => server.close())
 
 vi.mock('node:fs')
 vi.mock('node:fs/promises')

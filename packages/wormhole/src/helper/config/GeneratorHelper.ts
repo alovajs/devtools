@@ -121,6 +121,7 @@ export class GeneratorHelper {
     return openApiParser.parse(config.input, {
       projectPath,
       platformType: config.platform,
+      fetchOptions: config.fetchOptions,
     })
   }
 

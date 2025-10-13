@@ -1,3 +1,4 @@
+import type { MethodType, RequestBody } from 'alova'
 import type { PackageJson } from 'type-fest'
 import fs from 'node:fs/promises'
 import path from 'node:path'
@@ -6,17 +7,35 @@ import adapterFetch from 'alova/fetch'
 import importFresh from 'import-fresh'
 import { logger } from '@/helper/logger'
 
-export async function fetchData(url: string) {
-  return createAlova({ requestAdapter: adapterFetch() })
-    .Get<Response>(url)
-    .then((response) => {
-      if (!response.ok) {
-        throw logger.throwError(`HTTP error! status: ${response.status}`, {
-          url,
-        })
-      }
+export interface FetchOptions {
+  headers?: Record<string, string>
+  /** timeout in milliseconds */
+  timeout?: number
+  method?: MethodType
+  data?: RequestBody
+  /** when true, do not throw on non-2xx but still return text; default false */
+  insecure?: boolean
+}
+
+export async function fetchData(url: string, options: FetchOptions = {}) {
+  const { headers, timeout, insecure, method = 'GET', data } = options
+  return createAlova({ requestAdapter: adapterFetch() }).Request<Response>({
+    url,
+    method,
+    data,
+    headers,
+    timeout,
+  }).then((response) => {
+    if (insecure) {
       return response.text()
-    })
+    }
+    if (!response.ok) {
+      throw logger.throwError(`HTTP error! status: ${response.status}`, {
+        url,
+      })
+    }
+    return response.text()
+  })
 }
 
 // Remove all empty undefined values

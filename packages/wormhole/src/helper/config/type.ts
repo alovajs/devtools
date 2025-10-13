@@ -3,7 +3,7 @@ import type { zConfigType, zPlatformType, zTemplateType } from './zType'
 // import { ApiPlugin } from '@/type';
 import type { OpenAPIDocument } from '@/type'
 import type { ApiDescriptor } from '@/type/api'
-
+import type { FetchOptions } from '@/utils/base'
 /**
  * Find the corresponding input attribute value
  */
@@ -30,8 +30,8 @@ export interface ApiPlugin {
    * Returning null does NOT replacing anything.
    */
   beforeOpenapiParse?: (
-    inputConfig: Pick<GeneratorConfig, 'input' | 'platform' | 'plugins'>
-  ) => MaybePromise<Pick<GeneratorConfig, 'input' | 'platform' | 'plugins'> | undefined | null | void>
+    inputConfig: Pick<GeneratorConfig, 'input' | 'platform' | 'plugins' | 'fetchOptions'>
+  ) => MaybePromise<Pick<GeneratorConfig, 'input' | 'platform' | 'plugins' | 'fetchOptions'> | undefined | null | void>
   /**
    * Manipulate the openapi document after parsing.
    * Returning null does NOT replacing anything.
@@ -64,6 +64,8 @@ export interface GeneratorConfig {
    */
 
   input: string
+  // Fetch options used by remote OpenAPI retrieval (headers, timeout, insecure). See FetchOptions in '@/utils/base'.
+  fetchOptions?: FetchOptions
 
   /**
    * Platforms that support openapi. Currently `swagger` are supported. The default is empty.

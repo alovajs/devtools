@@ -1,4 +1,5 @@
 import type { OpenAPIDocument, OpenAPIV2Document, PlatformType } from '@/type'
+import type { FetchOptions } from '@/utils/base'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import importFresh from 'import-fresh'
@@ -38,12 +39,12 @@ async function parseLocalFile(url: string, projectPath = process.cwd()) {
 }
 // Parse remote openapi files
 
-async function parseRemoteFile(url: string, platformType?: PlatformType) {
+async function parseRemoteFile(url: string, platformType?: PlatformType, fetchOptions?: FetchOptions) {
   // no extension and platform types
   if (platformType) {
-    return getPlatformOpenApiData(url, platformType)
+    return getPlatformOpenApiData(url, platformType, fetchOptions)
   }
-  const dataText = (await fetchData(url)) ?? ''
+  const dataText = (await fetchData(url, fetchOptions)) ?? ''
   let data: any
   try {
     // 尝试解析为 JSON 格式
@@ -86,7 +87,7 @@ function isValidOpenApiData(data: any): boolean {
   return !!(data.openapi || data.swagger || data.info || data.paths)
 }
 
-export async function getPlatformOpenApiData(url: string, platformType: PlatformType) {
+export async function getPlatformOpenApiData(url: string, platformType: PlatformType, fetchOptions?: FetchOptions) {
   if (!supportedPlatformType.includes(platformType)) {
     throw logger.throwError(`Platform type ${platformType} is not supported.`, {
       url,
@@ -99,7 +100,7 @@ export async function getPlatformOpenApiData(url: string, platformType: Platform
 
       for (const tryUrl of urlsToTry) {
         try {
-          const dataText = await fetchData(tryUrl)
+          const dataText = await fetchData(tryUrl, fetchOptions)
           if (!dataText)
             continue
 
@@ -126,10 +127,14 @@ export async function getPlatformOpenApiData(url: string, platformType: Platform
 
 export async function getOpenApiData(
   url: string,
-  projectPath?: string,
-  platformType?: PlatformType,
+  options?: {
+    projectPath?: string
+    platformType?: PlatformType
+    fetchOptions?: FetchOptions
+  },
 ): Promise<OpenAPIDocument> {
   let data: OpenAPIDocument | null = null
+  const { projectPath, platformType, fetchOptions } = options ?? {}
   try {
     if (!/^https?:\/\//.test(url)) {
       // local file
@@ -137,7 +142,7 @@ export async function getOpenApiData(
     }
     else {
       // remote file
-      data = await parseRemoteFile(url, platformType)
+      data = await parseRemoteFile(url, platformType, fetchOptions)
     }
     // If it is a swagger2 file
     if (isSwagger2(data)) {
@@ -150,6 +155,7 @@ export async function getOpenApiData(
       projectPath,
       url,
       platformType,
+      fetchOptions,
     })
   }
   if (!data) {
@@ -157,6 +163,7 @@ export async function getOpenApiData(
       projectPath,
       url,
       platformType,
+      fetchOptions,
     })
   }
   return data
