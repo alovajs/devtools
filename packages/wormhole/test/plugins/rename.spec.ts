@@ -257,4 +257,35 @@ describe('rename plugin', () => {
     expect(apiDefinitionsFile).toMatch(/userManagementTransformed/)
     expect(apiDefinitionsFile).toMatch(/orderProcessingTransformed/)
   })
+
+  it('should rename refName map values with camelCase style', async () => {
+    const { globalsFile } = await generateWithPlugin(resolve(__dirname, '../openapis/naming_openapi.yaml'), [
+      rename({ scope: 'refName', style: 'camelCase' }),
+    ])
+
+    // Expect model/ref names to be converted to camelCase in type declarations
+    // e.g. User_Info -> userInfo, Order_Detail -> orderDetail
+    const hasCamelCasedRefNames
+      = /type\s+userInfo\b/.test(globalsFile)
+        || /interface\s+userInfo\b/.test(globalsFile)
+        || /type\s+orderDetail\b/.test(globalsFile)
+        || /interface\s+orderDetail\b/.test(globalsFile)
+
+    expect(hasCamelCasedRefNames).toBeTruthy()
+  })
+
+  it('should rename refName map values using custom transform', async () => {
+    const { globalsFile } = await generateWithPlugin(resolve(__dirname, '../openapis/naming_openapi.yaml'), [
+      rename({
+        scope: 'refName',
+        transform: descriptor => `X_${descriptor.refNameMap?.['#/components/schemas/User_Info'] ?? 'Model'}`,
+      }),
+    ])
+
+    // Expect transformed ref name with custom prefix to appear
+    const hasCustomTransformedRef
+      = /type\s+X_/.test(globalsFile) || /interface\s+X_/.test(globalsFile)
+
+    expect(hasCustomTransformedRef).toBeTruthy()
+  })
 })
