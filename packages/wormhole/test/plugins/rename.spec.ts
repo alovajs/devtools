@@ -231,6 +231,14 @@ describe('rename plugin', () => {
     }).toThrow('at least one of `style` or `transform` is required')
   })
 
+  it('should throw error when kebabCase style is used with refName scope', () => {
+    expect(async () => {
+      await generateWithPlugin(resolve(__dirname, '../openapis/naming_openapi.yaml'), [
+        rename({ scope: 'refName', style: 'kebabCase' }),
+      ])
+    }).rejects.toThrow('Invalid rename style: kebabCase、refName')
+  })
+
   it('should correctly handle path parameter placeholders', async () => {
     const { apiDefinitionsFile } = await generateWithPlugin(resolve(__dirname, '../openapis/naming_openapi.yaml'), [
       rename({
@@ -262,30 +270,21 @@ describe('rename plugin', () => {
     const { globalsFile } = await generateWithPlugin(resolve(__dirname, '../openapis/naming_openapi.yaml'), [
       rename({ scope: 'refName', style: 'camelCase' }),
     ])
-
     // Expect model/ref names to be converted to camelCase in type declarations
     // e.g. User_Info -> userInfo, Order_Detail -> orderDetail
-    const hasCamelCasedRefNames
-      = /type\s+userInfo\b/.test(globalsFile)
-        || /interface\s+userInfo\b/.test(globalsFile)
-        || /type\s+orderDetail\b/.test(globalsFile)
-        || /interface\s+orderDetail\b/.test(globalsFile)
 
-    expect(hasCamelCasedRefNames).toBeTruthy()
+    expect(globalsFile).toContain('export interface orderItem {')
+    expect(globalsFile).toContain('export interface orderCreate {')
   })
 
   it('should rename refName map values using custom transform', async () => {
     const { globalsFile } = await generateWithPlugin(resolve(__dirname, '../openapis/naming_openapi.yaml'), [
       rename({
         scope: 'refName',
-        transform: descriptor => `X_${descriptor.refNameMap?.['#/components/schemas/User_Info'] ?? 'Model'}`,
+        transform: descriptor => `X_${descriptor.refNameMap?.['#/components/schemas/UserUpdate'] ?? 'Model'}`,
       }),
     ])
-
-    // Expect transformed ref name with custom prefix to appear
-    const hasCustomTransformedRef
-      = /type\s+X_/.test(globalsFile) || /interface\s+X_/.test(globalsFile)
-
-    expect(hasCustomTransformedRef).toBeTruthy()
+    expect(globalsFile).toContain('export interface X_UserUpdate {')
+    expect(globalsFile).toContain('export interface X_Model {')
   })
 })

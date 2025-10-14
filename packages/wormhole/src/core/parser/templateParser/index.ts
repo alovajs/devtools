@@ -13,6 +13,7 @@ export class TemplateParser implements Parser<OpenAPIDocument, TemplateData, Tem
   private schemasMap = new Map<string, string>()
   private operationIdSet = new Set<string>()
   private pathMap: Array<[string, any]> = []
+  private refNameMap = new Map<string, string>()
   private document: OpenAPIDocument
   private options: TemplateParserOptions
   async parse(document: OpenAPIDocument, options: TemplateParserOptions): Promise<TemplateData> {
@@ -28,6 +29,7 @@ export class TemplateParser implements Parser<OpenAPIDocument, TemplateData, Tem
     this.schemasMap.clear()
     this.operationIdSet.clear()
     this.pathMap.splice(0, this.pathMap.length)
+    this.refNameMap.clear()
   }
 
   private async parseBaseInfo() {
@@ -69,6 +71,7 @@ export class TemplateParser implements Parser<OpenAPIDocument, TemplateData, Tem
     operationObject.tags = standardLoader.transformTags(operationObject.tags)
     const result = await transformApiMethods(apiMethod, {
       document: this.document,
+      refNameMap: this.refNameMap,
       config: this.options.generatorConfig,
       map: this.pathMap,
     })
@@ -94,21 +97,30 @@ export class TemplateParser implements Parser<OpenAPIDocument, TemplateData, Tem
     for (const tag of tags) {
       const { queryParameters, queryParametersComment, pathParameters, pathParametersComment } = await parseParameters(
         operationObject.parameters,
-        this.document,
-        this.options.generatorConfig,
-        this.schemasMap,
+        {
+          document: this.document,
+          config: this.options.generatorConfig,
+          schemasMap: this.schemasMap,
+          refNameMap: this.refNameMap,
+        },
       )
       const { requestComment, requestName } = await parseRequestBody(
         operationObject.requestBody,
-        this.document,
-        this.options.generatorConfig,
-        this.schemasMap,
+        {
+          document: this.document,
+          config: this.options.generatorConfig,
+          schemasMap: this.schemasMap,
+          refNameMap: this.refNameMap,
+        },
       )
       const { responseComment, responseName } = await parseResponse(
         operationObject.responses,
-        this.document,
-        this.options.generatorConfig,
-        this.schemasMap,
+        {
+          document: this.document,
+          config: this.options.generatorConfig,
+          schemasMap: this.schemasMap,
+          refNameMap: this.refNameMap,
+        },
       )
       const api: Api = {
         tag,

@@ -9,6 +9,7 @@ export interface ParserOptions {
   commentType: CommentType
   document: OpenAPIDocument
   defaultRequire?: boolean
+  refNameMap?: Map<string, string>
   onReference?: (ast: AST) => void
 }
 export interface ParserCtx {

@@ -17,7 +17,7 @@ export function extendsConfig(config: GeneratorConfig, newConfig: Partial<Genera
         const result = srcValue(...args)
         // null or undefined return is a valid value for filtering
         // if plugin return undefined or null, we should break the chain
-        if (result === undefined || result === null) {
+        if (!result) {
           return result
         }
         return newValue(result)

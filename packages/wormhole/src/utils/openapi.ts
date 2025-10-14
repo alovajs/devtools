@@ -1,4 +1,11 @@
-import type { MaybeArraySchemaObject, OpenAPIDocument, ReferenceObject, ResponsesObject, SchemaObject } from '@/type'
+import type {
+  BaseReferenceObject,
+  MaybeArraySchemaObject,
+  OpenAPIDocument,
+  ReferenceObject,
+  ResponsesObject,
+  SchemaObject,
+} from '@/type'
 import { cloneDeep, isArray, isEqualWith, isObject, mergeWith, sortBy } from 'lodash'
 import { getGlobalConfig } from '@/config'
 import { standardLoader } from '@/core/loader'
@@ -11,8 +18,8 @@ import { capitalizeFirstLetter } from '@/utils'
 export function isReferenceObject(obj: any): obj is ReferenceObject {
   return !!(obj as ReferenceObject)?.$ref
 }
-function isBaseReferenceObject(obj: any): obj is { _$ref: string } & Record<string, any> {
-  return !!(obj as { _$ref: string })?._$ref
+function isBaseReferenceObject(obj: any): obj is BaseReferenceObject {
+  return !!(obj as BaseReferenceObject)?._$ref
 }
 export function isMaybeArraySchemaObject(obj: any): obj is MaybeArraySchemaObject {
   return !!(obj as MaybeArraySchemaObject)?.items
@@ -111,16 +118,17 @@ export function get$refName(path: string, toUpperCase: boolean = true) {
  * @param openApi openApi document object
  * @returns Removed $ref object
  */
-export function removeAll$ref<T = SchemaObject>(schemaOrigin: any, openApi: OpenAPIDocument, searchMap: Map<string, SchemaObject> = new Map()) {
+export function removeAll$ref<T = SchemaObject>(schemaOrigin: any, openApi: OpenAPIDocument, optons?: { searchMap?: Map<string, SchemaObject>, refNameMap?: Map<string, string> }) {
   const deepSchemaOrigin = cloneDeep(schemaOrigin)
   let schema: SchemaObject & Record<string, any>
+  const { searchMap = new Map(), refNameMap = new Map() } = optons ?? {}
   if (isReferenceObject(deepSchemaOrigin)) {
     if (searchMap.has(deepSchemaOrigin.$ref)) {
       return searchMap.get(deepSchemaOrigin.$ref) as T
     }
     schema = findBy$ref<SchemaObject>(deepSchemaOrigin.$ref, openApi, true)
+    refNameMap.set(deepSchemaOrigin.$ref, standardLoader.transformRefName(deepSchemaOrigin.$ref))
     // Mark for easy restoration
-
     schema._$ref = deepSchemaOrigin.$ref
     searchMap.set(deepSchemaOrigin.$ref, schema)
   }
@@ -129,7 +137,7 @@ export function removeAll$ref<T = SchemaObject>(schemaOrigin: any, openApi: Open
   }
   for (const key of Object.keys(schema)) {
     if (schema[key] && typeof schema[key] === 'object') {
-      schema[key] = removeAll$ref(schema[key], openApi, searchMap)
+      schema[key] = removeAll$ref(schema[key], openApi, { searchMap, refNameMap })
     }
   }
   return schema as T
