@@ -34,12 +34,15 @@ export function simpleTypeParser(schema: SchemaObject, ctx: ParserCtx) {
       result.type = ASTType.NULL
       break
     default:
+      // custom
+      result.type = ASTType.CUSTOM;
+      (result as TCustom).params = `${schema.type}` as string
       break
   }
   return result
 }
 
 export default <ASTParser>{
-  type: ['boolean', 'integer', 'number', 'string', 'null'],
+  type: ['boolean', 'integer', 'number', 'string', 'null', 'custom'],
   parse: simpleTypeParser,
 }

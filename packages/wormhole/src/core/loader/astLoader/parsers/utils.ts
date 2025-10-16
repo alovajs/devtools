@@ -1,11 +1,12 @@
 import type { ASTParser, ParserCtx, ParserSchemaType } from './type'
-import type { AbstractAST, CommentType, MaybeSchemaObject } from '@/type'
+import type { AbstractAST, CommentType, MaybeSchemaObject, SchemaType } from '@/type'
 import { CommentHelper } from '@/helper'
 import { ASTType } from '@/type'
 import { isReferenceObject } from '@/utils'
 
 import { forward } from './forward'
 
+export const SchemaPrimitive: SchemaType[] = ['boolean', 'object', 'number', 'string', 'integer', 'array', 'null']
 export function getCommentBySchema(schema: MaybeSchemaObject, options: {
   type: CommentType
 }) {
@@ -55,7 +56,7 @@ export function getParserSchemaType(schema: MaybeSchemaObject): ParserSchemaType
     return forwardType
   }
   if (schema.type && typeof schema.type === 'string') {
-    return schema.type
+    return SchemaPrimitive.includes(schema.type) ? schema.type : 'custom'
   }
   return 'null'
 }

@@ -1,6 +1,6 @@
 import type { AST, CommentType, OpenAPIDocument, ReferenceObject, SchemaObject, SchemaType } from '@/type'
 
-export type ParserSchemaType = SchemaType | 'enum' | 'group' | 'tuple' | 'reference'
+export type ParserSchemaType = SchemaType | 'enum' | 'group' | 'tuple' | 'reference' | 'custom'
 export interface ASTParser {
   type: ParserSchemaType | ParserSchemaType[]
   parse: (schema: SchemaObject, ctx: ParserCtx) => AST

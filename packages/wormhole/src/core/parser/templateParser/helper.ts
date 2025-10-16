@@ -229,8 +229,11 @@ export async function transformApiMethods(apiMethod: ApiMethod, options: {
   newApiMethod.operationObject = mergeObject<OperationObject>(
     apiMethod.operationObject,
     newApiMethod.operationObject,
-    options.document,
-    options.map,
+    {
+      openApi: options.document,
+      map: options.map,
+      refNameMap: options.refNameMap,
+    },
   )
 
   return newApiMethod
@@ -336,6 +339,7 @@ export function apiDescriptor2apiMethod(apiDescriptor: ApiDescriptor, options: {
   delete apiDescriptorValue.requestBody
   delete apiDescriptorValue.responses
   delete apiDescriptorValue.parameters
+  delete apiDescriptorValue.refNameMap
   Object.assign(operationObject, apiDescriptorValue)
   return {
     url,

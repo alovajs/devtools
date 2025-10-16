@@ -245,6 +245,7 @@ export type ApiDescriptor = Omit<OperationObject, "requestBody" | "parameters" |
 	url: string;
 	method: string;
 	parameters?: Parameter[];
+	refNameMap?: Record<string, string>;
 	requestBody?: SchemaObject;
 	responses?: SchemaObject;
 };
@@ -428,7 +429,7 @@ export interface RenameConfig {
 	/**
 	 * Target scope for renaming, defaults to 'url'
 	 */
-	scope?: "url" | "params" | "pathParams" | "data" | "response";
+	scope?: "url" | "params" | "pathParams" | "data" | "response" | "refName";
 	/**
 	 * Matching rule for selective renaming:
 	 * - string: target contains this string

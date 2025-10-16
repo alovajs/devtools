@@ -115,7 +115,6 @@ describe('schema Normalizer', () => {
 
     it('should handle unknown types by preserving all keywords', () => {
       const schema: SchemaObject = {
-        type: ['unknown' as any],
         minLength: 5,
         minimum: 0,
         title: 'Test',
@@ -348,6 +347,20 @@ describe('schema Normalizer', () => {
       expect(itemsSchema.anyOf).toHaveLength(2)
       expect((itemsSchema.anyOf![0] as SchemaObject).type).toBe('string')
       expect((itemsSchema.anyOf![1] as SchemaObject).type).toBe('null')
+    })
+    it('should support custom type', () => {
+      const schema: SchemaObject = {
+        type: 'number | string' as any,
+        items: {
+          type: ['string', null as any],
+          minLength: 5,
+        },
+      }
+
+      const result = normalizer.normalize(schema) as ArraySchemaObject
+
+      expect(result.type).toBe('number | string')
+      expect(result.items).not.toBeDefined()
     })
   })
 })

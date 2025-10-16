@@ -132,9 +132,9 @@ describe('rename plugin', () => {
         { scope: 'pathParams', style: 'camelCase' },
         { scope: 'data', style: 'camelCase' },
         { scope: 'response', style: 'camelCase' },
+        { scope: 'refName', style: 'camelCase' },
       ]),
     ])
-
     // Check if all names use camelCase
     const propsTransformed
       = /userName/.test(globalsFile)
@@ -145,7 +145,6 @@ describe('rename plugin', () => {
 
     const paramsTransformed
       = /pageNumber/.test(globalsFile) && /itemsPerPage/.test(globalsFile) && /sortBy/.test(globalsFile)
-
     expect(propsTransformed && paramsTransformed).toBeTruthy()
   })
 
@@ -160,10 +159,10 @@ describe('rename plugin', () => {
           { scope: 'pathParams', style: 'snakeCase' },
           { scope: 'data', style: 'snakeCase' },
           { scope: 'response', style: 'snakeCase' },
+          { scope: 'refName', style: 'snakeCase' },
         ]),
       ],
     )
-
     // URLs should be snake_case
     expect(apiDefinitionsFile).toMatch(/user_management/)
     expect(apiDefinitionsFile).toMatch(/order_processing/)

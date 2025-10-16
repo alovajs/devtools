@@ -1,4 +1,4 @@
-{{#if (eq moduleType "ESModule")}}import { defineConfig } from '@alova/wormhole'{{else if (eq moduleType "commonJs")}}const { defineConfig } = require('@alova/wormhole'){{/if}};
+{{> type/import imports="{ defineConfig }" from="@alova/wormhole"}}
 
 // For more config detailed visit:
 // https://alova.js.org/tutorial/getting-started/extension-integration
