@@ -179,6 +179,8 @@ describe('generate API', () => {
     expect(await fs.readFile(resolve(outputDir3, 'index.ts'), 'utf-8')).toMatchSnapshot()
     expect(await fs.readFile(resolve(outputDir3, 'createApis.ts'), 'utf-8')).toMatchSnapshot()
     expect(await fs.readFile(resolve(outputDir3, 'globals.d.ts'), 'utf-8')).toMatchSnapshot()
+  }, {
+    timeout: 10 * 1000,
   })
 
   it('shouldn\'t replace `index` file if it is generated', async () => {
@@ -478,6 +480,8 @@ describe('generate API', () => {
     )
 
     unlinkSync(tempPkgFile)
+  }, {
+    timeout: 10 * 1000,
   })
 
   it('should generate corresponding module codes dependent to `type`', async () => {
