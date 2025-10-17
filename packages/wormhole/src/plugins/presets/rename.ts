@@ -1,5 +1,5 @@
 import type { ApiDescriptor, ApiPlugin, Parameter } from '@/type'
-import { extend } from './utils'
+import { extend, isMatch } from './utils'
 /**
  * Rename style options
  */
@@ -57,28 +57,6 @@ function toKebabCase(str: string): string {
 
 function toPascalCase(str: string): string {
   return str.replace(/[-_\s]+(.)?/g, (_, c) => (c ? c.toUpperCase() : '')).replace(/^(.)/, c => c.toUpperCase())
-}
-
-/**
- * Tests if value matches the specified rule
- */
-function isMatch(value: string, match?: string | RegExp | ((key: string) => boolean)): boolean {
-  if (!match)
-    return true
-
-  if (typeof match === 'string') {
-    return value.includes(match)
-  }
-
-  if (match instanceof RegExp) {
-    return match.test(value)
-  }
-
-  if (typeof match === 'function') {
-    return match(value)
-  }
-
-  return false
 }
 
 /**

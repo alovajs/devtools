@@ -15,3 +15,25 @@ export function extend(config: GeneratorConfig, newConfig?: Partial<GeneratorCon
   // 使用 extendsConfig 进行配置合并与标准化，确保最终结构满足生成器需求
   return extendsConfig(config, pluginExtendsConfig)
 }
+
+/**
+ * Tests if value matches the specified rule
+ */
+export function isMatch(value: string, match?: string | RegExp | ((key: string) => boolean)): boolean {
+  if (!match)
+    return true
+
+  if (typeof match === 'string') {
+    return value.includes(match)
+  }
+
+  if (match instanceof RegExp) {
+    return match.test(value)
+  }
+
+  if (typeof match === 'function') {
+    return match(value)
+  }
+
+  return false
+}
