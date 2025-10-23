@@ -1,5 +1,11 @@
 # @alova/wormhole
 
+## 1.4.0
+
+### Minor Changes
+
+- [#101](https://github.com/alovajs/devtools/pull/101) [`998b100`](https://github.com/alovajs/devtools/commit/998b1006b2420ce83da8bd309636568a6511812f) Thanks [@czhlin](https://github.com/czhlin)! - add plugins: apifox、filterApi、importType、rename、tagModifier、payloadModifier
+
 ## 1.3.3
 
 ### Patch Changes
