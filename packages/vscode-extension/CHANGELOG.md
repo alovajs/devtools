@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.0.8
+
+### Patch Changes
+
+- [#108](https://github.com/alovajs/devtools/pull/108) [`1cb2da2`](https://github.com/alovajs/devtools/commit/1cb2da23294fe408a6edfe7d65a04559a01a2f69) Thanks [@czhlin](https://github.com/czhlin)! - update plugin exports
+
 ## 2.0.7
 
 ### Patch Changes
