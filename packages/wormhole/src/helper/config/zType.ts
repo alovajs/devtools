@@ -86,6 +86,18 @@ export const _zGeneratorConfig = z.object({
   // Fetch options used by remote OpenAPI retrieval (headers, timeout, insecure). See FetchOptions in '@/utils/base'.
   fetchOptions: zFetchOptions.optional(),
   /**
+   * A list of type identifiers to exclude from generation.
+   * Matches against type names parsed from the OpenAPI schema; matched types
+   * are skipped and referenced directly by their identifier in generated code
+   * to avoid duplicate or conflicting declarations.
+   * Use this when you already have hand-written types or types provided by
+   * frameworks/libraries that should not be generated.
+   *
+   * @example
+   * externalTypes: ['File', 'Blob', 'FormData', 'Pagination']
+   */
+  externalTypes: z.array(z.string()).optional(),
+  /**
    * Platforms that support openapi. Currently `swagger` are supported. The default is empty.
    * When this parameter is specified, the input field only needs to specify the url of the document and doesn't need to be specified to the openapi file, reducing the usage threshold.
    * @defualt undefined

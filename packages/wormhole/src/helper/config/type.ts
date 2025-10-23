@@ -41,7 +41,10 @@ export interface ApiPlugin {
    * Manipulate the template code before generating.
    * Returning null does NOT replacing anything.
    */
-  beforeCodeGenerate?: (data: any, outputFile: string) => MaybePromise<string | undefined | null | void>
+  beforeCodeGenerate?: (data: any, outputFile: string, ctx: {
+    renderTemplate: () => Promise<string>
+    fileName: string
+  }) => MaybePromise<string | undefined | null | void>
   /**
    * Called when wormhold has finished code generating.
    */
@@ -66,7 +69,18 @@ export interface GeneratorConfig {
   input: string
   // Fetch options used by remote OpenAPI retrieval (headers, timeout, insecure). See FetchOptions in '@/utils/base'.
   fetchOptions?: FetchOptions
-
+  /**
+   * A list of type identifiers to exclude from generation.
+   * Matches against type names parsed from the OpenAPI schema; matched types
+   * are skipped and referenced directly by their identifier in generated code
+   * to avoid duplicate or conflicting declarations.
+   * Use this when you already have hand-written types or types provided by
+   * frameworks/libraries that should not be generated.
+   *
+   * @example
+   * externalTypes: ['File', 'Blob', 'FormData', 'Pagination']
+   */
+  externalTypes?: string[]
   /**
    * Platforms that support openapi. Currently `swagger` are supported. The default is empty.
    * When this parameter is specified, the input field only needs to specify the url of the document and doesn't need to be specified to the openapi file, reducing the usage threshold.

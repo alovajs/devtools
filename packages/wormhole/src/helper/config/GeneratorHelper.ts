@@ -242,7 +242,14 @@ export class GeneratorHelper {
       const unhandledGenerateFiles: OutputFileOptions[] = []
       for (const file of generateFiles) {
         const fileName = `${file.outFileName ?? file.fileName}${file.ext ?? templateHelper.getExt()}`
-        const data = await pluginDriver.hookFirst('beforeCodeGenerate', [file.data, fileName])
+        const data = await pluginDriver.hookFirst('beforeCodeGenerate', [
+          file.data,
+          fileName,
+          {
+            renderTemplate: () => templateHelper.readAndRenderTemplate(file.fileName, file.data, file),
+            fileName: file.fileName,
+          },
+        ])
         if (!data) {
           unhandledGenerateFiles.push(file)
           continue

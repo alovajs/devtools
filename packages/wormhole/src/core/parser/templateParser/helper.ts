@@ -40,6 +40,9 @@ function getTsStr(originObj: SchemaObject | ReferenceObject, options: {
     defaultRequire: config.defaultRequire,
     refNameMap,
     async onReference(ast) {
+      if (config.externalTypes?.includes(ast.keyName ?? '')) {
+        return
+      }
       if (ast.keyName && schemasMap && !schemasMap.has(ast.keyName)) {
         const result = await astLoader.transformTsStr(ast, {
           shallowDeep: true,

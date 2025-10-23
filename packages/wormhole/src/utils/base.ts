@@ -13,18 +13,20 @@ export interface FetchOptions {
   timeout?: number
   method?: MethodType
   data?: RequestBody
+  params?: Record<string, any>
   /** when true, do not throw on non-2xx but still return text; default false */
   insecure?: boolean
 }
 
 export async function fetchData(url: string, options: FetchOptions = {}) {
-  const { headers, timeout, insecure, method = 'GET', data } = options
+  const { headers, timeout, insecure, method = 'GET', data, params } = options
   return createAlova({ requestAdapter: adapterFetch() }).Request<Response>({
     url,
     method,
     data,
     headers,
     timeout,
+    params,
   }).then((response) => {
     if (insecure) {
       return response.text()

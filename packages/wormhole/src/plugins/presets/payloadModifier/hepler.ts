@@ -22,7 +22,8 @@ function toSchemaObject(base: SchemaObject, s: Schema): SchemaObject {
 
   // Legacy union as array (treated as oneOf)
   if (Array.isArray(s)) {
-    result.oneOf = s.map(item => toSchemaObject({}, item))
+    const baseOneOf = base.oneOf || []
+    result.oneOf = s.map((item, idx) => toSchemaObject(baseOneOf[idx] || {}, item))
     return result
   }
 
@@ -35,15 +36,18 @@ function toSchemaObject(base: SchemaObject, s: Schema): SchemaObject {
   // Handle union keywords: overwrite arrays but preserve unrelated fields
   if ((s as SchemaOneOf).oneOf) {
     const spec = s as SchemaOneOf
-    result.oneOf = spec.oneOf.map(item => toSchemaObject({}, item))
+    const baseOneOf = base.oneOf || []
+    result.oneOf = spec.oneOf.map((item, idx) => toSchemaObject(baseOneOf[idx] || {}, item))
   }
   if ((s as SchemaAnyOf).anyOf) {
     const spec = s as SchemaAnyOf
-    result.anyOf = spec.anyOf.map(item => toSchemaObject({}, item))
+    const baseAnyOf = base.anyOf || []
+    result.anyOf = spec.anyOf.map((item, idx) => toSchemaObject(baseAnyOf[idx] || {}, item))
   }
   if ((s as SchemaAllOf).allOf) {
     const spec = s as SchemaAllOf
-    result.allOf = spec.allOf.map(item => toSchemaObject({}, item))
+    const baseAllOf = base.allOf || []
+    result.allOf = spec.allOf.map((item, idx) => toSchemaObject(baseAllOf[idx] || {}, item))
   }
 
   // Enum: set enum and optional type
