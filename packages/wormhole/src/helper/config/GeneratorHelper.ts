@@ -1,20 +1,21 @@
 import type { OutputFileOptions } from '@/helper'
 import type { AlovaVersion, GeneratorConfig, TemplateType } from '@/type'
 import path from 'node:path'
-import { isEqual } from 'lodash'
+import { isEqual, pick } from 'lodash'
 import { fromError } from 'zod-validation-error'
 import { openApiParser, TemplateParser } from '@/core/parser'
 import getAlovaVersion from '@/functions/getAlovaVersion'
 import getAutoTemplateType from '@/functions/getAutoTemplateType'
 import prepareConfig from '@/functions/prepareConfig'
-import { logger, TemplateHelper } from '@/helper'
-import { existsPromise, toCase as transformFileName } from '@/utils'
+import { logger, PluginDriver, TemplateHelper } from '@/helper'
+import { existsPromise, generateFile, toCase as transformFileName } from '@/utils'
 import { zGeneratorConfig } from './zType'
 
 export class GeneratorHelper {
   private static instance: GeneratorHelper
   private config: GeneratorConfig
   private readConfig: Readonly<GeneratorConfig>
+  private pluginDriver: PluginDriver
   private readonly defaultConfig: GeneratorConfig = Object.freeze({
     input: '',
     output: '',
@@ -55,6 +56,7 @@ export class GeneratorHelper {
     // 更新配置
     this.config = validatedConfig
     this.readConfig = Object.freeze(this.config)
+    this.pluginDriver = new PluginDriver(this.config.plugins)
     logger.debug('GeneratorConfig loaded successfully', this.config)
     return this
   }
@@ -65,6 +67,10 @@ export class GeneratorHelper {
 
   public getTemplateType(projectPath: string) {
     return GeneratorHelper.getTemplateType(this.config, projectPath)
+  }
+
+  public getPluginDriver() {
+    return this.pluginDriver
   }
 
   public openApiData(projectPath: string) {
@@ -115,6 +121,7 @@ export class GeneratorHelper {
     return openApiParser.parse(config.input, {
       projectPath,
       platformType: config.platform,
+      fetchOptions: config.fetchOptions,
     })
   }
 
@@ -125,12 +132,31 @@ export class GeneratorHelper {
       force?: boolean
     },
   ) {
-    // ! test
-    config = prepareConfig(config)
-    const document = await this.openApiData(config, options.projectPath)
+    // plugin: handle extends
+    config = await prepareConfig(config)
+
+    const pluginDriver = new PluginDriver(config.plugins)
+
+    // plugin: handle before parse openapi
+    const configBeforeParse = await pluginDriver.hookSeq(
+      'beforeOpenapiParse',
+      [pick(config, ['input', 'plugins', 'platform'])],
+      (result, args) => {
+        return result ? [result] : args
+      },
+    )
+    config = { ...config, ...configBeforeParse }
+
+    let document = await this.openApiData(config, options.projectPath)
     if (!document) {
       return false
     }
+
+    // plugin: handle after parse openapi
+    document = await pluginDriver.hookSeq('afterOpenapiParse', [document], (result, args) => {
+      return result ? [result] : args
+    }) ?? document
+
     const output = path.resolve(options.projectPath, config.output)
     const version = GeneratorHelper.getAlovaVersion(config, options.projectPath)
     const templateHelper = TemplateHelper.load({
@@ -210,7 +236,33 @@ export class GeneratorHelper {
         hasVersion: false,
       })
     }
-    await templateHelper.outputFiles(generateFiles)
+    // plugin: handle before code generate
+    let codeGenError: Error | undefined
+    try {
+      const unhandledGenerateFiles: OutputFileOptions[] = []
+      for (const file of generateFiles) {
+        const fileName = `${file.outFileName ?? file.fileName}${file.ext ?? templateHelper.getExt()}`
+        const data = await pluginDriver.hookFirst('beforeCodeGenerate', [
+          file.data,
+          fileName,
+          {
+            renderTemplate: () => templateHelper.readAndRenderTemplate(file.fileName, file.data, file),
+            fileName: file.fileName,
+          },
+        ])
+        if (!data) {
+          unhandledGenerateFiles.push(file)
+          continue
+        }
+        await generateFile(file.output, fileName, data)
+      }
+      await templateHelper.outputFiles(unhandledGenerateFiles)
+    }
+    catch (error) {
+      codeGenError = error as Error
+    }
+    // plugin: handle after code gen
+    await pluginDriver.hookParallel('afterCodeGenerate', [codeGenError])
     return true
   }
 }

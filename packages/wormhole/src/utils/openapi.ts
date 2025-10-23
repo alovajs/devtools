@@ -1,4 +1,11 @@
-import type { MaybeArraySchemaObject, OpenAPIDocument, ReferenceObject, ResponsesObject, SchemaObject } from '@/type'
+import type {
+  BaseReferenceObject,
+  MaybeArraySchemaObject,
+  OpenAPIDocument,
+  ReferenceObject,
+  ResponsesObject,
+  SchemaObject,
+} from '@/type'
 import { cloneDeep, isArray, isEqualWith, isObject, mergeWith, sortBy } from 'lodash'
 import { getGlobalConfig } from '@/config'
 import { standardLoader } from '@/core/loader'
@@ -11,8 +18,8 @@ import { capitalizeFirstLetter } from '@/utils'
 export function isReferenceObject(obj: any): obj is ReferenceObject {
   return !!(obj as ReferenceObject)?.$ref
 }
-function isBaseReferenceObject(obj: any): obj is { _$ref: string } & Record<string, any> {
-  return !!(obj as { _$ref: string })?._$ref
+function isBaseReferenceObject(obj: any): obj is BaseReferenceObject {
+  return !!(obj as BaseReferenceObject)?._$ref
 }
 export function isMaybeArraySchemaObject(obj: any): obj is MaybeArraySchemaObject {
   return !!(obj as MaybeArraySchemaObject)?.items
@@ -31,8 +38,9 @@ export function findBy$ref<T = SchemaObject>(path: string, openApi: OpenAPIDocum
     '#': openApi,
   }
   pathArr.forEach((key) => {
+    const tryKeys = [key, decodeURIComponent(key)]
     if (find) {
-      find = find[key]
+      find = find[tryKeys.find(k => !!find[k]) ?? key]
     }
   })
   if (!find) {
@@ -111,16 +119,17 @@ export function get$refName(path: string, toUpperCase: boolean = true) {
  * @param openApi openApi document object
  * @returns Removed $ref object
  */
-export function removeAll$ref<T = SchemaObject>(schemaOrigin: any, openApi: OpenAPIDocument, searchMap: Map<string, SchemaObject> = new Map()) {
+export function removeAll$ref<T = SchemaObject>(schemaOrigin: any, openApi: OpenAPIDocument, optons?: { searchMap?: Map<string, SchemaObject>, refNameMap?: Map<string, string> }) {
   const deepSchemaOrigin = cloneDeep(schemaOrigin)
   let schema: SchemaObject & Record<string, any>
+  const { searchMap = new Map(), refNameMap = new Map() } = optons ?? {}
   if (isReferenceObject(deepSchemaOrigin)) {
     if (searchMap.has(deepSchemaOrigin.$ref)) {
       return searchMap.get(deepSchemaOrigin.$ref) as T
     }
     schema = findBy$ref<SchemaObject>(deepSchemaOrigin.$ref, openApi, true)
+    refNameMap.set(deepSchemaOrigin.$ref, standardLoader.transformRefName(deepSchemaOrigin.$ref))
     // Mark for easy restoration
-
     schema._$ref = deepSchemaOrigin.$ref
     searchMap.set(deepSchemaOrigin.$ref, schema)
   }
@@ -129,7 +138,7 @@ export function removeAll$ref<T = SchemaObject>(schemaOrigin: any, openApi: Open
   }
   for (const key of Object.keys(schema)) {
     if (schema[key] && typeof schema[key] === 'object') {
-      schema[key] = removeAll$ref(schema[key], openApi, searchMap)
+      schema[key] = removeAll$ref(schema[key], openApi, { searchMap, refNameMap })
     }
   }
   return schema as T
@@ -181,13 +190,8 @@ export function isEqualObject(objValue: any, srcValue: any, openApi: OpenAPIDocu
   }
   return isEqualWith(objValue, srcValue, customizer)
 }
-/**
- *
- * @param path $ref path
- * @param map Existing $ref path
- * @returns Another version of the $ref path
- */
-export function getNext$refKey(path: string, map: Array<[string, any]> = []) {
+
+export function next$ref() {
   function getNameVersion(path: string) {
     const name = standardLoader.transformRefName(path, {
       toUpperCase: false,
@@ -204,15 +208,58 @@ export function getNext$refKey(path: string, map: Array<[string, any]> = []) {
   function getOnlyPath(path: string) {
     return path.split('/').slice(0, -1).join('/')
   }
-  const name = getOnlyName(path)
-  const basePath = getOnlyPath(path)
-  let nameVersion = getNameVersion(path)
-  map.forEach(([key]) => {
-    if (getOnlyName(key) === name && getOnlyPath(path) === basePath) {
-      nameVersion = Math.max(nameVersion, getNameVersion(key))
+  function getNext(path: string, map: Array<[string, any]> = []) {
+    const name = getOnlyName(path)
+    const basePath = getOnlyPath(path)
+    let nameVersion = getNameVersion(path)
+    map.forEach(([key]) => {
+      if (getOnlyName(key) === name && getOnlyPath(path) === basePath) {
+        nameVersion = Math.max(nameVersion, getNameVersion(key))
+      }
+    })
+    return `${basePath}/${name}${nameVersion + 1}`
+  }
+  return {
+    getNameVersion,
+    getOnlyName,
+    getOnlyPath,
+    getNext,
+  }
+}
+
+/**
+ * 根据 usedRefs 优化 refsMap：
+ * 1) 移除未使用的 key；
+ * 2) 同组（相同 basePath+onlyName）内按版本升序将值左移，
+ *    即剩余键依次接收原始值的前 N 个（N 为剩余键数量）。
+ */
+export function optimizeRefsMap(
+  refsMap: Record<string, string>,
+  usedRefs: Array<string | ReferenceObject>,
+): Record<string, string> {
+  const helper = next$ref()
+  const usedSet = new Set<string>(usedRefs.map(v => (typeof v === 'string' ? v : v.$ref)))
+
+  const grouped: Record<string, Array<{ key: string, value: string, version: number }>> = {}
+  for (const [key, value] of Object.entries(refsMap || {})) {
+    const groupId = `${helper.getOnlyPath(key)}::${helper.getOnlyName(key)}`
+    const arr = grouped[groupId] || (grouped[groupId] = [])
+    arr.push({ key, value, version: helper.getNameVersion(key) })
+  }
+
+  const newRefsMap: Record<string, string> = {}
+  for (const groupId of Object.keys(grouped)) {
+    const list = grouped[groupId].sort((a, b) => a.version - b.version)
+    const remain = list.filter(item => usedSet.has(item.key))
+    if (remain.length === 0) {
+      continue
     }
-  })
-  return `${basePath}/${name}${nameVersion + 1}`
+    const assignValues = list.map(item => item.value).slice(0, remain.length)
+    remain.forEach((item, idx) => {
+      newRefsMap[item.key] = assignValues[idx]
+    })
+  }
+  return newRefsMap
 }
 function isCircular(obj: any) {
   const seenObjects = new WeakSet()
@@ -251,7 +298,12 @@ function hasBaseReferenceObject(obj: any) {
   }
   return false
 }
-function removeBaseReference(obj: Record<string, any>, openApi: OpenAPIDocument, map: Array<[string, any]>) {
+function removeBaseReference(obj: Record<string, any>, options: {
+  openApi: OpenAPIDocument
+  map?: Array<[string, any]>
+  refNameMap?: Map<string, string>
+}) {
+  const { openApi, map = [], refNameMap = new Map() } = options
   if (isBaseReferenceObject(obj)) {
     const refObj = { $ref: obj._$ref }
     if (isEqualObject(obj, refObj, openApi)) {
@@ -259,7 +311,7 @@ function removeBaseReference(obj: Record<string, any>, openApi: OpenAPIDocument,
     }
     for (const key in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, key) && hasBaseReferenceObject(obj[key])) {
-        obj[key] = removeBaseReference(obj[key], openApi, map)
+        obj[key] = removeBaseReference(obj[key], { openApi, map, refNameMap })
       }
     }
     const [path] = map.find(([, item]) => isEqualObject(item, obj, openApi)) ?? []
@@ -268,7 +320,11 @@ function removeBaseReference(obj: Record<string, any>, openApi: OpenAPIDocument,
         $ref: path,
       }
     }
-    const nextPath = getNext$refKey(refObj.$ref, map)
+    const refHelper = next$ref()
+    const nextPath = refHelper.getNext(refObj.$ref, map)
+    if (refNameMap.has(refObj.$ref)) {
+      refNameMap.set(nextPath, `${refNameMap.get(refObj.$ref) ?? ''}${refHelper.getNameVersion(nextPath)}`)
+    }
     map.push([nextPath, obj])
     setComponentsBy$ref(nextPath, obj, openApi)
     return {
@@ -277,18 +333,22 @@ function removeBaseReference(obj: Record<string, any>, openApi: OpenAPIDocument,
   }
   for (const key in obj) {
     if (Object.prototype.hasOwnProperty.call(obj, key) && hasBaseReferenceObject(obj[key])) {
-      obj[key] = removeBaseReference(obj[key], openApi, map)
+      obj[key] = removeBaseReference(obj[key], { openApi, map, refNameMap })
     }
   }
   return obj
 }
 function unCircular(
   obj: Record<string, any>,
-  openApi: OpenAPIDocument,
-  map: Array<[string, any]>,
-  objPath = '$',
-  seen = new WeakMap<object, { $ref: string }>(),
+  options: {
+    openApi: OpenAPIDocument
+    map?: Array<[string, any]>
+    objPath?: string
+    seen?: WeakMap<object, { $ref: string }>
+    refNameMap?: Map<string, string>
+  },
 ) {
+  const { openApi, map = [], objPath = '$', seen = new WeakMap(), refNameMap = new Map() } = options
   if (typeof obj !== 'object' || obj === null) {
     return obj // 原始值直接返回
   }
@@ -310,12 +370,16 @@ function unCircular(
       setSeen(obj, refObj)
       return refObj
     }
-    const nextPath = getNext$refKey(refObj.$ref, map)
+    const refHelper = next$ref()
+    const nextPath = refHelper.getNext(refObj.$ref, map)
+    if (refNameMap.has(refObj.$ref)) {
+      refNameMap.set(nextPath, `${refNameMap.get(refObj.$ref) ?? ''}${refHelper.getNameVersion(nextPath)}`)
+    }
     seen.set(obj, { $ref: nextPath })
     map.push([nextPath, obj])
     for (const key in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        obj[key] = unCircular(obj[key], openApi, map, `${objPath}.${key}`, seen)
+        obj[key] = unCircular(obj[key], { openApi, map, objPath: `${objPath}.${key}`, seen, refNameMap })
       }
     }
     setComponentsBy$ref(nextPath, obj, openApi)
@@ -326,21 +390,19 @@ function unCircular(
   map.push([$ref, obj])
   for (const key in obj) {
     if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      obj[key] = unCircular(obj[key], openApi, map, `${objPath}.${key}`, seen)
+      obj[key] = unCircular(obj[key], { openApi, map, objPath: `${objPath}.${key}`, seen, refNameMap })
     }
   }
   setComponentsBy$ref($ref, obj, openApi)
   return obj
 }
-/**
- * When merging openApi document objects, try to use srcValue as the standard.
- * @template T
- * @param objValue
- * @param srcValue
- * @param openApi
- * @returns T
- */
-export function mergeObject<T>(objValue: any, srcValue: any, openApi: OpenAPIDocument, map: Array<[string, any]> = []): T {
+
+export function mergeObject<T>(objValue: any, srcValue: any, options: {
+  openApi: OpenAPIDocument
+  map?: Array<[string, any]>
+  refNameMap?: Map<string, string>
+}): T {
+  const { openApi, map = [], refNameMap = new Map() } = options
   function customizer(objValue: any, srcValue: any): any {
     // If they are all arrays and the src value is an empty array, the src value will be returned directly.
 
@@ -353,12 +415,12 @@ export function mergeObject<T>(objValue: any, srcValue: any, openApi: OpenAPIDoc
     // Handle circular references
 
     if (isCircular(srcValue)) {
-      srcValue = unCircular(srcValue, openApi, map, standardLoader.transformRadomVariable(JSON.stringify(objValue)))
+      srcValue = unCircular(srcValue, { openApi, map, objPath: standardLoader.transformRadomVariable(JSON.stringify(objValue)), refNameMap })
     }
     // Is there also a $ref attribute?
 
     if (hasBaseReferenceObject(srcValue)) {
-      return removeBaseReference(srcValue, openApi, map)
+      return removeBaseReference(srcValue, { openApi, map, refNameMap })
     }
     return srcValue
   }

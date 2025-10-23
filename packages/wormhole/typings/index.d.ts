@@ -1,3 +1,4 @@
+import { MethodType, RequestBody } from 'alova';
 import { OpenAPIV3_1 } from 'openapi-types';
 import { z } from 'zod/v3';
 
@@ -5,6 +6,15 @@ export type OpenAPIDocument = OpenAPIV3_1.Document;
 export type SchemaObject = OpenAPIV3_1.SchemaObject;
 export type Parameter = OpenAPIV3_1.ParameterObject;
 export type OperationObject = OpenAPIV3_1.OperationObject;
+export interface FetchOptions {
+	headers?: Record<string, string>;
+	/** timeout in milliseconds */
+	timeout?: number;
+	method?: MethodType;
+	data?: RequestBody;
+	/** when true, do not throw on non-2xx but still return text; default false */
+	insecure?: boolean;
+}
 declare const zConfigType: z.ZodEnum<[
 	"auto",
 	"ts",
@@ -34,9 +44,33 @@ export type TemplateType = z.infer<typeof zTemplateType>;
  * platform type
  */
 export type PlatformType = z.infer<typeof zPlatformType> | (string & {});
+export type MaybePromise<T> = T | Promise<T>;
 export interface ApiPlugin {
 	name?: string;
-	extends?: Partial<GeneratorConfig> | ((config: GeneratorConfig) => Partial<GeneratorConfig>);
+	/**
+	 * Replaces or manipulates the options object passed to wormhole.
+	 * Returning null does NOT replacing anything.
+	 */
+	config?: (config: GeneratorConfig) => MaybePromise<GeneratorConfig | undefined | null | void>;
+	/**
+	 * Manipulate the input config before parsing the openapi file.
+	 * Returning null does NOT replacing anything.
+	 */
+	beforeOpenapiParse?: (inputConfig: Pick<GeneratorConfig, "input" | "platform" | "plugins" | "fetchOptions">) => MaybePromise<Pick<GeneratorConfig, "input" | "platform" | "plugins" | "fetchOptions"> | undefined | null | void>;
+	/**
+	 * Manipulate the openapi document after parsing.
+	 * Returning null does NOT replacing anything.
+	 */
+	afterOpenapiParse?: (document: OpenAPIDocument) => MaybePromise<OpenAPIDocument | undefined | null | void>;
+	/**
+	 * Manipulate the template code before generating.
+	 * Returning null does NOT replacing anything.
+	 */
+	beforeCodeGenerate?: (data: any, outputFile: string) => MaybePromise<string | undefined | null | void>;
+	/**
+	 * Called when wormhold has finished code generating.
+	 */
+	afterCodeGenerate?: (error?: Error) => void;
 }
 export interface HandleApi {
 	(apiDescriptor: ApiDescriptor): ApiDescriptor | void | undefined | null;
@@ -52,6 +86,7 @@ export interface GeneratorConfig {
 	 * input: 'http://192.168.5.123:8080' -> When it does not point to the openapi file, it must be used with the `platform` parameter
 	 */
 	input: string;
+	fetchOptions?: FetchOptions;
 	/**
 	 * Platforms that support openapi. Currently `swagger` are supported. The default is empty.
 	 * When this parameter is specified, the input field only needs to specify the url of the document and doesn't need to be specified to the openapi file, reducing the usage threshold.
@@ -210,6 +245,7 @@ export type ApiDescriptor = Omit<OperationObject, "requestBody" | "parameters" |
 	url: string;
 	method: string;
 	parameters?: Parameter[];
+	refNameMap?: Record<string, string>;
 	requestBody?: SchemaObject;
 	responses?: SchemaObject;
 };
@@ -302,6 +338,29 @@ export declare function generate(config: Config, rules?: GenerateApiOptions): Pr
  * });
  */
 export declare function createPlugin<T extends any[]>(plugin: (...args: T) => ApiPlugin): (...args: T) => ApiPlugin;
+export interface APIFoxBody {
+	scope?: {
+		type?: "ALL" | "SELECTED_TAGS";
+		selectedTags?: string[];
+		excludedByTags?: string[];
+	};
+	options?: {
+		includeApifoxExtensionProperties?: boolean;
+		addFoldersToTags?: boolean;
+	};
+	oasVersion?: "2.0" | "3.0" | "3.1";
+	exportFormat?: "JSON" | "YAML";
+	environmentIds?: string[];
+}
+export interface ApifoxOptions extends Pick<APIFoxBody, "oasVersion" | "exportFormat">, Pick<NonNullable<APIFoxBody["options"]>, "includeApifoxExtensionProperties" | "addFoldersToTags"> {
+	projectId: string;
+	apifoxToken: string;
+	locale?: string;
+	apifoxVersion?: string;
+	selectedTags?: string[];
+	excludedByTags?: string[];
+}
+export declare function apifox({ projectId, locale, apifoxVersion, selectedTags, excludedByTags, apifoxToken, oasVersion, exportFormat, includeApifoxExtensionProperties, addFoldersToTags, }: ApifoxOptions): ApiPlugin;
 /**
  * Filter configuration interface
  */
@@ -359,6 +418,68 @@ export declare function filterApiDescriptor(apiDescriptor: ApiDescriptor, config
  * ```
  */
 export declare function apiFilter(config: FilterApiConfig | FilterApiConfig[]): ApiPlugin;
+export type ModifierScope = "params" | "pathParams" | "data" | "response";
+export type SchemaPrimitive = "number" | "string" | "boolean" | "undefined" | "null" | "unknown" | "any" | "never";
+/**
+ * 表示数组类型
+ */
+export interface SchemaArray {
+	type: "array";
+	items: Schema | Schema[];
+}
+/**
+ * 修改参数为引用类型
+ * 在key末端添加上?表示为可选值
+ */
+export interface SchemaReference {
+	[attr: string]: Schema;
+}
+/**
+ * 枚举类型表示
+ */
+export interface SchemaEnum {
+	enum: Array<string | number | boolean | null>;
+	type?: "string" | "number" | "integer" | "boolean" | "null";
+}
+/**
+ * 组合类型表示（与/或/交叉）
+ */
+export interface SchemaOneOf {
+	oneOf: Schema[];
+}
+export interface SchemaAnyOf {
+	anyOf: Schema[];
+}
+export interface SchemaAllOf {
+	allOf: Schema[];
+}
+/**
+ * 数据Schema
+ * SchemaArray表示类型数组，而数组表示“或”的意思
+ */
+export type Schema = SchemaPrimitive | SchemaReference | SchemaArray | SchemaEnum | SchemaOneOf | SchemaAnyOf | SchemaAllOf | Array<SchemaPrimitive | SchemaReference | SchemaArray | SchemaEnum>;
+export interface ModifierConfig<T extends Schema> {
+	/**
+	 * 生效范围，表示处理哪个位置的参数
+	 */
+	scope: ModifierScope;
+	/**
+	 * 匹配规则，只有匹配到的才会进行转换，不指定则转换全部
+	 * string：原参数名包含此string；RegExp：原参数名匹配此正则；函数时接收key并返回是否匹配的boolean值
+	 */
+	match?: string | RegExp | ((key: string) => boolean);
+	/**
+	 * handler用于灵活修改参数类型值
+	 * @param schema Schema中的一种，由用户自行定义
+	 * @returns 返回多种参数，具体为：Schema表示修改的类型；{ required: boolean, value: Schema }表示可将当前值修改为是否必填；void | null | undefined表示移除当前字段
+	 */
+	handler: (schema: T) => Schema | {
+		required: boolean;
+		value: Schema;
+	} | void | null | undefined;
+}
+export type PayloadModifierConfig = ModifierConfig<Schema>;
+export declare function payloadModifier(configs: PayloadModifierConfig[]): ApiPlugin;
 /**
  * Rename style options
  */
@@ -370,7 +491,7 @@ export interface RenameConfig {
 	/**
 	 * Target scope for renaming, defaults to 'url'
 	 */
-	scope?: "url" | "params" | "pathParams" | "data" | "response";
+	scope?: "url" | "params" | "pathParams" | "data" | "response" | "refName";
 	/**
 	 * Matching rule for selective renaming:
 	 * - string: target contains this string

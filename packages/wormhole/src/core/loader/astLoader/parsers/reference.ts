@@ -8,7 +8,8 @@ import normalizer from '../normalize'
 import { initAST } from './utils'
 
 export function referenceTypeParser(schema: ReferenceObject, ctx: ParserCtx): AST {
-  const refName = standardLoader.transformRefName(schema.$ref)
+  const refName = ctx.options.refNameMap?.get(schema.$ref)
+    || standardLoader.transformRefName(schema.$ref)
   const refernceAST: TReference = {
     ...initAST(schema, ctx),
     type: ASTType.REFERENCE,

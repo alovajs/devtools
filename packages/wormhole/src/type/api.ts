@@ -42,6 +42,7 @@ export type ApiDescriptor = Omit<OperationObject, 'requestBody' | 'parameters' |
   url: string
   method: string
   parameters?: Parameter[]
+  refNameMap?: Record<string, string>
   requestBody?: SchemaObject
   responses?: SchemaObject
 }

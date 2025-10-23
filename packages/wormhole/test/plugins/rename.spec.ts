@@ -132,9 +132,9 @@ describe('rename plugin', () => {
         { scope: 'pathParams', style: 'camelCase' },
         { scope: 'data', style: 'camelCase' },
         { scope: 'response', style: 'camelCase' },
+        { scope: 'refName', style: 'camelCase' },
       ]),
     ])
-
     // Check if all names use camelCase
     const propsTransformed
       = /userName/.test(globalsFile)
@@ -145,7 +145,6 @@ describe('rename plugin', () => {
 
     const paramsTransformed
       = /pageNumber/.test(globalsFile) && /itemsPerPage/.test(globalsFile) && /sortBy/.test(globalsFile)
-
     expect(propsTransformed && paramsTransformed).toBeTruthy()
   })
 
@@ -160,10 +159,10 @@ describe('rename plugin', () => {
           { scope: 'pathParams', style: 'snakeCase' },
           { scope: 'data', style: 'snakeCase' },
           { scope: 'response', style: 'snakeCase' },
+          { scope: 'refName', style: 'snakeCase' },
         ]),
       ],
     )
-
     // URLs should be snake_case
     expect(apiDefinitionsFile).toMatch(/user_management/)
     expect(apiDefinitionsFile).toMatch(/order_processing/)
@@ -231,6 +230,14 @@ describe('rename plugin', () => {
     }).toThrow('at least one of `style` or `transform` is required')
   })
 
+  it('should throw error when kebabCase style is used with refName scope', () => {
+    expect(async () => {
+      await generateWithPlugin(resolve(__dirname, '../openapis/naming_openapi.yaml'), [
+        rename({ scope: 'refName', style: 'kebabCase' }),
+      ])
+    }).rejects.toThrow('Invalid rename style: kebabCase、refName')
+  })
+
   it('should correctly handle path parameter placeholders', async () => {
     const { apiDefinitionsFile } = await generateWithPlugin(resolve(__dirname, '../openapis/naming_openapi.yaml'), [
       rename({
@@ -256,5 +263,27 @@ describe('rename plugin', () => {
     // Apply transform then style
     expect(apiDefinitionsFile).toMatch(/userManagementTransformed/)
     expect(apiDefinitionsFile).toMatch(/orderProcessingTransformed/)
+  })
+
+  it('should rename refName map values with camelCase style', async () => {
+    const { globalsFile } = await generateWithPlugin(resolve(__dirname, '../openapis/naming_openapi.yaml'), [
+      rename({ scope: 'refName', style: 'camelCase' }),
+    ])
+    // Expect model/ref names to be converted to camelCase in type declarations
+    // e.g. User_Info -> userInfo, Order_Detail -> orderDetail
+
+    expect(globalsFile).toContain('export interface orderItem {')
+    expect(globalsFile).toContain('export interface orderCreate {')
+  })
+
+  it('should rename refName map values using custom transform', async () => {
+    const { globalsFile } = await generateWithPlugin(resolve(__dirname, '../openapis/naming_openapi.yaml'), [
+      rename({
+        scope: 'refName',
+        transform: descriptor => `X_${descriptor.refNameMap?.['#/components/schemas/UserUpdate'] ?? 'Model'}`,
+      }),
+    ])
+    expect(globalsFile).toContain('export interface X_UserUpdate {')
+    expect(globalsFile).toContain('export interface X_Model {')
   })
 })

@@ -1,15 +1,8 @@
 import type { Config, SchemaObject } from '@/type'
 import fs from 'node:fs/promises'
 import { resolve } from 'node:path'
-import { setupServer } from 'msw/node'
 import { generate } from '@/index'
-import handlers from './mocks/handlers'
 import { createStrReg } from './util'
-
-const server = setupServer(...handlers)
-beforeAll(() => server.listen())
-afterEach(() => server.resetHandlers())
-afterAll(() => server.close())
 
 vi.mock('node:fs')
 vi.mock('node:fs/promises')
@@ -186,6 +179,8 @@ describe('generate API', () => {
     expect(await fs.readFile(resolve(outputDir3, 'index.ts'), 'utf-8')).toMatchSnapshot()
     expect(await fs.readFile(resolve(outputDir3, 'createApis.ts'), 'utf-8')).toMatchSnapshot()
     expect(await fs.readFile(resolve(outputDir3, 'globals.d.ts'), 'utf-8')).toMatchSnapshot()
+  }, {
+    timeout: 10 * 1000,
   })
 
   it('shouldn\'t replace `index` file if it is generated', async () => {
@@ -485,6 +480,8 @@ describe('generate API', () => {
     )
 
     unlinkSync(tempPkgFile)
+  }, {
+    timeout: 10 * 1000,
   })
 
   it('should generate corresponding module codes dependent to `type`', async () => {

@@ -13,6 +13,7 @@ export interface Schema2TypeOptions {
 }
 export interface SchemaLoaderOptions extends Schema2TypeOptions {
   document: OpenAPIDocument
+  refNameMap?: Map<string, string>
   onReference?: (ast: AST) => void
 }
 export class SchemaLoader implements Loader<MaybeSchemaObject, Promise<string>, SchemaLoaderOptions> {
@@ -23,6 +24,7 @@ export class SchemaLoader implements Loader<MaybeSchemaObject, Promise<string>, 
       document: options.document,
       commentType: options.commentType ?? 'line',
       defaultRequire: options.defaultRequire,
+      refNameMap: options.refNameMap,
       onReference(ast) {
         options.onReference?.(ast)
       },

@@ -13,6 +13,7 @@ import type {
 } from '@/type'
 import { cloneDeep, isEmpty } from 'lodash'
 import { astLoader, schemaLoader } from '@/core/loader'
+import { logger } from '@/helper/logger'
 import {
   findBy$ref,
   getResponseSuccessKey,
@@ -26,9 +27,10 @@ function getTsStr(originObj: SchemaObject | ReferenceObject, options: {
   document: OpenAPIDocument
   config: GeneratorConfig
   schemasMap?: Map<string, string>
+  refNameMap?: Map<string, string>
   preText?: string
 }): Promise<string> {
-  const { document, preText = '', config, schemasMap } = options
+  const { document, preText = '', config, schemasMap, refNameMap } = options
   return schemaLoader.transform(originObj, {
     document,
     deep: false,
@@ -36,7 +38,11 @@ function getTsStr(originObj: SchemaObject | ReferenceObject, options: {
     commentType: 'doc',
     preText,
     defaultRequire: config.defaultRequire,
+    refNameMap,
     async onReference(ast) {
+      if (config.externalTypes?.includes(ast.keyName ?? '')) {
+        return
+      }
       if (ast.keyName && schemasMap && !schemasMap.has(ast.keyName)) {
         const result = await astLoader.transformTsStr(ast, {
           shallowDeep: true,
@@ -50,7 +56,13 @@ function getTsStr(originObj: SchemaObject | ReferenceObject, options: {
     },
   })
 }
-export async function parseResponse(responses: ResponsesObject | undefined, document: OpenAPIDocument, config: GeneratorConfig, schemasMap: Map<string, string>) {
+export async function parseResponse(responses: ResponsesObject | undefined, options: {
+  document: OpenAPIDocument
+  config: GeneratorConfig
+  schemasMap: Map<string, string>
+  refNameMap?: Map<string, string>
+}) {
+  const { document, config, schemasMap, refNameMap } = options
   const successKey = getResponseSuccessKey(responses)
   const responseInfo = responses?.[successKey]
   if (!responseInfo) {
@@ -68,6 +80,7 @@ export async function parseResponse(responses: ResponsesObject | undefined, docu
     document,
     config,
     schemasMap,
+    refNameMap,
   })
   return {
     responseName,
@@ -79,19 +92,25 @@ export async function parseResponse(responses: ResponsesObject | undefined, docu
     }),
   }
 }
-export async function parseRequestBody(requestBody: RequestBodyObject | ReferenceObject | undefined, document: OpenAPIDocument, config: GeneratorConfig, schemasMap: Map<string, string>) {
+export async function parseRequestBody(requestBody: RequestBodyObject | ReferenceObject | undefined, options: {
+  document: OpenAPIDocument
+  config: GeneratorConfig
+  schemasMap: Map<string, string>
+  refNameMap?: Map<string, string>
+}) {
   if (!requestBody) {
     return {
       requestName: '',
       requestComment: '',
     }
   }
+  const { document, config, schemasMap, refNameMap } = options
   const requestBodyObject: RequestBodyObject = isReferenceObject(requestBody)
     ? findBy$ref(requestBody.$ref, document)
     : requestBody
   const key = getContentKey(requestBodyObject.content, config.bodyMediaType)
   const requestBodySchema = requestBodyObject?.content?.[key]?.schema ?? {}
-  const requestName = await getTsStr(requestBodySchema, { document, config, schemasMap })
+  const requestName = await getTsStr(requestBodySchema, { document, config, schemasMap, refNameMap })
   return {
     requestName,
     requestComment: await schemaLoader.transform(requestBodySchema, {
@@ -110,7 +129,13 @@ function getContentKey(content: Record<string, any> = {}, requireKey = 'applicat
   return key
 }
 
-export async function parseParameters(parameters: (ReferenceObject | ParameterObject)[] | undefined, document: OpenAPIDocument, config: GeneratorConfig, schemasMap: Map<string, string>) {
+export async function parseParameters(parameters: (ReferenceObject | ParameterObject)[] | undefined, options: {
+  document: OpenAPIDocument
+  config: GeneratorConfig
+  schemasMap: Map<string, string>
+  refNameMap?: Map<string, string>
+}) {
+  const { document, config, schemasMap, refNameMap } = options
   const pathParametersSchema: SchemaObject = {
     type: 'object',
   }
@@ -141,6 +166,7 @@ export async function parseParameters(parameters: (ReferenceObject | ParameterOb
         document,
         config,
         schemasMap,
+        refNameMap,
       })
       parametersComment = await schemaLoader.transform(parameters, {
         document,
@@ -175,6 +201,7 @@ export async function parseParameters(parameters: (ReferenceObject | ParameterOb
 export async function transformApiMethods(apiMethod: ApiMethod, options: {
   document: OpenAPIDocument
   config: GeneratorConfig
+  refNameMap: Map<string, string>
   map?: Array<[string, any]>
 }) {
   const { handleApi } = options.config
@@ -187,11 +214,16 @@ export async function transformApiMethods(apiMethod: ApiMethod, options: {
   try {
     newApiDescriptor = handleApi(newApiDescriptor)
   }
-  catch {}
-  // TODO:插件处理handleApi
+  catch (error) {
+    throw logger.throwError(error as Error)
+  }
   if (!newApiDescriptor) {
     return null
   }
+  Object.entries(newApiDescriptor.refNameMap || {}).forEach(([key, value]) => {
+    options.refNameMap.set(key, value)
+  })
+
   const newApiMethod = apiDescriptor2apiMethod(newApiDescriptor, {
     oldApiInfo: apiInfo,
     operationObject: apiMethod.operationObject,
@@ -200,8 +232,11 @@ export async function transformApiMethods(apiMethod: ApiMethod, options: {
   newApiMethod.operationObject = mergeObject<OperationObject>(
     apiMethod.operationObject,
     newApiMethod.operationObject,
-    options.document,
-    options.map,
+    {
+      openApi: options.document,
+      map: options.map,
+      refNameMap: options.refNameMap,
+    },
   )
 
   return newApiMethod
@@ -225,6 +260,7 @@ export function apiMethod2ApiDescriptor(apiMethod: ApiMethod, options: {
   }
   const successKey = getResponseSuccessKey(responses)
   const responseSuccess = responses?.[successKey]
+  const refNameMap = new Map<string, string>()
   let requestBodyObject = requestBody as RequestBodyObject
   let responseObject = responseSuccess as ResponseObject
   let requestKey = 'application/json'
@@ -232,19 +268,20 @@ export function apiMethod2ApiDescriptor(apiMethod: ApiMethod, options: {
   if (parameters) {
     apiDescriptor.parameters = []
     parameters.forEach((parameter) => {
-      apiDescriptor.parameters?.push(removeAll$ref<ParameterObject>(parameter, document))
+      apiDescriptor.parameters?.push(removeAll$ref<ParameterObject>(parameter, document, { refNameMap }))
     })
   }
   if (requestBody) {
     requestBodyObject = parseReference(requestBody, document, true)
     requestKey = getContentKey(requestBodyObject.content, config.bodyMediaType)
-    apiDescriptor.requestBody = removeAll$ref(requestBodyObject.content?.[requestKey].schema ?? {}, document)
+    apiDescriptor.requestBody = removeAll$ref(requestBodyObject.content?.[requestKey].schema ?? {}, document, { refNameMap })
   }
   if (responseSuccess) {
     responseObject = parseReference(responseSuccess, document, true)
     responseKey = getContentKey(responseObject.content, config.responseMediaType)
-    apiDescriptor.responses = removeAll$ref(responseObject.content?.[responseKey].schema ?? {}, document)
+    apiDescriptor.responses = removeAll$ref(responseObject.content?.[responseKey].schema ?? {}, document, { refNameMap })
   }
+  apiDescriptor.refNameMap = Object.fromEntries(refNameMap)
   return {
     apiDescriptor,
     apiInfo: {
@@ -305,6 +342,7 @@ export function apiDescriptor2apiMethod(apiDescriptor: ApiDescriptor, options: {
   delete apiDescriptorValue.requestBody
   delete apiDescriptorValue.responses
   delete apiDescriptorValue.parameters
+  delete apiDescriptorValue.refNameMap
   Object.assign(operationObject, apiDescriptorValue)
   return {
     url,

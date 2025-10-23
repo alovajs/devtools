@@ -22,3 +22,4 @@ export type MaybeArraySchemaObject = Exclude<SchemaObject, OpenAPIV3_1.NonArrayS
 export type SimpleSchemaObject = Omit<OpenAPIV3_1.NonArraySchemaObject | ArraySchemaObject, 'type'> & {
   type?: SchemaType
 }
+export type BaseReferenceObject = { _$ref: string } & Record<string, any>

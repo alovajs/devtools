@@ -1,8 +1,9 @@
 import type { z } from 'zod/v3'
-// import { ApiPlugin } from '@/type';
 import type { zConfigType, zPlatformType, zTemplateType } from './zType'
+// import { ApiPlugin } from '@/type';
+import type { OpenAPIDocument } from '@/type'
 import type { ApiDescriptor } from '@/type/api'
-
+import type { FetchOptions } from '@/utils/base'
 /**
  * Find the corresponding input attribute value
  */
@@ -15,10 +16,42 @@ export type TemplateType = z.infer<typeof zTemplateType>
  * platform type
  */
 export type PlatformType = z.infer<typeof zPlatformType> | (string & {})// When using defineConfig, you need to match the PlatformType.
+
+export type MaybePromise<T> = T | Promise<T>
 export interface ApiPlugin {
   name?: string
-  extends?: Partial<GeneratorConfig> | ((config: GeneratorConfig) => Partial<GeneratorConfig>)
+  /**
+   * Replaces or manipulates the options object passed to wormhole.
+   * Returning null does NOT replacing anything.
+   */
+  config?: (config: GeneratorConfig) => MaybePromise<GeneratorConfig | undefined | null | void>
+  /**
+   * Manipulate the input config before parsing the openapi file.
+   * Returning null does NOT replacing anything.
+   */
+  beforeOpenapiParse?: (
+    inputConfig: Pick<GeneratorConfig, 'input' | 'platform' | 'plugins' | 'fetchOptions'>
+  ) => MaybePromise<Pick<GeneratorConfig, 'input' | 'platform' | 'plugins' | 'fetchOptions'> | undefined | null | void>
+  /**
+   * Manipulate the openapi document after parsing.
+   * Returning null does NOT replacing anything.
+   */
+  afterOpenapiParse?: (document: OpenAPIDocument) => MaybePromise<OpenAPIDocument | undefined | null | void>
+  /**
+   * Manipulate the template code before generating.
+   * Returning null does NOT replacing anything.
+   */
+  beforeCodeGenerate?: (data: any, outputFile: string, ctx: {
+    renderTemplate: () => Promise<string>
+    fileName: string
+  }) => MaybePromise<string | undefined | null | void>
+  /**
+   * Called when wormhold has finished code generating.
+   */
+  afterCodeGenerate?: (error?: Error) => void
 }
+export type ApiPluginHooks = keyof Omit<ApiPlugin, 'name' | 'extends'>
+
 export interface HandleApi {
   (apiDescriptor: ApiDescriptor): ApiDescriptor | void | undefined | null
 }
@@ -34,7 +67,20 @@ export interface GeneratorConfig {
    */
 
   input: string
-
+  // Fetch options used by remote OpenAPI retrieval (headers, timeout, insecure). See FetchOptions in '@/utils/base'.
+  fetchOptions?: FetchOptions
+  /**
+   * A list of type identifiers to exclude from generation.
+   * Matches against type names parsed from the OpenAPI schema; matched types
+   * are skipped and referenced directly by their identifier in generated code
+   * to avoid duplicate or conflicting declarations.
+   * Use this when you already have hand-written types or types provided by
+   * frameworks/libraries that should not be generated.
+   *
+   * @example
+   * externalTypes: ['File', 'Blob', 'FormData', 'Pagination']
+   */
+  externalTypes?: string[]
   /**
    * Platforms that support openapi. Currently `swagger` are supported. The default is empty.
    * When this parameter is specified, the input field only needs to specify the url of the document and doesn't need to be specified to the openapi file, reducing the usage threshold.

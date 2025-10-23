@@ -4,8 +4,7 @@ import { isMaybeArraySchemaObject } from '@/utils'
 export default function inferType(schema: SchemaObject): SchemaObject | void {
   if (
     Array.isArray(schema.type)
-    || (typeof schema.type === 'string'
-      && ['string', 'number', 'integer', 'boolean', 'null', 'array', 'object'].includes(schema.type))
+    || typeof schema.type === 'string'
   ) {
     return
   }

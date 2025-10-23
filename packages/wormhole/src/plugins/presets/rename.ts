@@ -1,4 +1,5 @@
 import type { ApiDescriptor, ApiPlugin, Parameter } from '@/type'
+import { extend, isMatch } from './utils'
 /**
  * Rename style options
  */
@@ -11,7 +12,7 @@ export interface RenameConfig {
   /**
    * Target scope for renaming, defaults to 'url'
    */
-  scope?: 'url' | 'params' | 'pathParams' | 'data' | 'response'
+  scope?: 'url' | 'params' | 'pathParams' | 'data' | 'response' | 'refName'
 
   /**
    * Matching rule for selective renaming:
@@ -59,28 +60,6 @@ function toPascalCase(str: string): string {
 }
 
 /**
- * Tests if value matches the specified rule
- */
-function isMatch(value: string, match?: string | RegExp | ((key: string) => boolean)): boolean {
-  if (!match)
-    return true
-
-  if (typeof match === 'string') {
-    return value.includes(match)
-  }
-
-  if (match instanceof RegExp) {
-    return match.test(value)
-  }
-
-  if (typeof match === 'function') {
-    return match(value)
-  }
-
-  return false
-}
-
-/**
  * Applies renaming rules to the specified value
  * @returns The renamed value, or original value if not matched
  */
@@ -96,7 +75,9 @@ function applyRenameRule(value: string, config: RenameConfig, apiDescriptor: Api
   if (!config.style) {
     return value
   }
-
+  if (config.style === 'kebabCase' && config.scope === 'refName') {
+    throw new Error(`Invalid rename style: ${config.style}、${config.scope}`)
+  }
   switch (config.style) {
     case 'camelCase':
       return toCamelCase(value)
@@ -178,7 +159,19 @@ function transformParameters(
     return param
   })
 }
+function transformRefNameMap(refNameMap: Record<string, string>, config: RenameConfig, apiDescriptor: ApiDescriptor): Record<string, string> {
+  if (!refNameMap || typeof refNameMap !== 'object') {
+    return refNameMap
+  }
 
+  const newRefNameMap: Record<string, string> = {}
+  for (const key in refNameMap) {
+    const newValue = applyRenameRule(refNameMap[key], config, apiDescriptor)
+    newRefNameMap[key] = newValue
+  }
+
+  return newRefNameMap
+}
 /**
  * Processes API descriptor based on renaming configuration
  *
@@ -233,7 +226,11 @@ function renameApiDescriptor(apiDescriptor: ApiDescriptor, config: RenameConfig)
         newDescriptor.url = renameUrl(newDescriptor.url, config, apiDescriptor)
       }
       break
-
+    case 'refName':
+      if (newDescriptor.refNameMap) {
+        newDescriptor.refNameMap = transformRefNameMap(newDescriptor.refNameMap, config, apiDescriptor)
+      }
+      break
     default:
       // No action needed, keep original descriptor
       break
@@ -257,18 +254,20 @@ export function rename(config: RenameConfig | RenameConfig[]): ApiPlugin {
 
   return {
     name: 'rename',
-    extends: {
-      handleApi: (apiDescriptor: ApiDescriptor) => {
-        if (!apiDescriptor)
-          return null
-
-        // Apply each configuration in sequence
-        return configs.reduce<ApiDescriptor | null>((desc, conf) => {
-          if (!desc)
+    config(config) {
+      return extend(config, {
+        handleApi: (apiDescriptor: ApiDescriptor) => {
+          if (!apiDescriptor)
             return null
-          return renameApiDescriptor(desc, conf)
-        }, apiDescriptor)
-      },
+
+          // Apply each configuration in sequence
+          return configs.reduce<ApiDescriptor | null>((desc, conf) => {
+            if (!desc)
+              return null
+            return renameApiDescriptor(desc, conf)
+          }, apiDescriptor)
+        },
+      })
     },
   }
 }

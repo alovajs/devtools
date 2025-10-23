@@ -24,7 +24,7 @@ export class StandardLoader implements Loader<string, string, StandardLoaderOpti
     },
   ) {
     return getStandardRefName(refPath, {
-      ...(options ?? {}),
+      ...options,
       standardLoader: this,
     })
   }
