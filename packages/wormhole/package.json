@@ -26,8 +26,16 @@
     "alova",
     "wormhole"
   ],
-  "main": "./dist/index.js",
-  "types": "./typings/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./typings/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./plugin": {
+      "types": "./typings/plugins.d.ts",
+      "default": "./dist/plugins/index.js"
+    }
+  },
   "bin": {
     "alova": "dist/bin/cli.js"
   },
@@ -40,6 +48,7 @@
     "build": "run-s build:*",
     "build:ts": "tsc --build tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "build:dts": "dts-bundle-generator -o typings/index.d.ts src/index.ts --no-check --no-banner --project tsconfig.build.json",
+    "build:plugin-dts": "dts-bundle-generator -o typings/plugins.d.ts src/plugins/index.ts --no-check --no-banner --project tsconfig.build.json",
     "build:copy": "ncp ./src/templates ./dist/templates"
   },
   "publishConfig": {
