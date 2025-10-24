@@ -36,6 +36,8 @@
       "default": "./dist/plugins/index.js"
     }
   },
+  "main": "./dist/index.js",
+  "types": "./typings/index.d.ts",
   "bin": {
     "alova": "dist/bin/cli.js"
   },
