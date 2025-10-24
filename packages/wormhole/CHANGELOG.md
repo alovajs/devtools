@@ -1,5 +1,11 @@
 # @alova/wormhole
 
+## 1.4.2
+
+### Patch Changes
+
+- [#111](https://github.com/alovajs/devtools/pull/111) [`e10e7a8`](https://github.com/alovajs/devtools/commit/e10e7a873622a38e6948ff70646df905bd442c6c) Thanks [@czhlin](https://github.com/czhlin)! - fix @alova/wormhole not found
+
 ## 1.4.1
 
 ### Patch Changes
