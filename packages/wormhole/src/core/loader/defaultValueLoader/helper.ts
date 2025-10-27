@@ -12,6 +12,7 @@ export function removeComments(content: string) {
 }
 const LEFT_BRACKET = ['(', '<', '{', '[']
 const RIGHT_BRACKET = [')', '>', '}', ']']
+const NOT_SUPPORTED = [/^\[key: string\]/]
 function parseTypeBody(typeBody: string) {
   const processedTypeBody = typeBody
     .replace(/:[\t\v\f\r \xA0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]*\n\s*\|/g, ':') // Handle union type after colon
@@ -39,7 +40,7 @@ function parseTypeBody(typeBody: string) {
   if (currentProperty.trim()) {
     properties.push(currentProperty.trim())
   }
-  const parsedProperties = properties
+  const parsedProperties = properties.filter(item => !NOT_SUPPORTED.some(regex => regex.test(item)))
     .map((prop) => {
       const [keyOrigin, ...valueOrigin] = prop.split(':')
       const key = keyOrigin.trim()
