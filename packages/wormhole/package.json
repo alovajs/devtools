@@ -1,6 +1,6 @@
 {
   "name": "@alova/wormhole",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "More modern openAPI generating solution for alova.js",
   "author": "alova",
   "license": "MIT",

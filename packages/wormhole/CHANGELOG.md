@@ -1,5 +1,11 @@
 # @alova/wormhole
 
+## 1.4.3
+
+### Patch Changes
+
+- [#116](https://github.com/alovajs/devtools/pull/116) [`034b97e`](https://github.com/alovajs/devtools/commit/034b97eaeb690b1bb231be728de7e51b524d9383) Thanks [@czhlin](https://github.com/czhlin)! - fix additionalProperties true issue
+
 ## 1.4.2
 
 ### Patch Changes
