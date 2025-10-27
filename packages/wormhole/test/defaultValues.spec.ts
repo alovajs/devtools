@@ -30,6 +30,7 @@ describe('generate default values for types and interfaces', () => {
       name: string
       age: number
       active: boolean
+      [key: string]: any
     }`
     const result = await defaultValueLoader.transform(sourceCode)
     expect(result).toMatch(
