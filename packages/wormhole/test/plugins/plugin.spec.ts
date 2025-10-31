@@ -55,8 +55,7 @@ describe('plugin test', () => {
 
   it('should execute beforeOpenapiParse hook correctly', async () => {
     const beforeParseHookFn = vi.fn()
-    const inputPath = resolve(__dirname, '../openapis/openapi_301.json')
-    const inputTest = 'test'
+    const inputTest = resolve(__dirname, '../openapis/openapi_301.json')
     const beforeParsePlugin = createPlugin(() => ({
       name: 'beforeParsePlugin',
       beforeOpenapiParse: (inputConfig) => {
@@ -66,12 +65,7 @@ describe('plugin test', () => {
         expect(inputConfig.input).toBe(inputTest)
         expect(inputConfig).toHaveProperty('platform')
         expect(inputConfig).toHaveProperty('plugins')
-
-        // Return modified config to test the hook actually works
-        return {
-          ...inputConfig,
-          input: inputPath, // Modify input for testing
-        }
+        // Do not modify `config`; side effects only
       },
     }))
 

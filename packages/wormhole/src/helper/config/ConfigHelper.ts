@@ -89,7 +89,7 @@ export class ConfigHelper {
     const allAlovaJSon = this.configManager
       .getConfig()
       .generator
-      .map(async item => TemplateHelper.readData(this.projectPath, item.output))
+      .map(async item => TemplateHelper.readData(this.projectPath, item.output!))
     return Promise.all(allAlovaJSon)
   }
 }

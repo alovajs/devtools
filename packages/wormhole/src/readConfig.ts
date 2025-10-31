@@ -51,7 +51,7 @@ export async function getApiDocs(config: Config, projectPath = process.cwd()) {
   }
   await configHelper.load(config, projectPath)
   return configHelper.getOutput().map((output) => {
-    const templateData = TemplateHelper.getData(projectPath, output)
+    const templateData = TemplateHelper.getData(projectPath, output!)
     return templateData?.pathApis ?? []
   })
 }

@@ -5,9 +5,10 @@ import { generateWithPlugin } from '../util'
 
 vi.mock('node:fs')
 vi.mock('node:fs/promises')
-describe('apifox preset plugin - beforeOpenapiParse', () => {
-  const baseInputConfig: Pick<GeneratorConfig, 'input' | 'platform' | 'plugins' | 'fetchOptions'> = {
+describe('apifox preset plugin - config', () => {
+  const baseInputConfig: GeneratorConfig = {
     input: 'dummy',
+    output: 'xxx',
     platform: 'swagger',
     plugins: [],
   }
@@ -18,7 +19,7 @@ describe('apifox preset plugin - beforeOpenapiParse', () => {
       apifoxToken: 'token-abc',
     })
 
-    const next = (await plugin.beforeOpenapiParse!(baseInputConfig)) ?? baseInputConfig
+    const next = (await plugin.config!(baseInputConfig)) ?? baseInputConfig
 
     // input URL
     expect(next.input).toBe(
@@ -53,7 +54,7 @@ describe('apifox preset plugin - beforeOpenapiParse', () => {
       selectedTags: ['user', 'order'],
     })
 
-    const next = (await plugin.beforeOpenapiParse!(baseInputConfig)) ?? baseInputConfig
+    const next = (await plugin.config!(baseInputConfig)) ?? baseInputConfig
     const data = next.fetchOptions?.data as Record<string, any>
     expect(data.scope?.type).toBe('SELECTED_TAGS')
     expect(data.scope?.selectedTags).toEqual(['user', 'order'])
@@ -72,7 +73,7 @@ describe('apifox preset plugin - beforeOpenapiParse', () => {
       excludedByTags: ['internal'],
     })
 
-    const next = (await plugin.beforeOpenapiParse!(baseInputConfig)) ?? baseInputConfig
+    const next = (await plugin.config!(baseInputConfig)) ?? baseInputConfig
 
     expect(next.input).toBe(
       'https://api.apifox.com/v1/projects/%E4%B8%AD%E6%96%87%20%E9%A1%B9%E7%9B%AE/export-openapi?locale=en-US',
@@ -99,8 +100,8 @@ describe('apifox preset plugin - beforeOpenapiParse', () => {
     const pluginMissingProject = apifox({ apifoxToken: 't', projectId: '' })
     const pluginMissingToken = apifox({ projectId: 'p', apifoxToken: '' })
 
-    const next1 = (await pluginMissingProject.beforeOpenapiParse!(baseInputConfig)) ?? baseInputConfig
-    const next2 = (await pluginMissingToken.beforeOpenapiParse!(baseInputConfig)) ?? baseInputConfig
+    const next1 = (await pluginMissingProject.config!(baseInputConfig)) ?? baseInputConfig
+    const next2 = (await pluginMissingToken.config!(baseInputConfig)) ?? baseInputConfig
 
     expect(next1).toEqual(baseInputConfig)
     expect(next2).toEqual(baseInputConfig)
@@ -116,7 +117,7 @@ describe('apifox preset plugin - beforeOpenapiParse', () => {
   // Integration: actually use apifox via generateWithPlugin and MSW
   it('should generate using Apifox export endpoint via MSW', async () => {
     const { apiDefinitionsFile } = await generateWithPlugin(
-      'test-apifox',
+      '',
       [
         apifox({
           projectId: 'proj-123',

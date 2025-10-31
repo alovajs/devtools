@@ -26,12 +26,11 @@ export interface ApiPlugin {
    */
   config?: (config: GeneratorConfig) => MaybePromise<GeneratorConfig | undefined | null | void>
   /**
-   * Manipulate the input config before parsing the openapi file.
-   * Returning null does NOT replacing anything.
+   * Called before parsing the OpenAPI file.
    */
   beforeOpenapiParse?: (
-    inputConfig: Pick<GeneratorConfig, 'input' | 'platform' | 'plugins' | 'fetchOptions'>
-  ) => MaybePromise<Pick<GeneratorConfig, 'input' | 'platform' | 'plugins' | 'fetchOptions'> | undefined | null | void>
+    config: GeneratorConfig
+  ) => void
   /**
    * Manipulate the openapi document after parsing.
    * Returning null does NOT replacing anything.
@@ -66,7 +65,7 @@ export interface GeneratorConfig {
    * input: 'http://192.168.5.123:8080' -> When it does not point to the openapi file, it must be used with the `platform` parameter
    */
 
-  input: string
+  input?: string
   // Fetch options used by remote OpenAPI retrieval (headers, timeout, insecure). See FetchOptions in '@/utils/base'.
   fetchOptions?: FetchOptions
   /**
@@ -92,7 +91,7 @@ export interface GeneratorConfig {
    * The output path of the interface file and type file, multiple generators cannot have repeated addresses, otherwise the generated codes will cover each other, which is meaningless.
    * @requires true
    */
-  output: string
+  output?: string
 
   /**
    * Specify the media type of the generated response data. After specifying, use this data type to generate the response ts format of the 2xx status code.
