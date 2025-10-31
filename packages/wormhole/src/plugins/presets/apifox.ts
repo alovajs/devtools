@@ -65,13 +65,12 @@ export function apifox({
   }
   return {
     name: 'apifox',
-    async beforeOpenapiParse(inputConfig) {
-      const next = { ...inputConfig }
+    config(config) {
       const base = 'https://api.apifox.com/v1/projects'
       if (projectId && apifoxToken) {
-        next.input = `${base}/${encodeURIComponent(projectId)}/export-openapi?locale=${encodeURIComponent(locale)}`
-        next.fetchOptions = {
-          ...next.fetchOptions,
+        config.input = `${base}/${encodeURIComponent(projectId)}/export-openapi?locale=${encodeURIComponent(locale)}`
+        config.fetchOptions = {
+          ...config.fetchOptions,
           headers: {
             'X-Apifox-Api-Version': apifoxVersion,
             'Authorization': `Bearer ${apifoxToken}`,
@@ -80,7 +79,7 @@ export function apifox({
           data: body,
         }
       }
-      return next
+      return config
     },
   }
 }

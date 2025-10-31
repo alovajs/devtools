@@ -1,12 +1,11 @@
 import type { OutputFileOptions } from '@/helper'
 import type { AlovaVersion, GeneratorConfig, TemplateType } from '@/type'
 import path from 'node:path'
-import { isEqual, pick } from 'lodash'
+import { isEqual } from 'lodash'
 import { fromError } from 'zod-validation-error'
 import { openApiParser, TemplateParser } from '@/core/parser'
 import getAlovaVersion from '@/functions/getAlovaVersion'
 import getAutoTemplateType from '@/functions/getAutoTemplateType'
-import prepareConfig from '@/functions/prepareConfig'
 import { logger, PluginDriver, TemplateHelper } from '@/helper'
 import { existsPromise, generateFile, toCase as transformFileName } from '@/utils'
 import { zGeneratorConfig } from './zType'
@@ -118,7 +117,7 @@ export class GeneratorHelper {
   }
 
   static openApiData(config: GeneratorConfig, projectPath: string) {
-    return openApiParser.parse(config.input, {
+    return openApiParser.parse(config.input!, {
       projectPath,
       platformType: config.platform,
       fetchOptions: config.fetchOptions,
@@ -132,20 +131,13 @@ export class GeneratorHelper {
       force?: boolean
     },
   ) {
-    // plugin: handle extends
-    config = await prepareConfig(config)
-
     const pluginDriver = new PluginDriver(config.plugins)
 
     // plugin: handle before parse openapi
-    const configBeforeParse = await pluginDriver.hookSeq(
+    await pluginDriver.hookParallel(
       'beforeOpenapiParse',
-      [pick(config, ['input', 'plugins', 'platform'])],
-      (result, args) => {
-        return result ? [result] : args
-      },
+      [Object.freeze(config)],
     )
-    config = { ...config, ...configBeforeParse }
 
     let document = await this.openApiData(config, options.projectPath)
     if (!document) {
@@ -157,7 +149,7 @@ export class GeneratorHelper {
       return result ? [result] : args
     }) ?? document
 
-    const output = path.resolve(options.projectPath, config.output)
+    const output = path.resolve(options.projectPath, config.output!)
     const version = GeneratorHelper.getAlovaVersion(config, options.projectPath)
     const templateHelper = TemplateHelper.load({
       type: this.getTemplateType(config, options.projectPath),
@@ -167,7 +159,7 @@ export class GeneratorHelper {
       projectPath: options.projectPath,
       generatorConfig: config,
     })
-    const oldTemplateData = TemplateHelper.getData(options.projectPath, config.output)
+    const oldTemplateData = TemplateHelper.getData(options.projectPath, config.output!)
     // Transform output filename by config.fileNameCase without changing template filename
     const toCase = (name: string) => transformFileName(name, config.fileNameCase)
     // Inject computed filenames into template render data for templates to reference
@@ -197,7 +189,7 @@ export class GeneratorHelper {
       ], { output })
     }
 
-    await TemplateHelper.setData(templateData, options.projectPath, config.output)
+    await TemplateHelper.setData(templateData, options.projectPath, config.output!)
 
     const generateFiles: OutputFileOptions[] = [
       {

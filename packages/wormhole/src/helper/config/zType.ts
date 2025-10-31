@@ -34,26 +34,23 @@ function zPluginReturn<T extends z.ZodTypeAny>(schema: T) {
   return zMaybePromise(z.union([schema, z.undefined(), z.null(), z.void()]))
 }
 
-// 定义 beforeOpenapiParse 的输入配置类型
-const zInputConfig = z.lazy(() => z.object({
-  input: z.string(),
-  platform: zPlatformType.optional(),
-  plugins: z.array(zApiPlugin).optional(),
-  fetchOptions: zFetchOptions.optional(),
-})) as z.ZodSchema<Pick<GeneratorConfig, 'input' | 'platform' | 'plugins' | 'fetchOptions'>>
-
 // 定义 OpenAPIDocument 类型（简化版本，因为完整的 OpenAPI 规范非常复杂）
 const zOpenAPIDocument = z.any() as z.ZodSchema<OpenAPIDocument>
 
 export const zApiPlugin = z.object({
   name: z.string().optional(),
   config: z.lazy(
-    () => z.function().args(_zGeneratorConfig).returns(zPluginReturn(_zGeneratorConfig)).optional(),
+    () => z.function()
+      .args(_zGeneratorConfig)
+      .returns(zPluginReturn(_zGeneratorConfig))
+      .optional(),
   ),
-  beforeOpenapiParse: z.function()
-    .args(zInputConfig)
-    .returns(zPluginReturn(zInputConfig))
-    .optional(),
+  beforeOpenapiParse: z.lazy(
+    () => z.function()
+      .args(_zGeneratorConfig)
+      .returns(z.void())
+      .optional(),
+  ),
   afterOpenapiParse: z.function()
     .args(zOpenAPIDocument)
     .returns(zPluginReturn(zOpenAPIDocument))
@@ -234,7 +231,7 @@ export const zConfig = z.object({
       const globalKeySet = new Set<string>()
       const outputSet = new Set<string>()
       data.forEach((item) => {
-        if (outputSet.has(path.join(item.output))) {
+        if (outputSet.has(path.join(item.output ?? ''))) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ['generator', 'output'],
@@ -242,7 +239,7 @@ export const zConfig = z.object({
           })
           return
         }
-        outputSet.add(path.join(item.output))
+        outputSet.add(path.join(item.output ?? ''))
         if (!item.global) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,

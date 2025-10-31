@@ -89,7 +89,7 @@ export interface GeneratorConfig {
 	 * input: 'openapi/api.json' -> Take the current project as the local address of the relative directory
 	 * input: 'http://192.168.5.123:8080' -> When it does not point to the openapi file, it must be used with the `platform` parameter
 	 */
-	input: string;
+	input?: string;
 	fetchOptions?: FetchOptions;
 	/**
 	 * A list of type identifiers to exclude from generation.
@@ -113,7 +113,7 @@ export interface GeneratorConfig {
 	 * The output path of the interface file and type file, multiple generators cannot have repeated addresses, otherwise the generated codes will cover each other, which is meaningless.
 	 * @requires true
 	 */
-	output: string;
+	output?: string;
 	/**
 	 * Specify the media type of the generated response data. After specifying, use this data type to generate the response ts format of the 2xx status code.
 	 * @defualt 'application/json'

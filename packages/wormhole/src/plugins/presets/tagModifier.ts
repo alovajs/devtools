@@ -52,7 +52,7 @@ export function processApiTags(apiDescriptor: ApiDescriptor, handler: ModifierHa
         const modifiedTag = handler(tag)
 
         // If handler returns null/undefined/void, remove this tag
-        if (modifiedTag == null) {
+        if (!modifiedTag) {
           return null
         }
 
