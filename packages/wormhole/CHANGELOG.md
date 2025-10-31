@@ -1,5 +1,11 @@
 # @alova/wormhole
 
+## 1.4.4
+
+### Patch Changes
+
+- [#118](https://github.com/alovajs/devtools/pull/118) [`a5537d1`](https://github.com/alovajs/devtools/commit/a5537d12bbf1888bc2f99ad3316112956455f1cc) Thanks [@czhlin](https://github.com/czhlin)! - fix apifox plugin issue
+
 ## 1.4.3
 
 ### Patch Changes
