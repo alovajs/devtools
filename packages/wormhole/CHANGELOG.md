@@ -1,5 +1,11 @@
 # @alova/wormhole
 
+## 1.4.5
+
+### Patch Changes
+
+- [#121](https://github.com/alovajs/devtools/pull/121) [`0b15b20`](https://github.com/alovajs/devtools/commit/0b15b20a5273fdc57d69ec1229216f4408e684df) Thanks [@czhlin](https://github.com/czhlin)! - fix alova init template
+
 ## 1.4.4
 
 ### Patch Changes
