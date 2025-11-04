@@ -1,7 +1,7 @@
 import type { Config, SchemaObject } from '@/type'
 import fs from 'node:fs/promises'
 import { resolve } from 'node:path'
-import { generate } from '@/index'
+import { createConfig, generate } from '@/index'
 import { createStrReg } from './util'
 
 vi.mock('node:fs')
@@ -133,7 +133,9 @@ describe('generate API', () => {
     ).rejects.toThrow('Cannot read file from http://localhost:3000/openapi.json')
   })
 
-  it('should generate code with a variant of openapi file formats', async () => {
+  it('should generate code with a variant of openapi file formats', {
+    timeout: 10 * 1000,
+  }, async () => {
     const outputDir = resolve(__dirname, './mock_output/openapi_301')
     const results = await generate({
       generator: [
@@ -179,8 +181,6 @@ describe('generate API', () => {
     expect(await fs.readFile(resolve(outputDir3, 'index.ts'), 'utf-8')).toMatchSnapshot()
     expect(await fs.readFile(resolve(outputDir3, 'createApis.ts'), 'utf-8')).toMatchSnapshot()
     expect(await fs.readFile(resolve(outputDir3, 'globals.d.ts'), 'utf-8')).toMatchSnapshot()
-  }, {
-    timeout: 10 * 1000,
   })
 
   it('shouldn\'t replace `index` file if it is generated', async () => {
@@ -1172,5 +1172,16 @@ describe('generate API', () => {
     })
 
     expect(await fs.readFile(resolve(outputDir, 'CreateApis.ts'), 'utf-8')).toMatchSnapshot()
+  })
+})
+
+describe('createConfig API', () => {
+  it('should create alova.config', async () => {
+    const projectPath = resolve(__dirname, '..')
+    await createConfig({
+      projectPath,
+      type: 'typescript',
+    })
+    expect(await fs.readFile(resolve(projectPath, 'alova.config.ts'), 'utf-8')).toMatchSnapshot()
   })
 })

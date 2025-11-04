@@ -41,10 +41,9 @@ export interface ApiPlugin {
 	 */
 	config?: (config: GeneratorConfig) => MaybePromise<GeneratorConfig | undefined | null | void>;
 	/**
-	 * Manipulate the input config before parsing the openapi file.
-	 * Returning null does NOT replacing anything.
+	 * Called before parsing the OpenAPI file.
 	 */
-	beforeOpenapiParse?: (inputConfig: Pick<GeneratorConfig, "input" | "platform" | "plugins" | "fetchOptions">) => MaybePromise<Pick<GeneratorConfig, "input" | "platform" | "plugins" | "fetchOptions"> | undefined | null | void>;
+	beforeOpenapiParse?: (config: GeneratorConfig) => void;
 	/**
 	 * Manipulate the openapi document after parsing.
 	 * Returning null does NOT replacing anything.
