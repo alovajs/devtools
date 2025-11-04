@@ -31,9 +31,6 @@ async function registerPartials() {
   }
 }
 
-// Initialize partials registration
-registerPartials()
-
 const getType = (obj: any) => Object.prototype.toString.call(obj).slice(8, -1).toLowerCase()
 
 handlebars.registerHelper('isType', function (this: any, value, type: string, options: HelperOptions) {
@@ -88,6 +85,8 @@ handlebars.registerHelper(
  * @returns Rendered content
  */
 export async function readAndRenderTemplate(templatePath: string, view: any) {
+  // Initialize partials registration
+  await registerPartials()
   let data = ''
   try {
     data = await fs.readFile(path.resolve(DEFAULT_CONFIG.templatePath, `${templatePath}.handlebars`), 'utf-8')
