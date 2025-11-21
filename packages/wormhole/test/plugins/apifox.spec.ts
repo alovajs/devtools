@@ -1,3 +1,4 @@
+import type { ApifoxOptions } from '@/plugins/presets/apifox'
 import type { GeneratorConfig } from '@/type'
 import { describe, expect, it } from 'vitest'
 import { apifox } from '@/plugins/presets/apifox'
@@ -13,7 +14,7 @@ describe('apifox preset plugin - config', () => {
     plugins: [],
   }
 
-  it('should set ALL scope when selectedTags not provided and construct request', async () => {
+  it('should set ALL scope by default and construct request', async () => {
     const plugin = apifox({
       projectId: 'proj-123',
       apifoxToken: 'token-abc',
@@ -47,10 +48,11 @@ describe('apifox preset plugin - config', () => {
     })
   })
 
-  it('should set SELECTED_TAGS scope when selectedTags provided', async () => {
+  it('should set SELECTED_TAGS scope when scopeType is SELECTED_TAGS', async () => {
     const plugin = apifox({
       projectId: 'proj-123',
       apifoxToken: 'token-abc',
+      scopeType: 'SELECTED_TAGS',
       selectedTags: ['user', 'order'],
     })
 
@@ -71,6 +73,7 @@ describe('apifox preset plugin - config', () => {
       oasVersion: '3.1',
       exportFormat: 'YAML',
       excludedByTags: ['internal'],
+      scopeType: 'ALL',
     })
 
     const next = (await plugin.config!(baseInputConfig)) ?? baseInputConfig
@@ -112,6 +115,145 @@ describe('apifox preset plugin - config', () => {
   it('should expose plugin name', () => {
     const plugin = apifox({ projectId: 'p', apifoxToken: 't' })
     expect(plugin.name).toBe('apifox')
+  })
+
+  // Tests for enhanced functionality
+  it('should set SELECTED_ENDPOINTS scope when scopeType is SELECTED_ENDPOINTS', async () => {
+    const plugin = apifox({
+      projectId: 'proj-123',
+      apifoxToken: 'token-abc',
+      scopeType: 'SELECTED_ENDPOINTS',
+      selectedEndpointIds: [123, 456],
+    })
+
+    const next = (await plugin.config!(baseInputConfig)) ?? baseInputConfig
+    const data = next.fetchOptions?.data as Record<string, any>
+    expect(data.scope?.type).toBe('SELECTED_ENDPOINTS')
+    expect(data.scope?.selectedEndpointIds).toEqual([123, 456])
+  })
+
+  it('should set SELECTED_FOLDERS scope when scopeType is SELECTED_FOLDERS', async () => {
+    const plugin = apifox({
+      projectId: 'proj-123',
+      apifoxToken: 'token-abc',
+      scopeType: 'SELECTED_FOLDERS',
+      selectedFolderIds: [789, 101112],
+    })
+
+    const next = (await plugin.config!(baseInputConfig)) ?? baseInputConfig
+    const data = next.fetchOptions?.data as Record<string, any>
+    expect(data.scope?.type).toBe('SELECTED_FOLDERS')
+    expect(data.scope?.selectedFolderIds).toEqual([789, 101112])
+  })
+
+  it('should handle new optional parameters correctly', async () => {
+    const plugin = apifox({
+      projectId: 'proj-123',
+      apifoxToken: 'token-abc',
+      scopeType: 'ALL',
+      environmentIds: [1, 2],
+      branchId: 100,
+      moduleId: 200,
+    })
+
+    const next = (await plugin.config!(baseInputConfig)) ?? baseInputConfig
+    const data = next.fetchOptions?.data as Record<string, any>
+
+    expect(data.environmentIds).toEqual([1, 2])
+    expect(data.branchId).toBe(100)
+    expect(data.moduleId).toBe(200)
+  })
+
+  it('should handle excludedByTags parameter correctly', async () => {
+    const plugin = apifox({
+      projectId: 'proj-123',
+      apifoxToken: 'token-abc',
+      scopeType: 'ALL',
+      excludedByTags: ['excludeTag1', 'excludeTag2'],
+    })
+
+    const next = (await plugin.config!(baseInputConfig)) ?? baseInputConfig
+    const data = next.fetchOptions?.data as Record<string, any>
+    expect(data.scope.excludedByTags).toEqual(['excludeTag1', 'excludeTag2'])
+  })
+
+  it('should not set selectedTags when it is undefined even in SELECTED_TAGS mode', async () => {
+    const plugin = apifox({
+      projectId: 'proj-123',
+      apifoxToken: 'token-abc',
+      scopeType: 'SELECTED_TAGS',
+      // 注意这里没有提供 selectedTags
+    })
+
+    const next = (await plugin.config!(baseInputConfig)) ?? baseInputConfig
+    // 在新版插件中，selectedTags 有默认值 []，并且在 scopeType 为 SELECTED_TAGS 时始终会被设置
+    const data = next.fetchOptions?.data as Record<string, any>
+    expect(data.scope.selectedTags).toEqual([])
+  })
+
+  it('should set empty array when selectedTags is explicitly set to undefined', async () => {
+    const plugin = apifox({
+      projectId: 'proj-123',
+      apifoxToken: 'token-abc',
+      scopeType: 'SELECTED_TAGS',
+      selectedTags: undefined,
+    } as ApifoxOptions)
+
+    const next = (await plugin.config!(baseInputConfig)) ?? baseInputConfig
+    // 即使显式设置为 undefined，TypeScript 默认参数也会将其转换为空数组
+    const data = next.fetchOptions?.data as Record<string, any>
+    expect(data.scope.selectedTags).toEqual([])
+  })
+
+  it('should set empty array when selectedTags is explicitly set to empty array', async () => {
+    const plugin = apifox({
+      projectId: 'proj-123',
+      apifoxToken: 'token-abc',
+      scopeType: 'SELECTED_TAGS',
+      selectedTags: [],
+    })
+
+    const next = (await plugin.config!(baseInputConfig)) ?? baseInputConfig
+    const data = next.fetchOptions?.data as Record<string, any>
+    expect(data.scope.selectedTags).toEqual([])
+  })
+
+  it('should correctly infer scopeType when not explicitly provided', async () => {
+    // 新版插件中不再根据 selectedTags 自动推断 scopeType，而是默认使用 ALL
+    const plugin1 = apifox({
+      projectId: 'proj-123',
+      apifoxToken: 'token-abc',
+      selectedTags: ['tag1'],
+    })
+
+    const next1 = (await plugin1.config!(baseInputConfig)) ?? baseInputConfig
+    // 新版插件默认 scopeType 是 ALL，不会根据 selectedTags 自动推断
+    const data1 = next1.fetchOptions?.data as Record<string, any>
+    expect(data1.scope.type).toBe('ALL')
+
+    // 当没有提供 selectedTags 也没有指定 scopeType 时，应该默认为 ALL
+    const plugin2 = apifox({
+      projectId: 'proj-123',
+      apifoxToken: 'token-abc',
+    })
+    const next2 = (await plugin2.config!(baseInputConfig)) ?? baseInputConfig
+    const data2 = next2.fetchOptions?.data as Record<string, any>
+    expect(data2.scope.type).toBe('ALL')
+  })
+
+  it('should behave like old version when scopeType is not specified but selectedTags is provided (backward compatibility)', async () => {
+    // 为了向后兼容，如果需要根据 selectedTags 推断 scopeType，需要显式设置
+    const plugin = apifox({
+      projectId: 'proj-123',
+      apifoxToken: 'token-abc',
+      scopeType: 'SELECTED_TAGS',
+      selectedTags: ['user', 'order'],
+    })
+
+    const next = (await plugin.config!(baseInputConfig)) ?? baseInputConfig
+    const data = next.fetchOptions?.data as Record<string, any>
+    expect(data.scope?.type).toBe('SELECTED_TAGS')
+    expect(data.scope?.selectedTags).toEqual(['user', 'order'])
   })
 
   // Integration: actually use apifox via generateWithPlugin and MSW
