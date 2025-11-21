@@ -1,10 +1,13 @@
 import type { ApiPlugin } from '@/type'
-import { isEmpty } from 'lodash'
+
+export type ScopeType = 'ALL' | 'SELECTED_ENDPOINTS' | 'SELECTED_TAGS' | 'SELECTED_FOLDERS'
 
 export interface APIFoxBody {
   scope?: {
-    type?: 'ALL' | 'SELECTED_TAGS'
+    type?: ScopeType
+    selectedEndpointIds?: number[]
     selectedTags?: string[]
+    selectedFolderIds?: number[]
     excludedByTags?: string[]
   }
   options?: {
@@ -13,36 +16,49 @@ export interface APIFoxBody {
   }
   oasVersion?: '2.0' | '3.0' | '3.1'
   exportFormat?: 'JSON' | 'YAML'
-  environmentIds?: string[]
+  environmentIds?: number[]
+  branchId?: number
+  moduleId?: number
 }
 
 export interface ApifoxOptions
-  extends Pick<APIFoxBody, 'oasVersion' | 'exportFormat'>,
+  extends Pick<APIFoxBody, 'oasVersion' | 'exportFormat' | 'environmentIds' | 'branchId' | 'moduleId'>,
   Pick<
     NonNullable<APIFoxBody['options']>,
-      'includeApifoxExtensionProperties' | 'addFoldersToTags'
+    'includeApifoxExtensionProperties' | 'addFoldersToTags'
   > {
   projectId: string
   apifoxToken: string
   locale?: string
   apifoxVersion?: string
+  scopeType?: ScopeType
+  selectedEndpointIds?: number[]
   selectedTags?: string[]
+  selectedFolderIds?: number[]
   excludedByTags?: string[]
 }
+
 export function apifox({
   projectId,
   locale = 'zh-CN',
   apifoxVersion = '2024-03-28',
-  selectedTags,
+  scopeType = 'ALL',
+  selectedEndpointIds = [],
+  selectedTags = [],
+  selectedFolderIds = [],
   excludedByTags = [],
   apifoxToken,
   oasVersion = '3.0',
   exportFormat = 'JSON',
   includeApifoxExtensionProperties = false,
   addFoldersToTags = false,
+  environmentIds,
+  branchId,
+  moduleId,
 }: ApifoxOptions): ApiPlugin {
   const body: APIFoxBody = {
     scope: {
+      type: scopeType,
       excludedByTags,
     },
     options: {
@@ -51,18 +67,27 @@ export function apifox({
     },
     oasVersion,
     exportFormat,
+    environmentIds,
+    branchId,
+    moduleId,
   }
-  if (!body.scope) {
-    body.scope = {}
+
+  // 根据不同的 scope 类型设置相应的参数
+  switch (scopeType) {
+    case 'ALL':
+      // 导出全部不需要额外参数
+      break
+    case 'SELECTED_ENDPOINTS':
+      body.scope!.selectedEndpointIds = selectedEndpointIds
+      break
+    case 'SELECTED_TAGS':
+      body.scope!.selectedTags = selectedTags
+      break
+    case 'SELECTED_FOLDERS':
+      body.scope!.selectedFolderIds = selectedFolderIds
+      break
   }
-  const tags = !isEmpty(selectedTags) ? selectedTags : '*'
-  if (tags === '*') {
-    body.scope.type = 'ALL'
-  }
-  else {
-    body.scope.type = 'SELECTED_TAGS'
-    body.scope.selectedTags = tags
-  }
+
   return {
     name: 'apifox',
     config(config) {
