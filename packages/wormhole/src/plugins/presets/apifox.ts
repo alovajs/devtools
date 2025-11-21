@@ -42,9 +42,9 @@ export function apifox({
   projectId,
   locale = 'zh-CN',
   apifoxVersion = '2024-03-28',
-  scopeType,
+  scopeType = 'ALL',
   selectedEndpointIds = [],
-  selectedTags,
+  selectedTags = [],
   selectedFolderIds = [],
   excludedByTags = [],
   apifoxToken,
@@ -56,15 +56,9 @@ export function apifox({
   branchId,
   moduleId,
 }: ApifoxOptions): ApiPlugin {
-  // 向后兼容旧版本逻辑：如果没有明确指定scopeType但提供了selectedTags，则认为是SELECTED_TAGS类型
-  let effectiveScopeType: ScopeType = scopeType || 'ALL'
-  if (!scopeType && selectedTags && selectedTags.length > 0) {
-    effectiveScopeType = 'SELECTED_TAGS'
-  }
-
   const body: APIFoxBody = {
     scope: {
-      type: effectiveScopeType,
+      type: scopeType,
       excludedByTags,
     },
     options: {
@@ -79,7 +73,7 @@ export function apifox({
   }
 
   // 根据不同的 scope 类型设置相应的参数
-  switch (effectiveScopeType) {
+  switch (scopeType) {
     case 'ALL':
       // 导出全部不需要额外参数
       break
@@ -87,10 +81,7 @@ export function apifox({
       body.scope!.selectedEndpointIds = selectedEndpointIds
       break
     case 'SELECTED_TAGS':
-      // 向后兼容：保持selectedTags为undefined时不赋值，与旧版本行为一致
-      if (selectedTags !== undefined) {
-        body.scope!.selectedTags = selectedTags
-      }
+      body.scope!.selectedTags = selectedTags
       break
     case 'SELECTED_FOLDERS':
       body.scope!.selectedFolderIds = selectedFolderIds
