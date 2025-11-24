@@ -227,10 +227,13 @@ export type ApiDescriptor = Omit<OperationObject, "requestBody" | "parameters" |
  * });
  */
 export declare function createPlugin<T extends any[]>(plugin: (...args: T) => ApiPlugin): (...args: T) => ApiPlugin;
+export type ScopeType = "ALL" | "SELECTED_ENDPOINTS" | "SELECTED_TAGS" | "SELECTED_FOLDERS";
 export interface APIFoxBody {
 	scope?: {
-		type?: "ALL" | "SELECTED_TAGS";
+		type?: ScopeType;
+		selectedEndpointIds?: number[];
 		selectedTags?: string[];
+		selectedFolderIds?: number[];
 		excludedByTags?: string[];
 	};
 	options?: {
@@ -239,17 +242,22 @@ export interface APIFoxBody {
 	};
 	oasVersion?: "2.0" | "3.0" | "3.1";
 	exportFormat?: "JSON" | "YAML";
-	environmentIds?: string[];
+	environmentIds?: number[];
+	branchId?: number;
+	moduleId?: number;
 }
-export interface ApifoxOptions extends Pick<APIFoxBody, "oasVersion" | "exportFormat">, Pick<NonNullable<APIFoxBody["options"]>, "includeApifoxExtensionProperties" | "addFoldersToTags"> {
+export interface ApifoxOptions extends Pick<APIFoxBody, "oasVersion" | "exportFormat" | "environmentIds" | "branchId" | "moduleId">, Pick<NonNullable<APIFoxBody["options"]>, "includeApifoxExtensionProperties" | "addFoldersToTags"> {
 	projectId: string;
 	apifoxToken: string;
 	locale?: string;
 	apifoxVersion?: string;
+	scopeType?: ScopeType;
+	selectedEndpointIds?: number[];
 	selectedTags?: string[];
+	selectedFolderIds?: number[];
 	excludedByTags?: string[];
 }
-export declare function apifox({ projectId, locale, apifoxVersion, selectedTags, excludedByTags, apifoxToken, oasVersion, exportFormat, includeApifoxExtensionProperties, addFoldersToTags, }: ApifoxOptions): ApiPlugin;
+export declare function apifox({ projectId, locale, apifoxVersion, scopeType, selectedEndpointIds, selectedTags, selectedFolderIds, excludedByTags, apifoxToken, oasVersion, exportFormat, includeApifoxExtensionProperties, addFoldersToTags, environmentIds, branchId, moduleId, }: ApifoxOptions): ApiPlugin;
 /**
  * Filter configuration interface
  */
