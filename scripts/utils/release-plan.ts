@@ -2,7 +2,7 @@ import type { VersionType } from '@changesets/types'
 import fs from 'node:fs'
 import path from 'node:path'
 
-const RELEASE_PLAN_FILE = path.join('node_modules', '.changeset-release-plan.json')
+const RELEASE_PLAN_FILE = path.join('.changeset', '.release-plan.json')
 
 export interface ReleasePlan {
   name: string
@@ -38,6 +38,13 @@ export function loadReleasePlan() {
   catch (error) {
     console.error(`❌ Failed to parse release plan file: ${RELEASE_PLAN_FILE}\n${error}`)
     return []
+  }
+}
+
+export function deleteReleasePlan() {
+  if (fs.existsSync(RELEASE_PLAN_FILE)) {
+    fs.unlinkSync(RELEASE_PLAN_FILE)
+    console.log(`✔ Deleted ${RELEASE_PLAN_FILE}`)
   }
 }
 

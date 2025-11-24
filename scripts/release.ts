@@ -2,7 +2,7 @@ import { execSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import fg from 'fast-glob'
-import { loadReleasePlan } from './utils/release-plan'
+import { deleteReleasePlan, loadReleasePlan, releasePlanPath } from './utils/release-plan'
 
 function run(cmd: string) {
   execSync(cmd, { stdio: 'inherit' })
@@ -60,6 +60,13 @@ function main() {
     console.log(`🚀 自定义发布：${name}（执行各自 release 命令）`)
     run(`pnpm -w --filter "${name}" run release`)
   }
+  // 删除文件
+  deleteReleasePlan()
+  // 提交 commit（只有这个删除文件）
+  execSync(`git add ${releasePlanPath()}`, { stdio: 'inherit' })
+  execSync(`git commit -m "chore: remove .changeset/release-plan.json after publish"`, { stdio: 'inherit' })
+  execSync(`git push -f`, { stdio: 'inherit' })
+  console.log('✔ Release plan removed and committed.')
 }
 
 main()
