@@ -32,9 +32,9 @@
     "changeset:alpha": "changeset pre enter alpha",
     "changeset:beta": "changeset pre enter beta",
     "changeset:pre.exit": "changeset pre exit",
-    "changeset:version": "changeset version",
+    "changeset:version": "tsx scripts/version.ts",
     "build": "nr --filter=./packages/* build",
-    "release": "nr test:unit:coverage && nr build && changeset publish && nr --filter=alova-vscode-extension release"
+    "release": "nr coveralls && nr build && tsx scripts/release.ts"
   },
   "devDependencies": {
     "@alova/wormhole": "workspace:*",
@@ -42,6 +42,8 @@
     "@antfu/ni": "catalog:dev",
     "@changesets/changelog-github": "catalog:dev",
     "@changesets/cli": "catalog:dev",
+    "@changesets/get-release-plan": "catalog:dev",
+    "@changesets/types": "catalog:types",
     "@commitlint/cli": "catalog:dev",
     "@commitlint/config-conventional": "catalog:dev",
     "@types/js-yaml": "catalog:types",

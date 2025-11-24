@@ -34,6 +34,7 @@ catalogs:
     '@antfu/ni': ^25.0.0
     '@changesets/changelog-github': ^0.5.1
     '@changesets/cli': ^2.29.5
+    '@changesets/get-release-plan': ^4.0.13
     '@commitlint/cli': ^19.8.1
     '@commitlint/config-conventional': ^19.8.1
     '@iconify-json/carbon': ^1.2.10
@@ -103,6 +104,7 @@ catalogs:
     zod: ^3.25.68-alpha.11
     zod-validation-error: ^3.5.3
   types:
+    '@changesets/types': ^6.1.0
     '@types/chai': ^4.2.21
     '@types/chai-jest-snapshot': ^1.3.6
     '@types/fs-extra': ^11.0.4
