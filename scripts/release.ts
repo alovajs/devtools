@@ -51,6 +51,11 @@ function main() {
       pub.push(name)
     }
   }
+  if (!pub.length && !pri.length) {
+    return
+  }
+
+  run('pnpm -w coveralls && pnpm -w build')
 
   if (pub.length) {
     console.log(`🚀 changeset publish：${pub.join(', ')}`)
@@ -61,11 +66,13 @@ function main() {
     run(`pnpm -w --filter "${name}" run release`)
   }
   // 删除文件
-  deleteReleasePlan()
+  if (!deleteReleasePlan()) {
+    return
+  }
   // 提交 commit（只有这个删除文件）
-  execSync(`git add ${releasePlanPath()}`, { stdio: 'inherit' })
-  execSync(`git commit -m "chore: remove .changeset/release-plan.json after publish"`, { stdio: 'inherit' })
-  execSync(`git push -f`, { stdio: 'inherit' })
+  run(`git add ${releasePlanPath()}`)
+  run(`git commit -m "chore: remove .changeset/release-plan.json after publish"`)
+  run(`git push`)
   console.log('✔ Release plan removed and committed.')
 }
 

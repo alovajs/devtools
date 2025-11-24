@@ -45,7 +45,9 @@ export function deleteReleasePlan() {
   if (fs.existsSync(RELEASE_PLAN_FILE)) {
     fs.unlinkSync(RELEASE_PLAN_FILE)
     console.log(`✔ Deleted ${RELEASE_PLAN_FILE}`)
+    return true
   }
+  return false
 }
 
 export function releasePlanPath() {

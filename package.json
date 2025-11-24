@@ -34,7 +34,7 @@
     "changeset:pre.exit": "changeset pre exit",
     "changeset:version": "tsx scripts/version.ts",
     "build": "nr --filter=./packages/* build",
-    "release": "nr coveralls && nr build && tsx scripts/release.ts"
+    "release": "tsx scripts/release.ts"
   },
   "devDependencies": {
     "@alova/wormhole": "workspace:*",
