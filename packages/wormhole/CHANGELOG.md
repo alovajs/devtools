@@ -1,5 +1,11 @@
 # @alova/wormhole
 
+## 1.5.0
+
+### Minor Changes
+
+- [#130](https://github.com/alovajs/devtools/pull/130) [`d13414c`](https://github.com/alovajs/devtools/commit/d13414c325c79fb359eaa8708dd4089b2973203b) Thanks [@czhlin](https://github.com/czhlin)! - 1. Extend the `apifox` fetch plugin; align defaults to Apifox’s official exported interface defaults (breaking change). 2. Fix the `payloadModifier` plugin not working for intersection and union types. 3. In the `rename` plugin, add a `value` parameter to `transtransform`.
+
 ## 1.4.5
 
 ### Patch Changes
