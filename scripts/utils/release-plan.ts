@@ -26,10 +26,7 @@ export function saveReleasePlan(plan: ReleasePlan[]) {
 
 export function loadReleasePlan() {
   if (!fs.existsSync(RELEASE_PLAN_FILE)) {
-    throw new Error(
-      `❌ Release plan file not found: ${RELEASE_PLAN_FILE}\n`
-      + `请确认你已在 changeset version 前执行 saveReleasePlan。`,
-    )
+    return []
   }
 
   const content = fs.readFileSync(RELEASE_PLAN_FILE, 'utf8').trim()
