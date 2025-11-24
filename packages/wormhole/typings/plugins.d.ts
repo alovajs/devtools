@@ -317,7 +317,7 @@ export declare function filterApiDescriptor(apiDescriptor: ApiDescriptor, config
 export declare function apiFilter(config: FilterApiConfig | FilterApiConfig[]): ApiPlugin;
 export declare function importType(config: Record<string, string[]>): ApiPlugin;
 export type ModifierScope = "params" | "pathParams" | "data" | "response";
-export type SchemaPrimitive = "number" | "string" | "boolean" | "undefined" | "null" | "unknown" | "any" | "never";
+export type SchemaPrimitive = "number" | "string" | "boolean" | "undefined" | "null" | "unknown" | "any" | "never" | ({} & string);
 /**
  * 表示数组类型
  */
@@ -337,7 +337,7 @@ export interface SchemaReference {
  */
 export interface SchemaEnum {
 	enum: Array<string | number | boolean | null>;
-	type?: "string" | "number" | "integer" | "boolean" | "null";
+	type?: SchemaPrimitive;
 }
 /**
  * 组合类型表示（与/或/交叉）
@@ -406,7 +406,7 @@ export interface RenameConfig {
 	 * Custom transformation function
 	 * Will be applied before style transformation
 	 */
-	transform?: (apiDescriptor: ApiDescriptor) => string;
+	transform?: (apiDescriptor: ApiDescriptor, value: string) => string;
 }
 /**
  * Creates a rename plugin that transforms API descriptors

@@ -32,7 +32,7 @@ export interface RenameConfig {
    * Custom transformation function
    * Will be applied before style transformation
    */
-  transform?: (apiDescriptor: ApiDescriptor) => string
+  transform?: (apiDescriptor: ApiDescriptor, value: string) => string
 }
 
 function toCamelCase(str: string): string {
@@ -69,7 +69,7 @@ function applyRenameRule(value: string, config: RenameConfig, apiDescriptor: Api
   }
 
   if (config.transform) {
-    value = config.transform(apiDescriptor)
+    value = config.transform(apiDescriptor, value)
   }
 
   if (!config.style) {
