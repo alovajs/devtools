@@ -1,5 +1,5 @@
 export type ModifierScope = 'params' | 'pathParams' | 'data' | 'response'
-export type SchemaPrimitive = 'number' | 'string' | 'boolean' | 'undefined' | 'null' | 'unknown' | 'any' | 'never'
+export type SchemaPrimitive = 'number' | 'string' | 'boolean' | 'undefined' | 'null' | 'unknown' | 'any' | 'never' | ({} & string)
 
 /**
  * 表示数组类型
@@ -23,7 +23,7 @@ export interface SchemaReference {
  */
 export interface SchemaEnum {
   enum: Array<string | number | boolean | null>
-  type?: 'string' | 'number' | 'integer' | 'boolean' | 'null'
+  type?: SchemaPrimitive
 }
 
 /**

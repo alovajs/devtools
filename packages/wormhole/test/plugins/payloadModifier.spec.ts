@@ -11,7 +11,7 @@ describe('payloadModifier plugin tests', () => {
 
   it('modifies query/path parameters and removes matched ones', () => {
     const handleApi = getHandleApi([
-      { scope: 'params', match: 'age', handler: () => ({ required: true, value: 'string' }) },
+      { scope: 'params', match: 'age', handler: () => ({ required: true, value: ['string', 'number', 'boolean'] }) },
       { scope: 'params', match: 'debug', handler: () => null },
       { scope: 'pathParams', match: 'id', handler: () => ({ required: false, value: 'string' }) },
     ])
@@ -21,7 +21,7 @@ describe('payloadModifier plugin tests', () => {
       method: 'get',
       parameters: [
         { name: 'id', in: 'path', required: true, schema: { type: 'integer' } },
-        { name: 'age', in: 'query', required: false, schema: { type: 'integer' } },
+        { name: 'age', in: 'query', required: false, schema: { type: 'integer', description: 'hello age' } },
         { name: 'debug', in: 'query', required: false, schema: { type: 'boolean' } },
         { name: 'q', in: 'query', required: false, schema: { type: 'string' } },
       ],
@@ -32,7 +32,10 @@ describe('payloadModifier plugin tests', () => {
     const result = handleApi(api)!
     // age converted to string and required true
     const ageParam = result.parameters!.find(p => p.in === 'query' && p.name === 'age')!
-    expect((ageParam.schema as SchemaObject)?.type).toBe('string')
+    expect(ageParam.schema).toEqual({
+      description: 'hello age',
+      oneOf: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }],
+    })
     expect(ageParam.required).toBe(true)
 
     // debug removed

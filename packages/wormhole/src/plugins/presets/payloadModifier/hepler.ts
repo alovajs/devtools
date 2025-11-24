@@ -19,10 +19,21 @@ import type {
 // Convert Schema (custom spec) -> OpenAPI SchemaObject
 function toSchemaObject(base: SchemaObject, s: Schema): SchemaObject {
   const result: SchemaObject = { ...base }
-
+  const cleanType = (schema: SchemaObject) => {
+    delete schema.type
+    delete schema.enum
+    delete schema.oneOf
+    delete schema.anyOf
+    delete schema.allOf
+    delete (schema as any).items
+    delete schema.properties
+    delete schema.required
+    return schema
+  }
   // Legacy union as array (treated as oneOf)
   if (Array.isArray(s)) {
     const baseOneOf = base.oneOf || []
+    cleanType(result)
     result.oneOf = s.map((item, idx) => toSchemaObject(baseOneOf[idx] || {}, item))
     return result
   }
@@ -37,16 +48,19 @@ function toSchemaObject(base: SchemaObject, s: Schema): SchemaObject {
   if ((s as SchemaOneOf).oneOf) {
     const spec = s as SchemaOneOf
     const baseOneOf = base.oneOf || []
+    cleanType(result)
     result.oneOf = spec.oneOf.map((item, idx) => toSchemaObject(baseOneOf[idx] || {}, item))
   }
   if ((s as SchemaAnyOf).anyOf) {
     const spec = s as SchemaAnyOf
     const baseAnyOf = base.anyOf || []
+    cleanType(result)
     result.anyOf = spec.anyOf.map((item, idx) => toSchemaObject(baseAnyOf[idx] || {}, item))
   }
   if ((s as SchemaAllOf).allOf) {
     const spec = s as SchemaAllOf
     const baseAllOf = base.allOf || []
+    cleanType(result)
     result.allOf = spec.allOf.map((item, idx) => toSchemaObject(baseAllOf[idx] || {}, item))
   }
 
@@ -55,7 +69,7 @@ function toSchemaObject(base: SchemaObject, s: Schema): SchemaObject {
     const spec = s as SchemaEnum
     result.enum = spec.enum
     if (spec.type) {
-      result.type = spec.type
+      result.type = spec.type as any
     }
   }
 
