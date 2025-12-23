@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.0.13
+
+### Patch Changes
+
+- [#134](https://github.com/alovajs/devtools/pull/134) [`fb462e4`](https://github.com/alovajs/devtools/commit/fb462e4ed49ce9902194c9e3430d97fc35996648) Thanks [@czhlin](https://github.com/czhlin)! - fix vscode theme issue
+
 ## 2.0.12
 
 ### Patch Changes
