@@ -7,13 +7,10 @@ import hljs from '~/utils/hljs'
 import { normalizeLocale } from '~/utils/i18n'
 
 const handlers = useHandlers()
-
 const observer = new MutationObserver((mutations) => {
   mutations.forEach((mutation) => {
     if (mutation.attributeName === 'data-vscode-theme-kind') {
-      const target = mutation.target as HTMLHtmlElement
-      const themeKind = target.getAttribute('data-vscode-theme-kind')
-      toggleDark(!themeKind?.includes('light'))
+      hanldeThemeKind(mutation.target as HTMLElement)
     }
   })
 })
@@ -24,14 +21,26 @@ observer.observe(document.body, {
   attributeOldValue: true,
   subtree: true,
 })
+
 function handleLanguageChange(value: string) {
   const language = normalizeLocale(value)
-  availableLocales.includes(language) && loadLanguageAsync(language)
+  if (availableLocales.includes(language)) {
+    loadLanguageAsync(language)
+  }
 }
+
+function hanldeThemeKind(target: HTMLElement) {
+  const themeKind = target.getAttribute('data-vscode-theme-kind')
+  toggleDark(!themeKind?.includes('light'))
+}
+
 const theme = computed(() => isDark.value ? darkTheme : null)
+
 onMounted(async () => {
-  const language = await handlers.getLanguage()
-  handleLanguageChange(language)
+  // 设置初始化主题
+  hanldeThemeKind(document.body)
+  // 加载语言
+  handleLanguageChange(await handlers.getLanguage())
 })
 
 onUnmounted(() => {
