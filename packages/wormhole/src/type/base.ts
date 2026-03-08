@@ -1,6 +1,6 @@
 export type AlovaVersion = `v${number}`
 
-export type FrameworkName = 'vue' | 'react'
+export type FrameworkName = 'vue' | 'react' | 'svelte' | 'solid-js' | 'nuxt'
 export type ModuleType = 'commonJs' | 'ESModule'
 export interface Parser<T, U, O> {
   name: string

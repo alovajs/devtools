@@ -121,12 +121,18 @@ export async function parseRequestBody(requestBody: RequestBodyObject | Referenc
     }),
   }
 }
-function getContentKey(content: Record<string, any> = {}, requireKey = 'application/json') {
-  let key = Object.keys(content)[0] || requireKey
-  if (content[requireKey]) {
-    key = requireKey
+function getContentKey(content: Record<string, any> = {}, requireKey: string | string[] = 'application/json') {
+  const requireKeys = Array.isArray(requireKey) ? requireKey : [requireKey]
+
+  // 按数组顺序依次查找存在的 mediaType
+  for (const key of requireKeys) {
+    if (content[key]) {
+      return key
+    }
   }
-  return key
+
+  // 如果都不存在，返回第一个 key 或默认值
+  return Object.keys(content)[0] || requireKeys[0]
 }
 
 export async function parseParameters(parameters: (ReferenceObject | ParameterObject)[] | undefined, options: {

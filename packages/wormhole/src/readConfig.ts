@@ -4,6 +4,7 @@ import path from 'node:path'
 import esbuild from 'esbuild'
 import { configHelper, logger, TemplateHelper } from '@/helper'
 import { getUserInstalledDependencies, resolveConfigFile } from '@/utils'
+import { readAlovaRc } from './functions/readAlovaRc'
 /**
  * Read the alova.config configuration file and return the parsed configuration object.
  * @param projectPath The project path where the configuration file is located. The default value is `process.cwd()`.
@@ -17,6 +18,20 @@ export async function readConfig(projectPath = process.cwd()) {
       name: 'readConfig',
     })
   }
+
+  // Check if it's a .alovarc file
+  if (configFile.endsWith('.alovarc')) {
+    const config = await readAlovaRc(projectPath)
+    if (!config) {
+      throw logger.throwError(`Failed to parse .alovarc file from path ${projectPath}`, {
+        projectPath,
+        name: 'readConfig',
+      })
+    }
+    await configHelper.load(config, projectPath)
+    return config
+  }
+
   // 获取用户已安装的依赖
   const userDependencies = getUserInstalledDependencies(projectPath)
   const configTmpFileName = `alova_tmp_${Date.now()}.cjs`
@@ -37,7 +52,7 @@ export async function readConfig(projectPath = process.cwd()) {
   const config = await configHelper.readUserConfig(module.default || module)
   // Read the cache file and save it
   await configHelper.load(config, projectPath)
-  return config
+  return configHelper.getConfig()
 }
 
 export async function getAutoUpdateConfig(config: Config) {
@@ -51,7 +66,7 @@ export async function getApiDocs(config: Config, projectPath = process.cwd()) {
   }
   await configHelper.load(config, projectPath)
   return configHelper.getOutput().map((output) => {
-    const templateData = TemplateHelper.getData(projectPath, output!)
-    return templateData?.pathApis ?? []
+    const cacheData = TemplateHelper.getData(projectPath, output!)
+    return cacheData?.apis ?? []
   })
 }

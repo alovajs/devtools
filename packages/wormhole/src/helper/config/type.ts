@@ -15,7 +15,7 @@ export type TemplateType = z.infer<typeof zTemplateType>
 /**
  * platform type
  */
-export type PlatformType = z.infer<typeof zPlatformType> | (string & {})// When using defineConfig, you need to match the PlatformType.
+export type PlatformType = z.infer<typeof zPlatformType> | (string & {}) // When using defineConfig, you need to match the PlatformType.
 
 export type MaybePromise<T> = T | Promise<T>
 export interface ApiPlugin {
@@ -28,22 +28,26 @@ export interface ApiPlugin {
   /**
    * Called before parsing the OpenAPI file.
    */
-  beforeOpenapiParse?: (
-    config: GeneratorConfig
-  ) => void
+  beforeOpenapiParse?: (config: GeneratorConfig) => void
   /**
    * Manipulate the openapi document after parsing.
    * Returning null does NOT replacing anything.
    */
-  afterOpenapiParse?: (document: OpenAPIDocument) => MaybePromise<OpenAPIDocument | undefined | null | void>
+  afterOpenapiParse?: (
+    document: OpenAPIDocument
+  ) => MaybePromise<OpenAPIDocument | undefined | null | void>
   /**
    * Manipulate the template code before generating.
    * Returning null does NOT replacing anything.
    */
-  beforeCodeGenerate?: (data: any, outputFile: string, ctx: {
-    renderTemplate: () => Promise<string>
-    fileName: string
-  }) => MaybePromise<string | undefined | null | void>
+  beforeCodeGenerate?: (
+    data: any,
+    outputFile: string,
+    ctx: {
+      renderTemplate: () => Promise<string>
+      fileName: string
+    }
+  ) => MaybePromise<string | undefined | null | void>
   /**
    * Called when wormhold has finished code generating.
    */
@@ -54,6 +58,75 @@ export type ApiPluginHooks = keyof Omit<ApiPlugin, 'name' | 'extends'>
 export interface HandleApi {
   (apiDescriptor: ApiDescriptor): ApiDescriptor | void | undefined | null
 }
+
+/**
+ * Template configuration result
+ */
+export interface TemplateConfigResult {
+  /**
+   * Template path string (relative to project root or absolute path).
+   * Relative paths are resolved relative to process.cwd()
+   * This field is required.
+   */
+  path: string
+  /**
+   * Template parameters, can be customized as needed.
+   * Defaults to empty object {} if not provided.
+   */
+  config?: Record<string, any>
+}
+
+/**
+ * Template config function type
+ * Returns a TemplateConfigResult object containing path and config
+ */
+export type TemplateConfig = () => MaybePromise<TemplateConfigResult>
+
+/**
+ * Options for globals template
+ */
+export interface GlobalsTemplateOptions {
+  /**
+   * Globally exported api name, you can access the automatically generated api globally through this name.
+   * Default is 'Apis'. Required when multiple generators are configured, and cannot be repeated.
+   */
+  global?: string
+
+  /**
+   * The host object of global mounting, default is `globalThis`, it means `window` in browser and `global` in nodejs
+   * @default 'globalThis'
+   */
+  globalHost?: string
+
+  /**
+   * Whether to use `import` statement to import the type. When this option is set to `true`, the generated apiDefinitions.ts file will use `import` statement to import types instead of ///<reference types="..." />
+   * @default false
+   */
+  useImportType?: boolean
+}
+
+/**
+ * Options for functional template
+ */
+export interface FunctionalTemplateOptions {
+  /**
+   * Whether to use `import` statement to import the type. When this option is set to `true`, the generated apiDefinitions.ts file will use `import` statement to import types instead of ///<reference types="..." />
+   * @default false
+   */
+  useImportType?: boolean
+}
+
+/**
+ * Options for axios/fetch/ky templates
+ */
+export interface RequestLibTemplateOptions {
+  /**
+   * Whether to use `import` statement to import the type. When this option is set to `true`, the generated apiDefinitions.ts file will use `import` statement to import types instead of ///<reference types="..." />
+   * @default false
+   */
+  useImportType?: boolean
+}
+
 export interface GeneratorConfig {
   /**
    * Openapi file path, it supports json and yaml file, and network url
@@ -94,17 +167,45 @@ export interface GeneratorConfig {
   output?: string
 
   /**
-   * Specify the media type of the generated response data. After specifying, use this data type to generate the response ts format of the 2xx status code.
-   * @defualt 'application/json'
+   * Whether to generate documentation comments, default is true.
+   * Set to false to improve generation performance.
+   * @default true
    */
+  docComment?: boolean
 
-  responseMediaType?: string
+  /**
+   * Specify the media type of the generated response data. After specifying, use this data type to generate the response ts format of the 2xx status code.
+   * Can be a string or an array of strings for fallback media types.
+   * @default 'application/json'
+   */
+  responseMediaType?: string | string[]
 
   /**
    * Specify the media type of the generated request body data. After specifying, use this data type to generate the ts format of the request body.
+   * Can be a string or an array of strings for fallback media types.
    * @default 'application/json'
    */
-  bodyMediaType?: string
+  bodyMediaType?: string | string[]
+
+  /**
+   * Custom server name for displaying in the sidebar when multiple API docs are configured.
+   * Default names are server1, server2, server3...
+   */
+  serverName?: string
+
+  /**
+   * Template settings, specify which template to use for code generation.
+   * Accepts a sync or async function that returns a TemplateConfigResult object containing path and config.
+   * This field is required.
+   *
+   * Predefined templates:
+   * 1. functional: Function-style template, generates function-style API calls, supports tree-shaking, only supports alova v3
+   * 2. globals: Global template, the existing global template
+   * 3. axios: Axios related template
+   * 4. fetch: Fetch related template
+   * 5. ky: Ky related template
+   */
+  template: TemplateConfig
 
   /**
    * The type of generated code. The optional value is `auto/ts/typescript/module/commonjs`.
@@ -123,28 +224,6 @@ export interface GeneratorConfig {
    * Specify alova version, 2 or 3, if not specified, it will be automatically determined through the alova version in `package.json`
    */
   version?: number | string
-
-  /**
-   * Globally exported api name, you can access the automatically generated api globally through this name.
-   * it is required when multiple generators are configured, and it cannot be repeated
-   *
-   * @default 'Apis'
-   */
-  global?: string
-
-  /**
-   * The host object of global mounting, default is `globalThis`, it means `window` in browser and `global` in nodejs
-   *
-   * @default 'globalThis'
-   */
-  globalHost?: string
-
-  /**
-   * Whether to use `import` statement to import the type. When this option is set to `true`, the generated apiDefinitions.ts file will use `import` statement to import types instead of ///<reference types="..." />
-   *
-   * @default false
-   */
-  useImportType?: boolean
 
   /**
    * When there is no require, it defaults to require, and only nullable takes effect.
@@ -187,13 +266,6 @@ export interface GeneratorConfig {
    * ```
    */
   handleApi?: HandleApi
-
-  /**
-   * Control the format of output file names. Supports presets or a custom function.
-   * Only affects the output file name, and does not affect template filename resolution.
-   * Presets: 'camelCase' | 'pascalCase' | 'kebabCase' | 'snakeCase'
-   */
-  fileNameCase?: 'camelCase' | 'pascalCase' | 'kebabCase' | 'snakeCase' | ((name: string) => string)
 }
 export interface Config {
   /**
@@ -211,9 +283,9 @@ export interface Config {
   autoUpdate?:
     | boolean
     | {
-      /**
-       * Updated when the editor is opened
-       */
+    /**
+     * Updated when the editor is opened
+     */
       launchEditor?: boolean
       /**
        * Automatic update interval in milliseconds

@@ -3,11 +3,11 @@ import type { FrameworkName } from '@/type'
 import path from 'node:path'
 import importFresh from 'import-fresh'
 
-export const frameworkNames: FrameworkName[] = ['vue', 'react']
+export const frameworkNames: FrameworkName[] = ['vue', 'react', 'svelte', 'solid-js', 'nuxt']
 export default function (projectPath: string) {
   const packageJson: PackageJson = importFresh(path.resolve(projectPath, './package.json'))
   if (!packageJson) {
-    return 'defaultKey'
+    return ''
   }
   // Framework technology stack tag vue | react
   // Find in dependencies
@@ -15,5 +15,5 @@ export default function (projectPath: string) {
   // Find in dev dependencies
   // Priority: Production dependencies > Development dependencies
   const devFrameTag = frameworkNames.find(framework => packageJson.devDependencies?.[framework])
-  return frameTag ?? devFrameTag ?? 'defaultKey'
+  return frameTag ?? devFrameTag ?? ''
 }

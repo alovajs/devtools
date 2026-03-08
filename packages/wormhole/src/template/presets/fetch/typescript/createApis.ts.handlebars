@@ -1,0 +1,47 @@
+{{{commentText}}}
+import type { AxiosInstance, AxiosRequestConfig } from 'axios';
+import axios from 'axios';
+
+/**
+ * 创建API方法
+ */
+export function createApis(axiosInstance: AxiosInstance, userConfigMap: Record<string, any> = {}) {
+  const apis: Record<string, Record<string, Function>> = {};
+
+  {{#each tagedApis}}
+  apis['{{{tag}}}'] = {
+    {{#apis}}
+    /**
+     * {{summary}}
+     * @method {{method}}
+     * @path {{{path}}}
+     */
+    {{{name}}}: (config: AxiosRequestConfig = {}) => {
+      {{#if pathParameters}}
+      const pathParams = config.pathParams || {};
+      const resolvedPath = '{{{path}}}'.replace(/\{(\w+)\}/g, (_, key) => pathParams[key]);
+      {{else}}
+      const resolvedPath = '{{{path}}}';
+      {{/if}}
+      return axiosInstance({
+        method: '{{method}}',
+        url: resolvedPath,
+        ...config,
+      });
+    },
+    {{/apis}}
+  };
+  {{/each}}
+
+  return apis;
+}
+
+/**
+ * 创建Axios实例
+ */
+export function createAxiosInstance(baseURL: string, config: AxiosRequestConfig = {}) {
+  return axios.create({
+    baseURL,
+    ...config,
+  });
+}

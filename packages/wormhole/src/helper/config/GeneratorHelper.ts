@@ -1,29 +1,27 @@
-import type { OutputFileOptions } from '@/helper'
-import type { AlovaVersion, GeneratorConfig, TemplateType } from '@/type'
+import type { GeneratorConfig, TemplateConfig, TemplateConfigResult, TemplateData, TemplateType } from '@/type'
 import path from 'node:path'
 import { isEqual } from 'lodash'
 import { fromError } from 'zod-validation-error'
 import { openApiParser, TemplateParser } from '@/core/parser'
-import getAlovaVersion from '@/functions/getAlovaVersion'
 import getAutoTemplateType from '@/functions/getAutoTemplateType'
 import { logger, PluginDriver, TemplateHelper } from '@/helper'
-import { existsPromise, generateFile, toCase as transformFileName } from '@/utils'
-import { zGeneratorConfig } from './zType'
+import { zGeneratorConfig, zTemplateResult } from './zType'
 
 export class GeneratorHelper {
   private static instance: GeneratorHelper
   private config: GeneratorConfig
   private readConfig: Readonly<GeneratorConfig>
   private pluginDriver: PluginDriver
-  private readonly defaultConfig: GeneratorConfig = Object.freeze({
+
+  /**
+   * Default configuration values
+   */
+  private readonly defaultConfig: Partial<GeneratorConfig> = Object.freeze({
     input: '',
     output: '',
     responseMediaType: 'application/json',
     bodyMediaType: 'application/json',
     type: 'auto',
-    global: 'Apis',
-    globalHost: 'globalThis',
-    useImportType: false,
     defaultRequire: false,
   })
 
@@ -43,27 +41,32 @@ export class GeneratorHelper {
     return this.readConfig
   }
 
-  public getDefaultConfig() {
+  public getDefaultConfig(): Partial<GeneratorConfig> {
     return this.defaultConfig
   }
 
+  /**
+   * Load and validate configuration
+   * @param config - Partial generator configuration
+   * @returns GeneratorHelper instance
+   */
   public async load(config: Partial<GeneratorConfig>) {
-    // 合并配置
+    // Merge with default config
     const mergedConfig = { ...this.defaultConfig, ...config }
-    // 验证配置
+    // Validate configuration
     const validatedConfig = await GeneratorHelper.validateConfig(mergedConfig)
-    // 更新配置
+    // Update config
     this.config = validatedConfig
     this.readConfig = Object.freeze(this.config)
     this.pluginDriver = new PluginDriver(this.config.plugins)
-    logger.debug('GeneratorConfig loaded successfully', this.config)
     return this
   }
 
-  public getAlovaVersion(projectPath: string) {
-    return GeneratorHelper.getAlovaVersion(this.config, projectPath)
-  }
-
+  /**
+   * Get template type based on config
+   * @param projectPath - Project path
+   * @returns Template type
+   */
   public getTemplateType(projectPath: string) {
     return GeneratorHelper.getTemplateType(this.config, projectPath)
   }
@@ -76,6 +79,11 @@ export class GeneratorHelper {
     return GeneratorHelper.openApiData(this.config, projectPath)
   }
 
+  /**
+   * Validate configuration using zod schema
+   * @param config - Configuration to validate
+   * @returns Validated configuration
+   */
   static async validateConfig(config: unknown): Promise<GeneratorConfig> {
     let result = config as GeneratorConfig
     try {
@@ -88,15 +96,15 @@ export class GeneratorHelper {
     return result
   }
 
-  static getAlovaVersion(config: GeneratorConfig, projectPath: string): AlovaVersion {
-    const configVersion = Number(config.version)
-    return Number.isNaN(configVersion) ? getAlovaVersion(projectPath) : `v${configVersion}`
-  }
-
+  /**
+   * Determine template type based on config type value
+   * @param config - Generator configuration
+   * @param projectPath - Project path for auto detection
+   * @returns Template type
+   */
   static getTemplateType(config: GeneratorConfig, projectPath: string): TemplateType {
     let type: TemplateType
     const configType = config.type ?? 'auto'
-    // Determine the template type based on the type in the configuration file
 
     switch (configType) {
       case 'ts':
@@ -116,12 +124,22 @@ export class GeneratorHelper {
     return type
   }
 
+  /**
+   * Parse OpenAPI document from config input
+   * @param config - Generator configuration
+   * @param projectPath - Project path
+   * @returns OpenAPI document
+   */
   static openApiData(config: GeneratorConfig, projectPath: string) {
     return openApiParser.parse(config.input!, {
       projectPath,
       platformType: config.platform,
       fetchOptions: config.fetchOptions,
     })
+  }
+
+  static async getTemplateConfig(templateCofig: TemplateConfig): Promise<Required<TemplateConfigResult>> {
+    return zTemplateResult.parse(await templateCofig())
   }
 
   static async generate(
@@ -133,129 +151,104 @@ export class GeneratorHelper {
   ) {
     const pluginDriver = new PluginDriver(config.plugins)
 
-    // plugin: handle before parse openapi
-    await pluginDriver.hookParallel(
-      'beforeOpenapiParse',
-      [Object.freeze(config)],
-    )
+    logger.debug('Starting generation process', {
+      projectPath: options.projectPath,
+      force: options.force,
+    })
+
+    // Plugin: handle before parse openapi
+    await pluginDriver.hookParallel('beforeOpenapiParse', [Object.freeze(config)])
 
     let document = await this.openApiData(config, options.projectPath)
     if (!document) {
+      logger.debug('No OpenAPI document found, skipping generation')
       return false
     }
 
-    // plugin: handle after parse openapi
-    document = await pluginDriver.hookSeq('afterOpenapiParse', [document], (result, args) => {
-      return result ? [result] : args
-    }) ?? document
+    logger.debug('OpenAPI document parsed successfully')
+
+    // Plugin: handle after parse openapi
+    document
+      = (await pluginDriver.hookSeq('afterOpenapiParse', [document], (result, args) => {
+        return result ? [result] : args
+      })) ?? document
 
     const output = path.resolve(options.projectPath, config.output!)
-    const version = GeneratorHelper.getAlovaVersion(config, options.projectPath)
-    const templateHelper = TemplateHelper.load({
-      type: this.getTemplateType(config, options.projectPath),
-      version,
+    const templateType = this.getTemplateType(config, options.projectPath)
+    const templateConfig = await this.getTemplateConfig(config.template)
+
+    logger.debug('Template configuration loaded', {
+      path: templateConfig.path,
+      type: templateType,
     })
+
+    const templateHelper = TemplateHelper.load({
+      type: templateType,
+      templatePath: templateConfig.path,
+      templateConfig: templateConfig.config,
+    })
+
+    // Parse document and create template data
     const templateData = await new TemplateParser().parse(document, {
       projectPath: options.projectPath,
       generatorConfig: config,
     })
-    const oldTemplateData = TemplateHelper.getData(options.projectPath, config.output!)
-    // Transform output filename by config.fileNameCase without changing template filename
-    const toCase = (name: string) => transformFileName(name, config.fileNameCase)
-    // Inject computed filenames into template render data for templates to reference
-    Object.assign(templateData, {
-      createApisFileName: toCase('createApis'),
-      apiDefinitionsFileName: toCase('apiDefinitions'),
-      globalsDFileName: toCase('globals.d'),
-      indexFileName: toCase('index'),
+
+    logger.debug('Template data parsed', {
+      apisCount: templateData.apis?.length ?? 0,
+      tagsCount: templateData.tagedApis?.length ?? 0,
     })
 
-    // Do you need to generate api files?
-    if (!options.force && isEqual(templateData, oldTemplateData)) {
+    const oldCacheData = TemplateHelper.getData(options.projectPath, config.output!)
+
+    // Check if generation is needed by comparing apis
+    const newApis = templateData.tagedApis || []
+    const oldApis = oldCacheData?.apis || []
+    if (!options.force && isEqual(newApis, oldApis)) {
+      logger.debug('Template data unchanged, skipping generation')
       return false
     }
 
-    if (oldTemplateData) {
-      await templateHelper.unlink([
-        // Delete old API creation file
-        oldTemplateData.createApisFileName ?? '',
-        // Delete old API definition file
-        oldTemplateData.apiDefinitionsFileName ?? '',
-        // Delete old global type declaration file (.d.ts)
-        {
-          fileName: oldTemplateData.globalsDFileName ?? '',
-          ext: '.ts',
-        },
-      ], { output })
-    }
-
-    await TemplateHelper.setData(templateData, options.projectPath, config.output!)
-
-    const generateFiles: OutputFileOptions[] = [
-      {
-        fileName: 'createApis',
-        outFileName: templateData.createApisFileName,
-        data: templateData,
-        output,
-        root: true,
-        hasVersion: false,
-      },
-      {
-        fileName: 'apiDefinitions',
-        outFileName: templateData.apiDefinitionsFileName,
-        data: templateData,
-        output,
-        root: true,
-        hasVersion: false,
-      },
-      {
-        fileName: 'globals.d',
-        outFileName: templateData.globalsDFileName,
-        data: templateData,
-        output,
-        ext: '.ts',
-        root: true,
-        hasVersion: false,
-      },
-    ]
-    if (!(await existsPromise(path.join(output, `${templateData.indexFileName}${templateHelper.getExt()}`)))) {
-      generateFiles.push({
-        fileName: 'index',
-        outFileName: templateData.indexFileName,
-        data: templateData,
-        output,
-        root: true,
-        hasVersion: false,
-      })
-    }
-    // plugin: handle before code generate
     let codeGenError: Error | undefined
     try {
-      const unhandledGenerateFiles: OutputFileOptions[] = []
-      for (const file of generateFiles) {
-        const fileName = `${file.outFileName ?? file.fileName}${file.ext ?? templateHelper.getExt()}`
-        const data = await pluginDriver.hookFirst('beforeCodeGenerate', [
-          file.data,
-          fileName,
-          {
-            renderTemplate: () => templateHelper.readAndRenderTemplate(file.fileName, file.data, file),
-            fileName: file.fileName,
-          },
-        ])
-        if (!data) {
-          unhandledGenerateFiles.push(file)
-          continue
-        }
-        await generateFile(file.output, fileName, data)
-      }
-      await templateHelper.outputFiles(unhandledGenerateFiles)
+      await this.generateWithTemplate({
+        config,
+        templateHelper,
+        templateData,
+        output,
+        projectPath: options.projectPath,
+      })
     }
     catch (error) {
       codeGenError = error as Error
     }
-    // plugin: handle after code gen
+
+    // Plugin: handle after code generate
     await pluginDriver.hookParallel('afterCodeGenerate', [codeGenError])
     return true
+  }
+
+  private static async generateWithTemplate(params: {
+    config: GeneratorConfig
+    templateHelper: TemplateHelper
+    templateData: TemplateData
+    output: string
+    projectPath: string
+  }) {
+    const { config, templateHelper, templateData, output, projectPath } = params
+    const templateConfig = await this.getTemplateConfig(config.template)
+
+    logger.debug('Resolving template files', { templatePath: templateConfig.path })
+
+    // Save template data and cache data
+    await TemplateHelper.setData(templateData, projectPath, config.output!, config)
+
+    logger.debug('Processing templates')
+
+    // Use the unified generateFromTemplateDir method
+    await templateHelper.generateFromTemplateDir(templateConfig.path, output, templateData)
+
+    logger.debug('Template generation completed')
   }
 }
 

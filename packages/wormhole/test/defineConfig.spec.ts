@@ -8,6 +8,7 @@ describe('defineConfig', () => {
       generator: [{
         input: './openapi.json',
         output: './src/api',
+        template: () => ({ path: 'template', config: {} }),
       }],
     }
     expect(defineConfig(config)).toBe(config)
@@ -18,6 +19,7 @@ describe('defineConfig', () => {
       generator: [{
         input: './openapi.json',
         output: './src/api',
+        template: () => ({ path: 'template', config: {} }),
       }],
     })
     expect(defineConfig(configFn)).toBe(configFn)
@@ -28,15 +30,14 @@ describe('defineConfig', () => {
       generator: [{
         input: './openapi.json',
         output: './src/api',
+        template: () => ({ path: 'template', config: {} }),
       }],
     })
     expect(defineConfig(configPromise)).toBe(configPromise)
-    await expect(configPromise).resolves.toEqual({
-      generator: [{
-        input: './openapi.json',
-        output: './src/api',
-      }],
-    })
+    const result = await configPromise
+    expect(result.generator[0].input).toBe('./openapi.json')
+    expect(result.generator[0].output).toBe('./src/api')
+    expect(typeof result.generator[0].template).toBe('function')
   })
 })
 
@@ -58,6 +59,7 @@ describe('configHelper.readUserConfig', () => {
       generator: [{
         input: './openapi.json',
         output: './src/api',
+        template: () => ({ path: 'template', config: {} }),
       }],
     }
     const result = await configHelper.readUserConfig(config)
@@ -69,15 +71,13 @@ describe('configHelper.readUserConfig', () => {
       generator: [{
         input: './openapi.json',
         output: './src/api',
+        template: () => ({ path: 'template', config: {} }),
       }],
     })
     const result = await configHelper.readUserConfig(configFn)
-    expect(result).toEqual({
-      generator: [{
-        input: './openapi.json',
-        output: './src/api',
-      }],
-    })
+    expect(result.generator[0].input).toBe('./openapi.json')
+    expect(result.generator[0].output).toBe('./src/api')
+    expect(typeof result.generator[0].template).toBe('function')
   })
 
   it('should return the config object when passed a promise', async () => {
@@ -85,15 +85,13 @@ describe('configHelper.readUserConfig', () => {
       generator: [{
         input: './openapi.json',
         output: './src/api',
+        template: () => ({ path: 'template', config: {} }),
       }],
     })
     const result = await configHelper.readUserConfig(configPromise)
-    expect(result).toEqual({
-      generator: [{
-        input: './openapi.json',
-        output: './src/api',
-      }],
-    })
+    expect(result.generator[0].input).toBe('./openapi.json')
+    expect(result.generator[0].output).toBe('./src/api')
+    expect(typeof result.generator[0].template).toBe('function')
   })
 
   it('should handle async functions correctly', async () => {
@@ -101,14 +99,12 @@ describe('configHelper.readUserConfig', () => {
       generator: [{
         input: './openapi.json',
         output: './src/api',
+        template: () => ({ path: 'template', config: {} }),
       }],
     })
     const result = await configHelper.readUserConfig(asyncConfigFn)
-    expect(result).toEqual({
-      generator: [{
-        input: './openapi.json',
-        output: './src/api',
-      }],
-    })
+    expect(result.generator[0].input).toBe('./openapi.json')
+    expect(result.generator[0].output).toBe('./src/api')
+    expect(typeof result.generator[0].template).toBe('function')
   })
 })

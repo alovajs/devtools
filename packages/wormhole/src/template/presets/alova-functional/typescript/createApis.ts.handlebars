@@ -1,0 +1,61 @@
+{{{commentText}}}
+import type { Alova, Method, AlovaMethodCreateConfig, AlovaGenerics } from 'alova';
+import { Method as MethodClass } from 'alova';
+
+/**
+ * 创建单个API方法
+ */
+export function createApiMethod(
+  alovaInstance: Alova<any, any, any, any, any>,
+  method: string,
+  path: string,
+  config: any = {}
+) {
+  {{#if pathParameters}}
+  const pathParams = config.pathParams || {};
+  const resolvedPath = path.replace(/\{(\w+)\}/g, (_, key) => pathParams[key]);
+  {{else}}
+  const resolvedPath = path;
+  {{/if}}
+
+  return new MethodClass(
+    method,
+    alovaInstance,
+    resolvedPath,
+    config
+  );
+}
+
+/**
+ * 创建API方法集合
+ */
+export function createApis(
+  alovaInstance: Alova<any, any, any, any, any>,
+  userConfigMap: Record<string, any> = {}
+): Record<string, any> {
+  const apis: Record<string, any> = {};
+
+  {{#each tagedApis}}
+  apis['{{{tag}}}'] = {
+    {{#apis}}
+    /**
+     * {{summary}}
+     * @method {{method}}
+     * @path {{{path}}}
+     */
+    {{{name}}}: (config: any = {}) => {
+      return createApiMethod(alovaInstance, '{{method}}', '{{{path}}}', config);
+    },
+    {{/apis}}
+  };
+  {{/each}}
+
+  return apis;
+}
+
+/**
+ * 带配置类型的包装函数
+ */
+export function withConfigType<T extends Record<string, any>>(config: T): T {
+  return config;
+}

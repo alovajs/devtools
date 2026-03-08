@@ -38,7 +38,8 @@ export class ConfigHelper {
 
   public getTemplateType(idx?: number | number[]) {
     const { generator } = this.configManager.getConfig()
-    const templateType = (config: GeneratorConfig) => GeneratorHelper.getTemplateType(config, this.projectPath)
+    const templateType = (config: GeneratorConfig) =>
+      GeneratorHelper.getTemplateType(config, this.projectPath)
     if (isArray(idx)) {
       return generator.filter((_, index) => idx.includes(index)).map(item => templateType(item))
     }
@@ -54,7 +55,9 @@ export class ConfigHelper {
 
   public getOpenApiData() {
     return Promise.all(
-      this.configManager.getConfig().generator.map(item => GeneratorHelper.openApiData(item, this.projectPath)),
+      this.configManager
+        .getConfig()
+        .generator.map(item => GeneratorHelper.openApiData(item, this.projectPath)),
     )
   }
 

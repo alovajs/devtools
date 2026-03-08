@@ -1,4 +1,4 @@
-import type { AlovaVersion, ModuleType, TemplateType } from './base'
+import type { TemplateType } from './base'
 import type { OpenAPIDocument, OperationObject, Parameter, SchemaObject } from './openapi'
 
 export enum HttpMethod {
@@ -23,7 +23,6 @@ export interface Api {
   responseComment?: string
   requestComment?: string
   name: string
-  global: string
   responseName: string
   requestName?: string
   defaultValue?: string
@@ -51,26 +50,34 @@ export interface ApiPath {
   method: string
   path: string
 }
-export interface TemplateData extends Omit<OpenAPIDocument, ''> {
-  // Define template data types
-  // ...
-
-  vue?: boolean
-  react?: boolean
-  moduleType?: ModuleType
+export interface TemplateData {
+  title: OpenAPIDocument['info']['title']
+  openapi: OpenAPIDocument['openapi']
+  version: OpenAPIDocument['info']['version']
+  description: OpenAPIDocument['info']['description']
+  contact: OpenAPIDocument['info']['contact']
+  /** Framework tag: vue | react | svelte | solid-js | nuxt */
+  framework?: string
   defaultKey?: boolean
   baseUrl: string
-  pathsArr: ApiPath[]
-  schemas?: string[]
-  pathApis: ApiDoc[]
-  globalHost: string
-  global: string
-  alovaVersion: AlovaVersion
-  commentText: string
-  useImportType: boolean
+  /** Schema/Component definitions */
+  components: string[]
+  /** All apis array */
+  apis: Api[]
+  /** Apis grouped by tag */
+  tagedApis: ApiDoc[]
   type: TemplateType
-  createApisFileName?: string
-  apiDefinitionsFileName?: string
-  globalsDFileName?: string
-  indexFileName?: string
+  /** Config passed from template configuration */
+  config: Record<string, any>
+}
+
+/**
+ * Standardized cache data for VSCode extension
+ * Used for rendering sidebar API tree and quick search
+ */
+export interface CacheData {
+  /** Server name displayed in sidebar */
+  serverName: string
+  /** APIs grouped by tag */
+  apis: ApiDoc[]
 }

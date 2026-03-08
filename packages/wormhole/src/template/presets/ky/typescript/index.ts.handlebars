@@ -1,0 +1,8 @@
+{{{commentText}}}
+import { createApis, createAxiosInstance } from './{{createApisFileName}}';
+
+export const axiosInstance = createAxiosInstance('{{{baseUrl}}}');
+
+export const Apis = createApis(axiosInstance);
+
+export default Apis;

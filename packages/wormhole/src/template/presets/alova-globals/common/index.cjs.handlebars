@@ -1,0 +1,41 @@
+{{> comment}}
+const { createAlova } = require('alova');
+const { fetchAdapter } = require('alova/fetch');
+{{#if (eq framework "vue")}}
+const vueHook = require('alova/vue');
+{{else if (eq framework "react")}}
+const reactHook = require('alova/react');
+{{else if (eq framework "svelte")}}
+const svelteHook = require('alova/svelte');
+{{else if (eq framework "solid")}}
+const solidHook = require('alova/solid');
+{{/if}}
+const { createApis, mountApis } = require('./createApis');
+
+const alovaInstance = createAlova({
+  baseURL: "{{{baseUrl}}}",
+{{#if (eq framework "vue")}}
+  statesHook: vueHook,
+{{else if (eq framework "react")}}
+  statesHook: reactHook,
+{{else if (eq framework "svelte")}}
+  statesHook: svelteHook,
+{{else if (eq framework "solid")}}
+  statesHook: solidHook,
+{{/if}}
+  requestAdapter: fetchAdapter(),
+  beforeRequest: method => { },
+  responded: res => {
+    return res.json();
+  }
+});
+
+const $$userConfigMap = {};
+
+const Apis = createApis(alovaInstance, $$userConfigMap);
+
+mountApis(Apis);
+
+exports.alovaInstance = alovaInstance;
+exports.$$userConfigMap = $$userConfigMap;
+exports.Apis = Apis;

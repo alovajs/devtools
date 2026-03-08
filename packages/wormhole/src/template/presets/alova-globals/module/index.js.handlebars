@@ -1,0 +1,39 @@
+{{> comment}}
+import { createAlova } from 'alova';
+import { fetchAdapter } from 'alova/fetch';
+{{#if (eq framework "vue")}}
+import vueHook from 'alova/vue';
+{{else if (eq framework "react")}}
+import reactHook from 'alova/react';
+{{else if (eq framework "svelte")}}
+import svelteHook from 'alova/svelte';
+{{else if (eq framework "solid")}}
+import solidHook from 'alova/solid';
+{{/if}}
+import { createApis, mountApis } from './createApis';
+
+export const alovaInstance = createAlova({
+  baseURL: "{{{baseUrl}}}",
+{{#if (eq framework "vue")}}
+  statesHook: vueHook,
+{{else if (eq framework "react")}}
+  statesHook: reactHook,
+{{else if (eq framework "svelte")}}
+  statesHook: svelteHook,
+{{else if (eq framework "solid")}}
+  statesHook: solidHook,
+{{/if}}
+  requestAdapter: fetchAdapter(),
+  beforeRequest: method => { },
+  responded: res => {
+    return res.json();
+  }
+});
+
+export const $$userConfigMap = {};
+
+const Apis = createApis(alovaInstance, $$userConfigMap);
+
+mountApis(Apis);
+
+export { Apis };

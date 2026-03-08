@@ -1,5 +1,4 @@
-import type { Config, GeneratorConfig } from './type'
-import { isArray, isObject, mergeWith, omit } from 'lodash'
+import type { Config } from './type'
 import { fromError } from 'zod-validation-error'
 import prepareConfig from '@/functions/prepareConfig'
 import { logger } from '@/helper'
@@ -16,8 +15,7 @@ export class ConfigManager {
     autoUpdate: true,
   })
 
-  private readonly defaultGeneratorConfig: GeneratorConfig = omit(generatorHelper.getDefaultConfig(), ['global'])
-  private readonly defaultOneGeneratorConfig: GeneratorConfig = generatorHelper.getDefaultConfig()
+  private readonly defaultGeneratorConfig = generatorHelper.getDefaultConfig()
   private constructor() {
     this.config = this.defaultConfig
   }
@@ -37,6 +35,7 @@ export class ConfigManager {
     const userConfig = await this.handleConfig(config)
     // 验证配置
     const validatedConfig = this.validateConfig(userConfig)
+
     // 更新配置
     this.config = validatedConfig
     this.readConfig = Object.freeze(this.config)
@@ -62,7 +61,7 @@ export class ConfigManager {
     const userConfig = this.mergeConfig(this.defaultConfig, config)
     // 处理插件的config配置
     userConfig.generator = await Promise.all(userConfig.generator.map(item => prepareConfig(item)))
-    return this.mergeConfig(this.defaultConfig, userConfig)
+    return userConfig
   }
   /**
    * 验证配置
@@ -81,30 +80,16 @@ export class ConfigManager {
   }
 
   /**
-   * 深度合并配置
+   * 合并配置（浅拷贝）
    */
   private mergeConfig<T extends Config>(defaultConfig: T, userConfig: Partial<T>): T {
-    const merged = { ...defaultConfig } as T
-    const mergeHandle
-      = (root = '') =>
-        (defaultValue: unknown, userValue: unknown, key: string) => {
-          if (!root && key === 'generator' && isArray(userValue)) {
-            return userValue.map((generatorConfig: GeneratorConfig, idx) =>
-              mergeWith(
-                { ...(userValue.length > 1 ? this.defaultGeneratorConfig : this.defaultOneGeneratorConfig) },
-                generatorConfig,
-                mergeHandle(root ? `${root}.${key}.${idx}` : `${key}.${idx}`),
-              ),
-            )
-          }
-          if (Array.isArray(userValue)) {
-            return userValue // 源数组优先级最高
-          }
-          if (isObject(defaultValue) && isObject(userValue)) {
-            return mergeWith(defaultValue, userValue, mergeHandle(root ? `${root}.${key}` : key))
-          }
-        }
-    const result = mergeWith(merged, userConfig, mergeHandle())
+    const result = { ...defaultConfig, ...userConfig } as T
+    if (userConfig.generator) {
+      result.generator = userConfig.generator.map(config => ({
+        ...this.defaultGeneratorConfig,
+        ...config,
+      }))
+    }
     return result
   }
 }

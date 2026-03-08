@@ -14,7 +14,7 @@
     "url": "https://github.com/alovajs/devtools/issues"
   },
   "engines": {
-    "node": ">=18.19.0",
+    "node": ">=20.19.0",
     "pnpm": ">=9.1.0"
   },
   "scripts": {

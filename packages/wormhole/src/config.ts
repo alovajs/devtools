@@ -8,7 +8,6 @@ declare global {
 
 const DEFAULT_CONFIG = {
   alovaTempPath: path.join('node_modules/.alova'),
-  templatePath: path.join(__dirname, './templates'),
   templateData: new Map<string, TemplateData>(),
   Error,
 }

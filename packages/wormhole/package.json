@@ -34,6 +34,10 @@
     "./plugin": {
       "types": "./typings/plugins.d.ts",
       "default": "./dist/plugins/index.js"
+    },
+    "./template": {
+      "types": "./typings/template.d.ts",
+      "default": "./dist/template/index.js"
     }
   },
   "main": "./dist/index.js",
@@ -51,6 +55,7 @@
     "build:ts": "tsc --build tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "build:dts": "dts-bundle-generator -o typings/index.d.ts src/index.ts --no-check --no-banner --project tsconfig.build.json",
     "build:plugin-dts": "dts-bundle-generator -o typings/plugins.d.ts src/plugins/index.ts --no-check --no-banner --project tsconfig.build.json",
+    "build:template-dts": "dts-bundle-generator -o typings/template.d.ts src/template/index.ts --no-check --no-banner --project tsconfig.build.json",
     "build:copy": "ncp ./src/templates ./dist/templates"
   },
   "publishConfig": {

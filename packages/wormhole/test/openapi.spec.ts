@@ -2,124 +2,12 @@ import type { Config, SchemaObject } from '@/type'
 import fs from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { createConfig, generate } from '@/index'
-import { createStrReg } from './util'
+import { alovaGlobals } from '@/template'
+import { createStrReg, getSalt } from './util'
 
 vi.mock('node:fs')
 vi.mock('node:fs/promises')
-const getSalt = () => `_${Math.random().toString(36).slice(2)}`
-describe('generate API', () => {
-  it('should throw error when necessary items are not specified', async () => {
-    await expect(generate({} as any)).rejects.toThrow('No items found in the `config.generator`')
-    await expect(
-      generate({
-        generator: [{} as any],
-      }),
-    ).rejects.toThrow('Field input is required in `config.generator`')
-    await expect(
-      generate({
-        generator: [
-          {
-            input: 'http://localhost:3000/openapi.json',
-          },
-        ],
-      } as any),
-    ).rejects.toThrow('Field output is required in `config.generator`')
-    await expect(
-      generate({
-        generator: [
-          {
-            input: 'http://localhost:3000/openapi.json',
-            output: './src/api',
-            global: '1243sadf',
-          },
-        ],
-      }),
-    ).rejects.toThrow('does not match variable specification')
-    await expect(
-      generate({
-        generator: [
-          {
-            input: 'http://localhost:3000/openapi.json',
-            output: './src/api',
-            global: 'asdf&*^^&%',
-          },
-        ],
-      }),
-    ).rejects.toThrow('does not match variable specification')
-    await expect(
-      generate({
-        generator: [
-          {
-            input: 'http://localhost:3000/openapi.json',
-            output: './src/api',
-            global: 'asdf__$$123',
-          },
-          {
-            input: 'http://localhost:3000/openapi2.json',
-            output: './src/api',
-          },
-        ],
-      }),
-    ).rejects.toThrow('output `./src/api` is repated')
-    await expect(
-      generate({
-        generator: [
-          {
-            input: 'http://localhost:3000/openapi.json',
-            output: './src/api',
-            global: 'asdf__$$123',
-          },
-          {
-            input: 'http://localhost:3000/openapi2.json',
-            output: './src/api2',
-          },
-        ],
-      }),
-    ).rejects.toThrow('Field global is required in `config.generator`')
-    await expect(
-      generate({
-        generator: [
-          {
-            input: 'http://localhost:3000/openapi.json',
-            output: './src/api',
-            global: 'asdf__$$123',
-          },
-          {
-            input: 'http://localhost:3000/openapi2.json',
-            output: './src/api2',
-            global: 'asdf__$$123',
-          },
-        ],
-      }),
-    ).rejects.toThrow('global `asdf__$$123` is repated')
-    await expect(
-      generate({
-        generator: [
-          {
-            input: 'http://localhost:3000/openapi.json',
-            output: './src/api',
-          },
-        ],
-        autoUpdate: {
-          interval: 'abc' as any,
-        },
-      }),
-    ).rejects.toThrow('autoUpdate.interval must be a number')
-    await expect(
-      generate({
-        generator: [
-          {
-            input: 'http://localhost:3000/openapi.json',
-            output: './src/api',
-          },
-        ],
-        autoUpdate: {
-          interval: -1,
-        },
-      }),
-    ).rejects.toThrow('Expected to set number which great than 1 in `config.autoUpdate.interval`')
-  })
-
+describe('generate with OpenAPI file', () => {
   it('should throw error when generating from a file that does not exists', async () => {
     await expect(
       generate({
@@ -127,6 +15,7 @@ describe('generate API', () => {
           {
             input: 'http://localhost:3000/openapi.json',
             output: './src/api',
+            template: alovaGlobals(),
           },
         ],
       }),
@@ -143,6 +32,7 @@ describe('generate API', () => {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir,
           type: 'ts',
+          template: alovaGlobals(),
         },
       ],
     })
@@ -159,6 +49,7 @@ describe('generate API', () => {
           input: resolve(__dirname, './openapis/swagger_2.json'),
           output: outputDir2,
           type: 'ts',
+          template: alovaGlobals(),
         },
       ],
     })
@@ -174,6 +65,7 @@ describe('generate API', () => {
           input: resolve(__dirname, './openapis/openapi_300.yaml'),
           output: outputDir3,
           type: 'ts',
+          template: alovaGlobals(),
         },
       ],
     })
@@ -191,6 +83,7 @@ describe('generate API', () => {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir,
           type: 'ts',
+          template: alovaGlobals(),
         },
       ],
     }
@@ -237,6 +130,7 @@ describe('generate API', () => {
           input: 'https://generator3.swagger.io/openapi.json',
           output: outputDir,
           type: 'ts',
+          template: alovaGlobals(),
         },
       ],
     })
@@ -253,6 +147,7 @@ describe('generate API', () => {
           platform: 'swagger',
           output: outputDir2,
           type: 'ts',
+          template: alovaGlobals(),
         },
       ],
     })
@@ -269,6 +164,7 @@ describe('generate API', () => {
           platform: 'swagger',
           output: outputDir3,
           type: 'ts',
+          template: alovaGlobals(),
         },
       ],
     })
@@ -287,6 +183,7 @@ describe('generate API', () => {
           output: outputDir,
           version: 2,
           type: 'ts',
+          template: alovaGlobals(),
         },
       ],
     })
@@ -303,6 +200,7 @@ describe('generate API', () => {
           output: outputDir2,
           version: 3,
           type: 'ts',
+          template: alovaGlobals(),
         },
       ],
     })
@@ -321,6 +219,7 @@ describe('generate API', () => {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir,
           type: 'ts',
+          template: alovaGlobals(),
         },
       ],
     })
@@ -345,6 +244,7 @@ describe('generate API', () => {
           bodyMediaType: 'application/json',
           responseMediaType: 'application/json',
           type: 'ts',
+          template: alovaGlobals(),
         },
       ],
     })
@@ -370,6 +270,7 @@ describe('generate API', () => {
           bodyMediaType: 'application/xml',
           responseMediaType: 'application/xml',
           type: 'ts',
+          template: alovaGlobals(),
         },
       ],
     })
@@ -395,6 +296,7 @@ describe('generate API', () => {
           bodyMediaType: 'application/xml',
           responseMediaType: 'application/xml',
           type: 'ts',
+          template: alovaGlobals(),
         },
       ],
     })
@@ -421,6 +323,7 @@ describe('generate API', () => {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir,
           type: 'ts',
+          template: alovaGlobals(),
         },
       ],
     })
@@ -443,6 +346,7 @@ describe('generate API', () => {
           {
             input: resolve(__dirname, './openapis/openapi_301.json'),
             output: outputDir2,
+            template: alovaGlobals(),
           },
         ],
       },
@@ -463,6 +367,7 @@ describe('generate API', () => {
           {
             input: resolve(__dirname, './openapis/openapi_301.json'),
             output: outputDir3,
+            template: alovaGlobals(),
           },
         ],
       },
@@ -493,6 +398,7 @@ describe('generate API', () => {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir,
           type: 'typescript',
+          template: alovaGlobals(),
         },
       ],
     })
@@ -505,6 +411,7 @@ describe('generate API', () => {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDirTs,
           type: 'ts',
+          template: alovaGlobals(),
         },
       ],
     })
@@ -518,6 +425,7 @@ describe('generate API', () => {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir2,
           type: 'module',
+          template: alovaGlobals(),
         },
       ],
     })
@@ -532,6 +440,7 @@ describe('generate API', () => {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir3,
           type: 'commonjs',
+          template: alovaGlobals(),
         },
       ],
     })
@@ -553,6 +462,7 @@ describe('generate API', () => {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir,
           type: 'ts',
+          template: alovaGlobals(),
         },
       ],
     })
@@ -566,7 +476,7 @@ describe('generate API', () => {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir2,
           type: 'module',
-          global: 'ApisEsm',
+          template: alovaGlobals({ global: 'ApisEsm' }),
         },
       ],
     })
@@ -581,13 +491,13 @@ describe('generate API', () => {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir3,
           type: 'commonjs',
-          global: 'ApisCjs',
+          template: alovaGlobals({ global: 'ApisCjs' }),
         },
         {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir4,
           type: 'module',
-          global: 'ApisEsm2',
+          template: alovaGlobals({ global: 'ApisEsm2' }),
         },
       ],
     })
@@ -606,7 +516,7 @@ describe('generate API', () => {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir,
           type: 'module',
-          globalHost: 'globalHost',
+          template: alovaGlobals({ globalHost: 'globalHost' }),
         },
       ],
     })
@@ -620,15 +530,13 @@ describe('generate API', () => {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir3,
           type: 'commonjs',
-          global: 'ApisCjs',
-          globalHost: 'parentCjs',
+          template: alovaGlobals({ global: 'ApisCjs', globalHost: 'parentCjs' }),
         },
         {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir4,
           type: 'ts',
-          global: 'ApisEsm',
-          globalHost: 'globalThis ? globalThis : parentTs',
+          template: alovaGlobals({ global: 'ApisEsm', globalHost: 'globalThis ? globalThis : parentTs' }),
         },
       ],
     })
@@ -647,6 +555,7 @@ describe('generate API', () => {
           input: resolve(__dirname, './openapis/non_variable_specification_openapi.yaml'),
           output: outputDir,
           type: 'ts',
+          template: alovaGlobals(),
         },
       ],
     })
@@ -665,6 +574,7 @@ describe('generate API', () => {
           input: resolve(__dirname, './openapis/tag_general_openapi.yaml'),
           output: outputDir,
           type: 'ts',
+          template: alovaGlobals(),
         },
       ],
     })
@@ -682,6 +592,7 @@ describe('generate API', () => {
           input: resolve(__dirname, './openapis/multiple_tag_openapi.yaml'),
           output: outputDir,
           type: 'ts',
+          template: alovaGlobals(),
         },
       ],
     })
@@ -701,6 +612,7 @@ describe('generate API', () => {
           input: resolve(__dirname, './openapis/endless_loop_openapi.yaml'),
           output: outputDir,
           type: 'ts',
+          template: alovaGlobals(),
           handleApi(apiDescriptor) {
             if (apiDescriptor.responses?.properties) {
               const testObject: SchemaObject = {
@@ -778,6 +690,7 @@ describe('generate API', () => {
           input: resolve(__dirname, './openapis/file_upload_openapi.yaml'),
           output: outputDir,
           type: 'ts',
+          template: alovaGlobals(),
         },
       ],
     })
@@ -792,6 +705,7 @@ describe('generate API', () => {
         {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir,
+          template: alovaGlobals(),
         },
       ],
     })
@@ -831,6 +745,7 @@ describe('generate API', () => {
         {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir,
+          template: alovaGlobals(),
           handleApi: (apiDescriptor) => {
             if (apiDescriptor.url === '/documentation') {
               apiDescriptor.responses = {
@@ -953,6 +868,7 @@ describe('generate API', () => {
         {
           input: resolve(__dirname, './openapis/openapi_300.yaml'),
           output: outputDir,
+          template: alovaGlobals(),
           handleApi: (apiDescriptor) => {
             if (apiDescriptor.url === '/pet') {
               if (apiDescriptor.method.toUpperCase() === 'POST' && apiDescriptor.responses?.properties) {
@@ -1023,6 +939,7 @@ describe('generate API', () => {
         {
           input: resolve(__dirname, './openapis/openapi_success_key.json'),
           output: outputDir,
+          template: alovaGlobals(),
         },
       ],
     })
@@ -1109,6 +1026,7 @@ describe('generate API', () => {
         {
           input: resolve(__dirname, './openapis/nullable_openapi.yaml'),
           output: outputDir,
+          template: alovaGlobals(),
         },
       ],
     })
@@ -1151,6 +1069,7 @@ describe('generate API', () => {
           output: outputDir,
           fileNameCase: 'kebabCase',
           type: 'ts',
+          template: alovaGlobals(),
         },
       ],
     })
@@ -1167,6 +1086,7 @@ describe('generate API', () => {
           output: outputDir,
           fileNameCase: 'pascalCase',
           type: 'ts',
+          template: alovaGlobals(),
         },
       ],
     })

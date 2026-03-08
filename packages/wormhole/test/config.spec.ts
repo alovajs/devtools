@@ -20,6 +20,20 @@ vi.mock('import-fresh', () => ({
   },
 }))
 
+// 比较配置，template 函数单独断言
+function expectConfigEqual(actual: Config, expected: Config) {
+  expect(actual.autoUpdate).toBe(expected.autoUpdate)
+  expect(actual.generator.length).toBe(expected.generator.length)
+  actual.generator.forEach((gen, idx) => {
+    const expectedGen = expected.generator[idx]
+    const { template: actualTemplate, ...actualRest } = gen
+    const { template: expectedTemplate, ...expectedRest } = expectedGen
+    expect(actualRest).toEqual(expectedRest)
+    expect(typeof actualTemplate).toBe('function')
+    expect(typeof expectedTemplate).toBe('function')
+  })
+}
+
 const configMap: Record<string, { file: string, content: string, expectedConfig: Config, transformContent?: string }>
   = {
     ts: {
@@ -32,7 +46,9 @@ export default <Config>{
       input: 'http://localhost:3000/' + pkg.name,
       output: 'src/api',
       type: 'ts',
-      version: 3
+      template: () => ({
+        path: '',
+      })
     }
   ]
 }`,
@@ -42,9 +58,17 @@ export default <Config>{
             input: 'http://localhost:3000/alova-devtools',
             output: 'src/api',
             type: 'ts',
-            version: 3,
+            bodyMediaType: 'application/json',
+            responseMediaType: 'application/json',
+            defaultRequire: false,
+            template() {
+              return {
+                path: '',
+              }
+            },
           },
         ],
+        autoUpdate: true,
       },
     },
     tsWithoutImport: {
@@ -56,7 +80,9 @@ export default <Config>{
       input: 'http://localhost:3000/',
       output: 'src/api',
       type: 'ts',
-      version: 3
+      template: () => ({
+        path: '',
+      })
     }
   ]
 }`,
@@ -66,9 +92,17 @@ export default <Config>{
             input: 'http://localhost:3000/',
             output: 'src/api',
             type: 'ts',
-            version: 3,
+            bodyMediaType: 'application/json',
+            responseMediaType: 'application/json',
+            defaultRequire: false,
+            template() {
+              return {
+                path: '',
+              }
+            },
           },
         ],
+        autoUpdate: true,
       },
     },
     module: {
@@ -80,7 +114,9 @@ export default {
       input: 'http://localhost:3000/' + pkg.name,
       output: 'src/api',
       type: 'module',
-      version: 3
+      template: () => ({
+        path: '',
+      })
     }
   ]
 }`,
@@ -90,9 +126,17 @@ export default {
             input: 'http://localhost:3000/alova-devtools',
             output: 'src/api',
             type: 'module',
-            version: 3,
+            bodyMediaType: 'application/json',
+            responseMediaType: 'application/json',
+            defaultRequire: false,
+            template() {
+              return {
+                path: '',
+              }
+            },
           },
         ],
+        autoUpdate: true,
       },
     },
     commonjs: {
@@ -104,7 +148,9 @@ module.exports = {
       input: 'http://localhost:3000/' + pkg.name,
       output: 'src/api',
       type: 'commonjs',
-      version: 3
+      template: () => ({
+        path: '',
+      })
     }
   ]
 }`,
@@ -114,9 +160,17 @@ module.exports = {
             input: 'http://localhost:3000/alova-devtools',
             output: 'src/api',
             type: 'commonjs',
-            version: 3,
+            bodyMediaType: 'application/json',
+            responseMediaType: 'application/json',
+            defaultRequire: false,
+            template() {
+              return {
+                path: '',
+              }
+            },
           },
         ],
+        autoUpdate: true,
       },
     },
   }
@@ -125,7 +179,7 @@ afterEach(async () => {
   await Promise.all([
     rimraf(resolve(process.cwd(), 'alova.config.ts')),
     rimraf(resolve(process.cwd(), 'alova.config.js')),
-    rimraf(resolve(process.cwd(), 'node_modules/.alova')),
+    rimraf(resolve(process.cwd(), '.alova')),
   ]).catch(() => {})
 })
 
@@ -149,8 +203,8 @@ describe('config', () => {
     expect(initialTsConfig).toMatch(`import { defineConfig } from '@alova/wormhole';`)
     expect(initialTsConfig).toMatch(`export default defineConfig({`)
     expect(initialTsConfig).toMatch(`input: 'http://localhost:3000',`)
-    // generate commonjs file
 
+    // generate commonjs file
     requireResult.set(resolve(process.cwd(), './package.json'), {
       type: 'commonjs',
       dependencies: {
@@ -165,7 +219,6 @@ describe('config', () => {
     expect(initialCjsConfig).toMatch(`module.exports = defineConfig({`)
 
     // generate module file
-
     requireResult.set(resolve(process.cwd(), './package.json'), {
       dependencies: {
         alova: '3.0.5',
@@ -179,7 +232,6 @@ describe('config', () => {
     expect(initialEsmoduleConfig).toMatch(`export default defineConfig({`)
 
     // generate file with target type
-
     await createConfig({ type: 'typescript' })
     const initialTypedConfig = await fs.readFile(resolve(process.cwd(), 'alova.config.ts'), {
       encoding: 'utf-8',
@@ -255,21 +307,21 @@ describe('config', () => {
       requireResult.set(resolve(projectRoot, './package.json'), mockPackageJson)
 
       const tsConfig = await readConfig(projectRoot)
-      expect(tsConfig).toStrictEqual(configMap.ts.expectedConfig)
+      expectConfigEqual(tsConfig, configMap.ts.expectedConfig)
 
       // read module config file
       await fs.writeFile(resolve(projectRoot, configMap.module.file), configMap.module.content, 'utf-8')
       requireResult.set(resolve(projectRoot, './package.json'), mockPackageJson)
 
       const moduleConfig = await readConfig(projectRoot)
-      expect(moduleConfig).toEqual(configMap.module.expectedConfig)
+      expectConfigEqual(moduleConfig, configMap.module.expectedConfig)
 
       // read commonjs config file
       await fs.writeFile(resolve(projectRoot, configMap.commonjs.file), configMap.commonjs.content, 'utf-8')
       requireResult.set(resolve(projectRoot, './package.json'), mockPackageJson)
 
       const cjsConfig = await readConfig(projectRoot)
-      expect(cjsConfig).toStrictEqual(configMap.commonjs.expectedConfig)
+      expectConfigEqual(cjsConfig, configMap.commonjs.expectedConfig)
     }
     finally {
       // Clean up temporary directory
@@ -279,7 +331,6 @@ describe('config', () => {
 
   it('should read config file under target path', async () => {
     // read ts file
-
     const customPath = resolve(__dirname, './mockdir_config2')
     if (!(await existsPromise(customPath))) {
       await fs.mkdir(customPath, { recursive: true })
@@ -289,7 +340,7 @@ describe('config', () => {
 
     try {
       const tsConfig = await readConfig(customPath)
-      expect(tsConfig).toStrictEqual(configMap.tsWithoutImport.expectedConfig)
+      expectConfigEqual(tsConfig, configMap.tsWithoutImport.expectedConfig)
     }
     finally {
       await rimraf(customPath) // clear temporary directory

@@ -1,0 +1,26 @@
+{{{commentText}}}
+import { createAlova } from 'alova';
+import { fetchAdapter } from 'alova/fetch';
+{{#if (eq framework "vue")}}
+import { vueHook } from 'alova/vue';
+{{else if (eq framework "react")}}
+import { reactHook } from 'alova/react';
+{{/if}}
+
+export const alovaInstance = createAlova({
+  baseURL: "{{{baseUrl}}}",
+{{#if (eq framework "vue")}}
+  statesHook: vueHook,
+{{else if (eq framework "react")}}
+  statesHook: reactHook,
+{{/if}}
+  requestAdapter: fetchAdapter(),
+  beforeRequest: method => { },
+  responded: res => {
+    return res.json();
+  }
+});
+
+{{#each tagedApis}}
+export * from './{{{tag}}}';
+{{/each}}

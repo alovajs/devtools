@@ -3,7 +3,6 @@ import type { ApiDescriptor, ApiPlugin, GeneratorConfig, OpenAPIDocument } from 
 import type { FetchOptions } from '@/utils/base'
 import path from 'node:path'
 import { z } from 'zod/v3' // v4版本不稳定，暂时使用v3
-import { standardLoader } from '@/core/loader'
 /**
  * Find the corresponding input attribute value
  */
@@ -16,6 +15,11 @@ export const zTemplateType = z.enum(['typescript', 'module', 'commonjs'])
  * platform type
  */
 export const zPlatformType = z.enum(['swagger', 'knife4j', 'yapi'])
+
+export const zTemplateResult = z.object({
+  path: z.string(),
+  config: z.record(z.any()).default({}),
+})
 
 export const zApiDescriptor = z.any() as z.ZodSchema<ApiDescriptor>
 
@@ -39,30 +43,23 @@ const zOpenAPIDocument = z.any() as z.ZodSchema<OpenAPIDocument>
 
 export const zApiPlugin = z.object({
   name: z.string().optional(),
-  config: z.lazy(
-    () => z.function()
-      .args(_zGeneratorConfig)
-      .returns(zPluginReturn(_zGeneratorConfig))
-      .optional(),
+  config: z.lazy(() =>
+    z.function().args(_zGeneratorConfig).returns(zPluginReturn(_zGeneratorConfig)).optional(),
   ),
-  beforeOpenapiParse: z.lazy(
-    () => z.function()
-      .args(_zGeneratorConfig)
-      .returns(z.void())
-      .optional(),
+  beforeOpenapiParse: z.lazy(() =>
+    z.function().args(_zGeneratorConfig).returns(z.void()).optional(),
   ),
-  afterOpenapiParse: z.function()
+  afterOpenapiParse: z
+    .function()
     .args(zOpenAPIDocument)
     .returns(zPluginReturn(zOpenAPIDocument))
     .optional(),
-  beforeCodeGenerate: z.function()
+  beforeCodeGenerate: z
+    .function()
     .args(z.any(), z.string())
     .returns(zPluginReturn(z.string()))
     .optional(),
-  afterCodeGenerate: z.function()
-    .args(z.instanceof(Error).optional())
-    .returns(z.void())
-    .optional(),
+  afterCodeGenerate: z.function().args(z.instanceof(Error).optional()).returns(z.void()).optional(),
 }) as z.ZodSchema<ApiPlugin>
 
 export const _zGeneratorConfig = z.object({
@@ -110,15 +107,30 @@ export const _zGeneratorConfig = z.object({
     })
     .nonempty('Field output is required in `config.generator`'),
   /**
-   * Specify the media type of the generated response data. After specifying, use this data type to generate the response ts format of the 2xx status code.
-   * @defualt 'application/json'
+   * Whether to generate documentation comments, default is true.
+   * Set to false to improve generation performance.
    */
-  responseMediaType: z.string().optional(),
+  docComment: z.boolean().optional(),
+  /**
+   * Specify the media type of the generated response data. After specifying, use this data type to generate the response ts format of the 2xx status code.
+   * Can be a string or an array of strings for fallback media types.
+   */
+  responseMediaType: z.union([z.string(), z.array(z.string())]).optional(),
   /**
    * Specify the media type of the generated request body data. After specifying, use this data type to generate the ts format of the request body.
-   * @default 'application/json'
+   * Can be a string or an array of strings for fallback media types.
    */
-  bodyMediaType: z.string().optional(),
+  bodyMediaType: z.union([z.string(), z.array(z.string())]).optional(),
+  /**
+   * Custom server name for displaying in the sidebar when multiple API docs are configured.
+   */
+  serverName: z.string().optional(),
+  /**
+   * Template settings, specify which template to use for code generation.
+   * Accepts a sync or async function that returns a TemplateConfigResult object containing path and config.
+   * path is required, config defaults to empty object.
+   */
+  template: z.function(),
   /**
    * The type of generated code. The optional value is `auto/ts/typescript/module/commonjs`.
    * default is `auto`, it means the type of current project will be determined through certain rules.
@@ -134,49 +146,11 @@ export const _zGeneratorConfig = z.object({
   /**
    * Specify alova version, 2 or 3, if not specified, it will be automatically determined through the alova version in `package.json`
    */
-  version: z
-    .union([z.number(), z.string()])
-    .optional(),
-  /**
-   * Globally exported api name, you can access the automatically generated api globally through this name.
-   * it is required when multiple generators are configured, and it cannot be repeated
-   *
-   * @default 'Apis'
-   */
-  global: z
-    .string()
-    .optional()
-    .refine(
-      data => !data || standardLoader.validate(data),
-      data => ({
-        message: `\`${data}\` does not match variable specification`,
-      }),
-    ),
-  /**
-   * The host object of global mounting, default is `globalThis`, it means `window` in browser and `global` in nodejs
-   *
-   * @default 'globalThis'
-   */
-  globalHost: z.string().optional(),
-  /**
-   * Whether to use `import` statement to import the type. When this option is set to `true`, the generated apiDefinitions.ts file will use `import` statement to import types instead of ///<reference types="..." />
-   *
-   * @default false
-   */
-  useImportType: z.boolean().optional(),
+  version: z.union([z.number(), z.string()]).optional(),
   /**
    * When there is no require, it defaults to require, and only nullable takes effect.
    */
   defaultRequire: z.boolean().optional(),
-  /**
-   * Control the format of output file names. Supports presets or a custom function.
-   */
-  fileNameCase: z
-    .union([
-      z.enum(['camelCase', 'pascalCase', 'kebabCase', 'snakeCase']),
-      z.function().args(z.string()).returns(z.string()),
-    ])
-    .optional(),
   /**
    * plugin will be executed before `handleApi`
    */
@@ -228,34 +202,17 @@ export const zConfig = z.object({
       if (data.length < 2) {
         return
       }
-      const globalKeySet = new Set<string>()
       const outputSet = new Set<string>()
       data.forEach((item) => {
         if (outputSet.has(path.join(item.output ?? ''))) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ['generator', 'output'],
-            message: `output \`${item.output}\` is repated`,
+            message: `output \`${item.output}\` is repeated`,
           })
           return
         }
         outputSet.add(path.join(item.output ?? ''))
-        if (!item.global) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ['generator', 'global'],
-            message: 'Field global is required in `config.generator`',
-          })
-          return
-        }
-        if (globalKeySet.has(item.global)) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ['generator', 'global'],
-            message: `global \`${item.global}\` is repated`,
-          })
-        }
-        globalKeySet.add(item.global)
       })
     }),
 

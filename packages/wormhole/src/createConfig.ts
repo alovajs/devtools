@@ -1,8 +1,8 @@
 import type { TemplateType } from '@/type/lib'
 import path from 'node:path'
-import getAlovaVersion from '@/functions/getAlovaVersion'
 import getAutoTemplateType from '@/functions/getAutoTemplateType'
-import { templateHelper } from '@/helper'
+import { GeneratorHelper, templateHelper } from '@/helper'
+import { config } from './template'
 
 interface ConfigCreationOptions {
   projectPath?: string
@@ -16,22 +16,23 @@ interface ConfigCreationOptions {
  * @param options.type - The template type to use (optional)
  * @returns A promise that resolves when the config is created
  */
-function createConfig({ projectPath = '', type }: ConfigCreationOptions = {}) {
-  projectPath = path.isAbsolute(projectPath) ? projectPath : path.resolve(process.cwd(), projectPath)
+async function createConfig({ projectPath = '', type }: ConfigCreationOptions = {}) {
+  projectPath = path.isAbsolute(projectPath)
+    ? projectPath
+    : path.resolve(process.cwd(), projectPath)
   type = type || getAutoTemplateType(projectPath)
+
+  const templateConfig = await GeneratorHelper.getTemplateConfig(config())
   templateHelper.load({
     type,
-    version: getAlovaVersion(projectPath),
+    templatePath: templateConfig.path,
+    templateConfig: templateConfig.config,
   })
-  return templateHelper.outputFile({
-    fileName: 'alova.config',
-    data: {
-      type,
-      moduleType: templateHelper.getModuleType(),
-    },
-    output: projectPath,
-    root: true,
-    hasVersion: false,
+
+  // Use generateFromTemplateDir for unified template generation
+  await templateHelper.generateFromTemplateDir(templateConfig.path, projectPath, {
+    type,
+    moduleType: templateHelper.getModuleType(),
   })
 }
 export default createConfig

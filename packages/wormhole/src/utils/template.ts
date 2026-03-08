@@ -11,23 +11,48 @@ import { format } from './format'
 const DEFAULT_CONFIG = getGlobalConfig()
 
 // Register partials for template reuse
-async function registerPartials() {
-  const partialsDir = path.resolve(DEFAULT_CONFIG.templatePath, 'partials')
+export async function registerPartials(baseTemplatePath: string) {
+  const partialsDirs = [
+    // Global partials directory
+    path.resolve(baseTemplatePath, 'partials'),
+  ]
+
+  // Scan all preset directories for partials
+  const presetsDir = path.resolve(baseTemplatePath, 'presets')
   try {
-    const partialFiles = await glob('**/*.handlebars', {
-      ignore: 'node_modules/**',
-      cwd: partialsDir,
-    })
-    for (const file of partialFiles) {
-      if (file.endsWith('.handlebars')) {
-        const partialName = file.replace('.handlebars', '').replace(/\\/g, '/')
-        const partialContent = await fs.readFile(path.join(partialsDir, file), 'utf-8')
-        handlebars.registerPartial(partialName, partialContent)
+    if (await existsPromise(presetsDir)) {
+      const presetDirs = await fs.readdir(presetsDir, { withFileTypes: true })
+      for (const presetDir of presetDirs) {
+        if (presetDir.isDirectory()) {
+          const partialsPath = path.join(presetsDir, presetDir.name, 'partials')
+          if (await existsPromise(partialsPath)) {
+            partialsDirs.push(partialsPath)
+          }
+        }
       }
     }
   }
   catch (err) {
-    logger.error('Error registering partials:', err)
+    logger.error('Error scanning preset directories:', err)
+  }
+
+  for (const partialsDir of partialsDirs) {
+    try {
+      const partialFiles = await glob('**/*.handlebars', {
+        ignore: 'node_modules/**',
+        cwd: partialsDir,
+      })
+      for (const file of partialFiles) {
+        if (file.endsWith('.handlebars')) {
+          const partialName = file.replace('.handlebars', '').replace(/\\/g, '/')
+          const partialContent = await fs.readFile(path.join(partialsDir, file), 'utf-8')
+          handlebars.registerPartial(partialName, partialContent)
+        }
+      }
+    }
+    catch (err) {
+      logger.error('Error registering partials:', err)
+    }
   }
 }
 

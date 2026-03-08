@@ -1,0 +1,190 @@
+{{{comment}}}
+{{#if (eq config.alovaVersion "v3")}}
+import type { Alova, AlovaMethodCreateConfig, AlovaGenerics, Method } from 'alova';
+{{else if (eq config.alovaVersion "v2")}}
+import type { Alova, AlovaMethodCreateConfig, Method } from 'alova';
+{{/if}}
+import type { alovaInstance, $$userConfigMap } from './index';
+import type apiDefinitions from './apiDefinitions';
+
+type CollapsedAlova = typeof alovaInstance;
+type UserMethodConfigMap = typeof $$userConfigMap;
+
+{{#if (eq config.alovaVersion "v3")}}
+type Alova2MethodConfig<Responded> =
+  CollapsedAlova extends Alova<
+    AlovaGenerics<
+      any,
+      any,
+      infer RequestConfig,
+      infer Response,
+      infer ResponseHeader,
+      infer L1Cache,
+      infer L2Cache,
+      infer SE
+    >
+  >
+    ? Omit<
+        AlovaMethodCreateConfig<
+          AlovaGenerics<Responded, any, RequestConfig, Response, ResponseHeader, L1Cache, L2Cache, SE>,
+          any,
+          Responded
+        >,
+        'params'
+      >
+    : never;
+
+type ExtractUserDefinedTransformed<
+  DefinitionKey extends keyof typeof apiDefinitions,
+  Default
+> = DefinitionKey extends keyof UserMethodConfigMap
+  ? UserMethodConfigMap[DefinitionKey]['transform'] extends (...args: any[]) => any
+    ? Awaited<ReturnType<UserMethodConfigMap[DefinitionKey]['transform']>>
+    : Default
+  : Default;
+
+type Alova2Method<
+  Responded,
+  DefinitionKey extends keyof typeof apiDefinitions,
+  CurrentConfig extends Alova2MethodConfig<any>
+> =
+  CollapsedAlova extends Alova<
+    AlovaGenerics<
+      any,
+      any,
+      infer RequestConfig,
+      infer Response,
+      infer ResponseHeader,
+      infer L1Cache,
+      infer L2Cache,
+      infer SE
+    >
+  >
+    ? Method<
+        AlovaGenerics<
+          CurrentConfig extends undefined
+            ? ExtractUserDefinedTransformed<DefinitionKey, Responded>
+            : CurrentConfig['transform'] extends (...args: any[]) => any
+              ? Awaited<ReturnType<CurrentConfig['transform']>>
+              : ExtractUserDefinedTransformed<DefinitionKey, Responded>,
+          any,
+          RequestConfig,
+          Response,
+          ResponseHeader,
+          L1Cache,
+          L2Cache,
+          SE
+        >
+      >
+    : never;
+{{else if (eq config.alovaVersion "v2")}}
+type Alova2MethodConfig<Responded> =
+  CollapsedAlova extends Alova<any, any, infer RequestConfig, any, infer ResponseHeader>
+    ? Omit<AlovaMethodCreateConfig<any, Responded, RequestConfig, ResponseHeader>,"params">
+    : never;
+
+type ExtractUserDefinedTransformed<
+  DefinitionKey extends keyof typeof apiDefinitions,
+  Default
+> = DefinitionKey extends keyof UserMethodConfigMap
+  ? UserMethodConfigMap[DefinitionKey]['transformData'] extends (...args: any[]) => any
+    ? Awaited<ReturnType<UserMethodConfigMap[DefinitionKey]['transformData']>>
+    : Default
+  : Default;
+
+type Alova2Method<
+  Responded,
+  DefinitionKey extends keyof typeof apiDefinitions,
+  CurrentConfig extends Alova2MethodConfig<any>
+> =
+  CollapsedAlova extends Alova<infer State, infer Export, infer RequestConfig, infer Response, infer ResponseHeader>
+    ? Method<
+        State,
+        Export,
+        CurrentConfig extends undefined
+          ? ExtractUserDefinedTransformed<DefinitionKey, Responded>
+          : CurrentConfig['transformData'] extends (...args: any[]) => any
+            ? Awaited<ReturnType<CurrentConfig['transformData']>>
+            : ExtractUserDefinedTransformed<DefinitionKey, Responded>,
+        any,
+        RequestConfig,
+        Response,
+        ResponseHeader
+      >
+    : never;
+{{/if}}
+
+{{#each components}}
+{{{.}}}
+{{/each}}
+
+declare global {
+  interface {{{config.global}}} {
+    {{#each tagedApis}}
+    {{{tag}}}: {
+     {{#apis}}
+      /**
+       * ---
+       *
+       * [{{{method}}}] {{{summary}}}
+       *
+       * **path:** {{{path}}}
+       *
+      {{#if pathParametersComment}}
+       * ---
+       *
+       * **Path Parameters**
+       * ```ts
+       * type PathParameters = {{{pathParametersComment}}}
+       * ```
+       *
+       {{/if}}
+       {{#if queryParametersComment}}
+       * ---
+       *
+       * **Query Parameters**
+       * ```ts
+       * type QueryParameters = {{{queryParametersComment}}}
+       * ```
+       *
+       {{/if}}
+       {{#if requestComment}}
+       * ---
+       *
+       * **RequestBody**
+       * ```ts
+       * type RequestBody = {{{requestComment}}}
+       * ```
+       *
+       {{/if}}
+       {{#if responseComment}}
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * type Response = {{{responseComment}}}
+       * ```
+       {{/if}}
+       */
+      {{{name}}}<Config extends Alova2MethodConfig<{{{responseName}}}>{{#or pathParameters queryParameters requestName }} & {
+          {{#if pathParameters}}
+          pathParams: {{{pathParameters}}};
+          {{/if}}
+          {{#if queryParameters}}
+          params: {{{queryParameters}}};
+          {{/if}}
+          {{#if requestName}}
+          data: {{{requestName}}};
+          {{/if}}
+      }{{/or}}>(
+        config{{#or pathParameters queryParameters requestName }}{{else}}?{{/or}}: Config
+      ): Alova2Method<{{{responseName}}}, '{{{pathKey}}}', Config>;
+     {{/apis}}
+    };
+    {{/each}}
+  }
+
+  var {{{config.global}}}: {{{config.global}}};
+}
+
+export {};

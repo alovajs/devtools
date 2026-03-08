@@ -1,0 +1,42 @@
+{{{commentText}}}
+import type { Method, AlovaMethodCreateConfig, AlovaGenerics } from 'alova';
+import { Method as MethodClass } from 'alova';
+import type { alovaInstance } from './index';
+
+{{#each tagedApis}}
+{{#apis}}
+/**
+ * {{summary}}
+ * @method {{method}}
+ * @path {{{path}}}
+ */
+export function {{{name}}}(
+  config: AlovaMethodCreateConfig<any, any, any, any>{{#or pathParameters queryParameters requestName }} & {
+    {{#if pathParameters}}
+    pathParams: {{{pathParameters}}};
+    {{/if}}
+    {{#if queryParameters}}
+    params: {{{queryParameters}}};
+    {{/if}}
+    {{#if requestName}}
+    data: {{{requestName}}};
+    {{/if}}
+  }{{/or}} = {}
+): Method<any, any, any, any, any> {
+  {{#if pathParameters}}
+  const pathParams = config.pathParams || {};
+  const resolvedPath = '{{{path}}}'.replace(/\{(\w+)\}/g, (_, key) => pathParams[key]);
+  {{else}}
+  const resolvedPath = '{{{path}}}';
+  {{/if}}
+
+  return new MethodClass(
+    '{{method}}',
+    alovaInstance,
+    resolvedPath,
+    config
+  );
+}
+
+{{/apis}}
+{{/each}}

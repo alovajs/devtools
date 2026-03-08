@@ -1,0 +1,12 @@
+{{> comment}}
+{{#if config.useImportType}}import './globals.d.ts';{{else}}/// <reference types='./globals.d.ts' />{{/if}}
+
+const apiDefinitions = {
+{{#each tagedApis}}
+  {{#apis}}
+  '{{{pathKey}}}': ['{{method}}', '{{{path}}}'],
+  {{/apis}}
+{{/each}}
+};
+
+export default apiDefinitions;
