@@ -17,6 +17,13 @@ export const TYPE_SPECIFIC_KEYWORDS = {
   array: ['items', 'minItems', 'maxItems', 'uniqueItems'],
   object: ['properties', 'additionalProperties', 'required', 'minProperties', 'maxProperties'],
 }
+export const TYPE_REQUIRE_KEYWORDS: Record<string, Array<[string, any]>> = {
+  string: [],
+  number: [],
+  integer: [],
+  array: [['items', { type: 'any' }]],
+  object: [],
+}
 
 export function assignTypeSpecificKeywords(
   branch: SchemaObject,
@@ -24,12 +31,18 @@ export function assignTypeSpecificKeywords(
   typeSpecificKeywords: Record<string, any>,
 ) {
   const keywords = TYPE_SPECIFIC_KEYWORDS[type as keyof typeof TYPE_SPECIFIC_KEYWORDS]
+  const requireKeywords = TYPE_REQUIRE_KEYWORDS[type as keyof typeof TYPE_REQUIRE_KEYWORDS]
   if (!keywords) {
     return
   }
   keywords.forEach((key) => {
     if (key in typeSpecificKeywords) {
       (branch as any)[key] = typeSpecificKeywords[key]
+    }
+  })
+  requireKeywords.forEach(([key, value]) => {
+    if (!(key in typeSpecificKeywords)) {
+      (branch as any)[key] = value
     }
   })
 }

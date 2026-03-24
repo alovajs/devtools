@@ -108,7 +108,7 @@ describe('array Type Generator', () => {
       comment: ``,
       type: 'type',
       code: `Array<{
-        value?:string 
+        value?:string
       }>`,
     })
     expect(result).toEqual(expectResult)
@@ -164,6 +164,24 @@ describe('array Type Generator', () => {
       comment: ``,
       type: 'type',
       code: `(string | number)[]`,
+    })
+    expect(result).toEqual(expectResult)
+  })
+
+  it('should generate array type with ANY default', async () => {
+    const ast: TArray = {
+      type: ASTType.ARRAY,
+      keyName: 'AnyArray',
+      params: {
+        type: ASTType.ANY,
+      },
+    }
+    const result = await normalizeGeneratorResult(arrayTypeGenerator(ast, defaultCtx))
+    const expectResult = await normalizeGeneratorResult({
+      name: 'AnyArray',
+      comment: ``,
+      type: 'type',
+      code: `any[]`,
     })
     expect(result).toEqual(expectResult)
   })

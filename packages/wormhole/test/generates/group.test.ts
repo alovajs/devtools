@@ -35,7 +35,7 @@ describe('group Type Generator', () => {
       name: 'Status',
       comment: `
       /**
-       * Status type 
+       * Status type
        */`,
       type: 'type',
       code: 'string | number',
@@ -83,10 +83,10 @@ describe('group Type Generator', () => {
        * User with role
        */`,
       type: 'type',
-      code: `{ 
-        name?:string 
-      } & { 
-        role?:string 
+      code: `{
+        name?:string
+      } & {
+        role?:string
       }`,
     })
     expect(result).toEqual(expectResult)
@@ -145,12 +145,12 @@ describe('group Type Generator', () => {
       name: 'ComplexType',
       comment: '',
       type: 'type',
-      code: `{ 
-        id?:number 
+      code: `{
+        id?:number
       } & {
-        name?:string 
+        name?:string
       } | {
-        code?:string 
+        code?:string
       }`,
     })
     expect(result).toEqual(expectResult)
@@ -196,11 +196,37 @@ describe('group Type Generator', () => {
       name: 'DeepTest',
       comment: '',
       type: 'type',
-      code: `{ 
-        value?:string 
+      code: `{
+        value?:string
       } | {
-        value?:number 
+        value?:number
       }`,
+    })
+    expect(result).toEqual(expectResult)
+  })
+
+  it('should generate union including array(any) and null (fix #140)', async () => {
+    const ast: TUnion = {
+      type: ASTType.UNION,
+      keyName: 'MaybeArray',
+      params: [
+        {
+          type: ASTType.ARRAY,
+          params: {
+            type: ASTType.ANY,
+          },
+        },
+        {
+          type: ASTType.NULL,
+        },
+      ],
+    }
+    const result = await normalizeGeneratorResult(groupTypeGenerator(ast, defaultCtx))
+    const expectResult = await normalizeGeneratorResult({
+      name: 'MaybeArray',
+      comment: '',
+      type: 'type',
+      code: 'any[] | null',
     })
     expect(result).toEqual(expectResult)
   })
