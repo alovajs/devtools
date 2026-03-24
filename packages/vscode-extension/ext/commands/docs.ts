@@ -12,6 +12,7 @@ export class AppiDocs {
 
   static async refreshDocs() {
     Log.info(`Refresh docs`)
+    VscodeClient.refreshDocs()
   }
 }
 export const openDocs: CommandType<[string]> = {
@@ -23,7 +24,7 @@ export const openDocs: CommandType<[string]> = {
 export const refreshDocs: CommandType = {
   commandId: Commands.api_docs_refresh,
   handler: () => () => {
-    VscodeClient.refreshDocs()
+    AppiDocs.refreshDocs()
   },
 }
 export default <ExtensionModule> function (ctx) {

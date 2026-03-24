@@ -10,7 +10,7 @@ defineProps<{
   tabsClass?: string
 }>()
 
-const tabValue = ref('params')
+const tabValue = ref<'params' | 'response' | 'demo'>('params')
 function typeCode(name: string, comment?: string) {
   if (!comment) {
     return ''

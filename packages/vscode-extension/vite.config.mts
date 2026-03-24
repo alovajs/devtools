@@ -1,8 +1,8 @@
 /// <reference types="vitest/config" />
 import path from 'node:path'
-import vscode from '@czhlin/vite-plugin-vscode'
 import VueI18n from '@intlify/unplugin-vue-i18n/vite'
 import Shiki from '@shikijs/markdown-it'
+import vscode from '@tomjs/vite-plugin-vscode'
 import { unheadVueComposablesImports } from '@unhead/vue'
 import Vue from '@vitejs/plugin-vue'
 import VueJsx from '@vitejs/plugin-vue-jsx'

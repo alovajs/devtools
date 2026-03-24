@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type ApiTree from '~/components/ApiTree.vue'
 import type { Api, ApiProject } from '~/types'
 import { MType, useHandlers } from '~/hooks/use-handlers'
 import { useVscodeMessage } from '~/hooks/use-message'
@@ -15,7 +14,8 @@ const treeData = ref<ApiProject[]>([])
 const selectdKeys = ref<string[]>([])
 const pattern = ref('')
 const search = ref('')
-const treeRef = ref<InstanceType<typeof ApiTree> | null>(null)
+const loading = ref(false)
+const treeRef = useTemplateRef('treeRef')
 const handleSearch = useDebounceFn((value: string) => {
   pattern.value = value
 }, 300)
@@ -27,7 +27,6 @@ function handleDetail(data: Api) {
   })
 }
 
-const loading = ref(false)
 async function handleRefresh() {
   loading.value = true
   try {

@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-/// <reference types="@czhlin/vite-plugin-vscode/env" />
+/// <reference types="@tomjs/vite-plugin-vscode/env" />
 interface ViteTypeOptions {
   // By adding this line, you can make the type of ImportMetaEnv strict
   // to disallow unknown keys.

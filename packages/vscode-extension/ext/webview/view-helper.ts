@@ -1,6 +1,7 @@
 import type { ParseOptions } from 'query-string'
 import type { ExtensionContext, Webview } from 'vscode'
 import qs from 'query-string'
+import { getWebviewHtml } from 'virtual:vscode'
 
 export interface WebviewOptions {
   path?: string
@@ -48,7 +49,7 @@ export class WebviewHelper {
 
   public static setupHtml(webview: Webview, context: ExtensionContext, options?: WebviewOptions) {
     const { serverUrl, injectCode } = this.getUrl(options)
-    return __getWebviewHtml__({
+    return getWebviewHtml({
       serverUrl,
       webview,
       context,

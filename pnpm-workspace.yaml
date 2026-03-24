@@ -5,9 +5,9 @@ packages:
 
 catalogs:
   build:
-    '@czhlin/vite-plugin-vscode': ^4.3.0
     '@intlify/unplugin-vue-i18n': ^6.0.8
     '@shikijs/markdown-it': ^3.8.1
+    '@tomjs/vite-plugin-vscode': ^6.1.0
     '@unocss/eslint-config': ^66.3.3
     '@unocss/preset-web-fonts': ^66.3.3
     '@vitejs/plugin-vue': ^6.0.0

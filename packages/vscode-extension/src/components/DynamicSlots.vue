@@ -1,10 +1,10 @@
-<script lang="ts" setup>
+<script lang="ts" setup generic="T extends string">
 defineOptions({
   name: 'DynamicSlots',
 })
 
 const props = defineProps<{
-  show: string | string[]
+  show: T | T[]
 }>()
 
 const slots = useSlots()
@@ -14,8 +14,8 @@ const normalizedShow = computed(() =>
 
 const visibleSlots = computed(() =>
   Object.keys(slots).filter(name =>
-    normalizedShow.value.includes(name),
-  ),
+    normalizedShow.value.includes(name as T),
+  ) as T[],
 )
 </script>
 

@@ -4,7 +4,7 @@
 // Meta info
 export const publisher = 'Alova'
 export const name = 'alova-vscode-extension'
-export const version = '2.0.2'
+export const version = '2.0.12'
 export const displayName = 'Alova'
 export const description = 'Generate and search APIs without API documentation any more'
 export const extensionId = `${publisher}.${name}`
@@ -21,7 +21,7 @@ export type CommandKey
     | 'alova.snippetSearch.showHelp'
 
 /**
- * Commands map registed by `Alova.alova-vscode-extension`
+ * Commands map registered by `Alova.alova-vscode-extension`
  */
 export const commands = {
   /**

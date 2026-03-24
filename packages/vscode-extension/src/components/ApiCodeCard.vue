@@ -5,7 +5,7 @@ defineOptions({
   name: 'ApiCodeCard',
 })
 
-defineProps<{
+const { code, name, empty } = defineProps<{
   code?: MaybeNull<string>
   name?: MaybeNull<string>
   empty?: MaybeNull<string>

@@ -108,7 +108,7 @@
       "activitybar": [
         {
           "id": "api-docs-sidebar",
-          "title": "Api docs",
+          "title": "Api Docs",
           "icon": "res/icon.png"
         }
       ]
@@ -116,13 +116,13 @@
     "views": {
       "api-docs-sidebar": [
         {
-          "icon": "server-process",
+          "icon": "res/icon.png",
           "id": "api-docs-server-view",
           "name": "Api Server",
           "type": "webview"
         },
         {
-          "icon": "symbol-constant",
+          "icon": "res/icon.png",
           "id": "api-docs-detail-view",
           "name": "Api Detail",
           "type": "webview"
@@ -136,7 +136,7 @@
     "build": "vite build -m vscode && nr build:dts",
     "build:dts": "dts-bundle-generator -o dist/extension/index.d.ts ext/index.ts --no-check --no-banner --project tsconfig.node.json",
     "build:handlers": "dts-bundle-generator -o typings/handlers.d.ts ext/handlers/index.ts --no-check --no-banner --project tsconfig.node.json",
-    "buld:meta": "vscode-ext-gen --output ext/meta/generated.ts && eslint ext/meta/generated.ts --fix",
+    "build:meta": "vscode-ext-gen --output ext/meta/generated.ts && eslint ext/meta/generated.ts --fix",
     "update": "run-p build:meta build:handlers",
     "lint": "eslint .",
     "lintf": "eslint . --fix",
@@ -170,13 +170,13 @@
   },
   "devDependencies": {
     "@alova/wormhole": "workspace:*",
-    "@czhlin/vite-plugin-vscode": "catalog:build",
     "@iconify-json/carbon": "catalog:dev",
     "@intlify/unplugin-vue-i18n": "catalog:build",
     "@jsonrpc-rx/client": "catalog:frontend",
     "@jsonrpc-rx/server": "catalog:frontend",
     "@shikijs/markdown-it": "catalog:build",
     "@tomjs/tsconfig": "catalog:dev",
+    "@tomjs/vite-plugin-vscode": "catalog:build",
     "@tomjs/vscode-webview": "catalog:frontend",
     "@types/chai": "catalog:types",
     "@types/chai-jest-snapshot": "catalog:types",
