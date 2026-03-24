@@ -1,5 +1,11 @@
 # @alova/wormhole
 
+## 1.5.1
+
+### Patch Changes
+
+- [#141](https://github.com/alovajs/devtools/pull/141) [`3b7ad43`](https://github.com/alovajs/devtools/commit/3b7ad434fb273dac674f26640e30a2b5d98aaa33) Thanks [@czhlin](https://github.com/czhlin)! - handle array default items in union and avoid TypeError
+
 ## 1.5.0
 
 ### Minor Changes
