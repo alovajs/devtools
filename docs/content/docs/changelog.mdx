@@ -1,0 +1,32 @@
+---
+title: 更新日志
+description: alova/wormhole 版本更新记录
+---
+
+
+## v2.0.0（最新）
+
+### 新增
+
+- **自定义模板** — 基于 Handlebars 模板引擎，支持完全自定义生成代码结构
+- **多模板支持** — 内置 alova（functional/alovaGlobals）、axios、fetch、ky 五套模板
+- **AI Skill 文档** — 通过 `aiDoc` 插件生成 AI 可读的接口文档
+- **插件系统** — 完整的生命周期 Hook（config / beforeOpenapiParse / openapiParsed / beforeCodeGenerate / codeGenerated）
+- **`importType` 插件** — 注入外部类型，避免重复生成
+- **生成进度上报** — 三层可观察性：`onProgress` 回调 + `reportProgress` 钩子 + CLI 多行进度条
+- **模块类型区分** — 模板支持 typescript / module(ESM) / commonjs 三种类型
+- **`{tag}` 动态文件名** — 按 OpenAPI tag 拆分文件
+- **`#` 前缀不覆盖机制** — 文件名前加 `#` 表示首次生成后不再覆盖
+- **`importDescriptor` 自动推导** — 为 AI Skill 和模板自适应生成 import/require 语句
+- **缓存文件迁移** — 从 `node_modules/.alova` 迁移到项目根目录的 `.worma-cache.json`
+- **`.wormarc` 简易配置** — 纯文本格式，支持 URL、模板、自定义路径和注释
+
+### 变更
+
+- alova 模板仅支持 alova@3，不再支持 alova@2
+- functional 模板移除 `createApis.ts.handlebars`（按需引入模式下不需要全局 `Apis` 对象）
+- 配置方式改为 `defineConfig` + `generator` 数组格式
+
+### 迁移
+
+从 v1 迁移请参考[迁移指南](/docs/guide/08-migration)。

@@ -1,0 +1,131 @@
+---
+title: API 使用指南
+description: 访问生成的 API 代码、配置 alova 实例、旧项目迁移
+slug: guide/api-usage
+---
+
+
+## 访问生成的 API
+
+生成的 API 代码默认通过 `Apis` 变量访问，`global` 自定义变量名。其中 `pet` 是 API 的 tag，API 名称对应 `operationId`。
+
+你可以通过以下两种方式使用 `Apis`。
+
+### 全局挂载（默认）
+
+在 `main.[js/ts]` 入口文件中引入自动生成目录下的 `index.[js/ts]`。
+
+```js title="main.js"
+import './your-generating-api-folder';
+```
+
+### 导入使用
+
+在需要使用的文件中导入 `Apis` 变量。
+
+```js
+import { Apis } from './your-generating-api-folder';
+```
+
+此时需要在 `your-generating-api-folder/index.[js/ts]` 文件中删除 `mountApis(Apis)`，避免被全局挂载。
+
+### 调用 API
+
+使用接口时，可以通过 `params`、`pathParams`、`data`、`headers` 来指定请求参数，编辑器会智能提示此接口需要的参数。此外，还可以指定 method 实例的其他 config 参数。
+
+```js
+useRequest(() => Apis.user.changeProfile({
+  // （可选）query 参数
+  params: { id: 12 },
+  // （可选）path 参数
+  pathParams: { id2: 20 },
+  // （可选）body 参数
+  data: { name: 'alova', age: 18 },
+  // （可选）header 参数
+  headers: { 'Content-Type': 'application/json' },
+  // 其他 method 支持的 config 配置项
+  cacheFor: 100 * 1000,
+  transform: response => response.detail,
+}));
+```
+
+## 设置 alova 参数
+
+通常会在 `createAlova` 中设置全局参数。在自动生成的代码中，可以进入 `${output}/index.[js/ts]` 中进行设置，`${output}` 是你在配置文件中指定的 `output` 目录。当重新生成代码时，此文件**不会被覆盖**。
+
+`index` 文件内容如下：
+
+```js
+import { createAlova } from 'alova';
+import GlobalFetch from 'alova/GlobalFetch';
+import VueHook from 'alova/vue';
+import { createApis, withConfigType, mountApis } from './createApis';
+
+// 当前 api 对应的 alova 实例，你可以在此修改参数。
+export const alovaInstance = createAlova({
+  baseURL: 'openapi文件中的server参数',
+  statesHook: VueHook,
+  requestAdapter: GlobalFetch(),
+  beforeRequest: method => {},
+  responded: res => {
+    return res.json();
+  },
+});
+
+// 可复用的 method 参数配置
+export const $$userConfigMap = withConfigType({});
+
+const Apis = createApis(alovaInstance, $$userConfigMap);
+mountApis(Apis);
+
+export default Apis;
+```
+
+你可以在 `createAlova` 中像往常一样编写拦截器、更换请求适配器。
+
+### 配置 method 参数
+
+由于 method 实例是自动生成的，不能直接在创建 method 时设置 `transform`、`cacheFor` 等参数。要达相同的效果，需要在 `withConfigType({})` 中指定对应参数。
+
+以下是对比示例：
+
+```js
+// 手动定义调用函数
+export const useProfile = () => alovaInstance.Get('/user/profile', {
+  cacheFor: 100 * 1000,
+  transform(data) {
+    return data.detail;
+  },
+});
+```
+
+```js
+// 为自动生成的代码设置 method 参数
+export const $$userConfigMap = withConfigType({
+  'user.profile': {
+    cacheFor: 100 * 1000,
+    transform(data) {
+      return data.detail;
+    },
+  },
+});
+```
+
+`user` 为 tag，`profile` 为 operationId，具体可打开 `${output}/apiDefinitions.[js/ts]` 中查看所有 API 接口路径。
+
+## 旧项目迁移
+
+如果希望在已使用 alova 的项目中集成 VSCode 扩展，按以下步骤进行：
+
+1. **根据 OpenAPI 规范文件生成代码** — 运行 `npx worma gen`。
+2. **替换 alova 实例** — 将 `${output}/index.[js/ts]` 中的 alova 实例用原项目中的 alova 实例代码替换。
+3. **修改引入路径** — 在项目中已定义好的 API 调用函数中，修改 alova 实例的引入路径为 `${output}/index.[js/ts]`。
+
+这样可以在不改变原始代码的情况下集成自动生成的代码。
+
+## 注意事项
+
+1. **`strictNullChecks`** — 在 TS 项目中，如果发现 VSCode 无法正确智能提示，请在 `tsconfig.json` 中设置 `"strictNullChecks": true`。
+2. **API 提示为 `any` 类型** — 可按以下步骤排查：
+   - 确认此 API 是否在入口文件中引入。
+   - 重启 VSCode。

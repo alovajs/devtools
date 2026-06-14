@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "alova-wormhole-usage": {
+      "source": "alovajs/skills",
+      "sourceType": "github",
+      "skillPath": "skills/alova-wormhole-usage/SKILL.md",
+      "computedHash": "db27cbc33dc7e53771c6338f4e6d80eb1a0c344bfc08404198eff8974cb5b5f1"
+    }
+  }
+}

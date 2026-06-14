@@ -1,0 +1,65 @@
+---
+title: 在 Cursor / Copilot / Continue 中安装
+description: 让不同 AI 工具读取 wormhole 的 Skill 文档
+---
+
+# 在 Cursor / Copilot / Continue 中安装
+
+## Cursor
+
+Cursor 默认扫描项目中的 `.md` 文件作为上下文。生成 Skill 文档后无需任何配置，直接在对话中让 Cursor 帮你写接口调用代码即可：
+
+```text
+你：帮我完成用户登录功能
+
+Cursor（读取 SKILL.md 后）：
+  找到用户登录接口 → 参数结构 → 调用函数名 → 生成代码
+  import { login } from './api/user';
+  const res = await login({
+    data: { username: 'admin', password: '***' },
+  });
+```
+
+## GitHub Copilot
+
+Copilot 在代码补全和 Copilot Chat 中参考项目内的文档文件。生成 Skill 文档后，Copilot 会在以下场景自动利用：
+
+**代码补全时：**
+
+```typescript
+import { getUserInfo } from './api/user';
+
+await getUserInfo({
+  // Copilot 自动提示 pathParams 结构
+  pathParams: { id: '123' },
+});
+```
+
+**Copilot Chat 中：**
+
+```text
+你：帮我写创建用户的 API 调用
+
+Copilot：使用 createUser 函数...
+import { createUser } from './api/user';
+await createUser({ data: { name: '张三', email: '...' } });
+```
+
+## Continue
+
+Continue 插件同样可以读取项目的 Skill 文档。安装 [Continue](https://continue.dev) 后，在对话中引用上下文：
+
+```text
+@codebase 帮我调用获取文章列表的接口
+```
+
+Continue 会自动检索 `aidocs/` 下的文档，找到文章相关的接口信息。
+
+## 对比效果
+
+| | 无 Skill 文档 | 有 Skill 文档 |
+|---|---|---|
+| AI 对接口的了解 | 一无所知，全靠猜 | 完整了解参数、类型、路径 |
+| 生成代码准确率 | 低，需多次修正 | 高，一次生成可运行 |
+| 引入路径 | 常写错 | 自动使用正确路径 |
+| 参数名称 | 猜错 | 类型安全、完全正确 |

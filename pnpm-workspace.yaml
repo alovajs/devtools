@@ -2,6 +2,7 @@ packages:
   - examples/*
   - packages/*
   - e2e-fixtures-temp/*
+  - docs
 
 catalogs:
   build:

@@ -1,0 +1,68 @@
+---
+title: AI Skills 集成
+description: 让 AI 工具精准理解你的 API 接口
+---
+
+
+AI Skill 是 wormhole 为 AI 编码工具生成的结构化接口描述。它让 Cursor、Copilot、Continue 等 AI 能够精准理解你的每一个接口。
+
+## 核心思想
+
+> **人和 AI，共享同一份接口上下文。**
+
+没有 Skill 文档时，AI 对你的接口一无所知：
+
+```text
+你：帮我调用获取用户信息的接口
+AI：
+  import axios from 'axios'
+  axios.get('/user?id=1')
+  // 参数结构猜错、引入路径不对、响应类型缺失
+```
+
+有 Skill 文档后：
+
+```text
+你：帮我调用获取用户信息的接口
+AI （读取 Skill）：
+  知道函数名 getUserInfo、参数结构、引入路径
+  import { getUserInfo } from './api/user'
+  getUserInfo({ pathParams: { id: 'U001' } })
+  // 一次正确，可直接运行
+```
+
+## 启用 AI Skills
+
+在 `worma.config` 中添加 `aiDoc` 插件：
+
+```javascript
+import { defineConfig } from 'worma';
+import { aiDoc } from 'worma/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      plugins: [
+        aiDoc({
+          // 可选：自定义 Skill 模板
+          template: './custom-ai-skills',
+        }),
+      ],
+    },
+  ],
+});
+```
+
+## 生成产物
+
+执行 `npx worma gen` 后，`aidocs/` 目录包含：
+
+```text
+aidocs/
+├── SKILL.md              # 主文档：接口索引 + 使用约定
+└── references/           # 每个接口一个独立文档
+    ├── user.info.md
+    ├── user.login.md
+    ├── admin.permissions.md
+    └── ...
+```

@@ -1,0 +1,155 @@
+---
+title: 配置对象
+description: defineConfig 和 GeneratorConfig 的完整类型
+---
+
+
+## defineConfig
+
+```typescript
+function defineConfig(config: Config): Config;
+```
+
+## Config
+
+```typescript
+interface Config {
+  /** 生成规则数组 */
+  generator: GeneratorConfig[];
+}
+```
+
+## GeneratorConfig
+
+```typescript
+interface GeneratorConfig {
+  /** OpenAPI 文档地址（URL 或本地路径） */
+  input: string;
+
+  /** 输出目录 */
+  output?: string;
+
+  /** 是否生成文档注释，默认 true */
+  docComment?: boolean;
+
+  /** 响应 MediaType，可设置数组 */
+  responseMediaType?: string | string[];
+
+  /** 请求体 MediaType，可设置数组 */
+  bodyMediaType?: string | string[];
+
+  /** 多文档时的自定义服务名称 */
+  serverName?: string;
+
+  /** 模板配置函数 */
+  template: () => TemplateConfig | Promise<TemplateConfig>;
+
+  /** 插件数组 */
+  plugins?: ApiPlugin[];
+
+  /**
+   * 自定义修改 API 配置的钩子函数。
+   * 将在生成每个 API 前被调用，接收 apiDescription 并返回修改后的结果。
+   */
+  handleApi?: (apiDescription: ApiDescription) => ApiDescription;
+}
+```
+
+## TemplateConfig
+
+```typescript
+interface TemplateConfig {
+  /** 模板路径 */
+  path: string;
+  /** 模板参数 */
+  config?: Record<string, any>;
+}
+```
+
+## GenerateApiOptions
+
+```typescript
+interface GenerateProgress {
+  /** 'core' 表示框架核心；其他值为插件 name */
+  source: string;
+  /** 0-100 百分比 */
+  progress: number;
+  /** 可选消息 */
+  message?: string;
+}
+
+interface GenerateApiOptions {
+  /** 强制重新生成 */
+  force?: boolean;
+  /** 项目路径 */
+  projectPath?: string;
+  /** 进度回调 */
+  onProgress?: (snapshot: Record<string, GenerateProgress>) => void;
+  /** 推送间隔（毫秒），默认 500 */
+  progressInterval?: number;
+}
+```
+
+## handleApi 钩子函数
+
+`handleApi` 是一个自定义修改 API 配置的钩子函数。它会在生成每个 API 前被调用，接收 `apiDescription` 并返回修改后的结果。当 OpenAPI 文件不准确或不详细时，这个钩子非常有用。
+
+`apiDescription` 包含对应 OpenAPI 文件中每个 API 的信息，具体结构可参考 [OpenAPI Spec Operation Object](https://spec.openapis.org/oas/v3.1.0.html#operation-object)。
+
+在 `worma.config.js` 中配置：
+
+```javascript
+export default defineConfig({
+  generator: [
+    {
+      input: 'https://api.example.com/openapi.json',
+      output: 'src/api',
+      template: alova(),
+      handleApi: apiDescription => {
+        // 自定义修改
+        return apiDescription;
+      },
+    },
+  ],
+});
+```
+
+### 修改 API 函数名
+
+将下划线命名改为驼峰：
+
+```javascript
+const handleApi = apiDescription => {
+  apiDescription.operationId = apiDescription.operationId.replace(
+    /_([a-z])/g,
+    function (match, group) {
+      return group.toUpperCase();
+    }
+  );
+  return apiDescription;
+};
+```
+
+### 修改 tag
+
+根据 URL 或其它条件修改 API 的 tag：
+
+```javascript
+const handleApi = apiDescription => {
+  if (apiDescription.url.includes('/user')) {
+    apiDescription.tags = ['userTag'];
+  }
+  return apiDescription;
+};
+```
+
+### 修改 response 数据生成
+
+生成 `response.data` 对应的类型：
+
+```javascript
+const handleApi = apiDescription => {
+  apiDescription.responses = apiDescription.responses?.properties?.data;
+  return apiDescription;
+};
+```

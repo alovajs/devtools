@@ -1,0 +1,15 @@
+{
+  "pages": [
+    "index",
+    "quick-start",
+    "---",
+    "guide",
+    "template-system",
+    "plugin-system",
+    "ai-skills",
+    "cli-commands",
+    "---",
+    "api",
+    "changelog"
+  ]
+}

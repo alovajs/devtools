@@ -1,0 +1,107 @@
+---
+title: Skill 文档结构
+description: SKILL.md 主文档和 references/*.md 的详细格式
+---
+
+
+## SKILL.md 主文档
+
+```markdown
+---
+name: generated-APIs
+description: 项目中所有已生成的 API 接口
+---
+
+# Skill for generated APIs
+
+**## 执行任务**
+
+根据当前的接口需求阅读对应接口的详细文档，
+以获知接口的详细参数信息和调用方式
+
+**## 接口目录（用户服务）**
+
+- [获取用户信息](references/user.info.md)
+- [用户登录](references/user.login.md)
+- [管理员权限配置](references/admin.permissions.md)
+- [系统操作日志审计](references/admin.audit.md)
+- [文章内容管理](references/content/articles.md)
+```
+
+## references/*.md 接口详情
+
+每个接口一个独立文档：
+
+```markdown
+**# 重要：在生成代码前强制执行（不得违反）！！！**
+
+**## 使用约定**
+
+1. 此文档所标记的接口均使用 alova 作为请求客户端，
+   需遵循 alova 的使用规范
+2. 需要按需引入对应的 API 函数，如：
+   `import { selectWarnSecurity } from './api/SwapAccountManageController'`
+
+**## 接口**
+
+管理员权限配置
+
+**## Path Parameters**
+
+根据实际需要在 `pathParams` 中传入参数
+
+```typescript
+interface PathParameters {
+  // 账户编号
+  accountCode: string;
+}
+```
+
+**## RequestBody**
+
+根据实际需要在 `data` 中传入请求体
+
+```typescript
+interface RequestBody {
+  operatorTenantId?: string;
+  currPage?: number;
+  pageSize?: number;
+  accountCode?: string;
+}
+```
+
+**## Response**
+
+```typescript
+interface Response {
+  code: number;
+  data: {
+    accountCode?: string;
+    securityDepositUnitPrice?: number;
+    securityDepositMax?: number;
+  };
+  message: string;
+}
+```
+
+**## 调用示例**
+
+```typescript
+import { selectWarnSecurity } from "./api/SwapAccountManageController";
+
+selectWarnSecurity({
+  pathParams: { accountCode: "" },
+  data: {},
+});
+```
+```
+
+## import 语句自适应
+
+Skill 文档根据模块类型自适应生成 import 语句：
+
+| type 值 | ESM（import） | CommonJS（require） |
+|---------|---------------|---------------------|
+| `typescript` | `import { getUser } from './user'` | — |
+| `module` | `import { getUser } from './user'` | — |
+| `commonjs` | — | `const { getUser } = require('./user')` |

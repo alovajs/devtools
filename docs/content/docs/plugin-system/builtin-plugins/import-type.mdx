@@ -1,0 +1,75 @@
+---
+title: 类型替换器
+description: 替换 global.d.ts 中需要自定义的类型，通过引入名称查找和替换
+---
+
+# 类型替换器
+
+本插件用于替换 `global.d.ts` 中需要自定义的类型，通过引入名称查找和替换。
+
+## 主要功能
+
+- 支持批量替换全局类型定义中的引入类型
+- 支持多模块引入和类型替换
+- 支持自定义模块路径和类型名称
+
+## 基本使用
+
+```javascript
+import { defineConfig } from 'worma';
+import { importType } from 'worma/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      // ...
+      plugins: [
+        // 替换 global.d.ts 中的类型引入
+        importType({
+          bar: ['Apis', 'Foo'],        // import { Apis, Foo } from "bar"
+          '@types/bar': ['Bar'],       // import { Bar } from "@types/bar"
+          'vue|type': ['Vue'],         // import type { Vue } from "vue"
+        }),
+      ],
+    },
+  ],
+});
+```
+
+配置后，`global.d.ts` 中自动生成的类型定义会被替换为用户引入的类型。
+
+## 配置参数
+
+```typescript
+interface ImportTypeConfig {
+  /**
+   * 模块路径
+   * 支持普通模块路径（如 'bar'）或带类型的模块路径（如 'vue|type'）
+   */
+  [modulePath: string]: string[];
+}
+
+function importType(config: ImportTypeConfig): ApiPlugin;
+```
+
+### 多模块配置
+
+同时配置多个模块的类型替换：
+
+```javascript
+importType({
+  bar: ['Apis', 'Foo'],
+  '@types/bar': ['Bar'],
+  'vue|type': ['Vue'],
+});
+```
+
+### 自定义模块路径
+
+使用带类型的模块路径：
+
+```javascript
+importType({
+  'vue|type': ['Vue'], // import type { Vue } from "vue"
+});
+```

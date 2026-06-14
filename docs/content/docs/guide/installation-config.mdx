@@ -1,0 +1,158 @@
+---
+title: 安装与配置
+description: CLI 安装、init、worma.config.js 配置详解
+slug: guide/installation-config
+---
+
+
+## 安装
+
+<Tabs items={['npm', 'yarn', 'pnpm', 'bun']}>
+  <Tab value="npm">
+
+```bash
+npm i worma -D
+```
+
+  </Tab>
+  <Tab value="yarn">
+
+```bash
+yarn add worma -D
+```
+
+  </Tab>
+  <Tab value="pnpm">
+
+```bash
+pnpm add worma -D
+```
+
+  </Tab>
+  <Tab value="bun">
+
+```bash
+bun add worma -D
+```
+
+  </Tab>
+</Tabs>
+
+## 初始化
+
+```bash
+npx worma init
+```
+
+此命令在项目根目录创建 `worma.config.js`（也支持 `.cjs` 或 `.ts` 扩展名），默认配置了 alova 模板和 `aiDoc` 插件：
+
+```javascript
+import { defineConfig } from 'worma';
+import { alova } from 'worma/template';
+import { aiDoc } from 'worma/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      input: 'https://api.example.com/openapi.json',
+      output: 'src/api',
+      template: alova(),
+      plugins: [aiDoc()],
+    },
+  ],
+});
+```
+
+`init` 也可通过 `--template` 参数指定其他初始模板：
+
+```bash
+npx worma init --template axios
+```
+
+## worma.config.js 完整配置
+
+```javascript
+import { defineConfig } from 'worma';
+import { rename } from 'worma/plugin';
+import { alova, functional } from 'worma/template';
+import { aiDoc } from 'worma/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      input: 'https://api.example.com/openapi.json',
+      output: 'src/api',
+      docComment: true,
+      responseMediaType: 'application/json',
+      bodyMediaType: 'application/json',
+      serverName: '用户服务',
+      template: alova({ framework: 'vue' }),
+      plugins: [
+        aiDoc(),
+        rename({ getUserInfo: 'fetchUserProfile' }),
+      ],
+    },
+  ],
+});
+```
+
+### 配置项速览
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+|------|------|------|--------|------|
+| `input` | `string` | 是 | — | OpenAPI 文档地址 |
+| `output` | `string` | 否 | 由模板决定 | 输出目录 |
+| `docComment` | `boolean` | 否 | `true` | 是否生成文档注释 |
+| `responseMediaType` | `string \| string[]` | 否 | — | 响应 MediaType |
+| `bodyMediaType` | `string \| string[]` | 否 | — | 请求体 MediaType |
+| `serverName` | `string` | 否 | 文档 `info.title` | 服务端名称 |
+| `template` | `Function` | 是 | — | 模板配置函数 |
+| `plugins` | `ApiPlugin[]` | 否 | — | 插件数组 |
+
+## 多数据源配置
+
+在 `generator` 数组中配置多个项，可以从不同 OpenAPI 文档生成到不同目录：
+
+```javascript
+import { defineConfig } from 'worma';
+import { alova, axios } from 'worma/template';
+import { aiDoc } from 'worma/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      input: 'https://user-service.example.com/openapi.json',
+      output: 'src/api/user-service',
+      serverName: '用户服务',
+      template: alova({ framework: 'vue' }),
+      plugins: [aiDoc()],
+    },
+    {
+      input: 'https://order-service.example.com/openapi.json',
+      output: 'src/api/order-service',
+      serverName: '订单服务',
+      template: axios(),
+      plugins: [aiDoc()],
+    },
+  ],
+});
+```
+
+多数据源时，建议为每个 generator 设置 `serverName`，便于 VSCode 扩展侧边栏分组以及 AI Skill 文档按服务分类。
+
+## 简易配置 `.wormarc`
+
+纯文本格式，每行一个 OpenAPI 文档地址：
+
+```
+# 主服务，默认 alova 模板
+https://api.example.com/v1/openapi.json
+
+# 管理后台，使用 axios 模板
+admin=https://api.admin.com/openapi.json, axios
+
+# 文件服务，使用 fetch 模板
+public/files=https://api.files.com/openapi.json, fetch
+```
+
+> 同时存在 `.wormarc` 和 `worma.config` 时，`worma.config` 优先级更高。

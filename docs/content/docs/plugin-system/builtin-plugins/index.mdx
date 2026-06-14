@@ -1,0 +1,43 @@
+---
+title: 内置插件
+description: 全部内置插件的使用，包括 importType、aiDoc、rename、tagModifier 等
+---
+
+
+wormhole 内置了以下预设插件，可在 `plugins` 数组中按顺序配置使用。
+
+| 插件 | 说明 | 文档 |
+|------|------|------|
+| rename | 重命名 API 调用函数和参数名，支持多种命名风格 | [查看详情](/docs/plugin-system/builtin-plugins/rename) |
+| tagModifier | 修改 API 的 tag 名称 | [查看详情](/docs/plugin-system/builtin-plugins/tag-modifier) |
+| payloadModifier | 增加、删除和修改 API 的参数类型 | [查看详情](/docs/plugin-system/builtin-plugins/payload-modifier) |
+| filterApi | 根据 URL 和 tag 匹配过滤 API | [查看详情](/docs/plugin-system/builtin-plugins/filter-api) |
+| apifox | 自动导入 Apifox 中的项目 | [查看详情](/docs/plugin-system/builtin-plugins/apifox) |
+| importType | 复用外部类型，排除自动生成 | [查看详情](/docs/plugin-system/builtin-plugins/import-type) |
+| aiDoc | 生成 AI Skill 文档 | 详见 [AI Skills 集成](/docs/ai-skills) |
+
+## 插件排序
+
+插件将按照在 `plugins` 数组中的顺序依次执行：
+
+```javascript
+import { defineConfig } from 'worma';
+import { rename, tagModifier, payloadModifier, filterApi, apifox, importType } from 'worma/plugin';
+import { aiDoc } from 'worma/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      // ...
+      plugins: [
+        rename({ style: 'camelCase' }),
+        tagModifier(tag => `api_${tag}`),
+        payloadModifier([/* ... */]),
+        filterApi({ include: '/api/v1' }),
+        importType({ 'my-types|type': ['Pagination'] }),
+        aiDoc(),
+      ],
+    },
+  ],
+});
+```

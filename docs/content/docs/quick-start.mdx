@@ -1,0 +1,162 @@
+---
+title: 快速开始
+description: 5 分钟生成并体验 VSCode 悬停文档
+---
+
+
+5 分钟，完成第一个 API 的代码生成，并体验 VSCode 悬停查看 API 文档的能力。
+
+## 第一步：安装
+
+<Tabs items={['npm', 'yarn', 'pnpm', 'bun']}>
+  <Tab value="npm">
+
+```bash
+npm i worma -D
+```
+
+  </Tab>
+  <Tab value="yarn">
+
+```bash
+yarn add worma -D
+```
+
+  </Tab>
+  <Tab value="pnpm">
+
+```bash
+pnpm add worma -D
+```
+
+  </Tab>
+  <Tab value="bun">
+
+```bash
+bun add worma -D
+```
+
+  </Tab>
+</Tabs>
+
+## 第二步：初始化
+
+在项目根目录运行：
+
+```bash
+npx worma init
+```
+
+这会创建一个 `worma.config.js`（或 `.cjs`/`.ts`）文件，并且默认配置了 alova 模板和 `aiDoc` 插件用于生成 AI Skill 文档：
+
+```javascript
+import { defineConfig } from 'worma';
+import { alova } from 'worma/template';
+import { aiDoc } from 'worma/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      input: 'https://api.example.com/openapi.json',
+      output: 'src/api',
+      template: alova(),
+      plugins: [aiDoc()],
+    },
+  ],
+});
+```
+
+如果已有 OpenAPI 文档地址，也可以编辑 `.wormarc` 快速配置：
+
+```
+https://api.example.com/openapi.json
+```
+
+## 第三步：生成
+
+```bash
+npx worma gen
+```
+
+生成完成后，你会看到多行进度条输出：
+
+```text
+Generating `./src/api`...
+  [core]   ████████████████████   100% completed
+
+✓ src/api/index.ts
+✓ src/api/user.ts
+✓ src/api/types.ts
+✓ .worma-cache.json
+```
+
+## 生成结果
+
+`npx worma gen` 会在输出目录中生成以下内容：
+
+```text
+src/api/
+├── index.ts              # ① 入口文件：创建请求实例 + 重导出所有 API
+├── user.ts               # ② 调用函数：按 tag 拆分的 API 函数文件
+├── article.ts
+├── types.ts              # ③ 类型定义：请求参数和响应的 TypeScript 类型
+├── .worma-cache.json     # ④ VSCode 扩展缓存：供编辑器内嵌文档使用
+└── aidocs/               # ⑤ AI Skill 文档：让 Cursor / Copilot 读懂你的接口
+    ├── SKILL.md          #    主文档
+    └── references/       #    每个接口的详细文档
+        ├── user.info.md
+        └── user.login.md
+```
+
+各产出物说明：
+
+| 文件 | 作用 |
+|------|------|
+| `index.ts` | 请求客户端实例（如 alova/axios/fetch），重导出所有 tag 模块 |
+| `{tag}.ts` | 按 OpenAPI tag 拆分的函数文件，每个 API 对应一个导出函数 |
+| `types.ts` | 自动推导的请求参数和响应数据类型 |
+| `.worma-cache.json` | VSCode 扩展的接口缓存，用于搜索和悬停显示 |
+| `aidocs/SKILL.md` | AI Skill 主索引，AI 工具读取后了解所有接口概览 |
+| `aidocs/references/*.md` | 每个接口的详细参数、类型和调用示例 |
+
+## 选择模板
+
+wormhole 内置了多套预定义模板，覆盖主流的请求库：
+
+| 模板 | 请求库 | 特点 |
+|------|--------|------|
+| [alova（functional）](/docs/template-system/predefined-templates#alovafunctional) | alova@3 | 函数式调用，支持 Tree-shaking |
+| [alovaGlobals](/docs/template-system/predefined-templates#alovaglobals) | alova@3 | 全局挂载 `Apis.xxx` |
+| [axios](/docs/template-system/predefined-templates#axios) | axios | 最流行的 HTTP 客户端 |
+| [fetch](/docs/template-system/predefined-templates#fetch) | 原生 fetch | 零额外依赖 |
+| [ky](/docs/template-system/predefined-templates#ky) | ky | 轻量级 fetch 封装 |
+
+如果以上都不满足你的需求，wormhole 支持[完全自定义模板](/docs/template-system/custom-templates)，使用 Handlebars 语法自由控制生成代码的结构和内容。
+
+## 第四步：体验 VSCode 悬停
+
+安装 [VSCode 扩展](#todo-link)，然后将鼠标悬停在你项目中对生成函数的调用上：
+
+```typescript
+import { getUserInfo } from './api/user';
+
+const user = await getUserInfo({
+  pathParams: { id: '123' },
+});
+//       ^ 悬停此处，即可看到接口详情
+```
+
+此时编辑器会弹出包含以下信息的气泡窗口：
+
+- 接口路径和 HTTP 方法
+- 完整参数表（路径参数、查询参数、请求体）
+- 响应结构示例
+- 接口描述
+
+> 无需切换窗口，无需打开浏览器，所有信息就在你的代码中。这就是 wormhole 要消除的"摩擦"。
+
+## 下一步
+
+- 了解[安装与配置](/docs/guide/installation-config)的更多细节
+- 了解 [Monorepo 支持](/docs/guide/basic-usage)中的自动检测子包功能
+- 了解[编辑器内文档](/docs/guide/editor-docs)的全部能力
