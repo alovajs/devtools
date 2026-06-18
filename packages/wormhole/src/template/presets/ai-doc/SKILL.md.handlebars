@@ -1,0 +1,21 @@
+---
+name: {{{serverName}}}
+description: "{{{title}}} - {{{description}}}"
+---
+
+# {{{title}}}
+
+> {{{serverName}}} - version {{{version}}}
+
+## Task
+
+Read the corresponding API documentation based on current interface requirements to obtain detailed parameter information and calling methods.
+
+## API Directory ({{{serverName}}})
+
+{{#each tagedApis}}
+- **{{{tagName}}}**
+{{#each apis}}
+  - [{{{summary}}}](./references/{{{../tagName}}}/{{{name}}}.md) `[{{{method}}}] {{{path}}}`
+{{/each}}
+{{/each}}

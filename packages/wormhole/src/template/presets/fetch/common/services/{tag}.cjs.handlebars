@@ -1,0 +1,23 @@
+{{> comment}}
+const { fetchClient } = require('../index');
+const { buildPayload } = require('../helper');
+const { {{currentTag.tagName}}DefaultConfig } = require('.');
+
+
+{{#each tagedApis}}
+{{#each apis}}
+{{> api-jsdoc}}
+async function {{{name}}}(config = {}) {
+  const { url, mergedConfig } = buildPayload('{{{path}}}', {{{tag}}}DefaultConfig, {{{name}}}.name, config);
+  return fetchClient.request(url, { method: '{{method}}', ...mergedConfig{{#if (eq response "Blob")}}, blob: true{{/if}} });
+}
+
+{{/each}}
+{{/each}}
+module.exports = {
+  {{#each tagedApis}}
+  {{#each apis}}
+  {{{name}}},
+  {{/each}}
+  {{/each}}
+};

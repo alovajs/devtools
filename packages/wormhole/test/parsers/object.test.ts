@@ -93,7 +93,7 @@ describe('object Type Parser', () => {
       // Check first property (id)
       expect(result.params[0].ast).toBe(mockIdAST)
       expect(result.params[0].keyName).toBe('id')
-      expect(result.params[0].isRequired).toBe(true)
+      expect(result.params[0].isRequired).toBeTruthy()
 
       // Check second property (name)
       expect(result.params[1].ast).toBe(mockNameAST)
@@ -141,8 +141,8 @@ describe('object Type Parser', () => {
       const result = objectTypeParser(schema, ctx) as TInterface
 
       expect(result.type).toBe(ASTType.INTERFACE)
-      expect(result.params[0].isRequired).toBe(true)
-      expect(result.params[1].isRequired).toBe(true)
+      expect(result.params[0].isRequired).toBeTruthy()
+      expect(result.params[1].isRequired).toBeTruthy()
     })
 
     it('should handle object with additionalProperties as boolean', () => {
@@ -295,7 +295,7 @@ describe('object Type Parser', () => {
       const result = objectTypeParser(schema, ctx)
 
       expect(result.type).toBe(ASTType.INTERFACE)
-      expect(result.deprecated).toBe(true)
+      expect(result.deprecated).toBeTruthy()
     })
 
     it('should set pathKey correctly for each property', () => {

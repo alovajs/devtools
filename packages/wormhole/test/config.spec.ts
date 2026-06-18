@@ -1,36 +1,122 @@
 import type { Config } from '@/type'
 import fs from 'node:fs/promises'
-import { resolve } from 'node:path'
-import { rimraf } from 'rimraf'
+import { Module } from 'node:module'
+import { dirname, resolve } from 'node:path'
+import { vol } from 'memfs'
 import { createConfig, readConfig } from '@/index'
-import { existsPromise } from '@/utils'
+import { clearPackageJsonCache } from '@/utils/readPackageJson'
 
-const requireResult = new Map<string, Record<string, any> | null | Error>()
-vi.mock('import-fresh', () => ({
-  __esModule: true,
-  default(path: string) {
-    if (!requireResult.get(path)) {
-      throw new Error(`require ${path} not found`)
-    }
-    const result = requireResult.get(path)
-    if (result instanceof Error) {
-      throw result
-    }
-    return result
-  },
-}))
+vi.mock('node:fs')
+vi.mock('node:fs/promises')
 
-// 比较配置，template 函数单独断言
+// Map to mock require() results for package.json resolution
+const requireResult = new Map<string, any>()
+
+// Patch Module._resolveFilename so paths we pre-populate in Module._cache
+// resolve without filesystem access. Falls back to the original resolver.
+const originalResolveFilename = (Module as any)._resolveFilename
+;(Module as any)._resolveFilename = function patchedResolveFilename(request: string, ...rest: any[]) {
+  if ((Module as any)._cache && (Module as any)._cache[request]) {
+    return request
+  }
+  return originalResolveFilename.call(this, request, ...rest)
+}
+
+// Mock esbuild so build() operates entirely in-memory:
+// - reads entry source from the memfs-mocked fs
+// - transforms with the real esbuild's transform()
+// - pre-loads Node's require cache for the temp outfile so `require(outfile)`
+//   in src/readConfig.ts doesn't touch the real disk
+// - writes the bundle into memfs so any later unlink/cleanup operates on memfs
+vi.mock('esbuild', async () => {
+  const real = await vi.importActual<typeof import('esbuild')>('esbuild')
+  const customBuild = async (options: any) => {
+    const entryPoint: string = options.entryPoints[0]
+    const outfile: string = options.outfile
+    const projectDir = dirname(entryPoint)
+    const source = await fs.readFile(entryPoint, 'utf-8')
+    const ext = entryPoint.split('.').pop() ?? 'ts'
+    const loader = ext === 'ts' || ext === 'tsx' || ext === 'mts' || ext === 'cts'
+      ? 'ts'
+      : 'js'
+    const transformed = await real.transform(source, {
+      loader: loader as any,
+      format: 'cjs',
+      platform: 'node',
+    })
+
+    // Custom require for in-memory evaluation:
+    //  - check requireResult Map first (set by tests)
+    //  - relative paths -> read from memfs (JSON parsed for .json)
+    //  - bare specifiers -> empty object (configs only use type imports for these)
+    const customRequire = (spec: string) => {
+      if (spec.startsWith('.') || spec.startsWith('/') || /^[a-z]:/i.test(spec)) {
+        const target = resolve(projectDir, spec)
+        // Check requireResult map first (used to mock specific module results)
+        if (requireResult.has(target)) {
+          const cached = requireResult.get(target)
+          if (cached === null) throw new Error(`Cannot find module '${spec}'`)
+          return cached
+        }
+        // try direct, then with .json extension
+        for (const candidate of [target, `${target}.json`]) {
+          try {
+            const data = vol.readFileSync(candidate, 'utf-8') as string
+            if (candidate.endsWith('.json'))
+              return JSON.parse(data)
+            return data
+          }
+          catch {}
+        }
+        throw new Error(`Cannot find module '${spec}'`)
+      }
+      return {}
+    }
+
+    const moduleExports: Record<string, any> = {}
+    const moduleObj = { exports: moduleExports }
+    // eslint-disable-next-line no-new-func
+    const fn = new Function('module', 'exports', 'require', '__filename', '__dirname', transformed.code)
+    fn(moduleObj, moduleObj.exports, customRequire, entryPoint, projectDir)
+
+    // Persist a stub bundle into memfs so any later unlink works against memfs.
+    await fs.mkdir(dirname(outfile), { recursive: true }).catch(() => {})
+    await fs.writeFile(outfile, transformed.code, 'utf-8')
+
+    // Pre-populate Node require cache so `require(outfile)` returns the captured
+    // exports without ever touching the real filesystem.
+    const cached = new Module(outfile)
+    cached.filename = outfile
+    cached.loaded = true
+    cached.exports = moduleObj.exports
+    ;(Module as any)._cache[outfile] = cached
+    return { errors: [], warnings: [], outputFiles: [] } as any
+  }
+  return {
+    ...real,
+    build: customBuild,
+    default: { ...real, build: customBuild },
+  }
+})
+
+beforeEach(() => {
+  vol.reset()
+  clearPackageJsonCache()
+  // Ensure process.cwd() exists in memfs so fs.writeFile can create files there
+  vol.mkdirSync(process.cwd(), { recursive: true })
+})
+
+// 比较配置，plugins 函数单独断言
 function expectConfigEqual(actual: Config, expected: Config) {
-  expect(actual.autoUpdate).toBe(expected.autoUpdate)
   expect(actual.generator.length).toBe(expected.generator.length)
   actual.generator.forEach((gen, idx) => {
     const expectedGen = expected.generator[idx]
-    const { template: actualTemplate, ...actualRest } = gen
-    const { template: expectedTemplate, ...expectedRest } = expectedGen
+    const { plugins: actualPlugins, ...actualRest } = gen
+    const { plugins: expectedPlugins, ...expectedRest } = expectedGen
     expect(actualRest).toEqual(expectedRest)
-    expect(typeof actualTemplate).toBe('function')
-    expect(typeof expectedTemplate).toBe('function')
+    expect(Array.isArray(actualPlugins)).toBe(true)
+    expect(Array.isArray(expectedPlugins)).toBe(true)
+    expect(actualPlugins.length).toBe(expectedPlugins.length)
   })
 }
 
@@ -46,9 +132,7 @@ export default <Config>{
       input: 'http://localhost:3000/' + pkg.name,
       output: 'src/api',
       type: 'ts',
-      template: () => ({
-        path: '',
-      })
+      plugins: [{getTemplate: () => ({path: ''})}]
     }
   ]
 }`,
@@ -61,14 +145,9 @@ export default <Config>{
             bodyMediaType: 'application/json',
             responseMediaType: 'application/json',
             defaultRequire: false,
-            template() {
-              return {
-                path: '',
-              }
-            },
+            plugins: [{ getTemplate() { return { path: '' }; } }],
           },
         ],
-        autoUpdate: true,
       },
     },
     tsWithoutImport: {
@@ -80,9 +159,7 @@ export default <Config>{
       input: 'http://localhost:3000/',
       output: 'src/api',
       type: 'ts',
-      template: () => ({
-        path: '',
-      })
+      plugins: [{getTemplate: () => ({path: ''})}]
     }
   ]
 }`,
@@ -95,14 +172,9 @@ export default <Config>{
             bodyMediaType: 'application/json',
             responseMediaType: 'application/json',
             defaultRequire: false,
-            template() {
-              return {
-                path: '',
-              }
-            },
+            plugins: [{ getTemplate() { return { path: '' }; } }],
           },
         ],
-        autoUpdate: true,
       },
     },
     module: {
@@ -114,9 +186,7 @@ export default {
       input: 'http://localhost:3000/' + pkg.name,
       output: 'src/api',
       type: 'module',
-      template: () => ({
-        path: '',
-      })
+      plugins: [{getTemplate: () => ({path: ''})}]
     }
   ]
 }`,
@@ -129,14 +199,9 @@ export default {
             bodyMediaType: 'application/json',
             responseMediaType: 'application/json',
             defaultRequire: false,
-            template() {
-              return {
-                path: '',
-              }
-            },
+            plugins: [{ getTemplate() { return { path: '' }; } }],
           },
         ],
-        autoUpdate: true,
       },
     },
     commonjs: {
@@ -148,9 +213,7 @@ module.exports = {
       input: 'http://localhost:3000/' + pkg.name,
       output: 'src/api',
       type: 'commonjs',
-      template: () => ({
-        path: '',
-      })
+      plugins: [{getTemplate: () => ({path: ''})}]
     }
   ]
 }`,
@@ -163,30 +226,24 @@ module.exports = {
             bodyMediaType: 'application/json',
             responseMediaType: 'application/json',
             defaultRequire: false,
-            template() {
-              return {
-                path: '',
-              }
-            },
+            plugins: [{ getTemplate() { return { path: '' }; } }],
           },
         ],
-        autoUpdate: true,
       },
     },
   }
 
-afterEach(async () => {
-  await Promise.all([
-    rimraf(resolve(process.cwd(), 'alova.config.ts')),
-    rimraf(resolve(process.cwd(), 'alova.config.js')),
-    rimraf(resolve(process.cwd(), '.alova')),
-  ]).catch(() => {})
-})
-
 describe('config', () => {
   it('should create config file under project root path', async () => {
     // generate typescript file
-
+    await fs.writeFile(resolve(process.cwd(), './package.json'), JSON.stringify({
+      devDependencies: {
+        typescript: '^5.4.5',
+      },
+      dependencies: {
+        alova: '3.0.5',
+      },
+    }), 'utf-8')
     requireResult.set(resolve(process.cwd(), './package.json'), {
       devDependencies: {
         typescript: '^5.4.5',
@@ -195,41 +252,61 @@ describe('config', () => {
         alova: '3.0.5',
       },
     })
+    clearPackageJsonCache()
     await createConfig()
     const tsConfigPath = resolve(process.cwd(), 'alova.config.ts')
     const initialTsConfig = await fs.readFile(tsConfigPath, {
       encoding: 'utf-8',
     })
     expect(initialTsConfig).toMatch(`import { defineConfig } from '@alova/wormhole';`)
+    expect(initialTsConfig).toMatch(`import { alova } from '@alova/wormhole/plugin';`)
     expect(initialTsConfig).toMatch(`export default defineConfig({`)
     expect(initialTsConfig).toMatch(`input: 'http://localhost:3000',`)
+    expect(initialTsConfig).toMatch(`plugins: [alova()]`)
 
     // generate commonjs file
+    await fs.writeFile(resolve(process.cwd(), './package.json'), JSON.stringify({
+      type: 'commonjs',
+      dependencies: {
+        alova: '3.0.5',
+      },
+    }), 'utf-8')
     requireResult.set(resolve(process.cwd(), './package.json'), {
       type: 'commonjs',
       dependencies: {
         alova: '3.0.5',
       },
     })
+    clearPackageJsonCache()
     await createConfig()
     const initialCjsConfig = await fs.readFile(resolve(process.cwd(), 'alova.config.js'), {
       encoding: 'utf-8',
     })
     expect(initialCjsConfig).toMatch(`const { defineConfig } = require('@alova/wormhole');`)
+    expect(initialCjsConfig).toMatch(`const { alova } = require('@alova/wormhole/plugin');`)
     expect(initialCjsConfig).toMatch(`module.exports = defineConfig({`)
+    expect(initialCjsConfig).toMatch(`plugins: [alova()]`)
 
     // generate module file
+    await fs.writeFile(resolve(process.cwd(), './package.json'), JSON.stringify({
+      dependencies: {
+        alova: '3.0.5',
+      },
+    }), 'utf-8')
     requireResult.set(resolve(process.cwd(), './package.json'), {
       dependencies: {
         alova: '3.0.5',
       },
     })
+    clearPackageJsonCache()
     await createConfig()
     const initialEsmoduleConfig = await fs.readFile(resolve(process.cwd(), 'alova.config.js'), {
       encoding: 'utf-8',
     })
     expect(initialEsmoduleConfig).toMatch(`import { defineConfig } from '@alova/wormhole';`)
+    expect(initialEsmoduleConfig).toMatch(`import { alova } from '@alova/wormhole/plugin';`)
     expect(initialEsmoduleConfig).toMatch(`export default defineConfig({`)
+    expect(initialEsmoduleConfig).toMatch(`plugins: [alova()]`)
 
     // generate file with target type
     await createConfig({ type: 'typescript' })
@@ -237,113 +314,124 @@ describe('config', () => {
       encoding: 'utf-8',
     })
     expect(initialTypedConfig).toMatch(`import { defineConfig } from '@alova/wormhole';`)
+    expect(initialTypedConfig).toMatch(`import { alova } from '@alova/wormhole/plugin';`)
     expect(initialTypedConfig).toMatch(`export default defineConfig({`)
     expect(initialTypedConfig).toMatch(`input: 'http://localhost:3000',`)
+    expect(initialTypedConfig).toMatch(`plugins: [alova()]`)
+  })
+
+  it('should create config file with specified template preset', async () => {
+    await fs.writeFile(resolve(process.cwd(), './package.json'), JSON.stringify({
+      devDependencies: {
+        typescript: '^5.4.5',
+      },
+    }), 'utf-8')
+    requireResult.set(resolve(process.cwd(), './package.json'), {
+      devDependencies: {
+        typescript: '^5.4.5',
+      },
+    })
+    await createConfig({ template: 'axios' })
+    const axiosConfig = await fs.readFile(resolve(process.cwd(), 'alova.config.ts'), {
+      encoding: 'utf-8',
+    })
+    expect(axiosConfig).toMatch(`import { axios } from '@alova/wormhole/plugin';`)
+    expect(axiosConfig).toMatch(`plugins: [axios()]`)
+
+    await createConfig({ template: 'fetch' })
+    const fetchConfig = await fs.readFile(resolve(process.cwd(), 'alova.config.ts'), {
+      encoding: 'utf-8',
+    })
+    expect(fetchConfig).toMatch(`import { fetch } from '@alova/wormhole/plugin';`)
+    expect(fetchConfig).toMatch(`plugins: [fetch()]`)
   })
 
   it('should create config file under a custom absolute path', async () => {
     const customPath = './mockdir_config_0'
-    // Set up package.json file
-
+    await fs.mkdir(resolve(customPath), { recursive: true })
+    await fs.writeFile(resolve(customPath, './package.json'), JSON.stringify({
+      type: 'commonjs',
+      dependencies: {
+        alova: '3.0.5',
+      },
+    }), 'utf-8')
     requireResult.set(resolve(customPath, './package.json'), {
       type: 'commonjs',
       dependencies: {
         alova: '3.0.5',
       },
     })
-    try {
-      await createConfig({ projectPath: customPath })
-      const configPath = resolve(customPath, 'alova.config.js')
-      const initialConfig = await fs.readFile(configPath, {
-        encoding: 'utf-8',
-      })
-      expect(!!initialConfig).toBeTruthy()
-    }
-    finally {
-      await rimraf(resolve(customPath)) // clear temporary directory
-    }
+    await createConfig({ projectPath: customPath })
+    const configPath = resolve(customPath, 'alova.config.js')
+    const initialConfig = await fs.readFile(configPath, {
+      encoding: 'utf-8',
+    })
+    expect(!!initialConfig).toBeTruthy()
   })
 
   it('should create config file under a custom relative path', async () => {
     const customPath = './mockdir_config'
-    // Set up package.json file
-
-    requireResult.set(resolve(process.cwd(), customPath, './package.json'), {
+    const pkgPath = resolve(process.cwd(), customPath, './package.json')
+    await fs.mkdir(resolve(process.cwd(), customPath), { recursive: true })
+    await fs.writeFile(pkgPath, JSON.stringify({
+      type: 'commonjs',
+      dependencies: {
+        alova: '3.0.8',
+      },
+    }), 'utf-8')
+    requireResult.set(pkgPath, {
       type: 'commonjs',
       dependencies: {
         alova: '3.0.8',
       },
     })
-    try {
-      await createConfig({ projectPath: customPath })
-      const configPath = resolve(process.cwd(), customPath, 'alova.config.js')
-      const initialConfig = await fs.readFile(configPath, {
-        encoding: 'utf-8',
-      })
-      expect(!!initialConfig).toBeTruthy()
-    }
-    finally {
-      await rimraf(resolve(process.cwd(), customPath)) // clear temporary directory
-    }
+    await createConfig({ projectPath: customPath })
+    const configPath = resolve(process.cwd(), customPath, 'alova.config.js')
+    const initialConfig = await fs.readFile(configPath, {
+      encoding: 'utf-8',
+    })
+    expect(!!initialConfig).toBeTruthy()
   })
 
   it('should read config file under project root path', async () => {
-    // write mock config file
     const projectRoot = resolve(__dirname, './mockdir_config_root')
-    if (!(await existsPromise(projectRoot))) {
-      await fs.mkdir(projectRoot, { recursive: true })
-    }
+    await fs.mkdir(projectRoot, { recursive: true })
 
-    // Create mock package.json file
     const mockPackageJson = {
       name: 'alova-devtools',
       version: '1.0.0',
     }
     await fs.writeFile(resolve(projectRoot, 'package.json'), JSON.stringify(mockPackageJson, null, 2), 'utf-8')
 
-    try {
-      // read ts file
-      await fs.writeFile(resolve(projectRoot, configMap.ts.file), configMap.ts.content, 'utf-8')
-      requireResult.set(resolve(projectRoot, './package.json'), mockPackageJson)
+    // read ts file
+    await fs.writeFile(resolve(projectRoot, configMap.ts.file), configMap.ts.content, 'utf-8')
+    requireResult.set(resolve(projectRoot, './package.json'), mockPackageJson)
 
-      const tsConfig = await readConfig(projectRoot)
-      expectConfigEqual(tsConfig, configMap.ts.expectedConfig)
+    const tsConfig = await readConfig(projectRoot)
+    expectConfigEqual(tsConfig, configMap.ts.expectedConfig)
 
-      // read module config file
-      await fs.writeFile(resolve(projectRoot, configMap.module.file), configMap.module.content, 'utf-8')
-      requireResult.set(resolve(projectRoot, './package.json'), mockPackageJson)
+    // read module config file
+    await fs.writeFile(resolve(projectRoot, configMap.module.file), configMap.module.content, 'utf-8')
+    requireResult.set(resolve(projectRoot, './package.json'), mockPackageJson)
 
-      const moduleConfig = await readConfig(projectRoot)
-      expectConfigEqual(moduleConfig, configMap.module.expectedConfig)
+    const moduleConfig = await readConfig(projectRoot)
+    expectConfigEqual(moduleConfig, configMap.module.expectedConfig)
 
-      // read commonjs config file
-      await fs.writeFile(resolve(projectRoot, configMap.commonjs.file), configMap.commonjs.content, 'utf-8')
-      requireResult.set(resolve(projectRoot, './package.json'), mockPackageJson)
+    // read commonjs config file
+    await fs.writeFile(resolve(projectRoot, configMap.commonjs.file), configMap.commonjs.content, 'utf-8')
+    requireResult.set(resolve(projectRoot, './package.json'), mockPackageJson)
 
-      const cjsConfig = await readConfig(projectRoot)
-      expectConfigEqual(cjsConfig, configMap.commonjs.expectedConfig)
-    }
-    finally {
-      // Clean up temporary directory
-      await rimraf(projectRoot)
-    }
+    const cjsConfig = await readConfig(projectRoot)
+    expectConfigEqual(cjsConfig, configMap.commonjs.expectedConfig)
   })
 
   it('should read config file under target path', async () => {
-    // read ts file
     const customPath = resolve(__dirname, './mockdir_config2')
-    if (!(await existsPromise(customPath))) {
-      await fs.mkdir(customPath, { recursive: true })
-    }
+    await fs.mkdir(customPath, { recursive: true })
     await fs.writeFile(resolve(customPath, configMap.tsWithoutImport.file), configMap.tsWithoutImport.content, 'utf-8')
     requireResult.set(customPath, null) // require()=> throw error
 
-    try {
-      const tsConfig = await readConfig(customPath)
-      expectConfigEqual(tsConfig, configMap.tsWithoutImport.expectedConfig)
-    }
-    finally {
-      await rimraf(customPath) // clear temporary directory
-    }
+    const tsConfig = await readConfig(customPath)
+    expectConfigEqual(tsConfig, configMap.tsWithoutImport.expectedConfig)
   })
 })

@@ -1,4 +1,7 @@
 const { defineConfig } = require('@alova/wormhole');
+{{#if templateImport}}
+const { {{{templateImport}}} } = require('@alova/wormhole/plugin');
+{{/if}}
 
 // For more config detailed visit:
 // https://alova.js.org/tutorial/getting-started/extension-integration

@@ -1,0 +1,17 @@
+{{> comment}}
+const { FetchClient } = require('./FetchClient');
+
+const fetchClient = new FetchClient({ baseURL: '{{{baseUrl}}}' });
+
+fetchClient.addRequestInterceptor(config => {
+  return config;
+});
+
+fetchClient.addResponseInterceptor(async (response, config) => {
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+  return config.blob ? response.blob() : response.json();
+});
+
+module.exports = { fetchClient };

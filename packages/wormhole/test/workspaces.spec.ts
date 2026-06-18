@@ -2,9 +2,14 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import resolveWorkspaces from '@/resolveWorkspaces'
 import { existsPromise } from '@/utils'
+import { clearPackageJsonCache } from '@/utils/readPackageJson'
 
 vi.mock('node:fs')
 vi.mock('node:fs/promises')
+
+beforeEach(() => {
+  clearPackageJsonCache()
+})
 /**
  * Create files and directories based on the given file structure object
  * @param {Record<string, any>} structure file structure object

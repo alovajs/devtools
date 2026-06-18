@@ -1,0 +1,15 @@
+{{> comment}}
+const { setDefaultConfig } = require('../helper');
+{{#each tagedApis}}
+const {{{tagName}}} = require('./{{{tagName}}}');
+{{/each}}
+
+{{#each tagedApis}}
+const {{{tagName}}}DefaultConfig = setDefaultConfig({{{tagName}}}, {});
+{{/each}}
+
+module.exports = {
+  {{#each tagedApis}}
+  {{{tagName}}}DefaultConfig,
+  {{/each}}
+};

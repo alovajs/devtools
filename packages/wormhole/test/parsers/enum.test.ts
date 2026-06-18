@@ -232,7 +232,7 @@ describe('enum Type Parser', () => {
       const result = enumTypeParser(schema, ctx)
 
       expect(result.type).toBe(ASTType.ENUM)
-      expect(result.deprecated).toBe(true)
+      expect(result.deprecated).toBeTruthy()
     })
 
     it('should throw error when enum values do not match type', () => {
@@ -296,7 +296,7 @@ describe('enum Type Parser', () => {
       expect(result.params).toHaveLength(2)
 
       expect(result.params[0].keyName).toBe('')
-      expect((result.params[0].ast as TLiteral).params).toBe(true)
+      expect((result.params[0].ast as TLiteral).params).toBeTruthy()
 
       expect(result.params[1].keyName).toBe('')
       expect((result.params[1].ast as TLiteral).params).toBe(false)

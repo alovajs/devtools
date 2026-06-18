@@ -1,5 +1,6 @@
+import type { ProgressTracker } from '@/helper/progress'
 import type { Config, GeneratorConfig, UserConfigExport } from '@/type'
-import { isArray, isObject } from 'lodash'
+import { isArray } from 'lodash'
 import { TemplateHelper } from '@/helper'
 import { ConfigManager } from './ConfigManager'
 import { GeneratorHelper } from './GeneratorHelper'
@@ -15,9 +16,9 @@ export class ConfigHelper {
     return ConfigHelper.instance
   }
 
-  public async load(config: Partial<Config>, projectPath = process.cwd()): Promise<void> {
+  public async load(config: Partial<Config>, projectPath = process.cwd(), tracker?: ProgressTracker): Promise<void> {
     this.projectPath = projectPath
-    await this.configManager.load(config)
+    await this.configManager.load(config, projectPath, tracker)
     await this.readAlovaJson()
   }
 
@@ -61,31 +62,21 @@ export class ConfigHelper {
     )
   }
 
-  public autoUpdateConfig() {
-    const autoUpdateConfig = this.configManager.getConfig().autoUpdate
-    let time = 60 * 5 // Default five minutes
-    let immediate = false
-    const isStop = !autoUpdateConfig
-    if (isObject(autoUpdateConfig)) {
-      time = Number(autoUpdateConfig.interval)
-      immediate = !!autoUpdateConfig.launchEditor
-    }
-    return {
-      time,
-      isStop,
-      immediate,
-    }
-  }
-
-  public generate(options: { force?: boolean }) {
-    return Promise.all(
+  public async generate(options: { force?: boolean, tracker?: ProgressTracker }) {
+    const { tracker, force } = options
+    const results = await Promise.all(
       this.configManager.getConfig().generator.map(item =>
         GeneratorHelper.generate(item, {
-          ...options,
+          force,
           projectPath: this.projectPath,
+          tracker,
         }),
       ),
     )
+    // Flush all in-memory cache entries to disk once after all generators complete,
+    // avoiding race conditions from parallel writes to the same .alova-cache.json.
+    await TemplateHelper.flushAllData(this.projectPath)
+    return results
   }
 
   private readAlovaJson() {

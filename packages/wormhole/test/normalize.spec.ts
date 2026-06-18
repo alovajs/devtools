@@ -127,8 +127,8 @@ describe('schema Normalizer', () => {
       expect(typeof branch1.type).toBe('string')
       expect(typeof branch2.type).toBe('string')
       expect(branch1.type).not.toBe(branch2.type)
-      expect(['string', 'number'].includes(branch1.type as string)).toBe(true)
-      expect(['string', 'number'].includes(branch2.type as string)).toBe(true)
+      expect(['string', 'number'].includes(branch1.type as string)).toBeTruthy()
+      expect(['string', 'number'].includes(branch2.type as string)).toBeTruthy()
       const stringBranch = branch1.type === 'string' ? branch1 : branch2
       const numberBranch = branch1.type === 'number' ? branch1 : branch2
       expect(stringBranch.type).toBe('string')

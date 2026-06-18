@@ -1,4 +1,5 @@
 import type { ApiPlugin } from '@/type'
+import { PluginName } from '@/constant'
 
 // Reusable helper: insert text after leading block comment(s) at file top
 const LEADING_BLOCK_COMMENTS = /^\s*(?:\/\*[\s\S]*?\*\/\s*)+/
@@ -14,10 +15,16 @@ function insertAfterLeadingBlockComments(content: string, insertion: string) {
   return `${safePrefix}${insertion}\n${suffix}`
 }
 
-export function importType(config: Record<string, string[]>): ApiPlugin {
-  // Precompute import lines and excluded identifiers
-  const entries = Object.entries(config)
+export interface ImportTypeOptions {
+  imports: Record<string, string[]>
+  files?: string[]
+}
+
+export function importType(imports: Record<string, string[]>, options?: { files?: string[] }): ApiPlugin {
+  const entries = Object.entries(imports)
   const excludedTypeNames = Array.from(new Set(entries.flatMap(([, names]) => names)))
+  const targetFiles = options?.files ?? ['globals.d']
+
   const importLines = entries
     .map(([key, names]) => {
       const [specifier, ...flags] = key.split('|')
@@ -29,17 +36,21 @@ export function importType(config: Record<string, string[]>): ApiPlugin {
     .join('\n')
 
   return {
-    name: 'importType',
-    config(cfg) {
+    name: PluginName.IMPORT_TYPE,
+    config({ config: cfg }) {
       cfg.externalTypes = Array.from(new Set([...(cfg.externalTypes ?? []), ...excludedTypeNames]))
       return cfg
     },
-    async beforeCodeGenerate(_, __, ctx) {
-      if (ctx.fileName === 'globals.d' && entries.length > 0) {
-        const content = await ctx.renderTemplate()
-        // Insert imports after commentText header while keeping formatting stable
+    // 9.1.2: Use beforeFileWrite to modify individual file content before write
+    beforeFileWrite({ filePath, content }) {
+      if (entries.length === 0)
+        return content
+
+      const matched = targetFiles.some(target => filePath.includes(target))
+      if (matched) {
         return insertAfterLeadingBlockComments(content, importLines)
       }
+      return content
     },
   }
 }

@@ -67,8 +67,8 @@ export async function parseResponse(responses: ResponsesObject | undefined, opti
   const responseInfo = responses?.[successKey]
   if (!responseInfo) {
     return {
-      responseName: 'unknown',
-      responseComment: 'unknown',
+      response: 'unknown',
+      responseComment: config.docComment !== false ? 'unknown' : '',
     }
   }
   const responseObject: ResponseObject = isReferenceObject(responseInfo)
@@ -76,20 +76,24 @@ export async function parseResponse(responses: ResponsesObject | undefined, opti
     : responseInfo
   const key = getContentKey(responseObject.content, config.responseMediaType)
   const responseSchema = responseObject?.content?.[key]?.schema ?? {}
-  const responseName = await getTsStr(responseSchema, {
+  const response = await getTsStr(responseSchema, {
     document,
     config,
     schemasMap,
     refNameMap,
   })
-  return {
-    responseName,
-    responseComment: await schemaLoader.transform(responseSchema, {
+  let responseComment = ''
+  if (config.docComment !== false) {
+    responseComment = await schemaLoader.transform(responseSchema, {
       document,
       deep: true,
       preText: '* ',
       defaultRequire: config.defaultRequire,
-    }),
+    })
+  }
+  return {
+    response,
+    responseComment,
   }
 }
 export async function parseRequestBody(requestBody: RequestBodyObject | ReferenceObject | undefined, options: {
@@ -100,8 +104,8 @@ export async function parseRequestBody(requestBody: RequestBodyObject | Referenc
 }) {
   if (!requestBody) {
     return {
-      requestName: '',
-      requestComment: '',
+      requestBody: '',
+      requestBodyComment: '',
     }
   }
   const { document, config, schemasMap, refNameMap } = options
@@ -110,18 +114,22 @@ export async function parseRequestBody(requestBody: RequestBodyObject | Referenc
     : requestBody
   const key = getContentKey(requestBodyObject.content, config.bodyMediaType)
   const requestBodySchema = requestBodyObject?.content?.[key]?.schema ?? {}
-  const requestName = await getTsStr(requestBodySchema, { document, config, schemasMap, refNameMap })
-  return {
-    requestName,
-    requestComment: await schemaLoader.transform(requestBodySchema, {
+  const requestBody_ = await getTsStr(requestBodySchema, { document, config, schemasMap, refNameMap })
+  let requestBodyComment = ''
+  if (config.docComment !== false) {
+    requestBodyComment = await schemaLoader.transform(requestBodySchema, {
       document,
       deep: true,
       preText: '* ',
       defaultRequire: config.defaultRequire,
-    }),
+    })
+  }
+  return {
+    requestBody: requestBody_,
+    requestBodyComment,
   }
 }
-function getContentKey(content: Record<string, any> = {}, requireKey: string | string[] = 'application/json') {
+export function getContentKey(content: Record<string, any> = {}, requireKey: string | string[] = 'application/json') {
   const requireKeys = Array.isArray(requireKey) ? requireKey : [requireKey]
 
   // 按数组顺序依次查找存在的 mediaType
@@ -174,12 +182,14 @@ export async function parseParameters(parameters: (ReferenceObject | ParameterOb
         schemasMap,
         refNameMap,
       })
-      parametersComment = await schemaLoader.transform(parameters, {
-        document,
-        deep: true,
-        preText: '* ',
-        defaultRequire: config.defaultRequire,
-      })
+      if (config.docComment !== false) {
+        parametersComment = await schemaLoader.transform(parameters, {
+          document,
+          deep: true,
+          preText: '* ',
+          defaultRequire: config.defaultRequire,
+        })
+      }
     }
     return [parametersStr, parametersComment]
   }
@@ -215,7 +225,8 @@ export async function transformApiMethods(apiMethod: ApiMethod, options: {
     return apiMethod
   }
   const { apiDescriptor, apiInfo } = apiMethod2ApiDescriptor(apiMethod, options)
-  let newApiDescriptor: ApiDescriptor | void | undefined | null = cloneDeep(apiDescriptor)
+  // M2-B1: apiDescriptor 来自 apiMethod2ApiDescriptor 已做过 cloneDeep，无需二次克隆
+  let newApiDescriptor: ApiDescriptor | void | undefined | null = apiDescriptor
 
   try {
     newApiDescriptor = handleApi(newApiDescriptor)

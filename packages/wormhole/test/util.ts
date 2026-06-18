@@ -4,6 +4,7 @@ import { resolve } from 'node:path'
 import isEqualWith from 'lodash/isEqualWith'
 import { expect } from 'vitest'
 import { generate } from '@/index'
+import { alovaGlobals } from '@/plugins'
 
 // Customize the comparator function and ignore the comparison of the function
 function customizer(objValue: any, othValue: any) {
@@ -30,7 +31,15 @@ export function initExpect() {
   })
 }
 export function createStrReg(str: string) {
-  str = str.replace(/([[\](){}.*+|\\/^$?])/g, '\\$1').replace(/\s+/g, '\\s+')
+  str = str
+    .replace(/\r\n/g, '\n')        // normalize Windows line endings
+    .replace(/([[\](){}.*+|\\/^$?])/g, '\\$1')
+    .replace(/\s+/g, '\\s+')
+    // Prettier may add newlines around angle brackets and other type boundaries
+    .replace(/>\(/g, '>\\s*\\(')
+    .replace(/\)</g, ')\\s*<')
+    .replace(/(?<!\\)</g, '\\s*<\\s*')
+    .replace(/(?<!\\)>/g, '\\s*>\\s*')
   return new RegExp(str)
 }
 
@@ -39,8 +48,8 @@ export const getSalt = () => `_${Math.random().toString(36).slice(2)}`
 export async function generateWithPlugin(inputFile: string, plugins: ApiPlugin[], config?: Partial<Omit<GeneratorConfig, 'input' | 'plugins' | 'type'>>) {
   const outputDir = config?.output ?? resolve(__dirname, `./mock_output/plugin_test${getSalt()}`)
   await generate({
-    generator: [{ ...config, input: inputFile, output: outputDir, plugins, type: 'ts' }],
-  })
+    generator: [{ ...config, input: inputFile, output: outputDir, type: 'ts', plugins: [alovaGlobals(), ...plugins] }],
+  }, { force: true })
   const apiDefinitionsFile = await fs.readFile(resolve(outputDir, 'apiDefinitions.ts'), 'utf-8')
   const globalsFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8')
   const createApisFile = await fs.readFile(resolve(outputDir, 'createApis.ts'), 'utf-8')

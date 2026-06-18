@@ -1,8 +1,9 @@
 import type { Config } from './type'
+import type { ProgressTracker } from '@/helper/progress'
 import { fromError } from 'zod-validation-error'
 import prepareConfig from '@/functions/prepareConfig'
-import { logger } from '@/helper'
 import { generatorHelper } from '@/helper/config/GeneratorHelper'
+import { logger } from '@/helper/logger'
 import { zConfig } from './zType'
 
 export class ConfigManager {
@@ -12,7 +13,6 @@ export class ConfigManager {
 
   private readonly defaultConfig: Config = Object.freeze({
     generator: [],
-    autoUpdate: true,
   })
 
   private readonly defaultGeneratorConfig = generatorHelper.getDefaultConfig()
@@ -30,9 +30,9 @@ export class ConfigManager {
   /**
    * 加载并验证配置
    */
-  public async load(config: Partial<Config>): Promise<void> {
+  public async load(config: Partial<Config>, projectPath: string = process.cwd(), tracker?: ProgressTracker): Promise<void> {
     // 处理配置
-    const userConfig = await this.handleConfig(config)
+    const userConfig = await this.handleConfig(config, projectPath, tracker)
     // 验证配置
     const validatedConfig = this.validateConfig(userConfig)
 
@@ -56,11 +56,11 @@ export class ConfigManager {
     await this.load({ ...this.config, ...partialConfig })
   }
 
-  private async handleConfig(config: Partial<Config>) {
+  private async handleConfig(config: Partial<Config>, projectPath: string = process.cwd(), tracker?: ProgressTracker) {
     // 合并配置
     const userConfig = this.mergeConfig(this.defaultConfig, config)
     // 处理插件的config配置
-    userConfig.generator = await Promise.all(userConfig.generator.map(item => prepareConfig(item)))
+    userConfig.generator = await Promise.all(userConfig.generator.map(item => prepareConfig(item, projectPath, tracker)))
     return userConfig
   }
   /**

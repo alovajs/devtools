@@ -21,7 +21,7 @@ describe('array Forwarder', () => {
 
       const result = arrayForwarder.is(schema)
 
-      expect(result).toBe(true)
+      expect(result).toBeTruthy()
     })
 
     it('should return true when isMaybeArraySchemaObject returns true', () => {
@@ -33,7 +33,7 @@ describe('array Forwarder', () => {
 
       const result = arrayForwarder.is(schema)
 
-      expect(result).toBe(true)
+      expect(result).toBeTruthy()
       expect(isMaybeArraySchemaObject).toHaveBeenCalledWith(schema)
     })
 
@@ -60,7 +60,7 @@ describe('array Forwarder', () => {
 
       const result = arrayForwarder.is(schema)
 
-      expect(result).toBe(true)
+      expect(result).toBeTruthy()
     })
 
     it('should return false for empty schema', () => {

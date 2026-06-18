@@ -1,4 +1,6 @@
-export type ModifierScope = 'params' | 'pathParams' | 'data' | 'response'
+import type { ModifierScope } from '@/constant'
+
+export type { ModifierScope }
 export type SchemaPrimitive = 'number' | 'string' | 'boolean' | 'undefined' | 'null' | 'unknown' | 'any' | 'never' | ({} & string)
 
 /**

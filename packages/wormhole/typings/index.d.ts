@@ -2,10 +2,77 @@ import { MethodType, RequestBody } from 'alova';
 import { OpenAPIV3_1 } from 'openapi-types';
 import { z } from 'zod/v3';
 
+declare const DEFAULT_CONFIG: {
+	cacheDir: string;
+	Error: ErrorConstructor;
+};
+export declare function setGlobalConfig(config: Partial<typeof DEFAULT_CONFIG>): void;
 export type OpenAPIDocument = OpenAPIV3_1.Document;
 export type SchemaObject = OpenAPIV3_1.SchemaObject;
 export type Parameter = OpenAPIV3_1.ParameterObject;
 export type OperationObject = OpenAPIV3_1.OperationObject;
+export interface Api {
+	tag: string;
+	method: string;
+	summary: string;
+	path: string;
+	pathParameters: string;
+	queryParameters: string;
+	pathParametersComment?: string;
+	queryParametersComment?: string;
+	responseComment?: string;
+	requestBodyComment?: string;
+	name: string;
+	response: string;
+	requestBody?: string;
+	defaultValue?: string;
+	pathKey: string;
+}
+export interface ApiDoc {
+	apis: Api[];
+	tagName: string;
+}
+export type ApiDescriptor = Omit<OperationObject, "requestBody" | "parameters" | "responses"> & {
+	url: string;
+	method: string;
+	parameters?: Parameter[];
+	refNameMap?: Record<string, string>;
+	requestBody?: SchemaObject;
+	responses?: SchemaObject;
+};
+export interface TemplateData {
+	title: OpenAPIDocument["info"]["title"];
+	openapi: OpenAPIDocument["openapi"];
+	version: OpenAPIDocument["info"]["version"];
+	description: OpenAPIDocument["info"]["description"];
+	contact: OpenAPIDocument["info"]["contact"];
+	/** Framework tag: vue | react | svelte | solid-js | nuxt */
+	framework?: string;
+	defaultKey?: boolean;
+	baseUrl: string;
+	/** Schema/Component definitions */
+	components: string[];
+	/** Names of all generated component schemas (keys of schemasMap) */
+	componentNames: string[];
+	/** All apis array */
+	allApis: Api[];
+	/** Apis grouped by tag */
+	tagedApis: ApiDoc[];
+	type: TemplateType;
+	/** Config passed from template configuration */
+	config: Record<string, any>;
+}
+/**
+ * Standardized cache data for VSCode extension
+ * Used for rendering sidebar API tree and quick search
+ */
+export interface CacheData {
+	path: string;
+	/** Server name displayed in sidebar */
+	serverName?: string;
+	/** All APIs as a flat array */
+	apis: Api[];
+}
 export interface FetchOptions {
 	headers?: Record<string, string>;
 	/** timeout in milliseconds */
@@ -46,37 +113,156 @@ export type TemplateType = z.infer<typeof zTemplateType>;
  */
 export type PlatformType = z.infer<typeof zPlatformType> | (string & {});
 export type MaybePromise<T> = T | Promise<T>;
+/**
+ * Progress event reported either by the core generator or by a plugin hook.
+ */
+export interface GenerateProgress {
+	/**
+	 * Source of the progress event. `'core'` for the framework lifecycle, otherwise the plugin name.
+	 */
+	source: string;
+	/**
+	 * Completion percentage in the [0, 100] range.
+	 */
+	progress: number;
+	/**
+	 * Optional human-readable status message.
+	 */
+	message?: string;
+}
+/**
+ * Function injected into plugin hooks for reporting plugin-scoped progress.
+ */
+export type ReportProgress = (progress: number, message?: string) => void;
+export interface ConfigHookParams {
+	config: GeneratorConfig;
+	projectPath: string;
+	reportProgress: ReportProgress;
+}
+export interface BeforeOpenapiParseHookParams {
+	config: Readonly<GeneratorConfig>;
+	projectPath: string;
+	reportProgress: ReportProgress;
+}
+export interface OpenapiParsedHookParams {
+	config: Readonly<GeneratorConfig>;
+	document: OpenAPIDocument;
+	projectPath: string;
+	reportProgress: ReportProgress;
+}
+export interface BeforeCodeGenerateHookParams {
+	config: Readonly<GeneratorConfig>;
+	data: TemplateData;
+	projectPath: string;
+	reportProgress: ReportProgress;
+}
+export interface BeforeFileWriteHookParams {
+	config: Readonly<GeneratorConfig>;
+	data: TemplateData;
+	filePath: string;
+	content: string;
+	projectPath: string;
+	reportProgress: ReportProgress;
+	/** Template file metadata: tag/api/global */
+	meta: {
+		templateType?: "tag" | "api";
+		tag?: string;
+		api?: string;
+	};
+}
+export interface CodeGeneratedHookParams {
+	config: Readonly<GeneratorConfig>;
+	data: TemplateData;
+	/** Paths of all generated files (for notification; content is not held) */
+	filePaths: string[];
+	/** Absolute output directory */
+	outputDir: string;
+	projectPath: string;
+	error?: Error;
+	reportProgress: ReportProgress;
+}
+export interface GetTemplateHookParams {
+	config: Readonly<GeneratorConfig>;
+	projectPath: string;
+	reportProgress: ReportProgress;
+}
+export interface OnHandlebarsCreatedHookParams {
+	hbs: typeof import("handlebars");
+	config: Readonly<GeneratorConfig>;
+	projectPath: string;
+	reportProgress: ReportProgress;
+}
 export interface ApiPlugin {
 	name?: string;
 	/**
 	 * Replaces or manipulates the options object passed to wormhole.
 	 * Returning null does NOT replacing anything.
 	 */
-	config?: (config: GeneratorConfig) => MaybePromise<GeneratorConfig | undefined | null | void>;
+	config?: (params: ConfigHookParams) => MaybePromise<GeneratorConfig | undefined | null | void>;
 	/**
 	 * Called before parsing the OpenAPI file.
 	 */
-	beforeOpenapiParse?: (config: GeneratorConfig) => void;
+	beforeOpenapiParse?: (params: BeforeOpenapiParseHookParams) => void;
 	/**
 	 * Manipulate the openapi document after parsing.
 	 * Returning null does NOT replacing anything.
 	 */
-	afterOpenapiParse?: (document: OpenAPIDocument) => MaybePromise<OpenAPIDocument | undefined | null | void>;
+	openapiParsed?: (params: OpenapiParsedHookParams) => MaybePromise<OpenAPIDocument | undefined | null | void>;
 	/**
-	 * Manipulate the template code before generating.
-	 * Returning null does NOT replacing anything.
+	 * Called before code generation. Mutate `params.data` directly to inject
+	 * configuration data (no longer returns a value).
 	 */
-	beforeCodeGenerate?: (data: any, outputFile: string, ctx: {
-		renderTemplate: () => Promise<string>;
-		fileName: string;
-	}) => MaybePromise<string | undefined | null | void>;
+	beforeCodeGenerate?: (params: BeforeCodeGenerateHookParams) => MaybePromise<void>;
 	/**
-	 * Called when wormhold has finished code generating.
+	 * Called right before each file is written to disk.
+	 * Can modify the file content by returning the new content.
 	 */
-	afterCodeGenerate?: (error?: Error) => void;
+	beforeFileWrite?: (params: BeforeFileWriteHookParams) => MaybePromise<string>;
+	/**
+	 * Called after ALL files have been written to disk.
+	 * Used for post-processing e.g. installing skills, displaying notifications.
+	 * The `filePaths` array contains all generated file paths (no content).
+	 */
+	codeGenerated?: (params: CodeGeneratedHookParams) => MaybePromise<void>;
+	/**
+	 * Provide the template path for code generation.
+	 * Multiple plugins can implement this; the last non-nil return value wins.
+	 */
+	getTemplate?: (params: GetTemplateHookParams) => MaybePromise<TemplateConfigResult | undefined | null | void>;
+	/**
+	 * Called when a new Handlebars instance is created for template rendering.
+	 * Use this to register custom helpers or partials on the hbs instance.
+	 */
+	onHandlebarsCreated?: (params: OnHandlebarsCreatedHookParams) => MaybePromise<void>;
 }
 export interface HandleApi {
 	(apiDescriptor: ApiDescriptor): ApiDescriptor | void | undefined | null;
+}
+/**
+ * Template configuration result
+ */
+export interface TemplateConfigResult {
+	/**
+	 * Template path string (relative to project root or absolute path).
+	 * Relative paths are resolved relative to process.cwd()
+	 * This field is required.
+	 */
+	path: string;
+}
+/**
+ * Performance tuning options for code generation.
+ */
+export interface PerformanceConfig {
+	/** schema→TS worker pool strategy. Default 'auto' (adaptive by API count) */
+	workerPool?: "auto" | number | false;
+	/** Max concurrency for transform phase. Default auto (min(64, max(8, cpus*4))) */
+	transformConcurrency?: number;
+	/** Max parallelism for file writes. Default 32 */
+	writeConcurrency?: number;
+	/** Apply prettier formatting to final files before write. Default true (schema-level prettier is always disabled) */
+	prettierFinal?: boolean;
+	/** Sort tags/APIs/components alphabetically for deterministic output. Default true */
+	deterministicSort?: boolean;
 }
 export interface GeneratorConfig {
 	/**
@@ -114,15 +300,28 @@ export interface GeneratorConfig {
 	 */
 	output?: string;
 	/**
-	 * Specify the media type of the generated response data. After specifying, use this data type to generate the response ts format of the 2xx status code.
-	 * @defualt 'application/json'
+	 * Whether to generate documentation comments, default is true.
+	 * Set to false to improve generation performance.
+	 * @default true
 	 */
-	responseMediaType?: string;
+	docComment?: boolean;
 	/**
-	 * Specify the media type of the generated request body data. After specifying, use this data type to generate the ts format of the request body.
+	 * Specify the media type of the generated response data. After specifying, use this data type to generate the response ts format of the 2xx status code.
+	 * Can be a string or an array of strings for fallback media types.
 	 * @default 'application/json'
 	 */
-	bodyMediaType?: string;
+	responseMediaType?: string | string[];
+	/**
+	 * Specify the media type of the generated request body data. After specifying, use this data type to generate the ts format of the request body.
+	 * Can be a string or an array of strings for fallback media types.
+	 * @default 'application/json'
+	 */
+	bodyMediaType?: string | string[];
+	/**
+	 * Custom server name for displaying in the sidebar when multiple API docs are configured.
+	 * Default names are server1, server2, server3...
+	 */
+	serverName?: string;
 	/**
 	 * The type of generated code. The optional value is `auto/ts/typescript/module/commonjs`.
 	 * default is `auto`, it means the type of current project will be determined through certain rules.
@@ -136,29 +335,6 @@ export interface GeneratorConfig {
 	 */
 	type?: ConfigType;
 	/**
-	 * Specify alova version, 2 or 3, if not specified, it will be automatically determined through the alova version in `package.json`
-	 */
-	version?: number | string;
-	/**
-	 * Globally exported api name, you can access the automatically generated api globally through this name.
-	 * it is required when multiple generators are configured, and it cannot be repeated
-	 *
-	 * @default 'Apis'
-	 */
-	global?: string;
-	/**
-	 * The host object of global mounting, default is `globalThis`, it means `window` in browser and `global` in nodejs
-	 *
-	 * @default 'globalThis'
-	 */
-	globalHost?: string;
-	/**
-	 * Whether to use `import` statement to import the type. When this option is set to `true`, the generated apiDefinitions.ts file will use `import` statement to import types instead of ///<reference types="..." />
-	 *
-	 * @default false
-	 */
-	useImportType?: boolean;
-	/**
 	 * When there is no require, it defaults to require, and only nullable takes effect.
 	 */
 	defaultRequire?: boolean;
@@ -166,6 +342,10 @@ export interface GeneratorConfig {
 	 * plugin will be executed before `handleApi`
 	 */
 	plugins?: ApiPlugin[];
+	/**
+	 * Performance tuning options for code generation.
+	 */
+	performance?: PerformanceConfig;
 	/**
 	 * Filter or convert the generated api function and return a new `apiDescriptor` to generate the api.
 	 * When this function is not specified, `apiDescriptor` object is not converted.
@@ -197,12 +377,6 @@ export interface GeneratorConfig {
 	 * ```
 	 */
 	handleApi?: HandleApi;
-	/**
-	 * Control the format of output file names. Supports presets or a custom function.
-	 * Only affects the output file name, and does not affect template filename resolution.
-	 * Presets: 'camelCase' | 'pascalCase' | 'kebabCase' | 'snakeCase'
-	 */
-	fileNameCase?: "camelCase" | "pascalCase" | "kebabCase" | "snakeCase" | ((name: string) => string);
 }
 export interface Config {
 	/**
@@ -210,108 +384,34 @@ export interface Config {
 	 * Currently, only OpenAPI specifications are supported, including OpenAPI 2.0 and 3.0 specifications.
 	 */
 	generator: GeneratorConfig[];
-	/**
-	 * Whether to automatically update the interface.
-	 * default is `true`, checked every 5 minutes, set `false` to close it
-	 *
-	 * @default true
-	 */
-	autoUpdate?: boolean | {
-		/**
-		 * Updated when the editor is opened
-		 */
-		launchEditor?: boolean;
-		/**
-		 * Automatic update interval in milliseconds
-		 */
-		interval: number;
-	};
 }
 export type UserConfig = Config;
 export type UserConfigFnObject = () => UserConfig;
 export type UserConfigFnPromise = () => Promise<UserConfig>;
 export type UserConfigFn = () => UserConfig | Promise<UserConfig>;
 export type UserConfigExport = UserConfig | Promise<UserConfig> | UserConfigFnObject | UserConfigFnPromise | UserConfigFn;
-export type AlovaVersion = `v${number}`;
-export type ModuleType = "commonJs" | "ESModule";
-export interface Api {
-	tag: string;
-	method: string;
-	summary: string;
-	path: string;
-	pathParameters: string;
-	queryParameters: string;
-	pathParametersComment?: string;
-	queryParametersComment?: string;
-	responseComment?: string;
-	requestComment?: string;
-	name: string;
-	global: string;
-	responseName: string;
-	requestName?: string;
-	defaultValue?: string;
-	pathKey: string;
-}
-export interface ApiDoc {
-	apis: Api[];
-	tag: string;
-}
-export type ApiDescriptor = Omit<OperationObject, "requestBody" | "parameters" | "responses"> & {
-	url: string;
-	method: string;
-	parameters?: Parameter[];
-	refNameMap?: Record<string, string>;
-	requestBody?: SchemaObject;
-	responses?: SchemaObject;
-};
-export interface ApiPath {
-	key: string;
-	method: string;
-	path: string;
-}
-export interface TemplateData extends Omit<OpenAPIDocument, ""> {
-	vue?: boolean;
-	react?: boolean;
-	moduleType?: ModuleType;
-	defaultKey?: boolean;
-	baseUrl: string;
-	pathsArr: ApiPath[];
-	schemas?: string[];
-	pathApis: ApiDoc[];
-	globalHost: string;
-	global: string;
-	alovaVersion: AlovaVersion;
-	commentText: string;
-	useImportType: boolean;
-	type: TemplateType;
-	createApisFileName?: string;
-	apiDefinitionsFileName?: string;
-	globalsDFileName?: string;
-	indexFileName?: string;
-}
 export interface GenerateApiOptions {
 	force?: boolean;
 	projectPath?: string;
+	/**
+	 * Receive throttled progress snapshots while generation is running.
+	 * The snapshot maps each progress source (the literal `'core'` for the framework lifecycle,
+	 * or a plugin's `name`) to its latest reported progress.
+	 */
+	onProgress?: (snapshot: Record<string, GenerateProgress>) => void;
+	/**
+	 * Throttle interval in milliseconds for `onProgress`. Defaults to `500`.
+	 * Values <= 0 disable throttling and emit on every update.
+	 */
+	progressInterval?: number;
 }
-declare const DEFAULT_CONFIG: {
-	alovaTempPath: string;
-	templatePath: string;
-	templateData: Map<string, TemplateData>;
-	Error: ErrorConstructor;
-};
-export declare function setGlobalConfig(config: Partial<typeof DEFAULT_CONFIG>): void;
+export type TemplatePreset = "alova" | "alovaGlobals" | "axios" | "fetch" | "ky";
 export interface ConfigCreationOptions {
 	projectPath?: string;
 	type?: TemplateType;
+	template?: TemplatePreset;
 }
-/**
- * Create a templated configuration file.
- * @param options - Configuration file creation options
- * @param options.projectPath - The root path of the project (optional)
- * @param options.type - The template type to use (optional)
- * @returns A promise that resolves when the config is created
- */
-export declare function createConfig({ projectPath, type }?: ConfigCreationOptions): Promise<void>;
+export declare function createConfig({ projectPath, type, template }?: ConfigCreationOptions): Promise<void>;
 /**
  * Type helper to make it easier to use alova.config.ts
  * accepts a direct {@link UserConfig} object, or a function that returns it.
@@ -325,22 +425,17 @@ export declare function defineConfig(config: UserConfigExport): UserConfigExport
 /**
  * Generate relevant API information based on the configuration object. Generally, it needs to be used with `readConfig()`.
  * @param config generating config
- * @param rules config rules that contains `force`, `projectPath`
+ * @param options config rules that contains `force`, `projectPath`, `onProgress`, `progressInterval`
  * @returns An array that contains the result of `generator` items in configuration whether generation is successful.
  */
-export declare function generate(config: Config, rules?: GenerateApiOptions): Promise<boolean[]>;
+export declare function generate(config: Config, options?: GenerateApiOptions): Promise<boolean[]>;
 /**
  * Read the alova.config configuration file and return the parsed configuration object.
  * @param projectPath The project path where the configuration file is located. The default value is `process.cwd()`.
  * @returns a promise instance that contains configuration object.
  */
-export declare function readConfig(projectPath?: string): Promise<Config>;
-export declare function getAutoUpdateConfig(config: Config): Promise<{
-	time: number;
-	isStop: boolean;
-	immediate: boolean;
-}>;
-export declare function getApiDocs(config: Config, projectPath?: string): Promise<ApiDoc[][]>;
+export declare function readConfig(projectPath?: string): Promise<Readonly<Config>>;
+export declare function getApiDocs(config: Config, projectPath?: string): Promise<CacheData[]>;
 /**
  * Search for all directories containing alova.config configuration files under the monorepo project. It will search for configuration files based on `workspaces` in `package.json` or sub packages defined in `pnpm-workspace.yaml`
  * @param projectPath The project path to search, defaults to `process.cwd()`.

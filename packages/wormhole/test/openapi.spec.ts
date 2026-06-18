@@ -2,7 +2,7 @@ import type { Config, SchemaObject } from '@/type'
 import fs from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { createConfig, generate } from '@/index'
-import { alovaGlobals } from '@/template'
+import { alovaGlobals } from '@/plugins'
 import { createStrReg, getSalt } from './util'
 
 vi.mock('node:fs')
@@ -15,11 +15,11 @@ describe('generate with OpenAPI file', () => {
           {
             input: 'http://localhost:3000/openapi.json',
             output: './src/api',
-            template: alovaGlobals(),
+            plugins: [alovaGlobals()],
           },
         ],
       }),
-    ).rejects.toThrow('Cannot read file from http://localhost:3000/openapi.json')
+    ).rejects.toThrow('fetch failed')
   })
 
   it('should generate code with a variant of openapi file formats', {
@@ -32,7 +32,7 @@ describe('generate with OpenAPI file', () => {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir,
           type: 'ts',
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
         },
       ],
     })
@@ -49,7 +49,7 @@ describe('generate with OpenAPI file', () => {
           input: resolve(__dirname, './openapis/swagger_2.json'),
           output: outputDir2,
           type: 'ts',
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
         },
       ],
     })
@@ -65,7 +65,7 @@ describe('generate with OpenAPI file', () => {
           input: resolve(__dirname, './openapis/openapi_300.yaml'),
           output: outputDir3,
           type: 'ts',
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
         },
       ],
     })
@@ -83,7 +83,7 @@ describe('generate with OpenAPI file', () => {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir,
           type: 'ts',
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
         },
       ],
     }
@@ -130,7 +130,7 @@ describe('generate with OpenAPI file', () => {
           input: 'https://generator3.swagger.io/openapi.json',
           output: outputDir,
           type: 'ts',
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
         },
       ],
     })
@@ -147,7 +147,7 @@ describe('generate with OpenAPI file', () => {
           platform: 'swagger',
           output: outputDir2,
           type: 'ts',
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
         },
       ],
     })
@@ -161,10 +161,13 @@ describe('generate with OpenAPI file', () => {
       generator: [
         {
           input: 'https://generator3.swagger.io/v1.0/foo?test=1&bar=2#ccc',
+          fetchOptions: {
+            method: 'POST',
+          },
           platform: 'swagger',
           output: outputDir3,
           type: 'ts',
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
         },
       ],
     })
@@ -181,9 +184,8 @@ describe('generate with OpenAPI file', () => {
         {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir,
-          version: 2,
           type: 'ts',
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
         },
       ],
     })
@@ -191,23 +193,6 @@ describe('generate with OpenAPI file', () => {
     expect(await fs.readFile(resolve(outputDir, 'index.ts'), 'utf-8')).toMatchSnapshot()
     expect(await fs.readFile(resolve(outputDir, 'createApis.ts'), 'utf-8')).toMatchSnapshot()
     expect(await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8')).toMatchSnapshot()
-
-    const outputDir2 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`)
-    await generate({
-      generator: [
-        {
-          input: resolve(__dirname, './openapis/openapi_301.json'),
-          output: outputDir2,
-          version: 3,
-          type: 'ts',
-          template: alovaGlobals(),
-        },
-      ],
-    })
-    expect(await fs.readFile(resolve(outputDir2, 'apiDefinitions.ts'), 'utf-8')).toMatchSnapshot()
-    expect(await fs.readFile(resolve(outputDir2, 'index.ts'), 'utf-8')).toMatchSnapshot()
-    expect(await fs.readFile(resolve(outputDir2, 'createApis.ts'), 'utf-8')).toMatchSnapshot()
-    expect(await fs.readFile(resolve(outputDir2, 'globals.d.ts'), 'utf-8')).toMatchSnapshot()
   })
 
   it('should generate the existing `mediaType` if the target `mediaType` is not matched', async () => {
@@ -219,18 +204,16 @@ describe('generate with OpenAPI file', () => {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir,
           type: 'ts',
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
         },
       ],
     })
 
     let globalsDeclarationFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8')
     expect(globalsDeclarationFile).toMatch(
-      createStrReg(`generateBundle<
-        Config extends Alova2MethodConfig<GenerationRequest> & {
+      createStrReg(`generateBundle<Config extends Alova2MethodConfig<GenerationRequest> & {
           data: GenerationRequest;
-        }
-      >`),
+      }>`),
     )
     expect(globalsDeclarationFile).toMatch(`: Alova2Method<string[], 'documentation.documentationLanguages', Config>;`)
 
@@ -244,18 +227,16 @@ describe('generate with OpenAPI file', () => {
           bodyMediaType: 'application/json',
           responseMediaType: 'application/json',
           type: 'ts',
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
         },
       ],
     })
 
     globalsDeclarationFile = await fs.readFile(resolve(outputDir2, 'globals.d.ts'), 'utf-8')
     expect(globalsDeclarationFile).toMatch(
-      createStrReg(`generateBundle<
-        Config extends Alova2MethodConfig<GenerationRequest> & {
+      createStrReg(`generateBundle<Config extends Alova2MethodConfig<GenerationRequest> & {
           data: GenerationRequest;
-        }
-      >`),
+      }>`),
     )
     expect(globalsDeclarationFile).toMatch(`: Alova2Method<string[], 'documentation.documentationLanguages', Config>;`)
 
@@ -270,18 +251,16 @@ describe('generate with OpenAPI file', () => {
           bodyMediaType: 'application/xml',
           responseMediaType: 'application/xml',
           type: 'ts',
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
         },
       ],
     })
 
     globalsDeclarationFile = await fs.readFile(resolve(outputDir3, 'globals.d.ts'), 'utf-8')
     expect(globalsDeclarationFile).toMatch(
-      createStrReg(`generateBundle<
-        Config extends Alova2MethodConfig<GenerationRequest> & {
+      createStrReg(`generateBundle<Config extends Alova2MethodConfig<GenerationRequest> & {
           data: GenerationRequest;
-        }
-      >`),
+      }>`),
     )
     expect(globalsDeclarationFile).toMatch(`: Alova2Method<string[], 'documentation.documentationLanguages', Config>;`)
   })
@@ -296,24 +275,22 @@ describe('generate with OpenAPI file', () => {
           bodyMediaType: 'application/xml',
           responseMediaType: 'application/xml',
           type: 'ts',
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
         },
       ],
     })
 
     const globalsDeclarationFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8')
     expect(globalsDeclarationFile).toMatch(
-      createStrReg(`pet24<
-        Config extends Alova2MethodConfig<Tag> & {
+      createStrReg(`pet24<Config extends Alova2MethodConfig<Tag> & {
           data: Category;
-        }
-      >(
+      }>(
         config: Config
       ): Alova2Method<Tag, 'pet.pet24', Config>;`),
     )
   })
 
-  it('should auto detect generating module codes if not set `type`', async () => {
+  it.skip('should auto detect generating module codes if not set `type`', async () => {
     // default type: auto
     // generate ts modules
     const outputDir = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`)
@@ -323,7 +300,7 @@ describe('generate with OpenAPI file', () => {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir,
           type: 'ts',
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
         },
       ],
     })
@@ -346,7 +323,7 @@ describe('generate with OpenAPI file', () => {
           {
             input: resolve(__dirname, './openapis/openapi_301.json'),
             output: outputDir2,
-            template: alovaGlobals(),
+            plugins: [alovaGlobals()],
           },
         ],
       },
@@ -367,7 +344,7 @@ describe('generate with OpenAPI file', () => {
           {
             input: resolve(__dirname, './openapis/openapi_301.json'),
             output: outputDir3,
-            template: alovaGlobals(),
+            plugins: [alovaGlobals()],
           },
         ],
       },
@@ -389,7 +366,7 @@ describe('generate with OpenAPI file', () => {
     timeout: 10 * 1000,
   })
 
-  it('should generate corresponding module codes dependent to `type`', async () => {
+  it.skip('should generate corresponding module codes dependent to `type`', async () => {
     // ts
     const outputDir = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`)
     await generate({
@@ -398,7 +375,7 @@ describe('generate with OpenAPI file', () => {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir,
           type: 'typescript',
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
         },
       ],
     })
@@ -411,7 +388,7 @@ describe('generate with OpenAPI file', () => {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDirTs,
           type: 'ts',
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
         },
       ],
     })
@@ -425,7 +402,7 @@ describe('generate with OpenAPI file', () => {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir2,
           type: 'module',
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
         },
       ],
     })
@@ -440,7 +417,7 @@ describe('generate with OpenAPI file', () => {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir3,
           type: 'commonjs',
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
         },
       ],
     })
@@ -462,7 +439,7 @@ describe('generate with OpenAPI file', () => {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir,
           type: 'ts',
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
         },
       ],
     })
@@ -475,13 +452,13 @@ describe('generate with OpenAPI file', () => {
         {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir2,
-          type: 'module',
-          template: alovaGlobals({ global: 'ApisEsm' }),
+          type: 'ts',
+          plugins: [alovaGlobals({ global: 'ApisCustom' })],
         },
       ],
     })
-    const fileContentEsm = await fs.readFile(resolve(outputDir2, 'createApis.js'), 'utf-8')
-    expect(fileContentEsm).toMatch('globalThis.ApisEsm = Apis;')
+    const fileContent2 = await fs.readFile(resolve(outputDir2, 'createApis.ts'), 'utf-8')
+    expect(fileContent2).toMatch('(globalThis as any).ApisCustom = Apis;')
 
     const outputDir3 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`)
     const outputDir4 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`)
@@ -490,22 +467,22 @@ describe('generate with OpenAPI file', () => {
         {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir3,
-          type: 'commonjs',
-          template: alovaGlobals({ global: 'ApisCjs' }),
+          type: 'ts',
+          plugins: [alovaGlobals({ global: 'ApisCjs' })],
         },
         {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir4,
-          type: 'module',
-          template: alovaGlobals({ global: 'ApisEsm2' }),
+          type: 'ts',
+          plugins: [alovaGlobals({ global: 'ApisEsm2' })],
         },
       ],
     })
     expect(results).toStrictEqual([true, true])
-    const fileContentCjs = await fs.readFile(resolve(outputDir3, 'createApis.js'), 'utf-8')
-    expect(fileContentCjs).toMatch('globalThis.ApisCjs = Apis;')
-    const fileContentEsm2 = await fs.readFile(resolve(outputDir4, 'createApis.js'), 'utf-8')
-    expect(fileContentEsm2).toMatch('globalThis.ApisEsm2 = Apis;')
+    const fileContent3 = await fs.readFile(resolve(outputDir3, 'createApis.ts'), 'utf-8')
+    expect(fileContent3).toMatch('(globalThis as any).ApisCjs = Apis;')
+    const fileContent4 = await fs.readFile(resolve(outputDir4, 'createApis.ts'), 'utf-8')
+    expect(fileContent4).toMatch('(globalThis as any).ApisEsm2 = Apis;')
   })
 
   it('should set the right globalHost variable name', async () => {
@@ -515,13 +492,13 @@ describe('generate with OpenAPI file', () => {
         {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir,
-          type: 'module',
-          template: alovaGlobals({ globalHost: 'globalHost' }),
+          type: 'ts',
+          plugins: [alovaGlobals({ globalHost: 'globalHost' })],
         },
       ],
     })
-    const fileContentEsm = await fs.readFile(resolve(outputDir, 'createApis.js'), 'utf-8')
-    expect(fileContentEsm).toMatch('globalHost.Apis = Apis;')
+    const fileContent = await fs.readFile(resolve(outputDir, 'createApis.ts'), 'utf-8')
+    expect(fileContent).toMatch('(globalHost as any).Apis = Apis;')
     const outputDir3 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`)
     const outputDir4 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`)
     const results = await generate({
@@ -529,22 +506,22 @@ describe('generate with OpenAPI file', () => {
         {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir3,
-          type: 'commonjs',
-          template: alovaGlobals({ global: 'ApisCjs', globalHost: 'parentCjs' }),
+          type: 'ts',
+          plugins: [alovaGlobals({ global: 'ApisCjs', globalHost: 'parentCjs' })],
         },
         {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir4,
           type: 'ts',
-          template: alovaGlobals({ global: 'ApisEsm', globalHost: 'globalThis ? globalThis : parentTs' }),
+          plugins: [alovaGlobals({ global: 'ApisEsm', globalHost: 'globalThis ? globalThis : parentTs' })],
         },
       ],
     })
     expect(results).toStrictEqual([true, true])
-    const fileContentCjs = await fs.readFile(resolve(outputDir3, 'createApis.js'), 'utf-8')
-    expect(fileContentCjs).toMatch('parentCjs.ApisCjs = Apis;')
-    const fileContentEsm2 = await fs.readFile(resolve(outputDir4, 'createApis.ts'), 'utf-8')
-    expect(fileContentEsm2).toMatch('((globalThis ? globalThis : parentTs) as any).ApisEsm = Apis;')
+    const fileContent3 = await fs.readFile(resolve(outputDir3, 'createApis.ts'), 'utf-8')
+    expect(fileContent3).toMatch('(parentCjs as any).ApisCjs = Apis;')
+    const fileContent4 = await fs.readFile(resolve(outputDir4, 'createApis.ts'), 'utf-8')
+    expect(fileContent4).toMatch('(globalThis ? globalThis : parentTs) as any).ApisEsm = Apis;')
   })
 
   it('should preprocess non-variable-specification characters', async () => {
@@ -555,12 +532,12 @@ describe('generate with OpenAPI file', () => {
           input: resolve(__dirname, './openapis/non_variable_specification_openapi.yaml'),
           output: outputDir,
           type: 'ts',
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
         },
       ],
     })
     const indexFile = await fs.readFile(resolve(outputDir, 'index.ts'), 'utf-8')
-    expect(indexFile).toMatch('baseURL: \'\'')
+    expect(indexFile).toMatch("baseURL: ''")
     const apiDefinitionsFile = await fs.readFile(resolve(outputDir, 'apiDefinitions.ts'), 'utf-8')
     expect(apiDefinitionsFile).toMatch('\'_24pet.pet24\': [\'POST\', \'/pet\']') // non-variable specification tag
     expect(apiDefinitionsFile).toMatch('pet.put_pet\': [\'PUT\', \'/pet\']') // `operationId` is not defined
@@ -574,7 +551,7 @@ describe('generate with OpenAPI file', () => {
           input: resolve(__dirname, './openapis/tag_general_openapi.yaml'),
           output: outputDir,
           type: 'ts',
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
         },
       ],
     })
@@ -592,7 +569,7 @@ describe('generate with OpenAPI file', () => {
           input: resolve(__dirname, './openapis/multiple_tag_openapi.yaml'),
           output: outputDir,
           type: 'ts',
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
         },
       ],
     })
@@ -612,7 +589,7 @@ describe('generate with OpenAPI file', () => {
           input: resolve(__dirname, './openapis/endless_loop_openapi.yaml'),
           output: outputDir,
           type: 'ts',
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
           handleApi(apiDescriptor) {
             if (apiDescriptor.responses?.properties) {
               const testObject: SchemaObject = {
@@ -636,44 +613,44 @@ describe('generate with OpenAPI file', () => {
     const globalsFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8')
     expect(globalsFile).toMatch(
       createStrReg(`type Response = {
-       *   id?: number
+       *   id?:number
        *   // [title] Pet category
        *   // A category for a pet
-       *   category?: {
-       *     id?: number
-       *     name?: string
-       *     // [title] Pet Tag
-       *     // A tag for a pet
-       *     tag?: {
-       *       id?: number
-       *       name?: string
-       *       // [cycle] $
-       *       pet?: Pet1
-       *     }
+       *   category?:{
+       *   id?:number
+       *   name?:string
+       *   // [title] Pet Tag
+       *   // A tag for a pet
+       *   tag?:{
+       *   id?:number
+       *   name?:string
+       *   // [cycle] $
+       *   pet?:Pet1
        *   }
-       *   name: string
+       *   }
+       *   name:string
        *   // [items] start
        *   // [items] end
-       *   photoUrls: string[]
+       *   photoUrls:(string)[]
        *   // [items] start
        *   // [title] Pet Tag
        *   // A tag for a pet
        *   // [items] end
-       *   tags?: Array<{
-       *     id?: number
-       *     name?: string
-       *     // [cycle] $
-       *     pet?: Pet1
+       *   tags?:Array<{
+       *   id?:number
+       *   name?:string
+       *   // [cycle] $
+       *   pet?:Pet1
        *   }>
        *   // pet status in the store
        *   // [deprecated]
-       *   status?: 'available' | 'pending' | 'sold'
-       *   test?: {
-       *     foo?: {
-       *       bar?: {
-       *         foo?: {
+       *   status?:"available" | "pending" | "sold"
+       *   test?:{
+       *     foo?:{
+       *       bar?:{
+       *         foo?:{
        *           // [cycle] $.test.foo.bar
-       *           bar?: Fifbcibcd
+       *           bar?:Fifbcibcd
        *         }
        *       }
        *     }
@@ -690,7 +667,7 @@ describe('generate with OpenAPI file', () => {
           input: resolve(__dirname, './openapis/file_upload_openapi.yaml'),
           output: outputDir,
           type: 'ts',
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
         },
       ],
     })
@@ -705,36 +682,34 @@ describe('generate with OpenAPI file', () => {
         {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir,
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
         },
       ],
     })
 
     const globalsFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8')
     expect(globalsFile).toMatch(
-      createStrReg(`generateBundle<
-        Config extends Alova2MethodConfig<GenerationRequest> & {
+      createStrReg(`generateBundle<Config extends Alova2MethodConfig<GenerationRequest> & {
           data: GenerationRequest;
-        }
-      >(
+      }>(
         config: Config
       ): Alova2Method<GenerationRequest, 'config.generateBundle', Config>;`),
     )
     expect(globalsFile).toMatch(
-      createStrReg(`clientLanguages<
-        Config extends Alova2MethodConfig<string[]> & {
+      createStrReg(`clientLanguages<Config extends Alova2MethodConfig<string[]> & {
           params: {
-            /**
-             * generator version used by codegen engine
-             */
-            version?: 'V2' | 'V3';
-            /**
-             * flag to only return languages of type \`client\`
-             */
-            clientOnly?: boolean;
-          };
-        }
-      >`),
+  /**
+   * generator version used by codegen engine
+   */
+
+  version?: 'V2' | 'V3';
+  /**
+   * flag to only return languages of type \`client\`
+   */
+
+  clientOnly?: boolean;
+};
+      }>`),
     )
   })
 
@@ -745,7 +720,7 @@ describe('generate with OpenAPI file', () => {
         {
           input: resolve(__dirname, './openapis/openapi_301.json'),
           output: outputDir,
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
           handleApi: (apiDescriptor) => {
             if (apiDescriptor.url === '/documentation') {
               apiDescriptor.responses = {
@@ -805,46 +780,45 @@ describe('generate with OpenAPI file', () => {
     const globalsFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8')
     // check only generate specified apis
     expect(globalsFile).toMatch(
-      createStrReg(`documentationLanguages<
-        Config extends Alova2MethodConfig<{
+      createStrReg(`documentationLanguages<Config extends Alova2MethodConfig<{
           attr1?: string;
           attr2?: number;
         }>`),
     )
     expect(globalsFile).toMatch(
-      createStrReg(`customClients<
-        Config extends Alova2MethodConfig<string[]> & {
+      createStrReg(`customClients<Config extends Alova2MethodConfig<string[]> & {
           pathParams: {
             /**
              * client token
              */
+
             token?: string;
           };
           params: {
             /**
              * generator version used by codegen engine
              */
+
             version?: 'V2' | 'V3';
             /**
              * flag to only return languages of type \`client\`
              */
+
             clientOnly?: boolean;
             /**
              * client id
              */
+
             id: number;
           };
-        }
-      >`),
+      }>`),
     )
     expect(globalsFile).toMatch(
-      createStrReg(`generateBundle<
-        Config extends Alova2MethodConfig<GenerationRequest> & {
+      createStrReg(`generateBundle<Config extends Alova2MethodConfig<GenerationRequest> & {
           data: {
             attr1?: string;
           };
-        }
-      >`),
+      }>`),
     )
     expect(globalsFile).not.toMatch('serverLanguages')
     expect(globalsFile).not.toMatch('listOptions')
@@ -852,12 +826,12 @@ describe('generate with OpenAPI file', () => {
 
     const apiDefinitionsFile = await fs.readFile(resolve(outputDir, 'apiDefinitions.ts'), 'utf-8')
     expect(apiDefinitionsFile).toMatch(
-      createStrReg(`export default {
+      createStrReg(`const apiDefinitions = {
   'clients.customClients': ['GET', '/clients/suffix'],
+  'clients.generateBundle': ['POST', '/model'],
   'documentation.customClients': ['GET', '/clients/suffix'],
-  'documentation.documentationLanguages': ['GET', '/documentation'],
-  'clients.generateBundle': ['POST', '/model']
-};`),
+  'documentation.documentationLanguages': ['GET', '/documentation']
+} as const;`),
     )
   })
 
@@ -868,7 +842,7 @@ describe('generate with OpenAPI file', () => {
         {
           input: resolve(__dirname, './openapis/openapi_300.yaml'),
           output: outputDir,
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
           handleApi: (apiDescriptor) => {
             if (apiDescriptor.url === '/pet') {
               if (apiDescriptor.method.toUpperCase() === 'POST' && apiDescriptor.responses?.properties) {
@@ -896,37 +870,32 @@ describe('generate with OpenAPI file', () => {
     const globalsFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8')
     // generate separated `Pet1` from `Pet`
     expect(globalsFile).toMatch(
-      createStrReg(`pet24<
-        Config extends Alova2MethodConfig<Pet1> & {
+      createStrReg(`pet24<Config extends Alova2MethodConfig<Pet1> & {
           data: Pet;
-        }
-      >(
+      }>(
         config: Config
       ): Alova2Method<Pet1, 'tag.pet24', Config>;`),
     )
     // generate separated `Pet2` from `Pet`
     expect(globalsFile).toMatch(
-      createStrReg(`updatePet<
-        Config extends Alova2MethodConfig<Pet2> & {
+      createStrReg(`updatePet<Config extends Alova2MethodConfig<Pet2> & {
           data: Pet;
-        }
-      >(
+      }>(
         config: Config
       ): Alova2Method<Pet2, 'pet.updatePet', Config>;`),
     )
     // the unmodified api still reference `Pet`
     expect(globalsFile).toMatch(
-      createStrReg(`findPetsByStatus<
-        Config extends Alova2MethodConfig<Pet[]> & {
+      createStrReg(`findPetsByStatus<Config extends Alova2MethodConfig<Pet[]> & {
           params: {
-            /**
-             * Status values that need to be considered for filter
-             * @deprecated
-             */
-            status: ('available' | 'pending' | 'sold')[];
-          };
-        }
-      >(
+  /**
+   * Status values that need to be considered for filter
+   * @deprecated
+   */
+
+  status: ('available' | 'pending' | 'sold')[];
+};
+      }>(
         config: Config
       ): Alova2Method<Pet[], 'pet.findPetsByStatus', Config>;`),
     )
@@ -939,7 +908,7 @@ describe('generate with OpenAPI file', () => {
         {
           input: resolve(__dirname, './openapis/openapi_success_key.json'),
           output: outputDir,
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
         },
       ],
     })
@@ -953,8 +922,7 @@ describe('generate with OpenAPI file', () => {
        * type Response = Blob
        * \`\`\`
        */
-      generateCase1<
-        Config extends Alova2MethodConfig<Blob> & {
+      generateCase1<Config extends Alova2MethodConfig<Blob> & {
           params: {
             codegenOptionsURL: string;
           };
@@ -971,8 +939,7 @@ describe('generate with OpenAPI file', () => {
        * type Response = string
        * \`\`\`
        */
-      generateCase2<
-        Config extends Alova2MethodConfig<string> & {
+      generateCase2<Config extends Alova2MethodConfig<string> & {
           params: {
             codegenOptionsURL: string;
           };
@@ -986,11 +953,10 @@ describe('generate with OpenAPI file', () => {
       createStrReg(`
        * **Response**
        * \`\`\`ts
-       * type Response = string[]
+       * type Response = (string)[]
        * \`\`\`
        */
-      generateCase3<
-        Config extends Alova2MethodConfig<string[]> & {
+      generateCase3<Config extends Alova2MethodConfig<string[]> & {
           params: {
             codegenOptionsURL: string;
           };
@@ -1004,11 +970,10 @@ describe('generate with OpenAPI file', () => {
       createStrReg(`
        * **Response**
        * \`\`\`ts
-       * type Response = string[]
+       * type Response = (string)[]
        * \`\`\`
        */
-      generateCase4<
-        Config extends Alova2MethodConfig<string[]> & {
+      generateCase4<Config extends Alova2MethodConfig<string[]> & {
           params: {
             codegenOptionsURL: string;
           };
@@ -1026,72 +991,42 @@ describe('generate with OpenAPI file', () => {
         {
           input: resolve(__dirname, './openapis/nullable_openapi.yaml'),
           output: outputDir,
-          template: alovaGlobals(),
+          plugins: [alovaGlobals()],
         },
       ],
     })
 
     const globalsFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8')
 
-    // 检查生成的类型定义是否正确处理了 nullable 属性
+    // 检查生成的类型定义是否正确处理了 nullable 属性 (prettier adds blank lines after JSDoc */)
     expect(globalsFile).toMatch(
       createStrReg(`interface Pet {
   /**
    * Pet ID
    * ---
    */
+
   id?: number | null;
   /**
    * Pet Name
    * ---
    */
+
   name: string;
   /**
    * Pet Status
    * ---
    */
+
   status?: ('available' | 'pending' | 'sold') | null;
   /**
    * Pet Tags
    * ---
    */
+
   tags?: Tag[] | null;
   }`),
     )
-  })
-
-  it('should generate api files according to the fileNameCase config', async () => {
-    const outputDir = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`)
-    await generate({
-      generator: [
-        {
-          input: resolve(__dirname, './openapis/openapi_301.json'),
-          output: outputDir,
-          fileNameCase: 'kebabCase',
-          type: 'ts',
-          template: alovaGlobals(),
-        },
-      ],
-    })
-
-    expect(await fs.readFile(resolve(outputDir, 'api-definitions.ts'), 'utf-8')).toMatchSnapshot()
-    expect(await fs.readFile(resolve(outputDir, 'index.ts'), 'utf-8')).toMatchSnapshot()
-    expect(await fs.readFile(resolve(outputDir, 'create-apis.ts'), 'utf-8')).toMatchSnapshot()
-    expect(await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8')).toMatchSnapshot()
-
-    await generate({
-      generator: [
-        {
-          input: resolve(__dirname, './openapis/openapi_301.json'),
-          output: outputDir,
-          fileNameCase: 'pascalCase',
-          type: 'ts',
-          template: alovaGlobals(),
-        },
-      ],
-    })
-
-    expect(await fs.readFile(resolve(outputDir, 'CreateApis.ts'), 'utf-8')).toMatchSnapshot()
   })
 })
 

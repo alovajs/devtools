@@ -4,6 +4,7 @@ import path from 'node:path'
 import { glob } from 'glob'
 import yaml from 'js-yaml'
 import { existsPromise, resolveConfigFile } from '@/utils'
+import { readPackageJson } from '@/utils/readPackageJson'
 
 /**
  * Search for all directories containing alova.config configuration files under the monorepo project. It will search for configuration files based on `workspaces` in `package.json` or sub packages defined in `pnpm-workspace.yaml`
@@ -22,18 +23,16 @@ export default async function resolveWorkspaces(projectPath = process.cwd()) {
 
   // Find sub packages based on workspaces in package.json or pnpm-workspace.yaml
 
-  const packageJsonPath = path.join(projectPath, 'package.json')
   const pnpmWorkspacePathYaml = path.join(projectPath, 'pnpm-workspace.yaml')
   const pnpmWorkspacePathYml = path.join(projectPath, 'pnpm-workspace.yml')
 
   let workspaces: string[] = []
   // If package.json exists, read workspaces
 
-  if (await existsPromise(packageJsonPath)) {
-    const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'))
-    if (packageJson.workspaces) {
-      workspaces = Array.isArray(packageJson.workspaces) ? packageJson.workspaces : packageJson.workspaces.packages
-    }
+  const packageJson = await readPackageJson(projectPath)
+  const workspacesField = packageJson?.workspaces
+  if (workspacesField) {
+    workspaces = Array.isArray(workspacesField) ? workspacesField : (workspacesField.packages ?? [])
   }
 
   // If pnpm-workspace.yaml exists, read the path in it

@@ -13,9 +13,9 @@ describe('component TheCounter.vue', () => {
     const wrapper = mount(TheCounter, { props: { initial: 0 } })
     expect(wrapper.text()).toContain('0')
 
-    expect(wrapper.find('.inc').exists()).toBe(true)
+    expect(wrapper.find('.inc').exists()).toBeTruthy()
 
-    expect(wrapper.find('.dec').exists()).toBe(true)
+    expect(wrapper.find('.dec').exists()).toBeTruthy()
 
     await wrapper.get('.inc').trigger('click')
 

@@ -1,0 +1,8 @@
+type {{{name}}}Response = {{processType response @root.componentNames}};
+type {{{name}}}ExtraConfig = Omit<AxiosRequestConfig, 'data' | 'params'> & {
+  {{#if pathParameters}}pathParams: {{processType pathParameters @root.componentNames}};
+  {{/if}}{{#if queryParameters}}params: {{processType queryParameters @root.componentNames}};
+  {{/if}}{{#if requestBody}}data: {{processType requestBody @root.componentNames}};
+  {{/if}}
+};
+export declare function {{{name}}}(config: {{{name}}}ExtraConfig): Promise<{{{name}}}Response>;

@@ -1,4 +1,4 @@
-import type { Config } from '@/type/lib'
+import type { CacheData, Config } from '@/type/lib'
 import { unlink } from 'node:fs/promises'
 import path from 'node:path'
 import esbuild from 'esbuild'
@@ -33,7 +33,7 @@ export async function readConfig(projectPath = process.cwd()) {
   }
 
   // 获取用户已安装的依赖
-  const userDependencies = getUserInstalledDependencies(projectPath)
+  const userDependencies = await getUserInstalledDependencies(projectPath)
   const configTmpFileName = `alova_tmp_${Date.now()}.cjs`
   const outfile = path.join(projectPath, configTmpFileName)
   await esbuild.build({
@@ -55,18 +55,13 @@ export async function readConfig(projectPath = process.cwd()) {
   return configHelper.getConfig()
 }
 
-export async function getAutoUpdateConfig(config: Config) {
-  await configHelper.load(config)
-  return configHelper.autoUpdateConfig()
-}
-
-export async function getApiDocs(config: Config, projectPath = process.cwd()) {
+export async function getApiDocs(config: Config, projectPath = process.cwd()): Promise<CacheData[]> {
   if (!config || !projectPath) {
     return []
   }
   await configHelper.load(config, projectPath)
   return configHelper.getOutput().map((output) => {
     const cacheData = TemplateHelper.getData(projectPath, output!)
-    return cacheData?.apis ?? []
+    return cacheData ?? { path: output!, apis: [] }
   })
 }

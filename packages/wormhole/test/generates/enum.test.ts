@@ -50,8 +50,8 @@ describe('enum Type Generator', () => {
       `,
       type: 'enum',
       code: `{
-        /** 
-         * Active status 
+        /**
+         * Active status
          */
         ACTIVE = "active",
         /**

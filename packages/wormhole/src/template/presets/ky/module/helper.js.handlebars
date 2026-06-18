@@ -1,0 +1,27 @@
+{{> comment}}
+export function buildPayload(url, defaultConfig, apiName, config) {
+  const mergedConfig = { ...defaultConfig[apiName], ...config };
+  const pathParams = mergedConfig.pathParams;
+  const resolvedUrl = url.replace(/\{([^}]+)\}/g, (_, key) => {
+    return pathParams?.[key] ?? _;
+  });
+  delete mergedConfig.pathParams;
+  const json = mergedConfig.json;
+  if (Object.prototype.toString.call(json) === '[object Object]' && typeof FormData !== 'undefined') {
+    let hasBlobData = false;
+    const formData = new FormData();
+    for (const key in json) {
+      formData.append(key, json[key]);
+      if (json[key] instanceof Blob) {
+        hasBlobData = true;
+      }
+    }
+    if (hasBlobData) {
+      delete mergedConfig.json;
+      mergedConfig.body = formData;
+    }
+  }
+  return { url: resolvedUrl, mergedConfig };
+}
+
+export const setDefaultConfig = (_, configMap) => configMap;

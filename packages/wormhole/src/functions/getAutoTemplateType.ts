@@ -1,21 +1,19 @@
-import type { PackageJson } from 'type-fest'
 import type { FrameworkName, TemplateType } from '@/type'
-import path from 'node:path'
-import importFresh from 'import-fresh'
-
-export const frameworkNames: FrameworkName[] = ['vue', 'react', 'svelte', 'solid-js', 'nuxt']
+import { FRAMEWORK_NAMES, TemplateTypeEnum } from '@/constant'
+import { readPackageJson } from '@/utils/readPackageJson'
 
 /**
  * Get the template type based on project configuration
  * @param projectPath - The project root path
  * @returns TemplateType - 'typescript' | 'module' | 'commonjs'
  */
-export default function getAutoTemplateType(projectPath: string): TemplateType {
-  const packageJson: PackageJson = importFresh(path.resolve(projectPath, './package.json'))
+export default async function getAutoTemplateType(projectPath: string): Promise<TemplateType> {
+  const packageJson = await readPackageJson(projectPath)
   if (packageJson?.devDependencies?.typescript) {
-    return 'typescript'
+    return TemplateTypeEnum.TYPESCRIPT
   }
-  return packageJson.type ?? 'module'
+  const type = packageJson?.type as TemplateType | undefined
+  return type ?? TemplateTypeEnum.MODULE
 }
 
 /**
@@ -23,16 +21,16 @@ export default function getAutoTemplateType(projectPath: string): TemplateType {
  * @param projectPath - The project root path
  * @returns FrameworkName or empty string
  */
-export function getFrameworkTag(projectPath: string): FrameworkName | '' {
-  const packageJson: PackageJson = importFresh(path.resolve(projectPath, './package.json'))
+export async function getFrameworkTag(projectPath: string): Promise<FrameworkName | ''> {
+  const packageJson = await readPackageJson(projectPath)
   if (!packageJson) {
     return ''
   }
   // Framework technology stack tag vue | react
   // Find in dependencies
-  const frameTag = frameworkNames.find(framework => packageJson.dependencies?.[framework])
+  const frameTag = FRAMEWORK_NAMES.find(framework => packageJson.dependencies?.[framework]) as FrameworkName | undefined
   // Find in dev dependencies
   // Priority: Production dependencies > Development dependencies
-  const devFrameTag = frameworkNames.find(framework => packageJson.devDependencies?.[framework])
+  const devFrameTag = FRAMEWORK_NAMES.find(framework => packageJson.devDependencies?.[framework]) as FrameworkName | undefined
   return frameTag ?? devFrameTag ?? ''
 }

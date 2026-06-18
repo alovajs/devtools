@@ -13,7 +13,7 @@ describe('group Forwarder', () => {
 
       const result = groupForwarder.is(schema)
 
-      expect(result).toBe(true)
+      expect(result).toBeTruthy()
     })
 
     it('should return true for schema with anyOf', () => {
@@ -26,7 +26,7 @@ describe('group Forwarder', () => {
 
       const result = groupForwarder.is(schema)
 
-      expect(result).toBe(true)
+      expect(result).toBeTruthy()
     })
 
     it('should return true for schema with allOf', () => {
@@ -49,7 +49,7 @@ describe('group Forwarder', () => {
 
       const result = groupForwarder.is(schema)
 
-      expect(result).toBe(true)
+      expect(result).toBeTruthy()
     })
 
     it('should return true for schema with multiple group types (oneOf and anyOf)', () => {
@@ -65,7 +65,7 @@ describe('group Forwarder', () => {
 
       const result = groupForwarder.is(schema)
 
-      expect(result).toBe(true)
+      expect(result).toBeTruthy()
     })
 
     it('should return true for schema with all group types', () => {
@@ -77,7 +77,7 @@ describe('group Forwarder', () => {
 
       const result = groupForwarder.is(schema)
 
-      expect(result).toBe(true)
+      expect(result).toBeTruthy()
     })
 
     it('should return true for schema with single item in oneOf', () => {
@@ -89,7 +89,7 @@ describe('group Forwarder', () => {
 
       const result = groupForwarder.is(schema)
 
-      expect(result).toBe(true)
+      expect(result).toBeTruthy()
     })
 
     it('should return true for schema with empty arrays in group fields', () => {
@@ -99,7 +99,7 @@ describe('group Forwarder', () => {
 
       const result = groupForwarder.is(schema)
 
-      expect(result).toBe(true)
+      expect(result).toBeTruthy()
     })
 
     it('should return false for schema without group fields', () => {
@@ -206,7 +206,7 @@ describe('group Forwarder', () => {
 
       const result = groupForwarder.is(schema)
 
-      expect(result).toBe(true)
+      expect(result).toBeTruthy()
     })
   })
 

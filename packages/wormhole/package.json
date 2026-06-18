@@ -34,10 +34,6 @@
     "./plugin": {
       "types": "./typings/plugins.d.ts",
       "default": "./dist/plugins/index.js"
-    },
-    "./template": {
-      "types": "./typings/template.d.ts",
-      "default": "./dist/template/index.js"
     }
   },
   "main": "./dist/index.js",
@@ -55,8 +51,7 @@
     "build:ts": "tsc --build tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "build:dts": "dts-bundle-generator -o typings/index.d.ts src/index.ts --no-check --no-banner --project tsconfig.build.json",
     "build:plugin-dts": "dts-bundle-generator -o typings/plugins.d.ts src/plugins/index.ts --no-check --no-banner --project tsconfig.build.json",
-    "build:template-dts": "dts-bundle-generator -o typings/template.d.ts src/template/index.ts --no-check --no-banner --project tsconfig.build.json",
-    "build:copy": "ncp ./src/templates ./dist/templates"
+    "build:copy": "ncp ./src/template/presets ./dist/template/presets"
   },
   "publishConfig": {
     "access": "public"
@@ -67,7 +62,6 @@
     "esbuild": "catalog:build",
     "glob": "catalog:dev",
     "handlebars": "catalog:frontend",
-    "import-fresh": "catalog:dev",
     "js-yaml": "catalog:dev",
     "lodash": "catalog:frontend",
     "openapi-types": "catalog:types",
@@ -82,7 +76,9 @@
     "@types/js-yaml": "catalog:types",
     "@types/lodash": "catalog:types",
     "@types/swagger2openapi": "catalog:types",
+    "axios": "catalog:",
     "fs-extra": "catalog:dev",
+    "ky": "catalog:",
     "memfs": "catalog:dev",
     "tsc-alias": "catalog:build"
   }

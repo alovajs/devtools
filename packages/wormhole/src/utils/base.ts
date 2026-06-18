@@ -1,10 +1,8 @@
 import type { MethodType, RequestBody } from 'alova'
-import type { PackageJson } from 'type-fest'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { createAlova } from 'alova'
 import adapterFetch from 'alova/fetch'
-import importFresh from 'import-fresh'
 import { logger } from '@/helper/logger'
 
 export interface FetchOptions {
@@ -166,22 +164,17 @@ export function getType(value: unknown) {
 /**
  * 获取用户已安装的依赖列表
  */
-export function getUserInstalledDependencies(projectPath: string): string[] {
-  try {
-    const packageJson: PackageJson = importFresh(path.resolve(projectPath, './package.json'))
-    if (!packageJson) {
-      return []
-    }
-
-    const dependencies = Object.keys(packageJson.dependencies || {})
-    const devDependencies = Object.keys(packageJson.devDependencies || {})
-    const peerDependencies = Object.keys(packageJson.peerDependencies || {})
-
-    // 合并所有依赖并去重
-    return [...new Set([...dependencies, ...devDependencies, ...peerDependencies])]
-  }
-  catch (error) {
-    logger.warn('Failed to read package.json:', error)
+export async function getUserInstalledDependencies(projectPath: string): Promise<string[]> {
+  const { readPackageJson } = await import('@/utils/readPackageJson')
+  const packageJson = await readPackageJson(projectPath)
+  if (!packageJson) {
     return []
   }
+
+  const dependencies = Object.keys(packageJson.dependencies || {})
+  const devDependencies = Object.keys(packageJson.devDependencies || {})
+  const peerDependencies = Object.keys(packageJson.peerDependencies || {})
+
+  // 合并所有依赖并去重
+  return [...new Set([...dependencies, ...devDependencies, ...peerDependencies])]
 }

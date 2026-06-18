@@ -1,4 +1,5 @@
 import { defineConfig } from '@alova/wormhole'
+import { aiDoc, alova, alovaGlobals, axios, fetch, ky } from '@alova/wormhole/plugin'
 
 // For more config detailed visit:
 // https://alova.js.org/tutorial/getting-started/extension-integration
@@ -11,7 +12,7 @@ export default defineConfig({
        * 1. openapi json file url
        * 2. local file
        */
-      input: 'https://generator3.swagger.io',
+      input: 'swagger.json',
 
       /**
        * input file platform. Currently only swagger is supported.
@@ -19,11 +20,15 @@ export default defineConfig({
        */
       platform: 'swagger',
 
+      docComment: false,
+
       /**
        * output path of interface file and type file.
        * Multiple generators cannot have the same address, otherwise the generated code will overwrite each other.
        */
-      output: 'src/api',
+      output: 'src/apiAlovaGlobals',
+
+      plugins: [alovaGlobals()],
 
       /**
        * the mediaType of the generated response data. default is `application/json`
@@ -34,11 +39,6 @@ export default defineConfig({
        * the bodyMediaType of the generated request body data. default is `application/json`
        */
       // bodyMediaType: 'application/json',
-
-      /**
-       * the generated api version. options are `2` or `3`, default is `auto`.
-       */
-      // version: 'auto',
 
       /**
        * type of generated code. The options are `auto/ts/typescript/module/commonjs`
@@ -58,11 +58,31 @@ export default defineConfig({
       //  return apiDescriptor;
       // }
     },
+    {
+      input: 'swagger.json',
+      platform: 'swagger',
+      output: 'src/apiAlovaFunctional',
+      serverName: 'functional',
+      plugins: [aiDoc(), alova()],
+    },
+    {
+      input: 'swagger.json',
+      platform: 'swagger',
+      output: 'src/apiAxios',
+      type: 'module',
+      plugins: [axios()],
+    },
+    {
+      input: 'swagger.json',
+      platform: 'swagger',
+      output: 'src/apiFetch',
+      plugins: [fetch()],
+    },
+    {
+      input: 'swagger.json',
+      platform: 'swagger',
+      output: 'src/apiKy',
+      plugins: [ky()],
+    },
   ],
-
-  /**
-   * extension only
-   * whether to automatically update the interface, enabled by default, check every 5 minutes, closed when set to `false`
-   */
-  // autoUpdate: true
 })

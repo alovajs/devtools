@@ -3,6 +3,9 @@ packages:
   - packages/*
   - e2e-fixtures-temp/*
 
+catalog:
+  axios: ^1.17.0
+  ky: ^2.0.2
 catalogs:
   build:
     '@czhlin/vite-plugin-vscode': ^4.3.0

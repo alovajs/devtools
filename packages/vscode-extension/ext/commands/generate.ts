@@ -1,3 +1,5 @@
+import type { GenerateProgress } from '@alova/wormhole'
+import { ProgressLocation, window } from 'vscode'
 import { endLoading, loading } from '@/commands/statusBar'
 import { showError } from '@/components/event'
 import ApiGenerate from '@/core/ApiGenerate'
@@ -11,8 +13,28 @@ export const refresh: CommandType = {
       loading()
       await ApiGenerate.readConfig()
       ApiGenerate.checkConfig()
-      // Generate api file
-      await ApiGenerate.generate({ force: true })
+      await window.withProgress(
+        {
+          location: ProgressLocation.Notification,
+          title: 'Generating APIs',
+          cancellable: false,
+        },
+        async (progress) => {
+          await ApiGenerate.generate({
+            force: true,
+            onProgress(snapshot: Record<string, GenerateProgress>) {
+              const entries = Object.entries(snapshot)
+              if (!entries.length) {
+                return
+              }
+              const lines = entries
+                .map(([src, p]) => `[${src}] ${p.progress}%${p.message ? ` ${p.message}` : ''}`)
+                .join('\n')
+              progress.report({ message: lines })
+            },
+          })
+        },
+      )
       ApiGenerate.showError()
     }
     catch (error) {

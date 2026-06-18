@@ -1,40 +1,66 @@
+import type { TemplatePreset } from '@/createConfig'
 import type { TemplateType } from '@/type/lib'
 import ora from 'ora'
 import { createConfig, generate, readConfig, resolveWorkspaces } from '@/index'
+import { createProgressRenderer } from './progressRenderer'
 
-export async function actionInit({ type, cwd }: { type?: TemplateType, cwd?: string }) {
+export async function actionInit({ type, template, project }: { type?: TemplateType, template?: TemplatePreset, project?: string }) {
   const spinner = ora('Initializing configuration file...').start()
-  await createConfig({ type, projectPath: cwd })
-  spinner.succeed('alova configuration file is initialized!')
+  try {
+    await createConfig({ type, template, projectPath: project })
+    spinner.succeed('alova configuration file is initialized!')
+  }
+  catch (error: any) {
+    spinner.fail(`Initialization failed: ${error.message}`)
+    process.exit(1)
+  }
 }
 
 export async function actionGen({
-  workspace = true,
-  cwd,
+  project,
   force,
 }: {
-  workspace?: boolean
-  cwd?: string
+  project?: string
   force?: boolean
 }) {
-  let workspacePaths: (string | undefined)[] = [undefined]
-  if (workspace) {
-    workspacePaths = await resolveWorkspaces(cwd)
+  if (project) {
+    await generateForProject(project, force)
   }
-  for (const dir of workspacePaths) {
-    const spinner = ora(`Generating...`).start()
-    const config = await readConfig(dir)
+  else {
+    const workspacePaths = await resolveWorkspaces()
+    if (workspacePaths.length === 0) {
+      console.error('No workspaces found.')
+      process.exit(1)
+    }
+    for (const dir of workspacePaths) {
+      await generateForProject(dir, force)
+    }
+  }
+}
+
+async function generateForProject(projectPath: string, force?: boolean) {
+  const header = `Generating \`${projectPath}\`...`
+  const renderProgress = createProgressRenderer(header)
+  const spinner = ora({ text: header }).start()
+  try {
+    const config = await readConfig(projectPath)
     const results = await generate(config, {
       force,
-      projectPath: cwd,
+      projectPath,
+      onProgress: (snapshot) => {
+        spinner.text = renderProgress(snapshot)
+      },
     })
-    results.forEach((result) => {
-      if (result) {
-        spinner.succeed(`workspace \`${dir}\` is generated!`)
-      }
-      else {
-        spinner.fail(`workspace \`${dir}\` is failed, try to force generate with \`alova gen -f\`!`)
-      }
-    })
+    const failed = results.some(r => !r)
+    if (failed) {
+      spinner.fail(`\`${projectPath}\` generation failed, try \`alova gen -f\``)
+    }
+    else {
+      spinner.succeed(`\`${projectPath}\` generated successfully!`)
+    }
+  }
+  catch (error: any) {
+    spinner.fail(`\`${projectPath}\` error: ${error.message}`)
+    process.exit(1)
   }
 }

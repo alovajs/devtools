@@ -25,10 +25,10 @@ export class DefaultValueLoader implements Loader<string, Promise<string>, Defau
     if (api.queryParametersComment) {
       configStrArr.push(`params: ${await this.transform(api.queryParametersComment.replace(/\*/g, ''))}`)
     }
-    if (api.requestComment) {
-      configStrArr.push(`data: ${await this.transform(api.requestComment.replace(/\*/g, ''))}`)
+    if (api.requestBodyComment) {
+      configStrArr.push(`data: ${await this.transform(api.requestBodyComment.replace(/\*/g, ''))}`)
     }
-    return format(`${api.global}.${api.pathKey}({${configStrArr.join(',\n')}})`, {
+    return format(`${api.pathKey}({${configStrArr.join(',\n')}})`, {
       printWidth: 40, // Shorten print width to force line breaks
       tabWidth: 2,
       semi: false, // Remove the trailing semicolon

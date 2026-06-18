@@ -21,7 +21,7 @@ export interface Api {
 }
 export interface ApiDoc {
   apis: Api[]
-  tag: string
+  tagName: string
 }
 declare function getApiDocs(): Promise<{
   name: string

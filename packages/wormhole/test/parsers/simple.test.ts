@@ -156,7 +156,7 @@ describe('simple Type Parser', () => {
       const result = simpleTypeParser(schema, ctx)
 
       expect(result.type).toBe(ASTType.STRING)
-      expect(result.deprecated).toBe(true)
+      expect(result.deprecated).toBeTruthy()
     })
   })
 

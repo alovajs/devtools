@@ -1,4 +1,5 @@
 import type { ApiPlugin } from '@/type'
+import { PluginName } from '@/constant'
 
 export type ScopeType = 'ALL' | 'SELECTED_ENDPOINTS' | 'SELECTED_TAGS' | 'SELECTED_FOLDERS'
 
@@ -89,8 +90,8 @@ export function apifox({
   }
 
   return {
-    name: 'apifox',
-    config(config) {
+    name: PluginName.APIFOX,
+    config({ config }) {
       const base = 'https://api.apifox.com/v1/projects'
       if (projectId && apifoxToken) {
         config.input = `${base}/${encodeURIComponent(projectId)}/export-openapi?locale=${encodeURIComponent(locale)}`

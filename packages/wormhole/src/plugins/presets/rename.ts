@@ -1,4 +1,5 @@
 import type { ApiDescriptor, ApiPlugin, Parameter } from '@/type'
+import { ParameterIn, PluginName, RenameScope } from '@/constant'
 import { extend, isMatch } from './utils'
 /**
  * Rename style options
@@ -187,18 +188,18 @@ function renameApiDescriptor(apiDescriptor: ApiDescriptor, config: RenameConfig)
     return apiDescriptor
 
   const newDescriptor = { ...apiDescriptor }
-  const scope = config.scope || 'url'
+  const scope = config.scope || RenameScope.URL
 
   switch (scope) {
-    case 'params':
+    case RenameScope.PARAMS:
       if (newDescriptor.parameters) {
-        newDescriptor.parameters = transformParameters(newDescriptor.parameters, 'query', config, apiDescriptor)
+        newDescriptor.parameters = transformParameters(newDescriptor.parameters, ParameterIn.QUERY, config, apiDescriptor)
       }
       break
 
-    case 'pathParams':
+    case RenameScope.PATH_PARAMS:
       if (newDescriptor.parameters) {
-        newDescriptor.parameters = transformParameters(newDescriptor.parameters, 'path', config, apiDescriptor)
+        newDescriptor.parameters = transformParameters(newDescriptor.parameters, ParameterIn.PATH, config, apiDescriptor)
       }
 
       if (newDescriptor.url) {
@@ -209,24 +210,24 @@ function renameApiDescriptor(apiDescriptor: ApiDescriptor, config: RenameConfig)
       }
       break
 
-    case 'data':
+    case RenameScope.DATA:
       if (newDescriptor.requestBody) {
         newDescriptor.requestBody = transformProperties(newDescriptor.requestBody, config, apiDescriptor)
       }
       break
 
-    case 'response':
+    case RenameScope.RESPONSE:
       if (newDescriptor.responses) {
         newDescriptor.responses = transformProperties(newDescriptor.responses, config, apiDescriptor)
       }
       break
 
-    case 'url':
+    case RenameScope.URL:
       if (newDescriptor.url) {
         newDescriptor.url = renameUrl(newDescriptor.url, config, apiDescriptor)
       }
       break
-    case 'refName':
+    case RenameScope.REF_NAME:
       if (newDescriptor.refNameMap) {
         newDescriptor.refNameMap = transformRefNameMap(newDescriptor.refNameMap, config, apiDescriptor)
       }
@@ -253,8 +254,8 @@ export function rename(config: RenameConfig | RenameConfig[]): ApiPlugin {
   }
 
   return {
-    name: 'rename',
-    config(config) {
+    name: PluginName.RENAME,
+    config({ config }) {
       return extend(config, {
         handleApi: (apiDescriptor: ApiDescriptor) => {
           if (!apiDescriptor)

@@ -6,6 +6,7 @@ import type {
   Parameter,
   SchemaObject,
 } from '@/type'
+import { ModifierScope, ParameterIn, PluginName } from '@/constant'
 import { extend, isMatch } from '../utils'
 import { applyModifierSchema } from './hepler'
 
@@ -54,7 +55,7 @@ function modifySchemaProperties<T extends MaybeSchemaObject = SchemaObject>(sche
 }
 function modifyParameters(
   parameters: Array<Parameter>,
-  type: 'query' | 'path' | 'header' | 'cookie',
+  type: ParameterIn,
   config: PayloadModifierConfig,
 ): Array<Parameter> {
   if (!parameters || !Array.isArray(parameters)) {
@@ -85,22 +86,22 @@ function payloadModifierApiDescriptor(apiDescriptor: ApiDescriptor, config: Payl
   const newDescriptor = { ...apiDescriptor }
   const { scope } = config
   switch (scope) {
-    case 'params':
+    case ModifierScope.PARAMS:
       if (newDescriptor.parameters) {
-        newDescriptor.parameters = modifyParameters(newDescriptor.parameters, 'query', config)
+        newDescriptor.parameters = modifyParameters(newDescriptor.parameters, ParameterIn.QUERY, config)
       }
       break
-    case 'pathParams':
+    case ModifierScope.PATH_PARAMS:
       if (newDescriptor.parameters) {
-        newDescriptor.parameters = modifyParameters(newDescriptor.parameters, 'path', config)
+        newDescriptor.parameters = modifyParameters(newDescriptor.parameters, ParameterIn.PATH, config)
       }
       break
-    case 'data':
+    case ModifierScope.DATA:
       if (newDescriptor.requestBody) {
         newDescriptor.requestBody = modifySchemaProperties(newDescriptor.requestBody, config)
       }
       break
-    case 'response':
+    case ModifierScope.RESPONSE:
       if (newDescriptor.responses) {
         newDescriptor.responses = modifySchemaProperties(newDescriptor.responses, config)
       }
@@ -112,8 +113,8 @@ function payloadModifierApiDescriptor(apiDescriptor: ApiDescriptor, config: Payl
 }
 export function payloadModifier(configs: PayloadModifierConfig[]): ApiPlugin {
   return {
-    name: 'payloadModifier',
-    config(config) {
+    name: PluginName.PAYLOAD_MODIFIER,
+    config({ config }) {
       return extend(config, {
         handleApi: (apiDescriptor: ApiDescriptor) => {
           if (!apiDescriptor) {

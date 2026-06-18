@@ -1,7 +1,6 @@
 import type { ASTGenerator, GeneratorCtx, GeneratorOptions, GeneratorResult } from './type'
 import type { AST } from '@/type'
 import { CommentHelper } from '@/helper'
-import { format } from '@/utils'
 
 export function generate(ast: AST, ctx: GeneratorCtx, generators: ASTGenerator[]) {
   const generator = generators.find((generator) => {
@@ -40,38 +39,30 @@ export function setComment(ast: AST, options: GeneratorOptions) {
   return ast.comment ?? ''
 }
 
-export async function normalizeCode(code: string, type: GeneratorResult['type']) {
-  const typeMap: Record<
-    GeneratorResult['type'],
-    {
-      reg: RegExp
-      transform: (code: string) => string
-    }
-  > = {
-    type: {
-      reg: /type Ts =(.*)/s,
-      transform(code: string): string {
-        return getTsStr({ type: 'type', name: 'Ts', code })
-      },
-    },
-    interface: {
-      reg: /interface Ts (.*)/s,
-      transform(code: string): string {
-        return getTsStr({ type: 'interface', name: 'Ts', code })
-      },
-    },
-    enum: {
-      reg: /enum Ts (.*)/s,
-      transform(code: string): string {
-        return getTsStr({ type: 'enum', name: 'Ts', code })
-      },
-    },
-  }
-  const tsStrFormat = await format(typeMap[type].transform(code), {
-    semi: false, // remove semicolon
-  })
-  const resultFormat = typeMap[type].reg.exec(tsStrFormat)?.[1] ?? ''
-  return resultFormat.trim()
+/** Generate normalized TS code body (prettier moved to file level per 9.5.1). Applies basic normalization for merged comments and indentation. */
+export function normalizeCode(code: string, type: GeneratorResult['type']) {
+  // Fix merged */ with next content: */id → */\nid, */{ → */\n{
+  const result = code.replace(/\*\/(\s*\S)/g, '*/\n$1')
+  const trimmed = result.trim()
+
+  // Normalize indentation for block structures
+  const blockTypes = ['interface', 'type', 'enum', 'group', 'array']
+  if (!type || !blockTypes.includes(type))
+    return trimmed
+
+  const isBlock = trimmed.startsWith('{') || trimmed.startsWith('[')
+  if (!isBlock)
+    return trimmed
+
+  const lines = trimmed.split('\n')
+  if (lines.length <= 2)
+    return trimmed
+
+  return lines.map((line, i) => {
+    if (i === 0 || i === lines.length - 1)
+      return line.trim()
+    return `  ${line.trimStart()}`
+  }).join('\n')
 }
 
 export function getTsStr(genResult: GeneratorResult, options?: {

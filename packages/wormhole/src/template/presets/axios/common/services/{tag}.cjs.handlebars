@@ -1,0 +1,28 @@
+{{> comment}}
+const { axiosInstance } = require('../index');
+const { buildPayload } = require('../helper');
+const { {{currentTag.tagName}}DefaultConfig } = require('.');
+
+
+{{#each tagedApis}}
+{{#each apis}}
+{{> api-jsdoc}}
+function {{{name}}}(config = {}) {
+  const { url, mergedConfig } = buildPayload('{{{path}}}', {{{tag}}}DefaultConfig, {{{name}}}.name, config);
+  return axiosInstance({
+    method: '{{method}}',
+    url,
+    ...mergedConfig,{{#if (eq response "Blob")}}
+    responseType: 'blob',{{/if}}
+  }){{#if (eq response "Blob")}}.then(data => data instanceof Blob ? data : new Blob([data])){{/if}};
+}
+
+{{/each}}
+{{/each}}
+module.exports = {
+  {{#each tagedApis}}
+  {{#each apis}}
+  {{{name}}},
+  {{/each}}
+  {{/each}}
+};

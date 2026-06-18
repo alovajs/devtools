@@ -1,4 +1,5 @@
 import type { ApiDescriptor, ApiPlugin } from '@/type'
+import { FilterScope, PluginName } from '@/constant'
 import { logger } from '@/helper/logger'
 import { extend } from './utils'
 /**
@@ -59,9 +60,9 @@ function isMatch(value: string, match?: string | RegExp | ((key: string) => bool
  */
 function getApiProperty(apiDescriptor: ApiDescriptor, scope: 'url' | 'tag'): string {
   switch (scope) {
-    case 'url':
+    case FilterScope.URL:
       return apiDescriptor.url || ''
-    case 'tag':
+    case FilterScope.TAG:
       // Assume tags exist in tags array, join with comma if multiple tags
       return Array.isArray(apiDescriptor.tags) ? apiDescriptor.tags.join(',') : ''
     default:
@@ -76,7 +77,7 @@ function getApiProperty(apiDescriptor: ApiDescriptor, scope: 'url' | 'tag'): str
  * @returns Whether it passes the filter (true means keep, false means filter out)
  */
 function applyFilterRule(apiDescriptor: ApiDescriptor, config: FilterApiConfig): boolean {
-  const scope = config.scope || 'url'
+  const scope = config.scope || FilterScope.URL
   const value = getApiProperty(apiDescriptor, scope)
 
   // Handle include and exclude logic
@@ -151,8 +152,8 @@ export function apiFilter(config: FilterApiConfig | FilterApiConfig[]): ApiPlugi
   }
 
   return {
-    name: 'filterApi',
-    config(config) {
+    name: PluginName.FILTER_API,
+    config({ config }) {
       return extend(config, {
         handleApi: (apiDescriptor: ApiDescriptor) => {
           if (!apiDescriptor)

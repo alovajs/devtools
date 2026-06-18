@@ -1,4 +1,5 @@
 import type { ApiDescriptor, ApiPlugin } from '@/type'
+import { PluginName } from '@/constant'
 import { extend } from './utils'
 /**
  * Tag modifier handler function type
@@ -104,8 +105,8 @@ export function tagModifier(handler: ModifierHandler): ApiPlugin {
   }
 
   return {
-    name: 'tagModifier',
-    config(config) {
+    name: PluginName.TAG_MODIFIER,
+    config({ config }) {
       return extend(config, {
         handleApi: (apiDescriptor: ApiDescriptor) => {
           if (!apiDescriptor)

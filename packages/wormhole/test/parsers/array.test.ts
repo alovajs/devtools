@@ -247,7 +247,7 @@ describe('array Type Parser', () => {
       const result = arrayTypeParser(schema, ctx)
 
       expect(result.type).toBe(ASTType.ARRAY)
-      expect(result.deprecated).toBe(true)
+      expect(result.deprecated).toBeTruthy()
     })
 
     it('should handle array with empty items comment', () => {

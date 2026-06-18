@@ -1,7 +1,7 @@
 import type { z } from 'zod/v3'
 import type { zConfigType, zPlatformType, zTemplateType } from './zType'
 // import { ApiPlugin } from '@/type';
-import type { OpenAPIDocument } from '@/type'
+import type { OpenAPIDocument, TemplateData } from '@/type'
 import type { ApiDescriptor } from '@/type/api'
 import type { FetchOptions } from '@/utils/base'
 /**
@@ -18,40 +18,148 @@ export type TemplateType = z.infer<typeof zTemplateType>
 export type PlatformType = z.infer<typeof zPlatformType> | (string & {}) // When using defineConfig, you need to match the PlatformType.
 
 export type MaybePromise<T> = T | Promise<T>
+
+/**
+ * Progress event reported either by the core generator or by a plugin hook.
+ */
+export interface GenerateProgress {
+  /**
+   * Source of the progress event. `'core'` for the framework lifecycle, otherwise the plugin name.
+   */
+  source: string
+  /**
+   * Completion percentage in the [0, 100] range.
+   */
+  progress: number
+  /**
+   * Optional human-readable status message.
+   */
+  message?: string
+}
+
+/**
+ * Function injected into plugin hooks for reporting plugin-scoped progress.
+ */
+export type ReportProgress = (progress: number, message?: string) => void
+
+export interface ConfigHookParams {
+  config: GeneratorConfig
+  projectPath: string
+  reportProgress: ReportProgress
+}
+
+export interface BeforeOpenapiParseHookParams {
+  config: Readonly<GeneratorConfig>
+  projectPath: string
+  reportProgress: ReportProgress
+}
+
+export interface OpenapiParsedHookParams {
+  config: Readonly<GeneratorConfig>
+  document: OpenAPIDocument
+  projectPath: string
+  reportProgress: ReportProgress
+}
+
+export interface BeforeCodeGenerateHookParams {
+  config: Readonly<GeneratorConfig>
+  data: TemplateData
+  projectPath: string
+  reportProgress: ReportProgress
+}
+
+export interface BeforeFileWriteHookParams {
+  config: Readonly<GeneratorConfig>
+  data: TemplateData
+  filePath: string
+  content: string
+  projectPath: string
+  reportProgress: ReportProgress
+  /** Template file metadata: tag/api/global */
+  meta: {
+    templateType?: 'tag' | 'api'
+    tag?: string
+    api?: string
+  }
+}
+
+export interface CodeGeneratedHookParams {
+  config: Readonly<GeneratorConfig>
+  data: TemplateData
+  /** Paths of all generated files (for notification; content is not held) */
+  filePaths: string[]
+  /** Absolute output directory */
+  outputDir: string
+  projectPath: string
+  error?: Error
+  reportProgress: ReportProgress
+}
+
+export interface GetTemplateHookParams {
+  config: Readonly<GeneratorConfig>
+  projectPath: string
+  reportProgress: ReportProgress
+}
+
+export interface OnHandlebarsCreatedHookParams {
+  hbs: typeof import('handlebars')
+  config: Readonly<GeneratorConfig>
+  projectPath: string
+  reportProgress: ReportProgress
+}
+
 export interface ApiPlugin {
   name?: string
   /**
    * Replaces or manipulates the options object passed to wormhole.
    * Returning null does NOT replacing anything.
    */
-  config?: (config: GeneratorConfig) => MaybePromise<GeneratorConfig | undefined | null | void>
+  config?: (params: ConfigHookParams) => MaybePromise<GeneratorConfig | undefined | null | void>
   /**
    * Called before parsing the OpenAPI file.
    */
-  beforeOpenapiParse?: (config: GeneratorConfig) => void
+  beforeOpenapiParse?: (params: BeforeOpenapiParseHookParams) => void
   /**
    * Manipulate the openapi document after parsing.
    * Returning null does NOT replacing anything.
    */
-  afterOpenapiParse?: (
-    document: OpenAPIDocument
+  openapiParsed?: (
+    params: OpenapiParsedHookParams
   ) => MaybePromise<OpenAPIDocument | undefined | null | void>
   /**
-   * Manipulate the template code before generating.
-   * Returning null does NOT replacing anything.
+   * Called before code generation. Mutate `params.data` directly to inject
+   * configuration data (no longer returns a value).
    */
   beforeCodeGenerate?: (
-    data: any,
-    outputFile: string,
-    ctx: {
-      renderTemplate: () => Promise<string>
-      fileName: string
-    }
-  ) => MaybePromise<string | undefined | null | void>
+    params: BeforeCodeGenerateHookParams
+  ) => MaybePromise<void>
   /**
-   * Called when wormhold has finished code generating.
+   * Called right before each file is written to disk.
+   * Can modify the file content by returning the new content.
    */
-  afterCodeGenerate?: (error?: Error) => void
+  beforeFileWrite?: (
+    params: BeforeFileWriteHookParams
+  ) => MaybePromise<string>
+  /**
+   * Called after ALL files have been written to disk.
+   * Used for post-processing e.g. installing skills, displaying notifications.
+   * The `filePaths` array contains all generated file paths (no content).
+   */
+  codeGenerated?: (params: CodeGeneratedHookParams) => MaybePromise<void>
+  /**
+   * Provide the template path for code generation.
+   * Multiple plugins can implement this; the last non-nil return value wins.
+   */
+  getTemplate?: (
+    params: GetTemplateHookParams
+  ) => MaybePromise<TemplateConfigResult | undefined | null | void>
+  /**
+   * Called when a new Handlebars instance is created for template rendering.
+   * Use this to register custom helpers or partials on the hbs instance.
+   */
+  onHandlebarsCreated?: (
+    params: OnHandlebarsCreatedHookParams
+  ) => MaybePromise<void>
 }
 export type ApiPluginHooks = keyof Omit<ApiPlugin, 'name' | 'extends'>
 
@@ -69,18 +177,7 @@ export interface TemplateConfigResult {
    * This field is required.
    */
   path: string
-  /**
-   * Template parameters, can be customized as needed.
-   * Defaults to empty object {} if not provided.
-   */
-  config?: Record<string, any>
 }
-
-/**
- * Template config function type
- * Returns a TemplateConfigResult object containing path and config
- */
-export type TemplateConfig = () => MaybePromise<TemplateConfigResult>
 
 /**
  * Options for globals template
@@ -125,6 +222,26 @@ export interface RequestLibTemplateOptions {
    * @default false
    */
   useImportType?: boolean
+}
+
+/**
+ * Performance tuning options for code generation.
+ */
+export interface PerformanceConfig {
+  /** schema→TS worker pool strategy. Default 'auto' (adaptive by API count) */
+  workerPool?: 'auto' | number | false
+
+  /** Max concurrency for transform phase. Default auto (min(64, max(8, cpus*4))) */
+  transformConcurrency?: number
+
+  /** Max parallelism for file writes. Default 32 */
+  writeConcurrency?: number
+
+  /** Apply prettier formatting to final files before write. Default true (schema-level prettier is always disabled) */
+  prettierFinal?: boolean
+
+  /** Sort tags/APIs/components alphabetically for deterministic output. Default true */
+  deterministicSort?: boolean
 }
 
 export interface GeneratorConfig {
@@ -194,20 +311,6 @@ export interface GeneratorConfig {
   serverName?: string
 
   /**
-   * Template settings, specify which template to use for code generation.
-   * Accepts a sync or async function that returns a TemplateConfigResult object containing path and config.
-   * This field is required.
-   *
-   * Predefined templates:
-   * 1. functional: Function-style template, generates function-style API calls, supports tree-shaking, only supports alova v3
-   * 2. globals: Global template, the existing global template
-   * 3. axios: Axios related template
-   * 4. fetch: Fetch related template
-   * 5. ky: Ky related template
-   */
-  template: TemplateConfig
-
-  /**
    * The type of generated code. The optional value is `auto/ts/typescript/module/commonjs`.
    * default is `auto`, it means the type of current project will be determined through certain rules.
    *
@@ -221,11 +324,6 @@ export interface GeneratorConfig {
   type?: ConfigType
 
   /**
-   * Specify alova version, 2 or 3, if not specified, it will be automatically determined through the alova version in `package.json`
-   */
-  version?: number | string
-
-  /**
    * When there is no require, it defaults to require, and only nullable takes effect.
    */
   defaultRequire?: boolean
@@ -234,6 +332,11 @@ export interface GeneratorConfig {
    * plugin will be executed before `handleApi`
    */
   plugins?: ApiPlugin[]
+
+  /**
+   * Performance tuning options for code generation.
+   */
+  performance?: PerformanceConfig
 
   /**
    * Filter or convert the generated api function and return a new `apiDescriptor` to generate the api.
@@ -273,25 +376,6 @@ export interface Config {
    * Currently, only OpenAPI specifications are supported, including OpenAPI 2.0 and 3.0 specifications.
    */
   generator: GeneratorConfig[]
-
-  /**
-   * Whether to automatically update the interface.
-   * default is `true`, checked every 5 minutes, set `false` to close it
-   *
-   * @default true
-   */
-  autoUpdate?:
-    | boolean
-    | {
-    /**
-     * Updated when the editor is opened
-     */
-      launchEditor?: boolean
-      /**
-       * Automatic update interval in milliseconds
-       */
-      interval: number
-    }
 }
 export type UserConfig = Config
 export type UserConfigFnObject = () => UserConfig

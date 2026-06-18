@@ -40,6 +40,37 @@
     "onView:myTreeView"
   ],
   "contributes": {
+    "configuration": {
+      "title": "Alova",
+      "properties": {
+        "alova.autoUpdate": {
+          "markdownDescription": "Whether to automatically update APIs. Set to `false` to disable, `true` for default (every 5 minutes), or an object for detailed configuration.",
+          "oneOf": [
+            {
+              "type": "boolean",
+              "default": true
+            },
+            {
+              "type": "object",
+              "properties": {
+                "launchEditor": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Update immediately when the editor launches."
+                },
+                "interval": {
+                  "type": "number",
+                  "default": 300000,
+                  "description": "Auto-update interval in milliseconds."
+                }
+              },
+              "additionalProperties": false
+            }
+          ],
+          "default": true
+        }
+      }
+    },
     "commands": [
       {
         "command": "alova.refresh",

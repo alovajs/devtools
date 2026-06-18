@@ -33,7 +33,7 @@ describe('array Type Generator', () => {
        */
       `,
       type: 'type',
-      code: `string[]`,
+      code: `(string)[]`,
     })
     expect(result).toEqual(expectResult)
   })
@@ -74,9 +74,9 @@ describe('array Type Generator', () => {
       `,
       type: 'type',
       code: `Array<{
-          id?:number
-          name:string
-        }>`,
+ id?:number
+ name:string
+}>`,
     })
     expect(result).toEqual(expectResult)
   })
@@ -108,8 +108,8 @@ describe('array Type Generator', () => {
       comment: ``,
       type: 'type',
       code: `Array<{
-        value?:string 
-      }>`,
+ value?:string
+}>`,
     })
     expect(result).toEqual(expectResult)
   })
@@ -136,7 +136,7 @@ describe('array Type Generator', () => {
        */
       `,
       type: 'type',
-      code: `number[][]`,
+      code: `((number)[])[]`,
     })
     expect(result).toEqual(expectResult)
   })
@@ -163,7 +163,7 @@ describe('array Type Generator', () => {
       name: 'MixedArray',
       comment: ``,
       type: 'type',
-      code: `(string | number)[]`,
+      code: `((string) | (number))[]`,
     })
     expect(result).toEqual(expectResult)
   })

@@ -10,6 +10,11 @@ export function loading(text: string = '') {
   statusBarItem.tooltip = 'loading'
   statusBarItem.command = undefined
 }
+export function updateLoadingProgress(percent: number) {
+  if (Global.loading) {
+    statusBarItem.text = `$(sync~spin) ${Math.round(percent)}%`
+  }
+}
 export function endLoading() {
   Global.setLoading(false)
   if (Global.enabled) {
@@ -24,7 +29,7 @@ export function enable() {
   if (!Global.loading) {
     statusBarItem.text = `$(alova-icon-id) Alova`
     statusBarItem.tooltip = 'Generate APIs'
-    statusBarItem.command = Commands.refresh
+    statusBarItem.command = Commands.status_bar_show_actions
     statusBarItem.color = undefined
   }
 }
@@ -32,7 +37,7 @@ export function disable() {
   Global.setEnabled(false)
   statusBarItem.text = `$(alova-icon-id) Alova`
   statusBarItem.tooltip = 'module `@alova/wormhole` not found'
-  statusBarItem.color = '#808080' // Set color to gray
+  statusBarItem.color = '#FFFFFF80'
   statusBarItem.command = undefined
 }
 // Show status bar items

@@ -9,6 +9,7 @@ export enum Commands {
   snippet_search_open = 'alova.snippetSearch.open',
   snippet_search_insert = 'alova.snippetSearch.insert',
   snippet_search_show_help = 'alova.snippetSearch.showHelp',
+  status_bar_show_actions = 'alova.statusBar.showActions',
 }
 
 export default Commands

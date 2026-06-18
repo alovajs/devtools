@@ -4,27 +4,18 @@ import { generate } from '@/index'
 const baseConfig = {
   input: 'http://localhost:3000/openapi.json',
   output: './src/api',
-  template: () => ({
-    path: './template',
-  }),
+  plugins: [{ getTemplate: () => ({ path: './template' }) }],
 }
 
 /**
  * 验证配置参数合法（通过校验后进入文件读取阶段，抛出 "Cannot read file" 错误）
  */
-async function expectConfigValid(generatorOverrides: Partial<GeneratorConfig> = {}) {
+async function expectConfigValid(generatorOverrides: Partial<GeneratorConfig> = {}, throwText?: string) {
   await expect(
     generate({
       generator: [{ ...baseConfig, ...generatorOverrides }],
     }),
-  ).rejects.toThrow('Cannot read file')
-}
-
-/**
- * 验证配置参数合法（支持自定义根配置）
- */
-async function expectRootConfigValid(config: { generator: any[], autoUpdate?: any }) {
-  await expect(generate(config)).rejects.toThrow('Cannot read file')
+  ).rejects.toThrow(throwText || 'fetch failed')
 }
 
 describe('validate config', () => {
@@ -53,7 +44,7 @@ describe('validate config', () => {
       ).rejects.toThrow('Field output is required in `config.generator`')
     })
 
-    it('should throw error when template is not specified', async () => {
+    it('should throw error when no plugin provides getTemplate', async () => {
       await expect(
         generate({
           generator: [
@@ -63,26 +54,12 @@ describe('validate config', () => {
             },
           ],
         } as any),
-      ).rejects.toThrow('Required at "generator[0].template"')
+      ).rejects.toThrow('No template configured')
     })
   })
 
-  describe('template validation', () => {
-    it('should throw error when template is not a function', async () => {
-      await expect(
-        generate({
-          generator: [
-            {
-              input: 'http://localhost:3000/openapi.json',
-              output: './src/api',
-              template: {} as any,
-            },
-          ],
-        }),
-      ).rejects.toThrow('Expected function, received object at "generator[0].template"')
-    })
-
-    it('should accept template as a function', async () => {
+  describe('plugins validation', () => {
+    it('should accept plugins with getTemplate hook that returns a path', async () => {
       await expectConfigValid()
     })
   })
@@ -95,12 +72,12 @@ describe('validate config', () => {
             {
               input: 'http://localhost:3000/openapi.json',
               output: './src/api',
-              template: () => ({ path: '' }),
+              plugins: [{getTemplate: () => ({path: ''})}],
             },
             {
               input: 'http://localhost:3000/openapi2.json',
               output: './src/api',
-              template: () => ({ path: '' }),
+              plugins: [{getTemplate: () => ({path: ''})}],
             },
           ],
         }),
@@ -123,28 +100,6 @@ describe('validate config', () => {
             {
               ...baseConfig,
               type: 'invalid' as any,
-            },
-          ],
-        }),
-      ).rejects.toThrow()
-    })
-  })
-
-  describe('platform field validation', () => {
-    it('should accept valid platform values', async () => {
-      const validPlatforms = ['swagger', 'knife4j', 'yapi'] as const
-      for (const platform of validPlatforms) {
-        await expectConfigValid({ platform })
-      }
-    })
-
-    it('should throw error when platform is invalid', async () => {
-      await expect(
-        generate({
-          generator: [
-            {
-              ...baseConfig,
-              platform: 'invalid' as any,
             },
           ],
         }),
@@ -223,6 +178,10 @@ describe('validate config', () => {
       await expectConfigValid({ serverName: 'my-server' })
     })
 
+    it('should accept empty string for serverName', async () => {
+      await expectConfigValid({ serverName: '' })
+    })
+
     it('should throw error when serverName is not string', async () => {
       await expect(
         generate({
@@ -230,30 +189,6 @@ describe('validate config', () => {
             {
               ...baseConfig,
               serverName: 123 as any,
-            },
-          ],
-        }),
-      ).rejects.toThrow()
-    })
-  })
-
-  describe('version field validation', () => {
-    it('should accept number value for version', async () => {
-      await expectConfigValid({ version: 2 })
-      await expectConfigValid({ version: 3 })
-    })
-
-    it('should accept string value for version', async () => {
-      await expectConfigValid({ version: '2' })
-    })
-
-    it('should throw error when version is invalid type', async () => {
-      await expect(
-        generate({
-          generator: [
-            {
-              ...baseConfig,
-              version: {} as any,
             },
           ],
         }),
@@ -284,6 +219,10 @@ describe('validate config', () => {
   describe('externalTypes field validation', () => {
     it('should accept array of strings for externalTypes', async () => {
       await expectConfigValid({ externalTypes: ['File', 'Blob', 'FormData'] })
+    })
+
+    it('should accept empty array for externalTypes', async () => {
+      await expectConfigValid({ externalTypes: [] })
     })
 
     it('should throw error when externalTypes contains non-string', async () => {
@@ -319,11 +258,82 @@ describe('validate config', () => {
         fetchOptions: { headers: { Authorization: 'Bearer token' }, timeout: 5000 },
       })
     })
+
+    it('should accept fetchOptions with all supported keys', async () => {
+      await expectConfigValid({
+        fetchOptions: {
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 10000,
+          method: 'POST' as any,
+          data: { key: 'value' } as any,
+          params: { page: 1 },
+          insecure: true,
+        },
+      })
+    })
+
+    it('should accept empty object for fetchOptions', async () => {
+      await expectConfigValid({
+        fetchOptions: {},
+      })
+    })
+
+    it('should throw error when fetchOptions is a string', async () => {
+      await expect(
+        generate({
+          generator: [
+            {
+              ...baseConfig,
+              fetchOptions: 'invalid' as any,
+            },
+          ],
+        }),
+      ).rejects.toThrow()
+    })
+
+    it('should throw error when fetchOptions is a number', async () => {
+      await expect(
+        generate({
+          generator: [
+            {
+              ...baseConfig,
+              fetchOptions: 123 as any,
+            },
+          ],
+        }),
+      ).rejects.toThrow()
+    })
   })
 
   describe('plugins field validation', () => {
     it('should accept array of plugins', async () => {
       await expectConfigValid({ plugins: [{ name: 'test-plugin' }] })
+    })
+
+    it('should accept empty array for plugins', async () => {
+      await expectConfigValid({ plugins: [] })
+    })
+
+    it('should accept multiple plugins', async () => {
+      await expectConfigValid({
+        plugins: [
+          { name: 'plugin1' },
+          { name: 'plugin2', config: () => undefined },
+        ],
+      })
+    })
+
+    it('should accept plugin with all hook functions', async () => {
+      await expectConfigValid({
+        plugins: [{
+          name: 'full-plugin',
+          config: () => undefined,
+          beforeOpenapiParse: () => {},
+          openapiParsed: () => undefined,
+          beforeCodeGenerate: () => undefined,
+          codeGenerated: () => {},
+        }],
+      })
     })
 
     it('should throw error when plugins is not array', async () => {
@@ -338,11 +348,32 @@ describe('validate config', () => {
         }),
       ).rejects.toThrow()
     })
+
+    it('should throw error when plugin hooks are not functions', async () => {
+      await expect(
+        generate({
+          generator: [
+            {
+              ...baseConfig,
+              plugins: [{ name: 'bad-plugin', beforeOpenapiParse: 'not-a-function' } as any],
+            },
+          ],
+        }),
+      ).rejects.toThrow()
+    })
   })
 
   describe('handleApi field validation', () => {
     it('should accept function for handleApi', async () => {
       await expectConfigValid({ handleApi: (api: any) => api })
+    })
+
+    it('should accept handleApi that returns undefined', async () => {
+      await expectConfigValid({ handleApi: () => undefined })
+    })
+
+    it('should accept handleApi that returns null', async () => {
+      await expectConfigValid({ handleApi: () => null })
     })
 
     it('should throw error when handleApi is not function', async () => {
@@ -359,57 +390,6 @@ describe('validate config', () => {
     })
   })
 
-  describe('autoUpdate field validation', () => {
-    it('should accept boolean value for autoUpdate', async () => {
-      await expectRootConfigValid({ generator: [baseConfig], autoUpdate: true })
-      await expectRootConfigValid({ generator: [baseConfig], autoUpdate: false })
-    })
-
-    it('should accept object with interval for autoUpdate', async () => {
-      await expectRootConfigValid({ generator: [baseConfig], autoUpdate: { interval: 5000 } })
-    })
-
-    it('should accept object with launchEditor for autoUpdate', async () => {
-      await expectRootConfigValid({
-        generator: [baseConfig],
-        autoUpdate: { interval: 5000, launchEditor: true },
-      })
-    })
-
-    it('should throw error when autoUpdate.interval is not a number', async () => {
-      await expect(
-        generate({
-          generator: [baseConfig],
-          autoUpdate: {
-            interval: 'abc' as any,
-          },
-        }),
-      ).rejects.toThrow('autoUpdate.interval must be a number')
-    })
-
-    it('should throw error when autoUpdate.interval is less than or equal to 0', async () => {
-      await expect(
-        generate({
-          generator: [baseConfig],
-          autoUpdate: {
-            interval: -1,
-          },
-        }),
-      ).rejects.toThrow('Expected to set number which great than 1 in `config.autoUpdate.interval`')
-    })
-
-    it('should throw error when autoUpdate.interval is 0', async () => {
-      await expect(
-        generate({
-          generator: [baseConfig],
-          autoUpdate: {
-            interval: 0,
-          },
-        }),
-      ).rejects.toThrow('Expected to set number which great than 1 in `config.autoUpdate.interval`')
-    })
-  })
-
   describe('file not found', () => {
     it('should throw error when generating from a file that does not exists', async () => {
       await expect(
@@ -418,11 +398,11 @@ describe('validate config', () => {
             {
               input: 'http://localhost:3000/openapi.json',
               output: './src/api',
-              template: () => ({ path: '' }),
+              plugins: [{getTemplate: () => ({path: ''})}],
             },
           ],
         }),
-      ).rejects.toThrow('Cannot read file from http://localhost:3000/openapi.json')
+      ).rejects.toThrow('fetch failed')
     })
   })
 })

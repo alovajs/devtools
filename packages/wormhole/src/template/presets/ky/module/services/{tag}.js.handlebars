@@ -1,0 +1,19 @@
+{{> comment}}
+import { kyInstance } from '../index.js';
+import { buildPayload } from '../helper.js';
+import { {{currentTag.tagName}}DefaultConfig } from './index.js';
+
+{{#each tagedApis}}
+{{#each apis}}
+{{> api-jsdoc}}
+export function {{{name}}}(config = {}) {
+  const { url, mergedConfig } = buildPayload('{{{path}}}', {{{tag}}}DefaultConfig, {{{name}}}.name, config);
+  const resolvedPath = url.replace(/^\//, '');
+  return kyInstance(resolvedPath, {
+    method: '{{method}}',
+    ...mergedConfig,
+  }){{#if (eq response "Blob")}}.blob(){{else}}.json(){{/if}};
+}
+
+{{/each}}
+{{/each}}

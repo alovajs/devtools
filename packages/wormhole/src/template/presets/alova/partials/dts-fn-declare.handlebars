@@ -1,0 +1,11 @@
+{{#or pathParameters queryParameters requestBody}}
+type {{{name}}}ExtraConfig = {
+  {{#if pathParameters}}pathParams: {{processType pathParameters @root.componentNames}};
+  {{/if}}{{#if queryParameters}}params: {{processType queryParameters @root.componentNames}};
+  {{/if}}{{#if requestBody}}data: {{processType requestBody @root.componentNames}};
+  {{/if}}
+};
+export declare function {{{name}}}<Config extends Alova2MethodConfig<{{processType response @root.componentNames}}> & {{{name}}}ExtraConfig>(config: Config): Alova2Method<ExtractResponded<Config, '{{{name}}}', {{processType response @root.componentNames}}>>;
+{{else}}
+export declare function {{{name}}}<Config extends Alova2MethodConfig<{{processType response @root.componentNames}}>>(config: Config): Alova2Method<ExtractResponded<Config, '{{{name}}}', {{processType response @root.componentNames}}>>;
+{{/or}}

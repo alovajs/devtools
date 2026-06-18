@@ -18,6 +18,7 @@ dist-ssr
 # testing
 /coverage
 alova_tmp_*
+.alova-cache
 .idea/
 *.log
 examples/**/src
@@ -26,3 +27,4 @@ examples/**/*swagger.*
 # test files
 cypress/downloads
 e2e-fixtures-temp
+docs

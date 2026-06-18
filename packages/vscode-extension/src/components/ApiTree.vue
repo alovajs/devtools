@@ -1,7 +1,7 @@
 <script setup lang="tsx">
 import type { TreeOption } from 'naive-ui'
 import type { VNodeChild } from 'vue'
-import type { Api, ApiProject, ApiType, MethodType } from '~/types'
+import type { Api, ApiProject, ApiType, CacheData, MethodType } from '~/types'
 import {
   Folder,
   HardwareChipOutline,
@@ -100,7 +100,6 @@ function nodeProps({ option }: { option: TreeOption }) {
 function getApiNode(projects: ApiProject[]) {
   const nodes: ApiNode[] = []
   for (const project of projects) {
-    const servers = project.apiDocs
     const serverNodes: ApiNode[] = []
     nodes.push({
       id: project.name,
@@ -109,34 +108,38 @@ function getApiNode(projects: ApiProject[]) {
       label: project.name,
       children: serverNodes,
     })
-    servers.forEach((groups, idx) => {
+    project.servers.forEach((server: CacheData, idx: number) => {
+      const serverLabel = server.serverName ?? server.path.split(/[/\\]/).filter(Boolean).pop() ?? server.path
       const groupNodes: ApiNode[] = []
-      const serverNode: ApiNode = {
-        id: `server-${project.name}-${idx + 1}`,
+      serverNodes.push({
+        id: `server-${project.name}-${idx}`,
         level: 2,
         type: 'server',
-        label: `Server ${idx + 1}`,
+        label: serverLabel,
         children: groupNodes,
+      })
+      const tagMap = new Map<string, Api[]>()
+      for (const api of server.apis) {
+        if (!tagMap.has(api.tag)) {
+          tagMap.set(api.tag, [])
+        }
+        tagMap.get(api.tag)!.push(api)
       }
-      serverNodes.push(serverNode)
-      groups.forEach((group, apiIdx) => {
-        const apiNodes: ApiNode[] = []
-        const groupNode: ApiNode = {
-          id: `group-${project.name}-${idx + 1}-${apiIdx + 1}`,
+      let tagIdx = 0
+      tagMap.forEach((apis, tag) => {
+        const apiNodes: ApiNode[] = apis.map(api => ({
+          id: `${api.global}.${api.pathKey}`,
+          level: 4,
+          type: 'api' as ApiType,
+          label: `${api.method}\n${api.path}`,
+          api,
+        }))
+        groupNodes.push({
+          id: `group-${project.name}-${idx}-${tagIdx++}`,
           level: 3,
           type: 'group',
-          label: group.tag,
+          label: tag,
           children: apiNodes,
-        }
-        groupNodes.push(groupNode)
-        group.apis.forEach((api) => {
-          apiNodes.push({
-            id: `${api.global}.${api.pathKey}`,
-            level: 4,
-            type: 'api',
-            label: `${api.method}\n${api.path}`,
-            api,
-          })
         })
       })
     })

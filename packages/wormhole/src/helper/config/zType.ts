@@ -1,5 +1,5 @@
-/* eslint-disable ts/no-use-before-define */
-import type { ApiDescriptor, ApiPlugin, GeneratorConfig, OpenAPIDocument } from '@/type'
+import type { TemplateConfigResult } from '@/helper/config/type'
+import type { ApiDescriptor, ApiPlugin, GeneratorConfig } from '@/type'
 import type { FetchOptions } from '@/utils/base'
 import path from 'node:path'
 import { z } from 'zod/v3' // v4版本不稳定，暂时使用v3
@@ -18,8 +18,7 @@ export const zPlatformType = z.enum(['swagger', 'knife4j', 'yapi'])
 
 export const zTemplateResult = z.object({
   path: z.string(),
-  config: z.record(z.any()).default({}),
-})
+}) as z.ZodSchema<TemplateConfigResult>
 
 export const zApiDescriptor = z.any() as z.ZodSchema<ApiDescriptor>
 
@@ -28,38 +27,17 @@ export const zHandleApi = z
   .args(zApiDescriptor)
   .returns(z.union([zApiDescriptor, z.undefined(), z.null(), z.void()]))
 export const zFetchOptions = z.record(z.string(), z.any()) as z.ZodSchema<FetchOptions>
-// Helper function for MaybePromise return types
-function zMaybePromise<T extends z.ZodTypeAny>(schema: T) {
-  return z.union([schema, z.promise(schema)])
-}
-
-// Common return type for plugin hooks
-function zPluginReturn<T extends z.ZodTypeAny>(schema: T) {
-  return zMaybePromise(z.union([schema, z.undefined(), z.null(), z.void()]))
-}
-
-// 定义 OpenAPIDocument 类型（简化版本，因为完整的 OpenAPI 规范非常复杂）
-const zOpenAPIDocument = z.any() as z.ZodSchema<OpenAPIDocument>
 
 export const zApiPlugin = z.object({
   name: z.string().optional(),
-  config: z.lazy(() =>
-    z.function().args(_zGeneratorConfig).returns(zPluginReturn(_zGeneratorConfig)).optional(),
-  ),
-  beforeOpenapiParse: z.lazy(() =>
-    z.function().args(_zGeneratorConfig).returns(z.void()).optional(),
-  ),
-  afterOpenapiParse: z
-    .function()
-    .args(zOpenAPIDocument)
-    .returns(zPluginReturn(zOpenAPIDocument))
-    .optional(),
-  beforeCodeGenerate: z
-    .function()
-    .args(z.any(), z.string())
-    .returns(zPluginReturn(z.string()))
-    .optional(),
-  afterCodeGenerate: z.function().args(z.instanceof(Error).optional()).returns(z.void()).optional(),
+  config: z.function().optional(),
+  beforeOpenapiParse: z.function().optional(),
+  openapiParsed: z.function().optional(),
+  beforeCodeGenerate: z.function().optional(),
+  beforeFileWrite: z.function().optional(),
+  codeGenerated: z.function().optional(),
+  getTemplate: z.function().optional(),
+  onHandlebarsCreated: z.function().optional(),
 }) as z.ZodSchema<ApiPlugin>
 
 export const _zGeneratorConfig = z.object({
@@ -126,12 +104,6 @@ export const _zGeneratorConfig = z.object({
    */
   serverName: z.string().optional(),
   /**
-   * Template settings, specify which template to use for code generation.
-   * Accepts a sync or async function that returns a TemplateConfigResult object containing path and config.
-   * path is required, config defaults to empty object.
-   */
-  template: z.function(),
-  /**
    * The type of generated code. The optional value is `auto/ts/typescript/module/commonjs`.
    * default is `auto`, it means the type of current project will be determined through certain rules.
    *
@@ -143,10 +115,6 @@ export const _zGeneratorConfig = z.object({
    * @default 'auto'
    */
   type: zConfigType.optional(),
-  /**
-   * Specify alova version, 2 or 3, if not specified, it will be automatically determined through the alova version in `package.json`
-   */
-  version: z.union([z.number(), z.string()]).optional(),
   /**
    * When there is no require, it defaults to require, and only nullable takes effect.
    */
@@ -214,50 +182,5 @@ export const zConfig = z.object({
         }
         outputSet.add(path.join(item.output ?? ''))
       })
-    }),
-
-  /**
-   * Whether to automatically update the interface.
-   * default is `true`, checked every 5 minutes, set `false` to close it
-   *
-   * @default true
-   */
-  autoUpdate: z
-    .union([
-      z.boolean(),
-      z
-        .object({
-          /**
-           * Updated when the editor is opened
-           */
-          launchEditor: z.boolean().optional(),
-          /**
-           * Automatic update interval in milliseconds
-           */
-          interval: z.number(),
-        })
-        .catch(({ input }) => input),
-    ])
-    .optional()
-    .superRefine((data, ctx) => {
-      if (typeof data === 'object') {
-        const { interval } = data
-        const time = Number(interval)
-        if (Number.isNaN(time)) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ['autoUpdate', 'interval'],
-            message: 'autoUpdate.interval must be a number',
-          })
-          return
-        }
-        if (time <= 0) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ['autoUpdate', 'interval'],
-            message: 'Expected to set number which great than 1 in `config.autoUpdate.interval`',
-          })
-        }
-      }
     }),
 })

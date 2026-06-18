@@ -19,6 +19,11 @@ declare const zConfigType: z.ZodEnum<[
 	"module",
 	"commonjs"
 ]>;
+declare const zTemplateType: z.ZodEnum<[
+	"typescript",
+	"module",
+	"commonjs"
+]>;
 declare const zPlatformType: z.ZodEnum<[
 	"swagger",
 	"knife4j",
@@ -29,41 +34,187 @@ declare const zPlatformType: z.ZodEnum<[
  */
 export type ConfigType = z.infer<typeof zConfigType>;
 /**
+ * template type
+ */
+export type TemplateType = z.infer<typeof zTemplateType>;
+/**
  * platform type
  */
 export type PlatformType = z.infer<typeof zPlatformType> | (string & {});
 export type MaybePromise<T> = T | Promise<T>;
+/**
+ * Function injected into plugin hooks for reporting plugin-scoped progress.
+ */
+export type ReportProgress = (progress: number, message?: string) => void;
+export interface ConfigHookParams {
+	config: GeneratorConfig;
+	projectPath: string;
+	reportProgress: ReportProgress;
+}
+export interface BeforeOpenapiParseHookParams {
+	config: Readonly<GeneratorConfig>;
+	projectPath: string;
+	reportProgress: ReportProgress;
+}
+export interface OpenapiParsedHookParams {
+	config: Readonly<GeneratorConfig>;
+	document: OpenAPIDocument;
+	projectPath: string;
+	reportProgress: ReportProgress;
+}
+export interface BeforeCodeGenerateHookParams {
+	config: Readonly<GeneratorConfig>;
+	data: TemplateData;
+	projectPath: string;
+	reportProgress: ReportProgress;
+}
+export interface BeforeFileWriteHookParams {
+	config: Readonly<GeneratorConfig>;
+	data: TemplateData;
+	filePath: string;
+	content: string;
+	projectPath: string;
+	reportProgress: ReportProgress;
+	/** Template file metadata: tag/api/global */
+	meta: {
+		templateType?: "tag" | "api";
+		tag?: string;
+		api?: string;
+	};
+}
+export interface CodeGeneratedHookParams {
+	config: Readonly<GeneratorConfig>;
+	data: TemplateData;
+	/** Paths of all generated files (for notification; content is not held) */
+	filePaths: string[];
+	/** Absolute output directory */
+	outputDir: string;
+	projectPath: string;
+	error?: Error;
+	reportProgress: ReportProgress;
+}
+export interface GetTemplateHookParams {
+	config: Readonly<GeneratorConfig>;
+	projectPath: string;
+	reportProgress: ReportProgress;
+}
+export interface OnHandlebarsCreatedHookParams {
+	hbs: typeof import("handlebars");
+	config: Readonly<GeneratorConfig>;
+	projectPath: string;
+	reportProgress: ReportProgress;
+}
 export interface ApiPlugin {
 	name?: string;
 	/**
 	 * Replaces or manipulates the options object passed to wormhole.
 	 * Returning null does NOT replacing anything.
 	 */
-	config?: (config: GeneratorConfig) => MaybePromise<GeneratorConfig | undefined | null | void>;
+	config?: (params: ConfigHookParams) => MaybePromise<GeneratorConfig | undefined | null | void>;
 	/**
 	 * Called before parsing the OpenAPI file.
 	 */
-	beforeOpenapiParse?: (config: GeneratorConfig) => void;
+	beforeOpenapiParse?: (params: BeforeOpenapiParseHookParams) => void;
 	/**
 	 * Manipulate the openapi document after parsing.
 	 * Returning null does NOT replacing anything.
 	 */
-	afterOpenapiParse?: (document: OpenAPIDocument) => MaybePromise<OpenAPIDocument | undefined | null | void>;
+	openapiParsed?: (params: OpenapiParsedHookParams) => MaybePromise<OpenAPIDocument | undefined | null | void>;
 	/**
-	 * Manipulate the template code before generating.
-	 * Returning null does NOT replacing anything.
+	 * Called before code generation. Mutate `params.data` directly to inject
+	 * configuration data (no longer returns a value).
 	 */
-	beforeCodeGenerate?: (data: any, outputFile: string, ctx: {
-		renderTemplate: () => Promise<string>;
-		fileName: string;
-	}) => MaybePromise<string | undefined | null | void>;
+	beforeCodeGenerate?: (params: BeforeCodeGenerateHookParams) => MaybePromise<void>;
 	/**
-	 * Called when wormhold has finished code generating.
+	 * Called right before each file is written to disk.
+	 * Can modify the file content by returning the new content.
 	 */
-	afterCodeGenerate?: (error?: Error) => void;
+	beforeFileWrite?: (params: BeforeFileWriteHookParams) => MaybePromise<string>;
+	/**
+	 * Called after ALL files have been written to disk.
+	 * Used for post-processing e.g. installing skills, displaying notifications.
+	 * The `filePaths` array contains all generated file paths (no content).
+	 */
+	codeGenerated?: (params: CodeGeneratedHookParams) => MaybePromise<void>;
+	/**
+	 * Provide the template path for code generation.
+	 * Multiple plugins can implement this; the last non-nil return value wins.
+	 */
+	getTemplate?: (params: GetTemplateHookParams) => MaybePromise<TemplateConfigResult | undefined | null | void>;
+	/**
+	 * Called when a new Handlebars instance is created for template rendering.
+	 * Use this to register custom helpers or partials on the hbs instance.
+	 */
+	onHandlebarsCreated?: (params: OnHandlebarsCreatedHookParams) => MaybePromise<void>;
 }
 export interface HandleApi {
 	(apiDescriptor: ApiDescriptor): ApiDescriptor | void | undefined | null;
+}
+/**
+ * Template configuration result
+ */
+export interface TemplateConfigResult {
+	/**
+	 * Template path string (relative to project root or absolute path).
+	 * Relative paths are resolved relative to process.cwd()
+	 * This field is required.
+	 */
+	path: string;
+}
+/**
+ * Options for globals template
+ */
+export interface GlobalsTemplateOptions {
+	/**
+	 * Globally exported api name, you can access the automatically generated api globally through this name.
+	 * Default is 'Apis'. Required when multiple generators are configured, and cannot be repeated.
+	 */
+	global?: string;
+	/**
+	 * The host object of global mounting, default is `globalThis`, it means `window` in browser and `global` in nodejs
+	 * @default 'globalThis'
+	 */
+	globalHost?: string;
+	/**
+	 * Whether to use `import` statement to import the type. When this option is set to `true`, the generated apiDefinitions.ts file will use `import` statement to import types instead of ///<reference types="..." />
+	 * @default false
+	 */
+	useImportType?: boolean;
+}
+/**
+ * Options for functional template
+ */
+export interface FunctionalTemplateOptions {
+	/**
+	 * Whether to use `import` statement to import the type. When this option is set to `true`, the generated apiDefinitions.ts file will use `import` statement to import types instead of ///<reference types="..." />
+	 * @default false
+	 */
+	useImportType?: boolean;
+}
+/**
+ * Options for axios/fetch/ky templates
+ */
+export interface RequestLibTemplateOptions {
+	/**
+	 * Whether to use `import` statement to import the type. When this option is set to `true`, the generated apiDefinitions.ts file will use `import` statement to import types instead of ///<reference types="..." />
+	 * @default false
+	 */
+	useImportType?: boolean;
+}
+/**
+ * Performance tuning options for code generation.
+ */
+export interface PerformanceConfig {
+	/** schema→TS worker pool strategy. Default 'auto' (adaptive by API count) */
+	workerPool?: "auto" | number | false;
+	/** Max concurrency for transform phase. Default auto (min(64, max(8, cpus*4))) */
+	transformConcurrency?: number;
+	/** Max parallelism for file writes. Default 32 */
+	writeConcurrency?: number;
+	/** Apply prettier formatting to final files before write. Default true (schema-level prettier is always disabled) */
+	prettierFinal?: boolean;
+	/** Sort tags/APIs/components alphabetically for deterministic output. Default true */
+	deterministicSort?: boolean;
 }
 export interface GeneratorConfig {
 	/**
@@ -101,15 +252,28 @@ export interface GeneratorConfig {
 	 */
 	output?: string;
 	/**
-	 * Specify the media type of the generated response data. After specifying, use this data type to generate the response ts format of the 2xx status code.
-	 * @defualt 'application/json'
+	 * Whether to generate documentation comments, default is true.
+	 * Set to false to improve generation performance.
+	 * @default true
 	 */
-	responseMediaType?: string;
+	docComment?: boolean;
 	/**
-	 * Specify the media type of the generated request body data. After specifying, use this data type to generate the ts format of the request body.
+	 * Specify the media type of the generated response data. After specifying, use this data type to generate the response ts format of the 2xx status code.
+	 * Can be a string or an array of strings for fallback media types.
 	 * @default 'application/json'
 	 */
-	bodyMediaType?: string;
+	responseMediaType?: string | string[];
+	/**
+	 * Specify the media type of the generated request body data. After specifying, use this data type to generate the ts format of the request body.
+	 * Can be a string or an array of strings for fallback media types.
+	 * @default 'application/json'
+	 */
+	bodyMediaType?: string | string[];
+	/**
+	 * Custom server name for displaying in the sidebar when multiple API docs are configured.
+	 * Default names are server1, server2, server3...
+	 */
+	serverName?: string;
 	/**
 	 * The type of generated code. The optional value is `auto/ts/typescript/module/commonjs`.
 	 * default is `auto`, it means the type of current project will be determined through certain rules.
@@ -123,29 +287,6 @@ export interface GeneratorConfig {
 	 */
 	type?: ConfigType;
 	/**
-	 * Specify alova version, 2 or 3, if not specified, it will be automatically determined through the alova version in `package.json`
-	 */
-	version?: number | string;
-	/**
-	 * Globally exported api name, you can access the automatically generated api globally through this name.
-	 * it is required when multiple generators are configured, and it cannot be repeated
-	 *
-	 * @default 'Apis'
-	 */
-	global?: string;
-	/**
-	 * The host object of global mounting, default is `globalThis`, it means `window` in browser and `global` in nodejs
-	 *
-	 * @default 'globalThis'
-	 */
-	globalHost?: string;
-	/**
-	 * Whether to use `import` statement to import the type. When this option is set to `true`, the generated apiDefinitions.ts file will use `import` statement to import types instead of ///<reference types="..." />
-	 *
-	 * @default false
-	 */
-	useImportType?: boolean;
-	/**
 	 * When there is no require, it defaults to require, and only nullable takes effect.
 	 */
 	defaultRequire?: boolean;
@@ -153,6 +294,10 @@ export interface GeneratorConfig {
 	 * plugin will be executed before `handleApi`
 	 */
 	plugins?: ApiPlugin[];
+	/**
+	 * Performance tuning options for code generation.
+	 */
+	performance?: PerformanceConfig;
 	/**
 	 * Filter or convert the generated api function and return a new `apiDescriptor` to generate the api.
 	 * When this function is not specified, `apiDescriptor` object is not converted.
@@ -184,17 +329,32 @@ export interface GeneratorConfig {
 	 * ```
 	 */
 	handleApi?: HandleApi;
-	/**
-	 * Control the format of output file names. Supports presets or a custom function.
-	 * Only affects the output file name, and does not affect template filename resolution.
-	 * Presets: 'camelCase' | 'pascalCase' | 'kebabCase' | 'snakeCase'
-	 */
-	fileNameCase?: "camelCase" | "pascalCase" | "kebabCase" | "snakeCase" | ((name: string) => string);
 }
 export type OpenAPIDocument = OpenAPIV3_1.Document;
 export type SchemaObject = OpenAPIV3_1.SchemaObject;
 export type Parameter = OpenAPIV3_1.ParameterObject;
 export type OperationObject = OpenAPIV3_1.OperationObject;
+export interface Api {
+	tag: string;
+	method: string;
+	summary: string;
+	path: string;
+	pathParameters: string;
+	queryParameters: string;
+	pathParametersComment?: string;
+	queryParametersComment?: string;
+	responseComment?: string;
+	requestBodyComment?: string;
+	name: string;
+	response: string;
+	requestBody?: string;
+	defaultValue?: string;
+	pathKey: string;
+}
+export interface ApiDoc {
+	apis: Api[];
+	tagName: string;
+}
 export type ApiDescriptor = Omit<OperationObject, "requestBody" | "parameters" | "responses"> & {
 	url: string;
 	method: string;
@@ -203,6 +363,28 @@ export type ApiDescriptor = Omit<OperationObject, "requestBody" | "parameters" |
 	requestBody?: SchemaObject;
 	responses?: SchemaObject;
 };
+export interface TemplateData {
+	title: OpenAPIDocument["info"]["title"];
+	openapi: OpenAPIDocument["openapi"];
+	version: OpenAPIDocument["info"]["version"];
+	description: OpenAPIDocument["info"]["description"];
+	contact: OpenAPIDocument["info"]["contact"];
+	/** Framework tag: vue | react | svelte | solid-js | nuxt */
+	framework?: string;
+	defaultKey?: boolean;
+	baseUrl: string;
+	/** Schema/Component definitions */
+	components: string[];
+	/** Names of all generated component schemas (keys of schemasMap) */
+	componentNames: string[];
+	/** All apis array */
+	allApis: Api[];
+	/** Apis grouped by tag */
+	tagedApis: ApiDoc[];
+	type: TemplateType;
+	/** Config passed from template configuration */
+	config: Record<string, any>;
+}
 /**
  * Creates a plugin factory function with proper typing
  *
@@ -227,6 +409,12 @@ export type ApiDescriptor = Omit<OperationObject, "requestBody" | "parameters" |
  * });
  */
 export declare function createPlugin<T extends any[]>(plugin: (...args: T) => ApiPlugin): (...args: T) => ApiPlugin;
+export interface AiDocConfig {
+	template?: string;
+	outputDir?: string;
+	install?: boolean;
+}
+export declare function aiDoc(config?: AiDocConfig): ApiPlugin;
 export type ScopeType = "ALL" | "SELECTED_ENDPOINTS" | "SELECTED_TAGS" | "SELECTED_FOLDERS";
 export interface APIFoxBody {
 	scope?: {
@@ -315,8 +503,19 @@ export declare function filterApiDescriptor(apiDescriptor: ApiDescriptor, config
  * ```
  */
 export declare function apiFilter(config: FilterApiConfig | FilterApiConfig[]): ApiPlugin;
-export declare function importType(config: Record<string, string[]>): ApiPlugin;
-export type ModifierScope = "params" | "pathParams" | "data" | "response";
+export interface ImportTypeOptions {
+	imports: Record<string, string[]>;
+	files?: string[];
+}
+export declare function importType(imports: Record<string, string[]>, options?: {
+	files?: string[];
+}): ApiPlugin;
+declare enum ModifierScope {
+	PARAMS = "params",
+	PATH_PARAMS = "pathParams",
+	DATA = "data",
+	RESPONSE = "response"
+}
 export type SchemaPrimitive = "number" | "string" | "boolean" | "undefined" | "null" | "unknown" | "any" | "never" | ({} & string);
 /**
  * 表示数组类型
@@ -452,5 +651,38 @@ export declare function processApiTags(apiDescriptor: ApiDescriptor, handler: Mo
  * ```
  */
 export declare function tagModifier(handler: ModifierHandler): ApiPlugin;
+/**
+ * alova.config 模板预设 - plugin mode
+ */
+export declare function config(): ApiPlugin;
+/**
+ * globals 模板预设 - plugin mode
+ * 全局模板，现有的全局模板，通过全局挂载的方式使用
+ */
+export declare function alovaGlobals(opts?: GlobalsTemplateOptions): ApiPlugin;
+/**
+ * functional 模板预设 - plugin mode
+ * 函数式模板，生成函数式API调用，支持tree-shaking，仅支持alova v3
+ */
+export declare function alova(opts?: FunctionalTemplateOptions): ApiPlugin;
+/**
+ * axios 模板预设 - plugin mode
+ * Axios相关模板
+ */
+export declare function axios(opts?: RequestLibTemplateOptions): ApiPlugin;
+/**
+ * fetch 模板预设 - plugin mode
+ * Fetch相关模板
+ */
+declare function fetch$1(opts?: RequestLibTemplateOptions): ApiPlugin;
+/**
+ * ky 模板预设 - plugin mode
+ * Ky相关模板
+ */
+export declare function ky(opts?: RequestLibTemplateOptions): ApiPlugin;
+
+export {
+	fetch$1 as fetch,
+};
 
 export {};

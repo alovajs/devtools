@@ -59,15 +59,18 @@ export const commands = {
 /**
  * Type union of all configs
  */
-export type ConfigKey = never
+export type ConfigKey = 'alova.autoUpdate'
 
 export interface ConfigKeyTypeMap {
+  'alova.autoUpdate': boolean | { launchEditor?: boolean, interval?: number }
 }
 
 export interface ConfigShorthandMap {
+  autoUpdate: 'alova.autoUpdate'
 }
 
 export interface ConfigShorthandTypeMap {
+  autoUpdate: boolean | { launchEditor?: boolean, interval?: number }
 }
 
 export interface ConfigItem<T extends keyof ConfigKeyTypeMap> {
@@ -79,19 +82,31 @@ export interface ConfigItem<T extends keyof ConfigKeyTypeMap> {
  * Configs map registered by `Alova.alova-vscode-extension`
  */
 export const configs = {
-}
+  /**
+   * Whether to automatically update APIs.
+   * @key `alova.autoUpdate`
+   * @default `true`
+   */
+  autoUpdate: 'alova.autoUpdate',
+} satisfies Record<string, ConfigKey>
 
 export interface ScopedConfigKeyTypeMap {
+  autoUpdate: boolean | { launchEditor?: boolean, interval?: number }
 }
 
 export const scopedConfigs = {
   scope: 'alova-vscode-extension',
   defaults: {
+    autoUpdate: true,
   } satisfies ScopedConfigKeyTypeMap,
 }
 
 export interface NestedConfigs {
+  alova: {
+    autoUpdate: boolean | { launchEditor?: boolean, interval?: number }
+  }
 }
 
 export interface NestedScopedConfigs {
+  autoUpdate: boolean | { launchEditor?: boolean, interval?: number }
 }

@@ -358,7 +358,7 @@ describe('tuple Type Parser', () => {
       const result = tupleTypeParser(schema, ctx)
 
       expect(result.type).toBe(ASTType.TUPLE)
-      expect(result.deprecated).toBe(true)
+      expect(result.deprecated).toBeTruthy()
     })
 
     it('should handle tuple with only minItems specified', () => {

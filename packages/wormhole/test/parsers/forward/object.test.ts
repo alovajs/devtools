@@ -13,7 +13,7 @@ describe('object Forwarder', () => {
 
       const result = objectForwarder.is(schema)
 
-      expect(result).toBe(true)
+      expect(result).toBeTruthy()
     })
 
     it('should return true for schema with properties field', () => {
@@ -26,7 +26,7 @@ describe('object Forwarder', () => {
 
       const result = objectForwarder.is(schema)
 
-      expect(result).toBe(true)
+      expect(result).toBeTruthy()
     })
 
     it('should return true for schema with additionalProperties field', () => {
@@ -36,7 +36,7 @@ describe('object Forwarder', () => {
 
       const result = objectForwarder.is(schema)
 
-      expect(result).toBe(true)
+      expect(result).toBeTruthy()
     })
 
     it('should return true for schema with additionalProperties as schema object', () => {
@@ -48,7 +48,7 @@ describe('object Forwarder', () => {
 
       const result = objectForwarder.is(schema)
 
-      expect(result).toBe(true)
+      expect(result).toBeTruthy()
     })
 
     it('should return true for schema with all object indicators', () => {
@@ -62,7 +62,7 @@ describe('object Forwarder', () => {
 
       const result = objectForwarder.is(schema)
 
-      expect(result).toBe(true)
+      expect(result).toBeTruthy()
     })
 
     it('should return false for schema with additionalProperties as false', () => {

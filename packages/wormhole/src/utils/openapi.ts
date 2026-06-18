@@ -119,29 +119,38 @@ export function get$refName(path: string, toUpperCase: boolean = true) {
  * @param openApi openApi document object
  * @returns Removed $ref object
  */
+/**
+ * M2-B1: $ref 解引用缓存优化 —— 命中 searchMap 时跳过 cloneDeep
+ */
 export function removeAll$ref<T = SchemaObject>(schemaOrigin: any, openApi: OpenAPIDocument, optons?: { searchMap?: Map<string, SchemaObject>, refNameMap?: Map<string, string> }) {
-  const deepSchemaOrigin = cloneDeep(schemaOrigin)
-  let schema: SchemaObject & Record<string, any>
   const { searchMap = new Map(), refNameMap = new Map() } = optons ?? {}
-  if (isReferenceObject(deepSchemaOrigin)) {
-    if (searchMap.has(deepSchemaOrigin.$ref)) {
-      return searchMap.get(deepSchemaOrigin.$ref) as T
+
+  // 先检查缓存，命中则直接返回（避免 cloneDeep 开销）
+  if (isReferenceObject(schemaOrigin)) {
+    if (searchMap.has(schemaOrigin.$ref)) {
+      return searchMap.get(schemaOrigin.$ref) as T
     }
-    schema = findBy$ref<SchemaObject>(deepSchemaOrigin.$ref, openApi, true)
-    refNameMap.set(deepSchemaOrigin.$ref, standardLoader.transformRefName(deepSchemaOrigin.$ref))
+    const schema = findBy$ref<SchemaObject>(schemaOrigin.$ref, openApi, true) as SchemaObject & Record<string, any>
+    refNameMap.set(schemaOrigin.$ref, standardLoader.transformRefName(schemaOrigin.$ref))
     // Mark for easy restoration
-    schema._$ref = deepSchemaOrigin.$ref
-    searchMap.set(deepSchemaOrigin.$ref, schema)
+    schema._$ref = schemaOrigin.$ref
+    searchMap.set(schemaOrigin.$ref, schema)
+    for (const key of Object.keys(schema)) {
+      if (schema[key] && typeof schema[key] === 'object') {
+        schema[key] = removeAll$ref(schema[key], openApi, { searchMap, refNameMap })
+      }
+    }
+    return schema as T
   }
-  else {
-    schema = deepSchemaOrigin
-  }
-  for (const key of Object.keys(schema)) {
-    if (schema[key] && typeof schema[key] === 'object') {
-      schema[key] = removeAll$ref(schema[key], openApi, { searchMap, refNameMap })
+
+  // 非 $ref 节点：仍需 cloneDeep 防止污染原始文档，但子节点走 searchMap 去重
+  const deepSchemaOrigin = cloneDeep(schemaOrigin)
+  for (const key of Object.keys(deepSchemaOrigin)) {
+    if (deepSchemaOrigin[key] && typeof deepSchemaOrigin[key] === 'object') {
+      deepSchemaOrigin[key] = removeAll$ref(deepSchemaOrigin[key], openApi, { searchMap, refNameMap })
     }
   }
-  return schema as T
+  return deepSchemaOrigin as T
 }
 /**
  *
@@ -424,7 +433,8 @@ export function mergeObject<T>(objValue: any, srcValue: any, options: {
     }
     return srcValue
   }
-  return mergeWith(cloneDeep(objValue), srcValue, customizer)
+  // M2-B1: mergeWith 自身不污染首参（返回新对象），去掉冗余 cloneDeep
+  return mergeWith(objValue, srcValue, customizer)
 }
 
 export function getResponseSuccessKey(responsesObject?: ResponsesObject) {

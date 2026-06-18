@@ -9,7 +9,7 @@ export default <RequestHandler[]>[
     const openApiDocs = JSON.parse(await fs.readFile(resolve(__dirname, '../openapis/swagger_2.json'), 'utf-8'))
     return HttpResponse.json(openApiDocs)
   }),
-  http.get('https://generator3.swagger.io/v1.0/foo', async () => {
+  http.post('https://generator3.swagger.io/v1.0/foo', async () => {
     const openApiDocs = JSON.parse(await fs.readFile(resolve(__dirname, '../openapis/openapi_301.json'), 'utf-8'))
     return HttpResponse.json(openApiDocs)
   }),

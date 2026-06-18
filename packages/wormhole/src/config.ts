@@ -1,14 +1,10 @@
-import type { TemplateData } from '@/type/lib'
-import path from 'node:path'
-
 declare global {
   // eslint-disable-next-line vars-on-top
   var ALOVA_WORMHOLE_CONFIG: typeof DEFAULT_CONFIG
 }
 
 const DEFAULT_CONFIG = {
-  alovaTempPath: path.join('node_modules/.alova'),
-  templateData: new Map<string, TemplateData>(),
+  cacheDir: '.alova-cache',
   Error,
 }
 globalThis.ALOVA_WORMHOLE_CONFIG = DEFAULT_CONFIG

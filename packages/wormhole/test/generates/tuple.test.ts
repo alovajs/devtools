@@ -71,7 +71,8 @@ describe('tuple Type Generator', () => {
       code: `[
         string,
         string,
-        string,
+        string
+        ,
         ...Array<string>
       ]`,
     })
@@ -100,10 +101,14 @@ describe('tuple Type Generator', () => {
       type: 'type',
       code: `[
         number
-      ] | [
-        number, 
+      ]
+
+          | [
+        number,
         number
-      ] | [
+      ]
+
+          | [
         number,
         number,
         number
@@ -134,7 +139,8 @@ describe('tuple Type Generator', () => {
       type: 'type',
       code: `[
         string,
-        string,
+        string
+        ,
         ...Array<string>
       ]`,
     })
@@ -179,15 +185,15 @@ describe('tuple Type Generator', () => {
       type: 'type',
       code: `[
         string,
-        { 
+        {
           /**
            * X coordinate
            */
-          x?: number
+          x?:number
           /**
            * Y coordinate
            */
-          y?: number
+          y?:number
         }
       ]`,
     })

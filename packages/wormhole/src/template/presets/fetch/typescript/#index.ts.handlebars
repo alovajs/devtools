@@ -1,0 +1,15 @@
+{{> comment}}
+import { FetchClient } from './FetchClient';
+
+export const fetchClient = new FetchClient<{ blob?: boolean }>({ baseURL: '{{{baseUrl}}}' });
+
+fetchClient.addRequestInterceptor(config => {
+  return config;
+});
+
+fetchClient.addResponseInterceptor(async (response, config) => {
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+  return config.blob ? response.blob() : response.json();
+});

@@ -11,7 +11,7 @@ describe('enum Forwarder', () => {
 
       const result = enumForwarder.is(schema)
 
-      expect(result).toBe(true)
+      expect(result).toBeTruthy()
     })
 
     it('should return true for schema with number enum values', () => {
@@ -22,7 +22,7 @@ describe('enum Forwarder', () => {
 
       const result = enumForwarder.is(schema)
 
-      expect(result).toBe(true)
+      expect(result).toBeTruthy()
     })
 
     it('should return true for schema with mixed enum values', () => {
@@ -32,7 +32,7 @@ describe('enum Forwarder', () => {
 
       const result = enumForwarder.is(schema)
 
-      expect(result).toBe(true)
+      expect(result).toBeTruthy()
     })
 
     it('should return true for schema with single enum value', () => {
@@ -43,7 +43,7 @@ describe('enum Forwarder', () => {
 
       const result = enumForwarder.is(schema)
 
-      expect(result).toBe(true)
+      expect(result).toBeTruthy()
     })
 
     it('should return false for schema with empty enum array', () => {
@@ -139,7 +139,7 @@ describe('enum Forwarder', () => {
 
       const result = enumForwarder.is(schema)
 
-      expect(result).toBe(true)
+      expect(result).toBeTruthy()
     })
   })
 

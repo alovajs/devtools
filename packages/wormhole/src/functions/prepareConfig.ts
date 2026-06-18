@@ -1,3 +1,4 @@
+import type { ProgressTracker } from '@/helper'
 import type { GeneratorConfig } from '@/type'
 import { cloneDeep, mergeWith } from 'lodash'
 import { PluginDriver } from '@/helper'
@@ -28,15 +29,22 @@ export function extendsConfig(config: GeneratorConfig, newConfig: Partial<Genera
   })
 }
 
-export async function prepareConfig(config: GeneratorConfig): Promise<GeneratorConfig> {
+export async function prepareConfig(
+  config: GeneratorConfig,
+  projectPath: string = process.cwd(),
+  tracker?: ProgressTracker,
+): Promise<GeneratorConfig> {
   let _config = cloneDeep(config)
 
   const plugins = _config.plugins || []
 
-  const pluginDriver = new PluginDriver(plugins)
+  const reporter = (plugin: { name?: string }) =>
+    tracker?.reporterFor(plugin.name ?? 'plugin') ?? (() => {}) as any
+  const pluginDriver = new PluginDriver(plugins, { reporter })
   // plugin: handle config hook
-  _config = await pluginDriver.hookSeq('config', [_config], (result, args) => {
-    return result ? [result] : args
+  _config = await pluginDriver.hookSeqEach('config', (_plugin, prevResult, _ctx) => {
+    const nextConfig = prevResult ?? _config
+    return { config: nextConfig, projectPath }
   }) ?? _config
   return _config
 }

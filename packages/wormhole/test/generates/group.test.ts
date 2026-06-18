@@ -35,10 +35,10 @@ describe('group Type Generator', () => {
       name: 'Status',
       comment: `
       /**
-       * Status type 
+       * Status type
        */`,
       type: 'type',
-      code: 'string | number',
+      code: '(string) | (number)',
     })
     expect(result).toEqual(expectResult)
   })
@@ -83,11 +83,11 @@ describe('group Type Generator', () => {
        * User with role
        */`,
       type: 'type',
-      code: `{ 
-        name?:string 
-      } & { 
-        role?:string 
-      }`,
+      code: `({
+ name?:string
+}) & ({
+ role?:string
+})`,
     })
     expect(result).toEqual(expectResult)
   })
@@ -145,13 +145,13 @@ describe('group Type Generator', () => {
       name: 'ComplexType',
       comment: '',
       type: 'type',
-      code: `{ 
-        id?:number 
-      } & {
-        name?:string 
-      } | {
-        code?:string 
-      }`,
+      code: `(({
+ id?:number
+}) & ({
+ name?:string
+})) | ({
+ code?:string
+})`,
     })
     expect(result).toEqual(expectResult)
   })
@@ -196,11 +196,11 @@ describe('group Type Generator', () => {
       name: 'DeepTest',
       comment: '',
       type: 'type',
-      code: `{ 
-        value?:string 
-      } | {
-        value?:number 
-      }`,
+      code: `({
+ value?:string
+}) | ({
+ value?:number
+})`,
     })
     expect(result).toEqual(expectResult)
   })

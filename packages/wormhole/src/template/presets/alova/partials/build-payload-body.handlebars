@@ -1,0 +1,22 @@
+  const mergedConfig = {
+    ...defaultConfig[apiName],
+    ...config,
+  };
+  const pathParams = mergedConfig.pathParams;
+  const urlReplaced = url.replace(/\{([^}]+)\}/g, (_, key) => {
+    return pathParams?.[key] ?? _;
+  });
+  delete mergedConfig.pathParams;
+  let data = mergedConfig.data;
+  if (Object.prototype.toString.call(data) === '[object Object]' && typeof FormData !== 'undefined') {
+    let hasBlobData = false;
+    const formData = new FormData();
+    for (const key in data) {
+      formData.append(key, data[key]);
+      if (data[key] instanceof Blob) {
+        hasBlobData = true;
+      }
+    }
+    data = hasBlobData ? formData : data;
+  }
+  return { url: urlReplaced, data, mergedConfig };

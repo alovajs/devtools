@@ -1,0 +1,9 @@
+{{> comment}}
+import { setDefaultConfig } from '../helper.js';
+{{#each tagedApis}}
+import * as {{{tagName}}} from './{{{tagName}}}.js';
+{{/each}}
+
+{{#each tagedApis}}
+export const {{{tagName}}}DefaultConfig = setDefaultConfig({{{tagName}}}, {});
+{{/each}}

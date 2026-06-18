@@ -21,38 +21,49 @@ vi.mock('@/index', () => ({
 describe('cli', () => {
   it('should get the right `init` cli args', async () => {
     await actionInit({ type: 'commonjs' })
-    expect(createConfig).toBeCalledWith({ type: 'commonjs' })
+    expect(createConfig).toBeCalledWith({ type: 'commonjs', template: undefined, projectPath: undefined })
 
-    await actionInit({ cwd: '/mock_path' })
-    expect(createConfig).toBeCalledWith({ projectPath: '/mock_path' })
+    await actionInit({ project: '/mock_path' })
+    expect(createConfig).toBeCalledWith({ type: undefined, template: undefined, projectPath: '/mock_path' })
+
+    await actionInit({ template: 'axios' })
+    expect(createConfig).toBeCalledWith({ type: undefined, template: 'axios', projectPath: undefined })
+
+    await actionInit({ type: 'typescript', template: 'fetch', project: '/mock_path' })
+    expect(createConfig).toBeCalledWith({ type: 'typescript', template: 'fetch', projectPath: '/mock_path' })
   })
 
-  it('should get the right `gen` cli args', async () => {
+  it('should get the right `gen` cli args in workspace mode (default)', async () => {
     await actionGen({})
     expect(resolveWorkspaces).toHaveBeenCalledTimes(1)
-    expect(resolveWorkspaces).toHaveBeenCalledWith(undefined)
+    expect(resolveWorkspaces).toHaveBeenCalledWith()
     expect(readConfig).toHaveBeenCalledTimes(2)
     expect(readConfig).toHaveBeenNthCalledWith(1, './packages/test-pkg-1')
     expect(readConfig).toHaveBeenNthCalledWith(2, './packages/test-pkg-2')
     expect(generate).toHaveBeenCalledTimes(2)
-    expect(generate).toHaveBeenNthCalledWith(1, generatingConfig, {
+    expect(generate).toHaveBeenNthCalledWith(1, generatingConfig, expect.objectContaining({
       force: undefined,
-      projectPath: undefined,
-    })
-    expect(generate).toHaveBeenNthCalledWith(2, generatingConfig, {
+      projectPath: './packages/test-pkg-1',
+      onProgress: expect.any(Function),
+    }))
+    expect(generate).toHaveBeenNthCalledWith(2, generatingConfig, expect.objectContaining({
       force: undefined,
-      projectPath: undefined,
-    })
+      projectPath: './packages/test-pkg-2',
+      onProgress: expect.any(Function),
+    }))
+  })
 
+  it('should get the right `gen` cli args in single project mode (-p)', async () => {
     vi.clearAllMocks()
-    await actionGen({ workspace: false, cwd: '/mock_path', force: true })
+    await actionGen({ project: '/mock_path', force: true })
     expect(resolveWorkspaces).not.toHaveBeenCalled()
     expect(readConfig).toHaveBeenCalledTimes(1)
-    expect(readConfig).toHaveBeenNthCalledWith(1, undefined)
+    expect(readConfig).toHaveBeenNthCalledWith(1, '/mock_path')
     expect(generate).toHaveBeenCalledTimes(1)
-    expect(generate).toHaveBeenNthCalledWith(1, generatingConfig, {
+    expect(generate).toHaveBeenNthCalledWith(1, generatingConfig, expect.objectContaining({
       force: true,
       projectPath: '/mock_path',
-    })
+      onProgress: expect.any(Function),
+    }))
   })
 })

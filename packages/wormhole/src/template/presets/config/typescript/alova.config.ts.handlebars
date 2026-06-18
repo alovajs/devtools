@@ -1,4 +1,7 @@
 import { defineConfig } from '@alova/wormhole';
+{{#if templateImport}}
+import { {{{templateImport}}} } from '@alova/wormhole/plugin';
+{{/if}}
 
 // For more config detailed visit:
 // https://alova.js.org/tutorial/getting-started/extension-integration

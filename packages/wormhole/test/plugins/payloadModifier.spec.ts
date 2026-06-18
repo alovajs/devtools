@@ -36,7 +36,7 @@ describe('payloadModifier plugin tests', () => {
       description: 'hello age',
       oneOf: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }],
     })
-    expect(ageParam.required).toBe(true)
+    expect(ageParam.required).toBeTruthy()
 
     // debug removed
     expect(result.parameters!.some(p => p.name === 'debug')).toBe(false)
@@ -101,7 +101,7 @@ describe('payloadModifier plugin tests', () => {
 
     const result = handleApi(api)!
     const res = result.responses!
-    expect(Array.isArray(res.oneOf)).toBe(true)
+    expect(Array.isArray(res.oneOf)).toBeTruthy()
     for (const branch of res.oneOf as SchemaObject[]) {
       expect((branch.properties?.ok as SchemaObject)?.type).toBe('number')
     }

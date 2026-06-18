@@ -15,7 +15,7 @@ describe('tuple Forwarder', () => {
 
       const result = tupleForwarder.is(schema as SchemaObject)
 
-      expect(result).toBe(true)
+      expect(result).toBeTruthy()
     })
 
     it('should return true for array schema with single item in items array', () => {
@@ -28,7 +28,7 @@ describe('tuple Forwarder', () => {
 
       const result = tupleForwarder.is(schema as SchemaObject)
 
-      expect(result).toBe(true)
+      expect(result).toBeTruthy()
     })
 
     it('should return false for array schema with items as object', () => {
@@ -149,7 +149,7 @@ describe('tuple Forwarder', () => {
 
       const result = tupleForwarder.is(schema as SchemaObject)
 
-      expect(result).toBe(true)
+      expect(result).toBeTruthy()
     })
   })
 

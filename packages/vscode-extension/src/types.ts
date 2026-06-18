@@ -1,10 +1,10 @@
-import type { Api, ApiDoc, HandlersType } from '#/handlers'
+import type { Api, ApiDoc, CacheData, HandlersType } from '#/handlers'
 
 export type ApiType = 'project' | 'server' | 'group' | 'api'
 export interface ApiProject {
   name: string
-  apiDocs: ApiDoc[][]
+  servers: CacheData[]
 }
 
-export type { Api, ApiDoc, HandlersType }
+export type { Api, ApiDoc, CacheData, HandlersType }
 export type MethodType = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'TRACE' | 'HEAD' | 'OPTIONS'

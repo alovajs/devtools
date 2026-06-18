@@ -11,6 +11,7 @@ export enum HttpMethod {
   PATCH = 'patch',
   TRACE = 'trace',
 }
+
 export interface Api {
   tag: string
   method: string
@@ -21,10 +22,10 @@ export interface Api {
   pathParametersComment?: string
   queryParametersComment?: string
   responseComment?: string
-  requestComment?: string
+  requestBodyComment?: string
   name: string
-  responseName: string
-  requestName?: string
+  response: string
+  requestBody?: string
   defaultValue?: string
   pathKey: string
 }
@@ -35,7 +36,7 @@ export interface ApiMethod {
 }
 export interface ApiDoc {
   apis: Api[]
-  tag: string
+  tagName: string
 }
 export type ApiDescriptor = Omit<OperationObject, 'requestBody' | 'parameters' | 'responses'> & {
   url: string
@@ -62,8 +63,10 @@ export interface TemplateData {
   baseUrl: string
   /** Schema/Component definitions */
   components: string[]
+  /** Names of all generated component schemas (keys of schemasMap) */
+  componentNames: string[]
   /** All apis array */
-  apis: Api[]
+  allApis: Api[]
   /** Apis grouped by tag */
   tagedApis: ApiDoc[]
   type: TemplateType
@@ -76,8 +79,9 @@ export interface TemplateData {
  * Used for rendering sidebar API tree and quick search
  */
 export interface CacheData {
+  path: string
   /** Server name displayed in sidebar */
-  serverName: string
-  /** APIs grouped by tag */
-  apis: ApiDoc[]
+  serverName?: string
+  /** All APIs as a flat array */
+  apis: Api[]
 }

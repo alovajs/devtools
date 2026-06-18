@@ -8,13 +8,16 @@
   "keywords": [],
   "main": "index.js",
   "scripts": {
+    "start": "tsx src/main.ts",
     "gen": "alova gen -f",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@alova/adapter-xhr": "catalog:frontend",
     "@alova/mock": "catalog:frontend",
-    "alova": "catalog:frontend"
+    "alova": "catalog:frontend",
+    "axios": "catalog:",
+    "ky": "catalog:"
   },
   "devDependencies": {
     "@alova/wormhole": "workspace:^",

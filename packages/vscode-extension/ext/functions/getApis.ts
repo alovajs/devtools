@@ -1,4 +1,4 @@
-import type { Api } from '@alova/wormhole'
+import type { Api, CacheData } from '@alova/wormhole'
 import path from 'node:path'
 import Global from '@/core/Global'
 import wormhole from '@/helper/wormhole'
@@ -10,14 +10,15 @@ export async function getApis(filePath: string) {
   if (!config) {
     return []
   }
-  const apiDocs = await wormhole.getApiDocs(config, projectPath)
-  return apiDocs.flatMap(apiDoc => apiDoc.flatMap(item => item.apis))
+  const cacheList = await wormhole.getApiDocs(config, projectPath)
+  return cacheList.flatMap((cd: CacheData) => cd.apis)
 }
+
 export async function getApiDocs() {
   return Promise.all(
     Global.getConfigs().map(async ([projectPath, config]) => ({
       name: getFileNameByPath(projectPath),
-      apiDocs: await wormhole.getApiDocs(config, projectPath),
+      servers: await wormhole.getApiDocs(config, projectPath) as CacheData[],
     })),
   )
 }
@@ -27,6 +28,6 @@ export async function isApiExists(api: Api | null) {
     return false
   }
   const apiProjects = await getApiDocs()
-  const apis = apiProjects.flatMap(item => item.apiDocs.flatMap(item => item.flatMap(item => item.apis)))
+  const apis = apiProjects.flatMap(item => item.servers.flatMap((cd: CacheData) => cd.apis))
   return apis.some(item => item.global === api.global && item.pathKey === api.pathKey)
 }

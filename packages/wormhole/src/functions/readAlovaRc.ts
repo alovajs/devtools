@@ -1,8 +1,9 @@
-import type { Config, GeneratorConfig, TemplateConfig } from '@/helper/config/type'
+import type { ApiPlugin, Config, GeneratorConfig } from '@/helper/config/type'
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import { PresetTemplateName } from '@/constant'
 import { logger } from '@/helper/logger'
-import { alovaFunctional, alovaGlobals, axios, fetch, ky } from '@/template'
+import { alova as templateAlova, alovaGlobals, axios, fetch, ky } from '@/template'
 
 /**
  * .alovarc configuration line parsed result
@@ -13,7 +14,7 @@ interface AlovaRcLine {
   /** OpenAPI URL */
   url: string
   /** Template type (alova, axios, fetch, ky) */
-  template?: string
+  template?: keyof typeof PRESET_TEMPLATES
 }
 
 /**
@@ -26,13 +27,22 @@ interface AlovaRcLine {
  * - `myApi=https://zzzz.com/openapi.json, fetch` -> generates in src/myApi, fetch template
  */
 function parseLine(line: string): AlovaRcLine | null {
-  // Remove comments
-  const commentIndex = line.indexOf('#')
-  if (commentIndex !== -1) {
-    line = line.substring(0, commentIndex)
+  line = line.trim()
+  if (!line) {
+    return null
   }
 
-  line = line.trim()
+  // Lines starting with # are full-line comments
+  if (line.startsWith('#')) {
+    return null
+  }
+
+  // Strip inline comments: ` //` (space before //) to avoid matching // in URLs
+  const inlineCommentIndex = line.indexOf(' //')
+  if (inlineCommentIndex !== -1) {
+    line = line.substring(0, inlineCommentIndex).trim()
+  }
+
   if (!line) {
     return null
   }
@@ -65,19 +75,19 @@ function parseLine(line: string): AlovaRcLine | null {
   return {
     outputKey,
     url,
-    template,
+    template: template as AlovaRcLine['template'],
   }
 }
 
 /**
- * Template type mapping to template config functions
+ * Template type mapping to plugin factories
  */
-const TEMPLATE_MAP: Record<string, TemplateConfig> = {
-  alovaGlobals: alovaGlobals(),
-  alovaFunctional: alovaFunctional(),
-  axios: axios(),
-  fetch: fetch(),
-  ky: ky(),
+const PRESET_TEMPLATES: Record<string, () => ApiPlugin> = {
+  alova: templateAlova,
+  alovaGlobals,
+  axios,
+  fetch,
+  ky,
 }
 
 /**
@@ -109,12 +119,13 @@ export async function readAlovaRc(projectPath: string): Promise<Config | null> {
         continue
       }
 
-      const { outputKey, url, template = 'functional' } = parsed
+      const { outputKey, url, template = PresetTemplateName.ALOVA } = parsed
 
       // Determine output folder
       let output: string
       if (outputKey) {
-        output = path.join('src', outputKey)
+        // If outputKey contains `/`, use it as-is (already a path)
+        output = outputKey.includes('/') ? outputKey : `src/${outputKey}`
       }
       else {
         // Default folder is src/api, src/api2, etc.
@@ -123,16 +134,16 @@ export async function readAlovaRc(projectPath: string): Promise<Config | null> {
       }
 
       // Set template if specified
-      if (!template || !TEMPLATE_MAP[template]) {
+      if (!template || !PRESET_TEMPLATES[template]) {
         throw logger.throwError(
-          `Invalid template: ${template}. Available templates: ${Object.keys(TEMPLATE_MAP).join(', ')}`,
+          `Invalid template: ${template}. Available templates: ${Object.keys(PRESET_TEMPLATES).join(', ')}`,
         )
       }
       // Build generator config
       const generatorConfig: GeneratorConfig = {
         input: url,
         output,
-        template: TEMPLATE_MAP[template],
+        plugins: [PRESET_TEMPLATES[template]()],
       }
 
       generators.push(generatorConfig)

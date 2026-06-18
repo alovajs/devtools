@@ -1,125 +1,73 @@
 import type { HelperOptions } from 'handlebars'
+import type HandlebarsType from 'handlebars'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { glob } from 'glob'
 import handlebars from 'handlebars'
-import { getGlobalConfig } from '@/config'
-import { logger } from '@/helper/logger'
 import { existsPromise } from './base'
 import { format } from './format'
 
-const DEFAULT_CONFIG = getGlobalConfig()
-
-// Register partials for template reuse
-export async function registerPartials(baseTemplatePath: string) {
-  const partialsDirs = [
-    // Global partials directory
-    path.resolve(baseTemplatePath, 'partials'),
-  ]
-
-  // Scan all preset directories for partials
-  const presetsDir = path.resolve(baseTemplatePath, 'presets')
+// Register partials for template reuse, supports passing an hbs instance
+export async function registerPartials(baseTemplatePath: string, hbs: typeof HandlebarsType = handlebars) {
+  const partialsDir = path.resolve(baseTemplatePath, 'partials')
   try {
-    if (await existsPromise(presetsDir)) {
-      const presetDirs = await fs.readdir(presetsDir, { withFileTypes: true })
-      for (const presetDir of presetDirs) {
-        if (presetDir.isDirectory()) {
-          const partialsPath = path.join(presetsDir, presetDir.name, 'partials')
-          if (await existsPromise(partialsPath)) {
-            partialsDirs.push(partialsPath)
-          }
-        }
-      }
+    const partialFiles = await glob('**/*.handlebars', {
+      ignore: 'node_modules/**',
+      cwd: partialsDir,
+    })
+    for (const file of partialFiles) {
+      const partialName = file.replace('.handlebars', '').replace(/\\/g, '/')
+      const partialContent = await fs.readFile(path.join(partialsDir, file), 'utf-8')
+      hbs.registerPartial(partialName, partialContent)
     }
   }
-  catch (err) {
-    logger.error('Error scanning preset directories:', err)
-  }
-
-  for (const partialsDir of partialsDirs) {
-    try {
-      const partialFiles = await glob('**/*.handlebars', {
-        ignore: 'node_modules/**',
-        cwd: partialsDir,
-      })
-      for (const file of partialFiles) {
-        if (file.endsWith('.handlebars')) {
-          const partialName = file.replace('.handlebars', '').replace(/\\/g, '/')
-          const partialContent = await fs.readFile(path.join(partialsDir, file), 'utf-8')
-          handlebars.registerPartial(partialName, partialContent)
-        }
-      }
-    }
-    catch (err) {
-      logger.error('Error registering partials:', err)
-    }
+  catch {
+    // partials dir may not exist — that's fine
   }
 }
 
 const getType = (obj: any) => Object.prototype.toString.call(obj).slice(8, -1).toLowerCase()
 
-handlebars.registerHelper('isType', function (this: any, value, type: string, options: HelperOptions) {
-  if (getType(value) === type) {
-    return options.fn(this)
-  }
-  return options.inverse(this)
-})
-handlebars.registerHelper('and', function (this: any, ...rest) {
-  const args = Array.prototype.slice.call(rest, 0, -1)
-  const options = rest[rest.length - 1] as HelperOptions
-  const result = args.every((arg) => {
-    if (Array.isArray(arg)) {
-      return arg.length === 0
-    }
-    return Boolean(arg)
-  })
-  return result ? options.fn(this) : options.inverse(this)
-})
-handlebars.registerHelper('or', function (this: any, ...rest) {
-  const args = Array.prototype.slice.call(rest, 0, -1)
-  const options = rest[rest.length - 1] as HelperOptions
-  const result = args.some((arg) => {
-    if (Array.isArray(arg)) {
-      return arg.length !== 0
-    }
-    return Boolean(arg)
-  })
-  return result ? options.fn(this) : options.inverse(this)
-})
-handlebars.registerHelper('eq', (a, b) => a === b)
-handlebars.registerHelper('not', (a, b) => a !== b)
-// Register concat helper for string concatenation
-handlebars.registerHelper('concat', (...rest) => {
-  const args = Array.prototype.slice.call(rest, 0, -1)
-  // Remove the options object from the end
-  return args.join('')
-})
-// Register custom helper function 'raw'
-
-handlebars.registerHelper(
-  'raw',
-  text =>
-  // Returns the original string without HTML escaping
-
-    new handlebars.SafeString(text),
-)
 /**
- * Read and render the handlebars file
- * @param templatePath Template file path
- * @param view -Data objects required to render the template
- * @returns Rendered content
+ * Register the common set of Handlebars helpers onto the given instance.
+ * Call this on every newly created isolated Handlebars instance.
  */
-export async function readAndRenderTemplate(templatePath: string, view: any) {
-  // Initialize partials registration
-  await registerPartials()
-  let data = ''
-  try {
-    data = await fs.readFile(path.resolve(DEFAULT_CONFIG.templatePath, `${templatePath}.handlebars`), 'utf-8')
-  }
-  catch {
-    data = (await import(`../templates/${templatePath}.handlebars`)).default
-  }
-  return handlebars.compile(data)(view)
+export function registerCommonHelpers(hbs: typeof HandlebarsType) {
+  hbs.registerHelper('isType', function (this: any, value, type: string, options: HelperOptions) {
+    if (getType(value) === type) {
+      return options.fn(this)
+    }
+    return options.inverse(this)
+  })
+  hbs.registerHelper('and', function (this: any, ...rest) {
+    const args = Array.prototype.slice.call(rest, 0, -1)
+    const options = rest[rest.length - 1] as HelperOptions
+    const result = args.every((arg) => {
+      if (Array.isArray(arg)) {
+        return arg.length === 0
+      }
+      return Boolean(arg)
+    })
+    return result ? options.fn(this) : options.inverse(this)
+  })
+  hbs.registerHelper('or', function (this: any, ...rest) {
+    const args = Array.prototype.slice.call(rest, 0, -1)
+    const options = rest[rest.length - 1] as HelperOptions
+    const result = args.some((arg) => {
+      if (Array.isArray(arg)) {
+        return arg.length !== 0
+      }
+      return Boolean(arg)
+    })
+    return result ? options.fn(this) : options.inverse(this)
+  })
+  hbs.registerHelper('eq', (a, b) => a === b)
+  hbs.registerHelper('not', (a, b) => a !== b)
+  hbs.registerHelper('join', (...rest) => {
+    const args = Array.prototype.slice.call(rest, 0, -1)
+    return args.join('')
+  })
+  hbs.registerHelper('raw', text => new hbs.SafeString(text))
 }
 
 /**

@@ -1,0 +1,25 @@
+{{> comment}}
+import { fetchClient } from '../index';
+import { buildPayload } from '../helper';
+import type * as ComponentTypes from '../components';
+{{#each tagedApis}}
+import { {{{tagName}}}DefaultConfig } from '.';
+{{/each}}
+
+{{#each tagedApis}}
+{{#each apis}}
+type {{{name}}}Response = {{processType response @root.componentNames}};
+type {{{name}}}ExtraConfig = Omit<RequestInit, 'body'> & {
+  {{#if pathParameters}}pathParams: {{processType pathParameters @root.componentNames}};
+  {{/if}}{{#if queryParameters}}params?: {{processType queryParameters @root.componentNames}};
+  {{/if}}{{#if requestBody}}body?: {{processType requestBody @root.componentNames}};
+  {{/if}}
+};
+{{> api-jsdoc}}
+export async function {{{name}}}(config: {{{name}}}ExtraConfig): Promise<{{{name}}}Response> {
+  const { url, mergedConfig } = buildPayload('{{{path}}}', {{{tag}}}DefaultConfig, {{{name}}}.name, config);
+  return fetchClient.request(url, { method: '{{method}}', ...mergedConfig{{#if (eq response "Blob")}}, blob: true{{/if}} }) as Promise<{{{name}}}Response>;
+}
+
+{{/each}}
+{{/each}}

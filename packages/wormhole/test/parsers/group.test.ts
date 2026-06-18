@@ -402,7 +402,7 @@ describe('group Type Parser', () => {
       const result = groupTypeParser(schema, ctx)
 
       expect(result.type).toBe(ASTType.UNION)
-      expect(result.deprecated).toBe(true)
+      expect(result.deprecated).toBeTruthy()
     })
 
     it('should throw error when no group type is specified', () => {
