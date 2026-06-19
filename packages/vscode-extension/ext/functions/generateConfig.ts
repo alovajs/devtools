@@ -1,3 +1,3 @@
-import womhole from '@/helper/wormhole'
+import worma from '@/helper/worma'
 
-export default async (projectPath: string) => womhole.createConfig({ projectPath })
+export default async (projectPath: string) => worma.createConfig({ projectPath })

@@ -1,4 +1,4 @@
-import type { GeneratorProgressEvent } from '@alova/wormhole'
+import type { GeneratorProgressEvent } from 'worma'
 import { ProgressLocation, window } from 'vscode'
 import { endLoading, loading } from '@/commands/statusBar'
 import { showError } from '@/components/event'

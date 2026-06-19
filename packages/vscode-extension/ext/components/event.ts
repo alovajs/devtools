@@ -1,7 +1,7 @@
 import type Error from './error'
 import * as vscode from 'vscode'
 import ApiGenerate from '@/core/ApiGenerate'
-import { getWormhole } from '@/functions/getWormhole'
+import { getWorma } from '@/functions/getWorma'
 import { debounce, Log } from '@/utils'
 import { getCurrentWorkspacePath } from '@/utils/vscode'
 
@@ -13,12 +13,12 @@ export function registerEvent() {
   // listener workspace directory changes
   vscode.workspace.onDidChangeWorkspaceFolders((event) => {
     event.added.forEach((workspacePath) => {
-      if (getWormhole()) {
+      if (getWorma()) {
         ApiGenerate.addConfig(`${workspacePath.uri.fsPath}/`)
       }
     })
     event.removed.forEach((workspacePath) => {
-      if (getWormhole()) {
+      if (getWorma()) {
         ApiGenerate.removeConfig(`${workspacePath.uri.fsPath}/`)
       }
     })
@@ -31,16 +31,16 @@ export function registerEvent() {
       if (event.contentChanges.length === 0) {
         return
       }
-      if (/package\.json$/.test(filePath) && getWormhole()) {
+      if (/package\.json$/.test(filePath) && getWorma()) {
         ApiGenerate.onlyReadConfig(getCurrentWorkspacePath(filePath))
       }
     }, 1000),
   )
-  // listener alova.config configuration file changes
+  // listener worma.config configuration file changes
 
   vscode.workspace.onDidSaveTextDocument((event) => {
     const filePath = event.uri.fsPath
-    if (/alova\.config\.[cm]?[jt]s$/.test(filePath) && getWormhole()) {
+    if (/alova\.config\.[cm]?[jt]s$/.test(filePath) && getWorma()) {
       ApiGenerate.onlyReadConfig(getCurrentWorkspacePath(filePath))
     }
   })

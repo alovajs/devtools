@@ -10,7 +10,7 @@ export default antfu({
     "**/.vscode-test",
     "*.{js,mjs,cjs}",
     "**/e2e-out",
-    "packages/wormhole/typings",
+    "packages/worma/typings",
     "design",
     "test/**/src/*",
     "test/**/{*openapi*.*,*swagger*.*,alova_tmp*.*}",

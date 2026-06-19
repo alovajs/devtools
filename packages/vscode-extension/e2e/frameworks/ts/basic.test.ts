@@ -1,5 +1,5 @@
 import sinon from 'sinon'
-import { Commands, executeCommand, expect, getExt, is, MockWormhole, openFile, setupTest } from '../../ctx'
+import { Commands, executeCommand, expect, getExt, is, MockWorma, openFile, setupTest } from '../../ctx'
 
 setupTest('ts', () => {
   it('opens entry file', async () => {
@@ -14,8 +14,8 @@ setupTest('ts', () => {
   })
   it('createConfig', async () => {
     // Create spies and stubs
-    sinon.define(MockWormhole, 'createConfig', () => {})
-    const mockCreateConfig = sinon.stub(MockWormhole, 'createConfig').returns(Promise.resolve(undefined))
+    sinon.define(MockWorma, 'createConfig', () => {})
+    const mockCreateConfig = sinon.stub(MockWorma, 'createConfig').returns(Promise.resolve(undefined))
 
     // execute command
     await executeCommand(Commands.create_config)
@@ -26,6 +26,6 @@ setupTest('ts', () => {
   it('createConfig content', async () => {
     await executeCommand(Commands.create_config)
     // Verify that generateConfig is called correctly
-    expect(await openFile('alova.config.ts')).to.matchSnapshot()
+    expect(await openFile('worma.config.ts')).to.matchSnapshot()
   })
 })

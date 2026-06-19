@@ -8,7 +8,7 @@ import { toPromise } from '@/utils/to-promise'
 
 export type HandlersType = ReturnType<typeof getHandlers>
 export type { DataType, MessageType } from '@/utils/message'
-export type { Api, ApiDoc, CacheData } from '@alova/wormhole'
+export type { Api, ApiDoc, CacheData } from 'worma'
 export type ApiProject = Awaited<ReturnType<typeof getApiDocs>>[number]
 
 export function getHandlers(context: ExtensionContext) {

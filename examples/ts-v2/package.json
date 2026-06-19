@@ -8,7 +8,7 @@
   "keywords": [],
   "main": "index.js",
   "scripts": {
-    "gen": "alova gen -f",
+    "gen": "worma gen -f",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -17,7 +17,7 @@
     "vue": "catalog:frontend"
   },
   "devDependencies": {
-    "@alova/wormhole": "workspace:^",
+    "worma": "workspace:^",
     "openapi": "catalog:dev",
     "typescript": "catalog:dev"
   }

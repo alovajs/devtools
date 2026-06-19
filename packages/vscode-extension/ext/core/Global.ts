@@ -1,4 +1,4 @@
-import type { Config, TemplateData } from '@alova/wormhole'
+import type { Config, TemplateData } from 'worma'
 import type { ExtensionContext } from 'vscode'
 import type { Timer } from '@/utils'
 import { EventEmitter } from 'vscode'

@@ -1,14 +1,14 @@
-import type { Config } from '@alova/wormhole'
+import type { Config } from 'worma'
 import type Error from '@/components/error'
 import Global from '@/core/Global'
 import { refeshAutoUpdate } from '@/helper/autoUpdate'
-import wormhole from '@/helper/wormhole'
+import worma from '@/helper/worma'
 import { getWorkspacePaths } from '@/utils/vscode'
 
 async function resolveWorkspaces(workspaceRootPaths?: string | string[]) {
   const workspacePaths = workspaceRootPaths ? [workspaceRootPaths].flat() : getWorkspacePaths()
   const dirs = (
-    await Promise.allSettled(workspacePaths.map(workspacePath => wormhole.resolveWorkspaces(workspacePath)))
+    await Promise.allSettled(workspacePaths.map(workspacePath => worma.resolveWorkspaces(workspacePath)))
   )
     .filter(item => item.status === 'fulfilled')
     .map(item => item.value)
@@ -22,7 +22,7 @@ export default async (workspaceRootPathArr?: string | string[]) => {
   for (const dir of dirs) {
     let config: Config | null = null
     try {
-      config = await wormhole.readConfig(dir)
+      config = await worma.readConfig(dir)
     }
     catch (err) {
       const error = err as Error

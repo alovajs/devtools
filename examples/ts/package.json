@@ -9,7 +9,7 @@
   "main": "index.js",
   "scripts": {
     "start": "tsx src/main.ts",
-    "gen": "alova gen -f",
+    "gen": "worma gen -f",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -20,7 +20,7 @@
     "ky": "catalog:"
   },
   "devDependencies": {
-    "@alova/wormhole": "workspace:^",
+    "worma": "workspace:^",
     "typescript": "catalog:dev"
   }
 }

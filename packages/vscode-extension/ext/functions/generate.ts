@@ -1,8 +1,8 @@
-import type { GeneratorProgressEvent } from '@alova/wormhole'
+import type { GeneratorProgressEvent } from 'worma'
 import type Error from '@/components/error'
 import { updateLoadingProgress } from '@/commands/statusBar'
 import Global from '@/core/Global'
-import wormhole from '@/helper/wormhole'
+import worma from '@/helper/worma'
 
 export interface GenerateOption {
   force?: boolean
@@ -43,7 +43,7 @@ export default async (option?: GenerateOption) => {
     }
     try {
       progressMap.set(projectPath, new Map())
-      const generateResult = await wormhole.generate(config, {
+      const generateResult = await worma.generate(config, {
         force,
         projectPath,
         onProgress(event) {

@@ -8,13 +8,13 @@
   "keywords": [],
   "main": "index.js",
   "scripts": {
-    "gen": "alova gen -f"
+    "gen": "worma gen -f"
   },
   "dependencies": {
     "alova": "catalog:frontend",
     "vue": "catalog:frontend"
   },
   "devDependencies": {
-    "@alova/wormhole": "workspace:^"
+    "worma": "workspace:^"
   }
 }

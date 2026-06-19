@@ -1,8 +1,8 @@
-import type { GeneratorProgressEvent } from '@alova/wormhole'
+import type { GeneratorProgressEvent } from 'worma'
 import { ProgressLocation, window } from 'vscode'
 import { showError } from '@/components/event'
 import ApiGenerate from '@/core/ApiGenerate'
-import wormhole from '@/helper/wormhole'
+import worma from '@/helper/worma'
 import { getWorkspacePaths, registerCommand } from '@/utils/vscode'
 import { Commands } from './commands'
 import { endLoading, loading } from './statusBar'
@@ -22,7 +22,7 @@ interface ProjectItem {
 async function resolveProjectPaths(): Promise<string[]> {
   const workspacePaths = getWorkspacePaths()
   const results = await Promise.allSettled(
-    workspacePaths.map(wp => wormhole.resolveWorkspaces(wp)),
+    workspacePaths.map(wp => worma.resolveWorkspaces(wp)),
   )
   const dirs = results
     .filter((r): r is PromiseFulfilledResult<string[]> => r.status === 'fulfilled')
@@ -57,7 +57,7 @@ export const showStatusBarActions: CommandType = {
     ]
 
     const picked = await window.showQuickPick(actions, {
-      title: 'Alova',
+      title: 'Worma',
       placeHolder: 'Select an action',
     })
     if (!picked) {
@@ -73,7 +73,7 @@ export const showStatusBarActions: CommandType = {
     if (picked.action === 'createConfig') {
       for (const projectPath of targetProjects) {
         try {
-          await wormhole.createConfig({ projectPath })
+          await worma.createConfig({ projectPath })
         }
         catch (error) {
           showError(error)

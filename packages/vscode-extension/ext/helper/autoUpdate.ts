@@ -1,4 +1,4 @@
-import type { Config } from '@alova/wormhole'
+import type { Config } from 'worma'
 import { commands, workspace } from 'vscode'
 import { Commands } from '@/commands'
 import Global from '@/core/Global'
@@ -11,7 +11,7 @@ interface AutoUpdateConfig {
 }
 
 function getAutoUpdateConfig(): AutoUpdateConfig {
-  const raw = workspace.getConfiguration().get<boolean | { launchEditor?: boolean, interval?: number }>('alova.autoUpdate', true)
+  const raw = workspace.getConfiguration().get<boolean | { launchEditor?: boolean, interval?: number }>('worma.autoUpdate', true)
   if (raw === false) {
     return { isStop: true, immediate: false, time: 300000 }
   }

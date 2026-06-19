@@ -37,7 +37,7 @@
     "release": "tsx scripts/release.ts"
   },
   "devDependencies": {
-    "@alova/wormhole": "workspace:*",
+    "worma": "workspace:*",
     "@antfu/eslint-config": "catalog:dev",
     "@antfu/ni": "catalog:dev",
     "@changesets/changelog-github": "catalog:dev",

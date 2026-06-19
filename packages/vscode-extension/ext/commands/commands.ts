@@ -1,15 +1,15 @@
 export enum Commands {
-  autocomplete = 'alova.autocomplete',
-  create_config = 'alova.create.config',
-  generate_api = 'alova.generateApi',
-  refresh = 'alova.refresh',
-  show_status_bar_icon = 'alova.showStatusBarIcon',
-  api_docs_refresh = 'alova.apiDocs.refresh',
-  api_docs_open = 'alova.apiDocs.open',
-  snippet_search_open = 'alova.snippetSearch.open',
-  snippet_search_insert = 'alova.snippetSearch.insert',
-  snippet_search_show_help = 'alova.snippetSearch.showHelp',
-  status_bar_show_actions = 'alova.statusBar.showActions',
+  autocomplete = 'worma.autocomplete',
+  create_config = 'worma.create.config',
+  generate_api = 'worma.generateApi',
+  refresh = 'worma.refresh',
+  show_status_bar_icon = 'worma.showStatusBarIcon',
+  api_docs_refresh = 'worma.apiDocs.refresh',
+  api_docs_open = 'worma.apiDocs.open',
+  snippet_search_open = 'worma.snippetSearch.open',
+  snippet_search_insert = 'worma.snippetSearch.insert',
+  snippet_search_show_help = 'worma.snippetSearch.showHelp',
+  status_bar_show_actions = 'worma.statusBar.showActions',
 }
 
 export default Commands

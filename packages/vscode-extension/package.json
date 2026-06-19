@@ -1,8 +1,8 @@
 {
-  "publisher": "Alova",
-  "name": "alova-vscode-extension",
-  "displayName": "Alova",
-  "version": "2.0.13",
+  "publisher": "Worma",
+  "name": "worma-vscode-extension",
+  "displayName": "Worma",
+  "version": "0.0.1",
   "private": true,
   "packageManager": "pnpm@10.13.1",
   "description": "Generate and search APIs without API documentation any more",
@@ -41,9 +41,9 @@
   ],
   "contributes": {
     "configuration": {
-      "title": "Alova",
+      "title": "Worma",
       "properties": {
-        "alova.autoUpdate": {
+        "worma.autoUpdate": {
           "markdownDescription": "Whether to automatically update APIs. Set to `false` to disable, `true` for default (every 5 minutes), or an object for detailed configuration.",
           "oneOf": [
             {
@@ -73,32 +73,32 @@
     },
     "commands": [
       {
-        "command": "alova.refresh",
-        "category": "Alova",
+        "command": "worma.refresh",
+        "category": "Worma",
         "title": "Generate APIs"
       },
       {
-        "command": "alova.create.config",
-        "category": "Alova",
-        "title": "Create alova config"
+        "command": "worma.create.config",
+        "category": "Worma",
+        "title": "Create worma config"
       },
       {
-        "command": "alova.apiDocs.refresh",
+        "command": "worma.apiDocs.refresh",
         "title": "Refresh View",
         "icon": "$(refresh)"
       },
       {
-        "command": "alova.snippetSearch.open",
+        "command": "worma.snippetSearch.open",
         "title": "打开代码片段搜索",
         "category": "Snippet Search"
       },
       {
-        "command": "alova.snippetSearch.insert",
+        "command": "worma.snippetSearch.insert",
         "title": "插入代码片段",
         "category": "Snippet Search"
       },
       {
-        "command": "alova.snippetSearch.showHelp",
+        "command": "worma.snippetSearch.showHelp",
         "title": "显示快捷键帮助",
         "category": "Snippet Search"
       }
@@ -106,21 +106,21 @@
     "menus": {
       "view/title": [
         {
-          "command": "alova.apiDocs.refresh",
+          "command": "worma.apiDocs.refresh",
           "group": "navigation",
           "when": "view == api-docs-server-view"
         }
       ],
       "commandPalette": [
         {
-          "command": "alova.snippetSearch.insert",
+          "command": "worma.snippetSearch.insert",
           "when": "editorTextFocus"
         }
       ]
     },
     "keybindings": [
       {
-        "command": "alova.snippetSearch.open",
+        "command": "worma.snippetSearch.open",
         "key": "ctrl+alt+p",
         "mac": "cmd+alt+p",
         "when": "editorTextFocus"
@@ -200,7 +200,7 @@
     "vue-router": "catalog:frontend"
   },
   "devDependencies": {
-    "@alova/wormhole": "workspace:*",
+    "worma": "workspace:*",
     "@czhlin/vite-plugin-vscode": "catalog:build",
     "@iconify-json/carbon": "catalog:dev",
     "@intlify/unplugin-vue-i18n": "catalog:build",

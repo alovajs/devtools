@@ -1,4 +1,4 @@
-import type { Api } from '@alova/wormhole'
+import type { Api } from 'worma'
 import { match } from 'sdm2'
 import { getApis } from './getApis'
 

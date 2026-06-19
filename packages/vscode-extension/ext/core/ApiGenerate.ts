@@ -64,7 +64,7 @@ export default class ApiGenerate {
 
   static checkConfig() {
     if (!this.configNum && !this.readErrorArr.length) {
-      throw new Error('Expected to create alova.config.js in root directory.')
+      throw new Error('Expected to create worma.config.js in root directory.')
     }
   }
 

@@ -14,7 +14,7 @@
 | 2   | 状态栏 Action 列表          | ✅ 已完成 | 点击弹框选择动作 + 子项目选择      |
 | 3   | 生成进度展示                | ✅ 已完成 | 状态栏百分比 + 右下角进度通知      |
 | 4   | 侧边栏/快速搜索数据结构适配 | ✅ 已完成 | CacheData 结构，serverName         |
-| 5   | autoUpdate 参数迁移         | ✅ 已完成 | 从 wormhole 配置迁移到 VSCode 设置 |
+| 5   | autoUpdate 参数迁移         | ✅ 已完成 | 从 worma 配置迁移到 VSCode 设置 |
 
 ---
 
@@ -30,7 +30,7 @@
  export function disable() {
    Global.setEnabled(false)
    statusBarItem.text = `$(alova-icon-id) Alova`
-   statusBarItem.tooltip = 'module `@alova/wormhole` not found'
+   statusBarItem.tooltip = 'module `worma` not found'
 -  statusBarItem.color = '#808080'
 +  statusBarItem.color = '#FFFFFF80'
    statusBarItem.command = undefined
@@ -39,7 +39,7 @@
 
 **验收标准：**
 
-- 未安装 `@alova/wormhole` 时，状态栏图标显示为 50% 不透明度白色
+- 未安装 `worma` 时，状态栏图标显示为 50% 不透明度白色
 - 安装后恢复正常颜色（`undefined`）
 
 ---
@@ -51,7 +51,7 @@
 **`ext/commands/commands.ts`** 新增：
 
 ```ts
-status_bar_show_actions = 'alova.statusBar.showActions'
+status_bar_show_actions = 'worma.statusBar.showActions'
 ```
 
 #### 2.2 `enable()` 绑定新命令
@@ -82,13 +82,13 @@ status_bar_show_actions = 'alova.statusBar.showActions'
             └─ [各子项目路径列表]
 
   └─ 执行对应 action
-       ├─ "Create config file" → wormhole.createConfig({ projectPath })（每个目标项目）
+       ├─ "Create config file" → worma.createConfig({ projectPath })（每个目标项目）
        └─ "Generate apis"      → ApiGenerate.readConfig() + ApiGenerate.generate()
 ```
 
 **子项目列表获取方式：**
 
-使用已有的 `readConfig.ts` 中的 `resolveWorkspaces()`，它内部调用 `wormhole.resolveWorkspaces(workspacePath)`。
+使用已有的 `readConfig.ts` 中的 `resolveWorkspaces()`，它内部调用 `worma.resolveWorkspaces(workspacePath)`。
 
 **QuickPick Step 1 定义：**
 
@@ -120,8 +120,8 @@ const items: ProjectItem[] = [
 
 | action       | projectPath | 实际执行                                                                                    |
 | ------------ | ----------- | ------------------------------------------------------------------------------------------- |
-| createConfig | all         | 遍历所有项目 `wormhole.createConfig({ projectPath })`                                       |
-| createConfig | 具体路径    | `wormhole.createConfig({ projectPath })`                                                    |
+| createConfig | all         | 遍历所有项目 `worma.createConfig({ projectPath })`                                       |
+| createConfig | 具体路径    | `worma.createConfig({ projectPath })`                                                    |
 | generateApis | all         | `ApiGenerate.readConfig()` + `ApiGenerate.generate({ force: true })`                        |
 | generateApis | 具体路径    | `ApiGenerate.readConfig(path)` + `ApiGenerate.generate({ force: true, projectPath: path })` |
 
@@ -161,16 +161,16 @@ export function updateLoadingProgress(percent: number) {
 
 **`ext/functions/generate.ts`**：
 
-在 `wormhole.generate` 调用时传入 `onProgress` 回调，通过节流（500ms）更新 `updateLoadingProgress`：
+在 `worma.generate` 调用时传入 `onProgress` 回调，通过节流（500ms）更新 `updateLoadingProgress`：
 
 ```ts
-import type { GenerateProgress } from '@alova/wormhole'
+import type { GenerateProgress } from 'worma'
 
 export default async (option?: GenerateOption) => {
   // ...
   for (const [projectPath, config] of Global.getConfigs()) {
     // ...
-    const generateResult = await wormhole.generate(config, {
+    const generateResult = await worma.generate(config, {
       force,
       projectPath,
       onProgress(snapshot: Record<string, GenerateProgress>) {
@@ -222,7 +222,7 @@ await window.withProgress(
 
 需要将 `onProgress` 回调沿调用链传递：
 
-- `ApiGenerate.generate(options)` → `generate(options)` → `wormhole.generate(config, { ..., onProgress })`
+- `ApiGenerate.generate(options)` → `generate(options)` → `worma.generate(config, { ..., onProgress })`
 
 **变更文件：**
 
@@ -237,7 +237,7 @@ await window.withProgress(
 
 #### 4.1 背景
 
-wormhole@2 的 `getApiDocs` 返回类型从 `Api[][]` 变为 `CacheData[]`：
+worma@2 的 `getApiDocs` 返回类型从 `Api[][]` 变为 `CacheData[]`：
 
 ```ts
 interface CacheData {
@@ -256,7 +256,7 @@ interface CacheData {
 export async function getApis(filePath: string) {
   const [projectPath, config] = Global.getConfigs().find(...) ?? []
   if (!config) return []
-  const cacheList = await wormhole.getApiDocs(config, projectPath)  // CacheData[]
+  const cacheList = await worma.getApiDocs(config, projectPath)  // CacheData[]
   return cacheList.flatMap(cd => cd.apis)
 }
 
@@ -265,7 +265,7 @@ export async function getApiDocs() {
   return Promise.all(
     Global.getConfigs().map(async ([projectPath, config]) => ({
       name: getFileNameByPath(projectPath),
-      servers: await wormhole.getApiDocs(config, projectPath),  // CacheData[]
+      servers: await worma.getApiDocs(config, projectPath),  // CacheData[]
     })),
   )
 }
@@ -367,14 +367,14 @@ function getApiNode(projects: ApiProject[]) {
 
 #### 5.1 背景
 
-wormhole@2 移除了 `autoUpdate` 配置和 `getAutoUpdateConfig` 函数，自动更新由 VSCode 插件自行管理。
+worma@2 移除了 `autoUpdate` 配置和 `getAutoUpdateConfig` 函数，自动更新由 VSCode 插件自行管理。
 
 #### 5.2 VSCode 设置项
 
 在 `packages/vscode-extension/package.json` 的 `contributes.configuration.properties` 中新增：
 
 ```json
-"alova.autoUpdate": {
+"worma.autoUpdate": {
   "type": ["boolean", "object"],
   "default": true,
   "description": "Whether to automatically update APIs. Can be true/false or a detailed config object.",
@@ -407,7 +407,7 @@ interface AutoUpdateConfig {
 }
 
 function getAutoUpdateConfig(): AutoUpdateConfig {
-  const raw = workspace.getConfiguration().get<boolean | { launchEditor?: boolean; interval?: number }>('alova.autoUpdate', true)
+  const raw = workspace.getConfiguration().get<boolean | { launchEditor?: boolean; interval?: number }>('worma.autoUpdate', true)
   if (raw === false) {
     return { isStop: true, immediate: false, time: 300 }
   }
@@ -427,14 +427,14 @@ export async function refeshAutoUpdate(path: string, config: Config) {
 }
 ```
 
-#### 5.4 移除对 wormhole 的依赖
+#### 5.4 移除对 worma 的依赖
 
-移除 `ext/helper/autoUpdate.ts` 中 `wormhole.getAutoUpdateConfig(config)` 的调用。
+移除 `ext/helper/autoUpdate.ts` 中 `worma.getAutoUpdateConfig(config)` 的调用。
 
 **变更文件：**
 
 - `packages/vscode-extension/package.json`（新增配置项）
-- `ext/helper/autoUpdate.ts`（移除 wormhole 调用，改读 VSCode 配置）
+- `ext/helper/autoUpdate.ts`（移除 worma 调用，改读 VSCode 配置）
 
 ---
 
@@ -461,7 +461,7 @@ export async function refeshAutoUpdate(path: string, config: Config) {
 ## 开发顺序建议
 
 1. **F1**（最简单，独立改动）
-2. **F5**（移除 wormhole 依赖，基础设施）
+2. **F5**（移除 worma 依赖，基础设施）
 3. **F4**（数据结构适配，影响最广）
 4. **F2**（交互逻辑，依赖 F4 的 resolveWorkspaces 已就位）
 5. **F3**（进度展示，依赖 F2 的 Action 流程）

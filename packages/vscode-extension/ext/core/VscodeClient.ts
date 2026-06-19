@@ -1,4 +1,4 @@
-import type { Api } from '@alova/wormhole'
+import type { Api } from 'worma'
 import type { ExtensionContext } from 'vscode'
 import { MType } from '#/constant'
 import { isApiExists } from '@/functions/getApis'

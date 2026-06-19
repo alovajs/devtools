@@ -1,9 +1,0 @@
-const { defineConfig } = require('@alova/wormhole');
-const { platform{{#if templateImport}}, {{{templateImport}}}{{/if}} } = require('@alova/wormhole/plugin');
-
-// For more config detailed visit:
-// https://alova.js.org/tutorial/getting-started/extension-integration
-
-module.exports = defineConfig({
-  {{> generator-content}}
-});

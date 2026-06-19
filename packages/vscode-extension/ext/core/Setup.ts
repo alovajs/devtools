@@ -3,7 +3,7 @@ import { onDeactivate } from 'reactive-vscode'
 import { commands } from 'vscode'
 import commandsModules, { Commands } from '@/commands'
 import { registerEvent } from '@/components/event'
-import { getWormhole } from '@/functions/getWormhole'
+import { getWorma } from '@/functions/getWorma'
 import { Log } from '@/utils'
 import apiDetail from '@/views/api-detail'
 import apiServer from '@/views/api-server'
@@ -27,7 +27,7 @@ export default class Setup {
     VscodeClient.init(ctx)
     registerEvent()
 
-    if (getWormhole()) {
+    if (getWorma()) {
       await ApiGenerate.onlyReadConfig()
     }
     Log.info('🚀 Setup end')

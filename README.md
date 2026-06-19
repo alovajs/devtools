@@ -8,7 +8,7 @@
 
 ![image](https://github.com/user-attachments/assets/4e72912d-dd77-47d6-a9be-5f1a3bce6a2b)
 
-In the past, when the backend developer delivered the API to you, you had to open the intermediate API docs to query and copy the key information into your project, and you had to constantly switch between the intermediate API docs and your editor. But now, alova's devtools can eliminate the intermediate API docs for you, shortening the collaboration distance between the frontend and the backend like a wormhole. Through it, you can quickly find the required API in the editor and display the comprehensive document of this API, and quickly comprehensive parameter transfer by referring to the API parameter table, giving you a different API integration experience.
+In the past, when the backend developer delivered the API to you, you had to open the intermediate API docs to query and copy the key information into your project, and you had to constantly switch between the intermediate API docs and your editor. But now, alova's devtools can eliminate the intermediate API docs for you, shortening the collaboration distance between the frontend and the backend like a worma. Through it, you can quickly find the required API in the editor and display the comprehensive document of this API, and quickly comprehensive parameter transfer by referring to the API parameter table, giving you a different API integration experience.
 
 ![image](https://github.com/user-attachments/assets/2c7d7fd7-7998-4995-b777-f37c22dd3742)
 
