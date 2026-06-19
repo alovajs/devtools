@@ -76,7 +76,7 @@ export class ConfigHelper {
     // Flush all in-memory cache entries to disk once after all generators complete,
     // avoiding race conditions from parallel writes to the same .alova-cache.json.
     await TemplateHelper.flushAllData(this.projectPath)
-    return results
+    return results.map(r => r.success)
   }
 
   private readAlovaJson() {

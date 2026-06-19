@@ -251,6 +251,9 @@ export function rename(config: RenameConfig | RenameConfig[]): ApiPlugin {
     if (!conf.style && !conf.transform) {
       throw new Error('at least one of `style` or `transform` is required')
     }
+    if (conf.style === 'kebabCase' && conf.scope === 'refName') {
+      throw new Error(`Invalid rename style: ${conf.style}、${conf.scope}`)
+    }
   }
 
   return {

@@ -1,4 +1,4 @@
-import type { GenerateProgress } from '@alova/wormhole'
+import type { GeneratorProgressEvent } from '@alova/wormhole'
 import { ProgressLocation, window } from 'vscode'
 import { endLoading, loading } from '@/commands/statusBar'
 import { showError } from '@/components/event'
@@ -22,15 +22,11 @@ export const refresh: CommandType = {
         async (progress) => {
           await ApiGenerate.generate({
             force: true,
-            onProgress(snapshot: Record<string, GenerateProgress>) {
-              const entries = Object.entries(snapshot)
-              if (!entries.length) {
-                return
-              }
-              const lines = entries
-                .map(([src, p]) => `[${src}] ${p.progress}%${p.message ? ` ${p.message}` : ''}`)
-                .join('\n')
-              progress.report({ message: lines })
+            onProgress(event: GeneratorProgressEvent) {
+              if (event.phase !== 'progress') return
+              progress.report({
+                message: `[${event.source ?? 'core'}] ${event.progress}%${event.message ? ` ${event.message}` : ''}`,
+              })
             },
           })
         },

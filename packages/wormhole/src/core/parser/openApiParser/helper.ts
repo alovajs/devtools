@@ -112,48 +112,84 @@ function isValidOpenApiData(data: any): boolean {
 const isRemoteUrl = (u: string) => /^https?:\/\//.test(u)
 
 /**
- * Try local files sequentially (they're instant), then race remote URLs concurrently.
- * Returns the first successful result; throws if all URLs fail.
+ * Try all URLs in parallel (local & remote) — first successful one wins.
+ * Returns the parsed data together with the resolved URL; throws if all URLs fail.
  */
 async function tryUrls(
   urls: string[],
   options: { projectPath?: string; fetchOptions?: FetchOptions },
-): Promise<any> {
+): Promise<{ data: any; url: string }> {
+  if (urls.length === 0) {
+    throw logger.throwError('No URLs provided to fetch OpenAPI document')
+  }
   const { projectPath, fetchOptions } = options
-  const localUrls = urls.filter(u => !isRemoteUrl(u))
-  const remoteUrls = urls.filter(isRemoteUrl)
 
-  // Local files: try sequentially (fast)
-  for (const u of localUrls) {
-    try {
-      return await parseLocalFile(u, projectPath)
+  // All URLs race in parallel: local files are fast, remote ones use network
+  const tasks = urls.map((u) => {
+    if (isRemoteUrl(u)) {
+      return parseRemoteFile(u, fetchOptions).then(
+        data => ({ data, url: u }),
+        (err) => {
+          throw new Error(`${u}: ${err instanceof Error ? err.message : String(err)}`)
+        },
+      )
     }
-    catch { /* continue */ }
+    return parseLocalFile(u, projectPath).then(data => ({ data, url: u }))
+  })
+
+  try {
+    return await Promise.any(tasks)
   }
-
-  // Remote URLs: race concurrently, use the fastest valid response
-  if (remoteUrls.length > 0) {
-    const tasks = remoteUrls.map(u =>
-      parseRemoteFile(u, fetchOptions).catch((err) => {
-        throw new Error(`${u}: ${err instanceof Error ? err.message : String(err)}`)
-      }),
-    )
-    try {
-      return await Promise.any(tasks)
-    }
-    catch (err) {
-      const errors = (err instanceof AggregateError)
-        ? err.errors.map((e: any) => e.message)
-        : [(err as Error).message]
-      throw logger.throwError(`Unable to retrieve valid OpenAPI document from any URL:\n${errors.join('\n')}`)
-    }
+  catch (err) {
+    const errors = (err instanceof AggregateError)
+      ? err.errors.map((e: any) => e.message)
+      : [(err as Error).message]
+    throw logger.throwError(`Unable to retrieve valid OpenAPI document from any URL:\n${errors.join('\n')}`)
   }
-
-  throw logger.throwError('No URLs provided to fetch OpenAPI document')
 }
 
-// Parse openapi files
+export interface OpenApiDataResult {
+  data: OpenAPIDocument
+  /** The actual URL that was successfully parsed */
+  resolvedUrl: string
+}
 
+/**
+ * Parse OpenAPI document and return the resolved URL alongside the data.
+ * Use this when you need to know which URL actually provided the document.
+ */
+export async function getOpenApiDataWithUrl(
+  url: string | string[],
+  options?: {
+    projectPath?: string
+    fetchOptions?: FetchOptions
+  },
+): Promise<OpenApiDataResult> {
+  const { projectPath, fetchOptions } = options ?? {}
+
+  // Normalize to array — single string or array both handled uniformly
+  const urls = Array.isArray(url) ? url : [url]
+  const { data, url: resolvedUrl } = await tryUrls(urls, { projectPath, fetchOptions })
+  let result = data
+
+  // If it is a swagger2 file — convert via worker to avoid main-thread blocking
+  if (isSwagger2(result)) {
+    result = await convertSwagger2Async(result)
+  }
+  if (!result) {
+    throw logger.throwError(`Cannot read file from ${urls.join(', ')}`, {
+      projectPath,
+      url,
+      fetchOptions,
+    })
+  }
+  return { data: result, resolvedUrl }
+}
+
+/**
+ * Parse OpenAPI document from config input.
+ * Backward-compatible: wraps {@link getOpenApiDataWithUrl}, returning only the document.
+ */
 export async function getOpenApiData(
   url: string | string[],
   options?: {
@@ -161,22 +197,6 @@ export async function getOpenApiData(
     fetchOptions?: FetchOptions
   },
 ): Promise<OpenAPIDocument> {
-  const { projectPath, fetchOptions } = options ?? {}
-
-  // Normalize to array — single string or array both handled uniformly
-  const urls = Array.isArray(url) ? url : [url]
-  let data = await tryUrls(urls, { projectPath, fetchOptions })
-
-  // If it is a swagger2 file — convert via worker to avoid main-thread blocking
-  if (isSwagger2(data)) {
-    data = await convertSwagger2Async(data)
-  }
-  if (!data) {
-    throw logger.throwError(`Cannot read file from ${urls.join(', ')}`, {
-      projectPath,
-      url,
-      fetchOptions,
-    })
-  }
+  const { data } = await getOpenApiDataWithUrl(url, options)
   return data
 }

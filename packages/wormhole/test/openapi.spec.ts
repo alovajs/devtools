@@ -8,18 +8,17 @@ import { createStrReg, getSalt } from './util'
 vi.mock('node:fs')
 vi.mock('node:fs/promises')
 describe('generate with OpenAPI file', () => {
-  it('should throw error when generating from a file that does not exists', async () => {
-    await expect(
-      generate({
-        generator: [
-          {
-            input: 'http://localhost:3000/openapi.json',
-            output: './src/api',
-            plugins: [alovaGlobals()],
-          },
-        ],
-      }),
-    ).rejects.toThrow('fetch failed')
+  it('should return false when generating from a file that does not exist (runtime error caught)', async () => {
+    const result = await generate({
+      generator: [
+        {
+          input: 'http://localhost:3000/openapi.json',
+          output: './src/api',
+          plugins: [alovaGlobals()],
+        },
+      ],
+    })
+    expect(result).toEqual([false])
   })
 
   it('should generate code with a variant of openapi file formats', {

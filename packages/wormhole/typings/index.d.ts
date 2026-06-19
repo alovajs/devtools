@@ -11,68 +11,6 @@ export type OpenAPIDocument = OpenAPIV3_1.Document;
 export type SchemaObject = OpenAPIV3_1.SchemaObject;
 export type Parameter = OpenAPIV3_1.ParameterObject;
 export type OperationObject = OpenAPIV3_1.OperationObject;
-export interface Api {
-	tag: string;
-	method: string;
-	summary: string;
-	path: string;
-	pathParameters: string;
-	queryParameters: string;
-	pathParametersComment?: string;
-	queryParametersComment?: string;
-	responseComment?: string;
-	requestBodyComment?: string;
-	name: string;
-	response: string;
-	requestBody?: string;
-	defaultValue?: string;
-	pathKey: string;
-}
-export interface ApiDoc {
-	apis: Api[];
-	tagName: string;
-}
-export type ApiDescriptor = Omit<OperationObject, "requestBody" | "parameters" | "responses"> & {
-	url: string;
-	method: string;
-	parameters?: Parameter[];
-	refNameMap?: Record<string, string>;
-	requestBody?: SchemaObject;
-	responses?: SchemaObject;
-};
-export interface TemplateData {
-	title: OpenAPIDocument["info"]["title"];
-	openapi: OpenAPIDocument["openapi"];
-	version: OpenAPIDocument["info"]["version"];
-	description: OpenAPIDocument["info"]["description"];
-	contact: OpenAPIDocument["info"]["contact"];
-	/** Framework tag: vue | react | svelte | solid-js | nuxt */
-	framework?: string;
-	defaultKey?: boolean;
-	baseUrl: string;
-	/** Schema/Component definitions */
-	components: string[];
-	/** Names of all generated component schemas (keys of schemasMap) */
-	componentNames: string[];
-	/** All apis array */
-	allApis: Api[];
-	/** Apis grouped by tag */
-	tagedApis: ApiDoc[];
-	type: TemplateType;
-	/** Config passed from template configuration */
-	config: Record<string, any>;
-}
-/**
- * Standardized cache data for VSCode extension
- * Used for rendering sidebar API tree and quick search
- */
-export interface CacheData {
-	path: string;
-	/** Server name displayed in sidebar */
-	serverName?: string;
-	/** All APIs as a flat array */
-	apis: Api[];
-}
 export interface FetchOptions {
 	headers?: Record<string, string>;
 	/** timeout in milliseconds */
@@ -104,23 +42,6 @@ export type ConfigType = z.infer<typeof zConfigType>;
  */
 export type TemplateType = z.infer<typeof zTemplateType>;
 export type MaybePromise<T> = T | Promise<T>;
-/**
- * Progress event reported either by the core generator or by a plugin hook.
- */
-export interface GenerateProgress {
-	/**
-	 * Source of the progress event. `'core'` for the framework lifecycle, otherwise the plugin name.
-	 */
-	source: string;
-	/**
-	 * Completion percentage in the [0, 100] range.
-	 */
-	progress: number;
-	/**
-	 * Optional human-readable status message.
-	 */
-	message?: string;
-}
 /**
  * Function injected into plugin hooks for reporting plugin-scoped progress.
  */
@@ -377,20 +298,119 @@ export type UserConfigFnObject = () => UserConfig;
 export type UserConfigFnPromise = () => Promise<UserConfig>;
 export type UserConfigFn = () => UserConfig | Promise<UserConfig>;
 export type UserConfigExport = UserConfig | Promise<UserConfig> | UserConfigFnObject | UserConfigFnPromise | UserConfigFn;
+export interface Api {
+	tag: string;
+	method: string;
+	summary: string;
+	path: string;
+	pathParameters: string;
+	queryParameters: string;
+	pathParametersComment?: string;
+	queryParametersComment?: string;
+	responseComment?: string;
+	requestBodyComment?: string;
+	name: string;
+	response: string;
+	requestBody?: string;
+	defaultValue?: string;
+	pathKey: string;
+}
+export interface ApiDoc {
+	apis: Api[];
+	tagName: string;
+}
+export type ApiDescriptor = Omit<OperationObject, "requestBody" | "parameters" | "responses"> & {
+	url: string;
+	method: string;
+	parameters?: Parameter[];
+	refNameMap?: Record<string, string>;
+	requestBody?: SchemaObject;
+	responses?: SchemaObject;
+};
+export interface TemplateData {
+	title: OpenAPIDocument["info"]["title"];
+	openapi: OpenAPIDocument["openapi"];
+	version: OpenAPIDocument["info"]["version"];
+	description: OpenAPIDocument["info"]["description"];
+	contact: OpenAPIDocument["info"]["contact"];
+	/** Framework tag: vue | react | svelte | solid-js | nuxt */
+	framework?: string;
+	defaultKey?: boolean;
+	baseUrl: string;
+	/** Schema/Component definitions */
+	components: string[];
+	/** Names of all generated component schemas (keys of schemasMap) */
+	componentNames: string[];
+	/** All apis array */
+	allApis: Api[];
+	/** Apis grouped by tag */
+	tagedApis: ApiDoc[];
+	type: TemplateType;
+	/** Config passed from template configuration */
+	config: Record<string, any>;
+}
+/**
+ * Standardized cache data for VSCode extension
+ * Used for rendering sidebar API tree and quick search
+ */
+export interface CacheData {
+	path: string;
+	/** Server name displayed in sidebar */
+	serverName?: string;
+	/** All APIs as a flat array */
+	apis: Api[];
+}
+/**
+ * Per-generator progress event.
+ *
+ * Emitted by `generate()` (when `onProgress` is provided) for each
+ * generator in the config, covering the full lifecycle:
+ *
+ *   active → progress → done/failed/skipped
+ *
+ * Use TypeScript's discriminated union on `phase` to narrow the event type.
+ *
+ * @example
+ * generate(config, {
+ *   onProgress(event) {
+ *     switch (event.phase) {
+ *       case 'active':   renderer.setActive(event.index); break
+ *       case 'progress': renderer.setProgress(event.index, event.progress, event.message); break
+ *       case 'done':     renderer.setDone(event.index); break
+ *       case 'skipped':  renderer.setSkipped(event.index); break
+ *       case 'failed':   renderer.setFailed(event.index, event.error); break
+ *     }
+ *   }
+ * })
+ */
+export type GeneratorProgressEvent = {
+	/** 0-based index in config.generator[] */
+	index: number;
+} & ({
+	phase: "active";
+} | {
+	phase: "progress";
+	/** 0–100 percentage */
+	progress: number;
+	/** Human-readable stage (e.g. 'parsing openapi document') */
+	message: string;
+	/** Source of the progress event. `'core'` for the framework lifecycle, otherwise the plugin name. */
+	source?: string;
+} | {
+	phase: "done"; /** The actual URL that was successfully parsed (may differ from config.input) */
+	resolvedInput?: string;
+} | {
+	phase: "skipped"; /** The actual URL that was successfully parsed (may differ from config.input) */
+	resolvedInput?: string;
+} | {
+	phase: "failed";
+	error: string;
+});
 export interface GenerateApiOptions {
 	force?: boolean;
 	projectPath?: string;
-	/**
-	 * Receive throttled progress snapshots while generation is running.
-	 * The snapshot maps each progress source (the literal `'core'` for the framework lifecycle,
-	 * or a plugin's `name`) to its latest reported progress.
-	 */
-	onProgress?: (snapshot: Record<string, GenerateProgress>) => void;
-	/**
-	 * Throttle interval in milliseconds for `onProgress`. Defaults to `500`.
-	 * Values <= 0 disable throttling and emit on every update.
-	 */
-	progressInterval?: number;
+	/** Per-generator lifecycle callback. Receives a discriminated union of {@link GeneratorProgressEvent}. */
+	onProgress?: (event: GeneratorProgressEvent) => void;
 }
 export type TemplatePreset = "alova" | "alovaGlobals" | "axios" | "fetch" | "ky";
 export interface ConfigCreationOptions {
@@ -410,9 +430,13 @@ export declare function defineConfig(config: UserConfigFnPromise): UserConfigFnP
 export declare function defineConfig(config: UserConfigFn): UserConfigFn;
 export declare function defineConfig(config: UserConfigExport): UserConfigExport;
 /**
- * Generate relevant API information based on the configuration object. Generally, it needs to be used with `readConfig()`.
+ * Generate relevant API information based on the configuration object.
+ *
+ * When `options.onProgress` is provided, each generator independently reports
+ * its lifecycle via {@link GeneratorProgressEvent} discriminated union events.
+ *
  * @param config generating config
- * @param options config rules that contains `force`, `projectPath`, `onProgress`, `progressInterval`
+ * @param options config rules that contains `force`, `projectPath`, `onProgress`
  * @returns An array that contains the result of `generator` items in configuration whether generation is successful.
  */
 export declare function generate(config: Config, options?: GenerateApiOptions): Promise<boolean[]>;

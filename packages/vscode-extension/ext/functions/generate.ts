@@ -1,4 +1,4 @@
-import type { GenerateProgress } from '@alova/wormhole'
+import type { GeneratorProgressEvent } from '@alova/wormhole'
 import type Error from '@/components/error'
 import { updateLoadingProgress } from '@/commands/statusBar'
 import Global from '@/core/Global'
@@ -8,7 +8,7 @@ export interface GenerateOption {
   force?: boolean
   projectPath?: string
   showError?: boolean
-  onProgress?: (snapshot: Record<string, GenerateProgress>) => void
+  onProgress?: (event: GeneratorProgressEvent) => void
 }
 
 export default async (option?: GenerateOption) => {
@@ -21,18 +21,19 @@ export default async (option?: GenerateOption) => {
     ? allEntries.filter(([p]) => p === projectPathValue)
     : allEntries
 
-  const progressSnapshots: Record<string, Record<string, GenerateProgress>> = {}
-
+  // Per-project per-generator progress tracking
+  const progressMap = new Map<string, Map<number, number>>()
   function mergeAndReport() {
-    const all: Record<string, GenerateProgress> = {}
-    for (const snap of Object.values(progressSnapshots)) {
-      Object.assign(all, snap)
+    let total = 0
+    let count = 0
+    for (const genMap of progressMap.values()) {
+      for (const p of genMap.values()) {
+        total += p
+        count++
+      }
     }
-    onProgress?.(all)
-    const values = Object.values(all)
-    if (values.length > 0) {
-      const avg = values.reduce((sum, p) => sum + p.progress, 0) / values.length
-      updateLoadingProgress(avg)
+    if (count > 0) {
+      updateLoadingProgress(total / count)
     }
   }
 
@@ -41,15 +42,20 @@ export default async (option?: GenerateOption) => {
       continue
     }
     try {
-      progressSnapshots[projectPath] = {}
+      progressMap.set(projectPath, new Map())
       const generateResult = await wormhole.generate(config, {
         force,
         projectPath,
-        onProgress(snapshot) {
-          progressSnapshots[projectPath] = snapshot
+        onProgress(event) {
+          const genMap = progressMap.get(projectPath)!
+          if (event.phase === 'progress') {
+            genMap.set(event.index, event.progress)
+          } else if (event.phase === 'done' || event.phase === 'skipped') {
+            genMap.set(event.index, 100)
+          }
+          onProgress?.(event)
           mergeAndReport()
         },
-        progressInterval: 500,
       })
       resultArr.push([projectPath, generateResult?.some(item => !!item)])
     }

@@ -4,6 +4,28 @@ export type ProgressListener = (snapshot: Record<string, GenerateProgress>) => v
 
 export const CORE_PROGRESS_SOURCE = 'core'
 
+/**
+ * Named stages for the generator lifecycle.
+ * These are used by the CLI renderer to display human-readable progress stages.
+ */
+export const GeneratorStage = {
+  INIT: 'init',
+  BEFORE_OPENAPI_PARSE: 'beforeOpenapiParse',
+  PARSE_OPENAPI: 'parseOpenapi',
+  OPENAPI_PARSED: 'openapiParsed',
+  TEMPLATE_LOADED: 'templateLoaded',
+  TEMPLATE_DATA_PARSED: 'templateDataParsed',
+  BEFORE_CODE_GENERATE: 'beforeCodeGenerate',
+  PROCESS_TEMPLATES: 'processTemplates',
+  WRITE_FILES: 'writeFiles',
+  CODE_GENERATED: 'codeGenerated',
+  COMPLETED: 'completed',
+  FAILED: 'failed',
+  SKIPPED: 'skipped',
+} as const
+
+export type GeneratorStage = (typeof GeneratorStage)[keyof typeof GeneratorStage]
+
 export class ProgressTracker {
   private snapshot: Record<string, GenerateProgress> = {}
   private dirty = false

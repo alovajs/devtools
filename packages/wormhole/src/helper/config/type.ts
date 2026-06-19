@@ -31,6 +31,10 @@ export interface GenerateProgress {
    * Optional human-readable status message.
    */
   message?: string
+  /**
+   * Optional named lifecycle stage. Used by the CLI to display human-readable progress.
+   */
+  stage?: string
 }
 
 /**

@@ -65,7 +65,7 @@ export default defineConfig({
       plugins: [axios(), platform('swagger')],
     },
     {
-      input: 'swagger.json',
+      input: ['swagger.json'],
       output: 'src/apiFetch',
       plugins: [fetch(), platform('swagger')],
     },

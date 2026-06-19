@@ -9,14 +9,15 @@ const baseConfig = {
 }
 
 /**
- * 验证配置参数合法（通过校验后进入文件读取阶段，抛出 "Cannot read file" 错误）
+ * 验证配置参数合法（通过校验后进入文件读取阶段，不再抛出运行时错误）
+ * `generate()` now catches per-generator runtime errors and returns `false` instead of throwing.
+ * This helper asserts that config-level validation passed (result is an array).
  */
-async function expectConfigValid(generatorOverrides: Partial<GeneratorConfig> = {}, throwText?: string) {
-  await expect(
-    generate({
-      generator: [{ ...baseConfig, ...generatorOverrides }],
-    }),
-  ).rejects.toThrow(throwText || 'fetch failed')
+async function expectConfigValid(generatorOverrides: Partial<GeneratorConfig> = {}) {
+  const result = await generate({
+    generator: [{ ...baseConfig, ...generatorOverrides }],
+  })
+  expect(Array.isArray(result)).toBe(true)
 }
 
 describe('validate config', () => {
@@ -45,17 +46,16 @@ describe('validate config', () => {
       ).rejects.toThrow('Field output is required in `config.generator`')
     })
 
-    it('should throw error when no plugin provides getTemplate', async () => {
-      await expect(
-        generate({
-          generator: [
-            {
-              input: resolve(__dirname, './openapis/openapi_300.yaml'),
-              output: './src/api',
-            },
-          ],
-        } as any),
-      ).rejects.toThrow('No template configured')
+    it('should return false when no plugin provides getTemplate', async () => {
+      const result = await generate({
+        generator: [
+          {
+            input: resolve(__dirname, './openapis/openapi_300.yaml'),
+            output: './src/api',
+          },
+        ],
+      } as any)
+      expect(result).toEqual([false])
     })
 
     it('should accept input as an array of strings', async () => {
@@ -426,18 +426,17 @@ describe('validate config', () => {
   })
 
   describe('file not found', () => {
-    it('should throw error when generating from a file that does not exists', async () => {
-      await expect(
-        generate({
-          generator: [
-            {
-              input: 'http://localhost:3000/openapi.json',
-              output: './src/api',
-              plugins: [{getTemplate: () => ({path: ''})}],
-            },
-          ],
-        }),
-      ).rejects.toThrow('fetch failed')
+    it('should return false when generating from a file that does not exist (runtime error caught)', async () => {
+      const result = await generate({
+        generator: [
+          {
+            input: 'http://localhost:3000/openapi.json',
+            output: './src/api',
+            plugins: [{getTemplate: () => ({path: ''})}],
+          },
+        ],
+      })
+      expect(result).toEqual([false])
     })
   })
 })

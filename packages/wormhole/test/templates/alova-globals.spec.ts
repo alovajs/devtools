@@ -9,18 +9,17 @@ vi.mock('node:fs')
 vi.mock('node:fs/promises')
 const getSalt = () => `_${Math.random().toString(36).slice(2)}`
 describe('generate API', () => {
-  it('should throw error when generating from a file that does not exists', async () => {
-    await expect(
-      generate({
-        generator: [
-          {
-            plugins: [alovaGlobals()],
-            input: 'http://localhost:3000/openapi.json',
-            output: './src/api',
-          },
-        ],
-      }),
-    ).rejects.toThrow('fetch failed')
+  it('should return false when generating from a file that does not exist (runtime error caught)', async () => {
+    const result = await generate({
+      generator: [
+        {
+          plugins: [alovaGlobals()],
+          input: 'http://localhost:3000/openapi.json',
+          output: './src/api',
+        },
+      ],
+    })
+    expect(result).toEqual([false])
   })
 
   it('should generate code with a variant of openapi file formats', {

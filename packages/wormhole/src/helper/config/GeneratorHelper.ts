@@ -3,6 +3,7 @@ import type { ApiPlugin, GeneratorConfig, TemplateType } from '@/type'
 import path from 'node:path'
 import { fromError } from 'zod-validation-error'
 import { ConfigTypeEnum, TemplateTypeEnum } from '@/constant'
+import { getOpenApiDataWithUrl } from '@/core/parser/openApiParser/helper'
 import { openApiParser, TemplateParser } from '@/core/parser'
 import { computePerTagHashes, diffChangedTags, getCacheEntry } from '@/functions/alovaJson'
 import getAutoTemplateType from '@/functions/getAutoTemplateType'
@@ -140,6 +141,13 @@ export class GeneratorHelper {
     })
   }
 
+  static async openApiDataWithUrl(config: GeneratorConfig, projectPath: string) {
+    return getOpenApiDataWithUrl(config.input!, {
+      projectPath,
+      fetchOptions: config.fetchOptions,
+    })
+  }
+
   static async generate(
     config: GeneratorConfig,
     { projectPath, force, tracker }: {
@@ -147,7 +155,7 @@ export class GeneratorHelper {
       force?: boolean
       tracker?: ProgressTracker
     },
-  ) {
+  ): Promise<{ success: boolean; resolvedInput?: string }> {
     const reporter = (plugin: ApiPlugin) =>
       tracker?.reporterFor(plugin.name ?? 'plugin') ?? noopReportProgress
     const pluginDriver = new PluginDriver(config.plugins, { reporter })
@@ -171,11 +179,13 @@ export class GeneratorHelper {
     }))
 
     reportCore(20, 'parsing openapi document')
-    let document = await this.openApiData(config, projectPath)
+    const openApiResult = await this.openApiDataWithUrl(config, projectPath)
+    let document = openApiResult.data
+    const resolvedInput = openApiResult.resolvedUrl
     if (!document) {
       logger.debug('No OpenAPI document found, skipping generation')
       reportCore(100, 'skipped: no openapi document')
-      return false
+      return { success: false, resolvedInput }
     }
 
     logger.debug('OpenAPI document parsed successfully')
@@ -262,7 +272,7 @@ export class GeneratorHelper {
         if (oldEntry.hash === newHashInfo.hash) {
           logger.debug('Template data unchanged (hash match), skipping generation')
           reportCore(100, 'skipped: template data unchanged')
-          return false
+          return { success: false, resolvedInput }
         }
         // Compute which tags changed for incremental rendering
         changedTags = diffChangedTags(oldEntry.tags, newHashInfo.tags)
@@ -346,7 +356,7 @@ export class GeneratorHelper {
       throw codeGenError
     }
 
-    return true
+    return { success: true, resolvedInput }
   }
 }
 

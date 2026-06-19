@@ -14,7 +14,7 @@ program
   .command('init')
   .description('init a configuration file')
   .addOption(new Option('-t, --type <type>', 'type of configuration').choices([TemplateTypeEnum.TYPESCRIPT, ConfigTypeEnum.TS, TemplateTypeEnum.COMMONJS, TemplateTypeEnum.MODULE]))
-  .addOption(new Option('-T, --template <template>', 'template preset to use').choices([PresetTemplateName.ALOVA, 'functional', PresetTemplateName.AXIOS, PresetTemplateName.FETCH, PresetTemplateName.KY]).default(PresetTemplateName.ALOVA))
+  .addOption(new Option('-T, --template <template>', 'template preset to use').choices([PresetTemplateName.ALOVA, PresetTemplateName.AXIOS, PresetTemplateName.FETCH, PresetTemplateName.KY]))
   .option('-p, --project <path>', 'project directory')
   .action(actionInit)
 
