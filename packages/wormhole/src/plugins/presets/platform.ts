@@ -18,18 +18,20 @@ function resolvePlatformUrls(baseUrl: string, platformType: PlatformType): strin
     case 'swagger':
       // Try OAS3 first, then Swagger2, then generic openapi.json
       return [
-        `${base}/api/v3/openapi.json`,
-        `${base}/v2/swagger.json`,
         `${base}/openapi.json`,
+        `${base}/v2/swagger.json`,
+        `${base}/api/v3/openapi.json`,
+        baseUrl
       ]
     case 'knife4j':
       // Try OAS3 first (springdoc), then Swagger2 (springfox)
       return [
         `${base}/v3/api-docs`,
         `${base}/v2/api-docs`,
+        baseUrl,
       ]
     case 'fastapi':
-      return [`${base}/openapi.json`]
+      return [`${base}/openapi.json`, baseUrl]
     case 'yapi':
       // YApi requires pid and token in URL, use input as-is
       return [baseUrl]
@@ -63,11 +65,13 @@ export function platform(platformType: PlatformType): ApiPlugin {
   return {
     name: PluginName.PLATFORM,
     config({ config }) {
-      const baseUrl = config.input as string
-      if (baseUrl) {
-        const urls = resolvePlatformUrls(baseUrl, platformType)
-        config.input = urls
-      }
+      const raw = config.input
+      if (!raw) return config
+
+      // Normalize to an array of base URLs, deduplicate
+      const inputs = Array.isArray(raw) ? [...new Set(raw)] : [raw]
+      // For each input, generate platform URLs, then flatten
+      config.input = inputs.flatMap(url => resolvePlatformUrls(url, platformType))
       return config
     },
   }

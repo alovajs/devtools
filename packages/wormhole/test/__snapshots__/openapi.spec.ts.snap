@@ -2,7 +2,7 @@
 
 exports[`createConfig API > should create alova.config 1`] = `
 "import { defineConfig } from '@alova/wormhole';
-import { alova } from '@alova/wormhole/plugin';
+import { platform, alova } from '@alova/wormhole/plugin';
 
 // For more config detailed visit:
 // https://alova.js.org/tutorial/getting-started/extension-integration
@@ -25,9 +25,10 @@ export default defineConfig({
       output: 'src/api',
 
       /**
-       * template preset plugin for code generation.
+       * platform plugin: auto-resolves OpenAPI file URLs from platform type.
+       * Uses config.input as base URL to construct candidate OpenAPI endpoints.
        */
-      plugins: [alova()]
+      plugins: [platform('swagger'), alova()]
 
       /**
        * the mediaType of the generated response data. default is \`application/json\`

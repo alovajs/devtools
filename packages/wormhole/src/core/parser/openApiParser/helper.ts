@@ -112,7 +112,7 @@ function isValidOpenApiData(data: any): boolean {
 const isRemoteUrl = (u: string) => /^https?:\/\//.test(u)
 
 /**
- * Try each URL in order, dispatching to the appropriate local/remote parser.
+ * Try local files sequentially (they're instant), then race remote URLs concurrently.
  * Returns the first successful result; throws if all URLs fail.
  */
 async function tryUrls(
@@ -120,20 +120,36 @@ async function tryUrls(
   options: { projectPath?: string; fetchOptions?: FetchOptions },
 ): Promise<any> {
   const { projectPath, fetchOptions } = options
-  const errors: string[] = []
+  const localUrls = urls.filter(u => !isRemoteUrl(u))
+  const remoteUrls = urls.filter(isRemoteUrl)
 
-  for (const u of urls) {
+  // Local files: try sequentially (fast)
+  for (const u of localUrls) {
     try {
-      const data = isRemoteUrl(u)
-        ? await parseRemoteFile(u, fetchOptions)
-        : await parseLocalFile(u, projectPath)
-      return data
+      return await parseLocalFile(u, projectPath)
+    }
+    catch { /* continue */ }
+  }
+
+  // Remote URLs: race concurrently, use the fastest valid response
+  if (remoteUrls.length > 0) {
+    const tasks = remoteUrls.map(u =>
+      parseRemoteFile(u, fetchOptions).catch((err) => {
+        throw new Error(`${u}: ${err instanceof Error ? err.message : String(err)}`)
+      }),
+    )
+    try {
+      return await Promise.any(tasks)
     }
     catch (err) {
-      errors.push(`${u}: ${err instanceof Error ? err.message : String(err)}`)
+      const errors = (err instanceof AggregateError)
+        ? err.errors.map((e: any) => e.message)
+        : [(err as Error).message]
+      throw logger.throwError(`Unable to retrieve valid OpenAPI document from any URL:\n${errors.join('\n')}`)
     }
   }
-  throw logger.throwError(`Unable to retrieve valid OpenAPI document from any URL:\n${errors.join('\n')}`)
+
+  throw logger.throwError('No URLs provided to fetch OpenAPI document')
 }
 
 // Parse openapi files

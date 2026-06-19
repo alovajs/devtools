@@ -1,5 +1,5 @@
 import { defineConfig } from '@alova/wormhole'
-import { aiDoc, alova, alovaGlobals, axios, fetch, ky } from '@alova/wormhole/plugin'
+import { aiDoc, alova, alovaGlobals, axios, fetch, ky, platform } from '@alova/wormhole/plugin'
 
 // For more config detailed visit:
 // https://alova.js.org/tutorial/getting-started/extension-integration
@@ -14,12 +14,6 @@ export default defineConfig({
        */
       input: 'swagger.json',
 
-      /**
-       * input file platform. Currently only swagger is supported.
-       * When this parameter is specified, the input field only needs to specify the document address without specifying the openapi file
-       */
-      platform: 'swagger',
-
       docComment: false,
 
       /**
@@ -28,7 +22,7 @@ export default defineConfig({
        */
       output: 'src/apiAlovaGlobals',
 
-      plugins: [alovaGlobals()],
+      plugins: [aiDoc(), alovaGlobals(), platform('swagger')],
 
       /**
        * the mediaType of the generated response data. default is `application/json`
@@ -60,29 +54,25 @@ export default defineConfig({
     },
     {
       input: 'swagger.json',
-      platform: 'swagger',
       output: 'src/apiAlovaFunctional',
       serverName: 'functional',
-      plugins: [aiDoc(), alova()],
+      plugins: [aiDoc(), alova(), platform('swagger')],
     },
     {
       input: 'swagger.json',
-      platform: 'swagger',
       output: 'src/apiAxios',
       type: 'module',
-      plugins: [axios()],
+      plugins: [axios(), platform('swagger')],
     },
     {
       input: 'swagger.json',
-      platform: 'swagger',
       output: 'src/apiFetch',
-      plugins: [fetch()],
+      plugins: [fetch(), platform('swagger')],
     },
     {
       input: 'swagger.json',
-      platform: 'swagger',
       output: 'src/apiKy',
-      plugins: [ky()],
+      plugins: [ky(), platform('swagger')],
     },
   ],
 })

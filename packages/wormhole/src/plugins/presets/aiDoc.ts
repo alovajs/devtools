@@ -1,5 +1,4 @@
 import type { ApiPlugin, TemplateData } from '@/type'
-import { execSync } from 'node:child_process'
 import path from 'node:path'
 import { PluginName, PresetTemplateName } from '@/constant'
 import { TemplateHelper } from '@/helper/template'
@@ -8,12 +7,10 @@ import { getPresetTemplatePath } from '@/template'
 export interface AiDocConfig {
   template?: string
   outputDir?: string
-  install?: boolean
 }
 
 export function aiDoc(config?: AiDocConfig): ApiPlugin {
   const outputDirName = config?.outputDir ?? 'aidocs'
-  const install = config?.install ?? true
   const customTemplatePath = config?.template
 
   let capturedOutput = ''
@@ -72,20 +69,7 @@ export function aiDoc(config?: AiDocConfig): ApiPlugin {
       }
 
       await templateHelper.generateFromTemplateDir(templatePath, aidocsDir, renderData as TemplateData)
-
-      if (install) {
-        tryInstallSkill(aidocsDir)
-      }
     },
-  }
-}
-
-function tryInstallSkill(aidocsDir: string): void {
-  try {
-    execSync(`skills add ${aidocsDir}`, { stdio: 'ignore' })
-  }
-  catch {
-    // skills CLI not installed or unavailable — silently skip
   }
 }
 

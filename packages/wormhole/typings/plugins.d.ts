@@ -123,7 +123,7 @@ export interface ApiPlugin {
 	beforeFileWrite?: (params: BeforeFileWriteHookParams) => MaybePromise<string>;
 	/**
 	 * Called after ALL files have been written to disk.
-	 * Used for post-processing e.g. installing skills, displaying notifications.
+	 * Used for post-processing e.g. generating additional documentation, displaying notifications.
 	 * The `filePaths` array contains all generated file paths (no content).
 	 */
 	codeGenerated?: (params: CodeGeneratedHookParams) => MaybePromise<void>;
@@ -399,7 +399,6 @@ export declare function createPlugin<T extends any[]>(plugin: (...args: T) => Ap
 export interface AiDocConfig {
 	template?: string;
 	outputDir?: string;
-	install?: boolean;
 }
 export declare function aiDoc(config?: AiDocConfig): ApiPlugin;
 export type ScopeType = "ALL" | "SELECTED_ENDPOINTS" | "SELECTED_TAGS" | "SELECTED_FOLDERS";

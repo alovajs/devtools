@@ -102,7 +102,7 @@ describe('plugins/aiDoc', () => {
     })
 
     it('codeGenerated should do nothing on error', async () => {
-      const plugin = aiDoc({ install: false })
+      const plugin = aiDoc()
       plugin.config?.({
         config: {
           output: 'src/api',
@@ -122,7 +122,7 @@ describe('plugins/aiDoc', () => {
     })
 
     it('codeGenerated should do nothing if no template data', async () => {
-      const plugin = aiDoc({ install: false })
+      const plugin = aiDoc()
       plugin.config?.({
         config: {
           output: './nonexistent',
@@ -142,7 +142,7 @@ describe('plugins/aiDoc', () => {
     })
 
     it('codeGenerated should generate SKILL.md and reference files via template engine', async () => {
-      const plugin = aiDoc({ install: false })
+      const plugin = aiDoc()
       const outputPath = 'src/api'
       const cfg: any = {
         output: outputPath,
@@ -243,7 +243,7 @@ describe('plugins/aiDoc', () => {
     })
 
     it('should respect custom outputDir option', async () => {
-      const plugin = aiDoc({ outputDir: 'custom-docs', install: false })
+      const plugin = aiDoc({ outputDir: 'custom-docs' })
       const outputPath = 'src/api2'
       const cfg: any = {
         output: outputPath,
@@ -296,7 +296,7 @@ describe('plugins/aiDoc', () => {
     })
 
     it('should use title as serverName when serverName not provided', async () => {
-      const plugin = aiDoc({ install: false })
+      const plugin = aiDoc()
       const outputPath = 'src/api3'
       const cfg: any = {
         output: outputPath,
@@ -348,7 +348,7 @@ describe('plugins/aiDoc', () => {
     })
 
     it('should show file location in reference docs', async () => {
-      const plugin = aiDoc({ install: false })
+      const plugin = aiDoc()
       const outputPath = 'src/api4'
       const cfg: any = {
         output: outputPath,
@@ -413,7 +413,7 @@ describe('plugins/aiDoc', () => {
     it('should not break generation when used as a plugin', async () => {
       const { apiDefinitionsFile, globalsFile } = await generateWithPlugin(
         resolve(__dirname, '../openapis/openapi_301.json'),
-        [aiDoc({ install: false })],
+        [aiDoc()],
       )
 
       expect(apiDefinitionsFile).not.toBeUndefined()
@@ -424,7 +424,7 @@ describe('plugins/aiDoc', () => {
       const { importType } = await import('@/plugins/presets/importType')
       const { globalsFile } = await generateWithPlugin(
         resolve(__dirname, '../openapis/openapi_301.json'),
-        [aiDoc({ install: false }), importType({ '@/models': ['User'] })],
+        [aiDoc(), importType({ '@/models': ['User'] })],
       )
 
       expect(globalsFile).toMatch('declare global')

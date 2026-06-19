@@ -52,8 +52,8 @@ export const showStatusBarActions: CommandType = {
   commandId: Commands.status_bar_show_actions,
   handler: () => async () => {
     const actions: ActionItem[] = [
-      { label: 'Create config file', action: 'createConfig' },
-      { label: 'Generate apis', action: 'generateApis' },
+      { label: '$(zap) Generate APIs', action: 'generateApis' },
+      { label: '$(new-file) Create config file', action: 'createConfig' },
     ]
 
     const picked = await window.showQuickPick(actions, {

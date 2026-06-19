@@ -211,7 +211,7 @@ export interface ApiPlugin {
 	beforeFileWrite?: (params: BeforeFileWriteHookParams) => MaybePromise<string>;
 	/**
 	 * Called after ALL files have been written to disk.
-	 * Used for post-processing e.g. installing skills, displaying notifications.
+	 * Used for post-processing e.g. generating additional documentation, displaying notifications.
 	 * The `filePaths` array contains all generated file paths (no content).
 	 */
 	codeGenerated?: (params: CodeGeneratedHookParams) => MaybePromise<void>;

@@ -15,12 +15,12 @@ const requireResult = new Map<string, any>()
 // Patch Module._resolveFilename so paths we pre-populate in Module._cache
 // resolve without filesystem access. Falls back to the original resolver.
 const originalResolveFilename = (Module as any)._resolveFilename
-;(Module as any)._resolveFilename = function patchedResolveFilename(request: string, ...rest: any[]) {
-  if ((Module as any)._cache && (Module as any)._cache[request]) {
-    return request
+  ; (Module as any)._resolveFilename = function patchedResolveFilename(request: string, ...rest: any[]) {
+    if ((Module as any)._cache && (Module as any)._cache[request]) {
+      return request
+    }
+    return originalResolveFilename.call(this, request, ...rest)
   }
-  return originalResolveFilename.call(this, request, ...rest)
-}
 
 // Mock esbuild so build() operates entirely in-memory:
 // - reads entry source from the memfs-mocked fs
@@ -66,7 +66,7 @@ vi.mock('esbuild', async () => {
               return JSON.parse(data)
             return data
           }
-          catch {}
+          catch { }
         }
         throw new Error(`Cannot find module '${spec}'`)
       }
@@ -80,7 +80,7 @@ vi.mock('esbuild', async () => {
     fn(moduleObj, moduleObj.exports, customRequire, entryPoint, projectDir)
 
     // Persist a stub bundle into memfs so any later unlink works against memfs.
-    await fs.mkdir(dirname(outfile), { recursive: true }).catch(() => {})
+    await fs.mkdir(dirname(outfile), { recursive: true }).catch(() => { })
     await fs.writeFile(outfile, transformed.code, 'utf-8')
 
     // Pre-populate Node require cache so `require(outfile)` returns the captured
@@ -89,7 +89,7 @@ vi.mock('esbuild', async () => {
     cached.filename = outfile
     cached.loaded = true
     cached.exports = moduleObj.exports
-    ;(Module as any)._cache[outfile] = cached
+      ; (Module as any)._cache[outfile] = cached
     return { errors: [], warnings: [], outputFiles: [] } as any
   }
   return {
@@ -116,15 +116,15 @@ function expectConfigEqual(actual: Config, expected: Config) {
     expect(actualRest).toEqual(expectedRest)
     expect(Array.isArray(actualPlugins)).toBe(true)
     expect(Array.isArray(expectedPlugins)).toBe(true)
-    expect(actualPlugins.length).toBe(expectedPlugins.length)
+    expect(actualPlugins?.length).toBe(expectedPlugins?.length)
   })
 }
 
 const configMap: Record<string, { file: string, content: string, expectedConfig: Config, transformContent?: string }>
   = {
-    ts: {
-      file: 'alova.config.ts',
-      content: `import type { Config } from '@alova/wormhole';
+  ts: {
+    file: 'alova.config.ts',
+    content: `import type { Config } from '@alova/wormhole';
 import pkg from './package.json';
 export default <Config>{
   generator: [
@@ -136,23 +136,23 @@ export default <Config>{
     }
   ]
 }`,
-      expectedConfig: {
-        generator: [
-          {
-            input: 'http://localhost:3000/alova-devtools',
-            output: 'src/api',
-            type: 'ts',
-            bodyMediaType: 'application/json',
-            responseMediaType: 'application/json',
-            defaultRequire: false,
-            plugins: [{ getTemplate() { return { path: '' }; } }],
-          },
-        ],
-      },
+    expectedConfig: {
+      generator: [
+        {
+          input: 'http://localhost:3000/alova-devtools',
+          output: 'src/api',
+          type: 'ts',
+          bodyMediaType: 'application/json',
+          responseMediaType: 'application/json',
+          defaultRequire: false,
+          plugins: [{ getTemplate() { return { path: '' }; } }],
+        },
+      ],
     },
-    tsWithoutImport: {
-      file: 'alova.config.ts',
-      content: `import type { Config } from '@alova/wormhole';
+  },
+  tsWithoutImport: {
+    file: 'alova.config.ts',
+    content: `import type { Config } from '@alova/wormhole';
 export default <Config>{
   generator: [
     {
@@ -163,23 +163,23 @@ export default <Config>{
     }
   ]
 }`,
-      expectedConfig: {
-        generator: [
-          {
-            input: 'http://localhost:3000/',
-            output: 'src/api',
-            type: 'ts',
-            bodyMediaType: 'application/json',
-            responseMediaType: 'application/json',
-            defaultRequire: false,
-            plugins: [{ getTemplate() { return { path: '' }; } }],
-          },
-        ],
-      },
+    expectedConfig: {
+      generator: [
+        {
+          input: 'http://localhost:3000/',
+          output: 'src/api',
+          type: 'ts',
+          bodyMediaType: 'application/json',
+          responseMediaType: 'application/json',
+          defaultRequire: false,
+          plugins: [{ getTemplate() { return { path: '' }; } }],
+        },
+      ],
     },
-    module: {
-      file: 'alova.config.js',
-      content: `import pkg from './package.json';
+  },
+  module: {
+    file: 'alova.config.js',
+    content: `import pkg from './package.json';
 export default {
   generator: [
     {
@@ -190,23 +190,23 @@ export default {
     }
   ]
 }`,
-      expectedConfig: {
-        generator: [
-          {
-            input: 'http://localhost:3000/alova-devtools',
-            output: 'src/api',
-            type: 'module',
-            bodyMediaType: 'application/json',
-            responseMediaType: 'application/json',
-            defaultRequire: false,
-            plugins: [{ getTemplate() { return { path: '' }; } }],
-          },
-        ],
-      },
+    expectedConfig: {
+      generator: [
+        {
+          input: 'http://localhost:3000/alova-devtools',
+          output: 'src/api',
+          type: 'module',
+          bodyMediaType: 'application/json',
+          responseMediaType: 'application/json',
+          defaultRequire: false,
+          plugins: [{ getTemplate() { return { path: '' }; } }],
+        },
+      ],
     },
-    commonjs: {
-      file: 'alova.config.js',
-      content: `const pkg = require('./package.json');
+  },
+  commonjs: {
+    file: 'alova.config.js',
+    content: `const pkg = require('./package.json');
 module.exports = {
   generator: [
     {
@@ -217,21 +217,21 @@ module.exports = {
     }
   ]
 }`,
-      expectedConfig: {
-        generator: [
-          {
-            input: 'http://localhost:3000/alova-devtools',
-            output: 'src/api',
-            type: 'commonjs',
-            bodyMediaType: 'application/json',
-            responseMediaType: 'application/json',
-            defaultRequire: false,
-            plugins: [{ getTemplate() { return { path: '' }; } }],
-          },
-        ],
-      },
+    expectedConfig: {
+      generator: [
+        {
+          input: 'http://localhost:3000/alova-devtools',
+          output: 'src/api',
+          type: 'commonjs',
+          bodyMediaType: 'application/json',
+          responseMediaType: 'application/json',
+          defaultRequire: false,
+          plugins: [{ getTemplate() { return { path: '' }; } }],
+        },
+      ],
     },
-  }
+  },
+}
 
 describe('config', () => {
   it('should create config file under project root path', async () => {
@@ -259,10 +259,10 @@ describe('config', () => {
       encoding: 'utf-8',
     })
     expect(initialTsConfig).toMatch(`import { defineConfig } from '@alova/wormhole';`)
-    expect(initialTsConfig).toMatch(`import { alova } from '@alova/wormhole/plugin';`)
+    expect(initialTsConfig).toMatch(`import { platform, alova } from '@alova/wormhole/plugin';`)
     expect(initialTsConfig).toMatch(`export default defineConfig({`)
     expect(initialTsConfig).toMatch(`input: 'http://localhost:3000',`)
-    expect(initialTsConfig).toMatch(`plugins: [alova()]`)
+    expect(initialTsConfig).toMatch(`[platform('swagger'), alova()]`)
 
     // generate commonjs file
     await fs.writeFile(resolve(process.cwd(), './package.json'), JSON.stringify({
@@ -283,9 +283,9 @@ describe('config', () => {
       encoding: 'utf-8',
     })
     expect(initialCjsConfig).toMatch(`const { defineConfig } = require('@alova/wormhole');`)
-    expect(initialCjsConfig).toMatch(`const { alova } = require('@alova/wormhole/plugin');`)
+    expect(initialCjsConfig).toMatch(`const { platform, alova } = require('@alova/wormhole/plugin');`)
     expect(initialCjsConfig).toMatch(`module.exports = defineConfig({`)
-    expect(initialCjsConfig).toMatch(`plugins: [alova()]`)
+    expect(initialCjsConfig).toMatch(`plugins: [platform('swagger'), alova()]`)
 
     // generate module file
     await fs.writeFile(resolve(process.cwd(), './package.json'), JSON.stringify({
@@ -304,9 +304,9 @@ describe('config', () => {
       encoding: 'utf-8',
     })
     expect(initialEsmoduleConfig).toMatch(`import { defineConfig } from '@alova/wormhole';`)
-    expect(initialEsmoduleConfig).toMatch(`import { alova } from '@alova/wormhole/plugin';`)
+    expect(initialEsmoduleConfig).toMatch(`import { platform, alova } from '@alova/wormhole/plugin';`)
     expect(initialEsmoduleConfig).toMatch(`export default defineConfig({`)
-    expect(initialEsmoduleConfig).toMatch(`plugins: [alova()]`)
+    expect(initialEsmoduleConfig).toMatch(`plugins: [platform('swagger'), alova()]`)
 
     // generate file with target type
     await createConfig({ type: 'typescript' })
@@ -314,10 +314,10 @@ describe('config', () => {
       encoding: 'utf-8',
     })
     expect(initialTypedConfig).toMatch(`import { defineConfig } from '@alova/wormhole';`)
-    expect(initialTypedConfig).toMatch(`import { alova } from '@alova/wormhole/plugin';`)
+    expect(initialTypedConfig).toMatch(`import { platform, alova } from '@alova/wormhole/plugin';`)
     expect(initialTypedConfig).toMatch(`export default defineConfig({`)
     expect(initialTypedConfig).toMatch(`input: 'http://localhost:3000',`)
-    expect(initialTypedConfig).toMatch(`plugins: [alova()]`)
+    expect(initialTypedConfig).toMatch(`plugins: [platform('swagger'), alova()]`)
   })
 
   it('should create config file with specified template preset', async () => {
@@ -335,15 +335,15 @@ describe('config', () => {
     const axiosConfig = await fs.readFile(resolve(process.cwd(), 'alova.config.ts'), {
       encoding: 'utf-8',
     })
-    expect(axiosConfig).toMatch(`import { axios } from '@alova/wormhole/plugin';`)
-    expect(axiosConfig).toMatch(`plugins: [axios()]`)
+    expect(axiosConfig).toMatch(`import { platform, axios } from '@alova/wormhole/plugin';`)
+    expect(axiosConfig).toMatch(`plugins: [platform('swagger'), axios()]`)
 
     await createConfig({ template: 'fetch' })
     const fetchConfig = await fs.readFile(resolve(process.cwd(), 'alova.config.ts'), {
       encoding: 'utf-8',
     })
-    expect(fetchConfig).toMatch(`import { fetch } from '@alova/wormhole/plugin';`)
-    expect(fetchConfig).toMatch(`plugins: [fetch()]`)
+    expect(fetchConfig).toMatch(`import { platform, fetch } from '@alova/wormhole/plugin';`)
+    expect(fetchConfig).toMatch(`plugins: [platform('swagger'), fetch()]`)
   })
 
   it('should create config file under a custom absolute path', async () => {
