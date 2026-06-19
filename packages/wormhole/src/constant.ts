@@ -99,6 +99,7 @@ export enum PluginName {
   IMPORT_TYPE = 'importType',
   AI_DOC = 'aiDoc',
   APIFOX = 'apifox',
+  PLATFORM = 'platform',
   TEMPLATE_ALOVA = 'templateAlova',
   TEMPLATE_ALOVA_GLOBALS = 'templateAlovaGlobals',
   TEMPLATE_AXIOS = 'templateAxios',

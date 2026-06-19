@@ -28,7 +28,7 @@ async function createConfig({ projectPath = '', type, template = PresetTemplateN
   type = type || await getAutoTemplateType(projectPath)
 
   const preset = TEMPLATE_PRESET_MAP[template]
-  const templatePath = getPresetTemplatePath(preset.presetName)
+  const templatePath = getPresetTemplatePath(PresetTemplateName.CONFIG)
   templateHelper.load({
     type,
     templatePath,

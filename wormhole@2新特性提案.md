@@ -816,6 +816,83 @@ alova gen -p ./packages/app
 - 生成过程加入 try/catch 错误处理，异常时正确终止 spinner 并显示错误信息
 - 非 workspace 模式的成功/失败提示不再显示 `undefined`，改为显示实际项目路径或 `.`
 
+# 平台插件（platform）
+
+## 背景
+
+原先的 `platform` 参数（swagger/knife4j/yapi）仅支持自动拼接 OpenAPI 文件地址，不够灵活。现改为 `platform` 插件，用户在 `plugins` 中传入一个 API 文档项目名称字符串，插件内部自动获取 `config.input`，根据平台规则拼接 OpenAPI 文件地址并赋值数组给 `config.input`，供后续流程依次尝试。
+
+## 使用方法
+
+```TypeScript
+import { defineConfig } from '@alova/wormhole';
+import { platform, alovaGlobals } from '@alova/wormhole/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      input: 'https://petstore3.swagger.io',
+      // 使用 platform 插件，传入平台类型
+      plugins: [platform('swagger'), alovaGlobals()],
+      output: './src/api',
+    }
+  ]
+});
+```
+
+## 支持的平台
+
+| 平台 / 技术栈 | Demo / UI 地址 | OpenAPI / Swagger 文件获取方式 |
+|---|---|---|
+| **Swagger Petstore (OAS 3.0)** | https://petstore3.swagger.io/ | GET `https://petstore3.swagger.io/api/v3/openapi.json` |
+| **Swagger Petstore (Swagger 2.0)** | https://petstore.swagger.io/ | GET `https://petstore.swagger.io/v2/swagger.json` |
+| **Spring Boot + Knife4j (OAS3 / springdoc)** | https://openapi3.demo.knife4jnext.com/doc.html | GET `https://openapi3.demo.knife4jnext.com/v3/api-docs` |
+| **Spring Boot + Knife4j (Swagger2 / springfox)** | http://knife4j.xiaominfo.com/doc.html | GET `http://knife4j.xiaominfo.com/v2/api-docs` |
+| **FastAPI** | http://fastapi-example.dokkuapp.com/docs | GET `http://fastapi-example.dokkuapp.com/openapi.json` |
+| **YApi** | http://yapi.demo.qunar.com/ 或 https://yapi.smart-xwork.cn/ | 无公开端点，需登录→项目→数据管理→导出 Swagger JSON；或用接口 `GET /api/open/plugin/export?type=swagger&pid={pid}&token={token}` |
+
+### 平台规则
+
+用户通过 `platform('<type>')` 传入平台类型字符串，插件内部使用 `config.input` 作为 API 文档项目 URL，根据平台类型自动拼接 OpenAPI 文件地址，赋值数组给 `config.input` 供后续依次尝试。
+
+| 平台类型 | 生成的 input 数组 |
+|----------|-------------------|
+| `'swagger'` | `['<input>/api/v3/openapi.json', '<input>/v2/swagger.json', '<input>/openapi.json']` |
+| `'knife4j'` | `['<input>/v3/api-docs', '<input>/v2/api-docs']` |
+| `'fastapi'` | `['<input>/openapi.json']` |
+| `'yapi'` | `['<input>']`（需包含 pid/token 参数） |
+
+## config.input 支持 string[]
+
+`config.input` 现在支持 `string | string[]`。当设置为数组时，将依次访问每个 URL，返回第一个成功返回的数据，不再继续尝试后续 URL。
+
+```TypeScript
+defineConfig({
+  generator: [
+    {
+      input: [
+        'https://primary-server.com/openapi.json',
+        'https://fallback-server.com/openapi.json',
+      ],
+      output: './src/api',
+      plugins: [alovaGlobals()],
+    }
+  ]
+});
+```
+
+> 注意：`platform` 参数已被移除，请使用 `platform` 插件替代。旧的 platform 参数将不再支持。
+
+## 内部实现
+
+`platform` 插件通过 `config` hook 修改 `config.input`：
+1. 接收用户传入的平台类型字符串（如 `'swagger'`）
+2. 从 `config.input` 读取 API 文档项目 URL
+3. 根据平台类型自动拼接生成 OpenAPI 文件 URL 数组
+4. 将数组赋值给 `config.input`
+
+核心解析逻辑在 `getOpenApiData` 中：当 `input` 为数组时，依次尝试每个 URL，返回第一个成功的结果。
+
 # 插件系统改进
 
 ## Hook 命名规范

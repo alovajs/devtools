@@ -2,7 +2,7 @@ import type { Config, SchemaObject } from '@/type'
 import fs from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { createConfig, generate } from '@/index'
-import { alovaGlobals } from '@/plugins'
+import { alovaGlobals, platform } from '@/plugins'
 import { createStrReg } from '../util'
 
 vi.mock('node:fs')
@@ -144,9 +144,8 @@ describe('generate API', () => {
     await generate({
       generator: [
         {
-          plugins: [alovaGlobals()],
+          plugins: [platform('swagger'), alovaGlobals()],
           input: 'https://generator3.swagger.io',
-          platform: 'swagger',
           output: outputDir2,
           type: 'ts',
         },
@@ -161,7 +160,7 @@ describe('generate API', () => {
     await generate({
       generator: [
         {
-          plugins: [alovaGlobals()],
+          plugins: [platform('swagger'), alovaGlobals()],
           input: 'https://generator3.swagger.io/v1.0/foo#ccc',
           fetchOptions: {
             method: 'POST',
@@ -170,7 +169,6 @@ describe('generate API', () => {
               bar: 2,
             },
           },
-          platform: 'swagger',
           output: outputDir3,
           type: 'ts',
         },
@@ -291,7 +289,7 @@ describe('generate API', () => {
           data: Category;
       }>(
         config: Config
-      ): Alova2Method<Tag, 'pet.pet24', Config>;`),
+      ): Alova2Method<Tag, 'Apis.pet.pet24', Config>;`),
     )
   })
 
@@ -547,7 +545,7 @@ describe('generate API', () => {
     expect(indexFile).toMatch('baseURL: \'\'')
     const apiDefinitionsFile = await fs.readFile(resolve(outputDir, 'apiDefinitions.ts'), 'utf-8')
     expect(apiDefinitionsFile).toMatch('\'Apis._24pet.pet24\': [\'POST\', \'/pet\']') // non-variable specification tag
-    expect(apiDefinitionsFile).toMatch('Apis.pet.put_pet\': [\'PUT\', \'/pet\']') // `operationId` is not defined
+    expect(apiDefinitionsFile).toMatch('\'Apis._24pet.put_pet\': [\'PUT\', \'/pet\']') // `operationId` is not defined
   })
 
   it('should classify the apis that have no tags to `general` tag', async () => {

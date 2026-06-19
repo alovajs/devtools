@@ -1,5 +1,5 @@
 import type { z } from 'zod/v3'
-import type { zConfigType, zPlatformType, zTemplateType } from './zType'
+import type { zConfigType, zTemplateType } from './zType'
 // import { ApiPlugin } from '@/type';
 import type { OpenAPIDocument, TemplateData } from '@/type'
 import type { ApiDescriptor } from '@/type/api'
@@ -12,10 +12,6 @@ export type ConfigType = z.infer<typeof zConfigType>
  * template type
  */
 export type TemplateType = z.infer<typeof zTemplateType>
-/**
- * platform type
- */
-export type PlatformType = z.infer<typeof zPlatformType> | (string & {}) // When using defineConfig, you need to match the PlatformType.
 
 export type MaybePromise<T> = T | Promise<T>
 
@@ -246,16 +242,18 @@ export interface PerformanceConfig {
 
 export interface GeneratorConfig {
   /**
-   * Openapi file path, it supports json and yaml file, and network url
+   * Openapi file path, it supports json and yaml file, and network url.
+   * Can be a single URL string or an array of URLs. When set to an array,
+   * each URL will be tried in order and the first successful response is returned.
    * @requires true
    *
    * @example
    * input: 'http://localhost:3000/openapi.json'
    * input: 'openapi/api.json' -> Take the current project as the local address of the relative directory
-   * input: 'http://192.168.5.123:8080' -> When it does not point to the openapi file, it must be used with the `platform` parameter
+   * input: ['https://primary.com/openapi.json', 'https://fallback.com/openapi.json'] -> Try each URL in order
    */
 
-  input?: string
+  input?: string | string[]
   // Fetch options used by remote OpenAPI retrieval (headers, timeout, insecure). See FetchOptions in '@/utils/base'.
   fetchOptions?: FetchOptions
   /**
@@ -270,12 +268,6 @@ export interface GeneratorConfig {
    * externalTypes: ['File', 'Blob', 'FormData', 'Pagination']
    */
   externalTypes?: string[]
-  /**
-   * Platforms that support openapi. Currently `swagger` are supported. The default is empty.
-   * When this parameter is specified, the input field only needs to specify the url of the document and doesn't need to be specified to the openapi file, reducing the usage threshold.
-   * @defualt undefined
-   */
-  platform?: PlatformType
 
   /**
    * The output path of the interface file and type file, multiple generators cannot have repeated addresses, otherwise the generated codes will cover each other, which is meaningless.

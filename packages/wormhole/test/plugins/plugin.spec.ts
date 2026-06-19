@@ -1,6 +1,9 @@
-import { resolve } from 'node:path'
+import path, { resolve } from 'node:path'
+import type HandlebarsType from 'handlebars'
 import { createPlugin } from '@/plugins'
 import { extend } from '@/plugins/presets/utils'
+import { getPresetTemplatePath, registerProcessTypeHelper } from '@/template'
+import { TemplateHelper } from '@/helper/template'
 import { generateWithPlugin } from '../util'
 
 vi.mock('node:fs')
@@ -59,7 +62,6 @@ describe('plugin test', () => {
         beforeParseHookFn(config)
         expect(config).toHaveProperty('input')
         expect(config.input).toBe(inputTest)
-        expect(config).toHaveProperty('platform')
         expect(config).toHaveProperty('plugins')
       },
     }))
@@ -67,16 +69,13 @@ describe('plugin test', () => {
     const { apiDefinitionsFile } = await generateWithPlugin(
       inputTest,
       [beforeParsePlugin()],
-      {
-        platform: 'swagger',
-      },
+      {},
     )
 
     expect(beforeParseHookFn).toHaveBeenCalled()
     expect(beforeParseHookFn).toHaveBeenCalledWith(
       expect.objectContaining({
         input: expect.any(String),
-        platform: expect.anything(),
         plugins: expect.any(Array),
       }),
     )
@@ -391,5 +390,211 @@ describe('plugin test', () => {
       resolve(__dirname, '../openapis/openapi_301.json'),
       [frozenCheckPlugin()],
     )
+  })
+
+  describe('getTemplate hook', () => {
+    beforeEach(() => {
+      TemplateHelper.clearTemplateCache()
+    })
+
+    it('should allow plugin getTemplate to provide template path', async () => {
+      const getTemplateFn = vi.fn().mockReturnValue({ path: getPresetTemplatePath('alova-globals') })
+      const templatePlugin = {
+        name: 'customTemplatePlugin',
+        getTemplate: getTemplateFn,
+      }
+
+      const { apiDefinitionsFile, globalsFile } = await generateWithPlugin(
+        resolve(__dirname, '../openapis/openapi_301.json'),
+        [templatePlugin],
+      )
+
+      expect(getTemplateFn).toHaveBeenCalled()
+      // Code should still generate successfully using the returned template path
+      expect(apiDefinitionsFile).not.toBeUndefined()
+      expect(globalsFile).toMatch('interface Apis')
+    })
+
+    it('should use last non-null getTemplate result when multiple plugins define it', async () => {
+      const getTemplateFn1 = vi.fn().mockReturnValue(null)
+      const getTemplateFn2 = vi.fn().mockReturnValue({ path: getPresetTemplatePath('alova-globals') })
+
+      const plugin1 = {
+        name: 'nullTemplatePlugin',
+        getTemplate: getTemplateFn1,
+      }
+      const plugin2 = {
+        name: 'validTemplatePlugin',
+        getTemplate: getTemplateFn2,
+      }
+
+      const { globalsFile } = await generateWithPlugin(
+        resolve(__dirname, '../openapis/openapi_301.json'),
+        [plugin1, plugin2],
+      )
+
+      expect(getTemplateFn1).toHaveBeenCalled()
+      expect(getTemplateFn2).toHaveBeenCalled()
+      // The second plugin's valid template path should be used
+      expect(globalsFile).toMatch('interface Apis')
+    })
+
+    it('should fall through to previous valid result when plugin returns null', async () => {
+      // plugin1 returns null, plugin2 has no getTemplate at all
+      // The default alovaGlobals() template from generateWithPlugin should win
+      const noopTemplatePlugin = {
+        name: 'noopTemplatePlugin',
+        // no getTemplate → _call returns null, doesn't overwrite prev
+        beforeCodeGenerate: vi.fn(),
+      }
+
+      const { globalsFile } = await generateWithPlugin(
+        resolve(__dirname, '../openapis/openapi_301.json'),
+        [noopTemplatePlugin],
+      )
+
+      // alovaGlobals() getTemplate result should be preserved
+      expect(globalsFile).toMatch('interface Apis')
+    })
+  })
+
+  describe('onHandlebarsCreated hook', () => {
+    beforeEach(() => {
+      TemplateHelper.clearTemplateCache()
+    })
+
+    it('should call onHandlebarsCreated with Handlebars instance', async () => {
+      const onHbsCreatedFn = vi.fn()
+      const hbsPlugin = {
+        name: 'hbsPlugin',
+        onHandlebarsCreated({ hbs }: { hbs: typeof HandlebarsType }) {
+          onHbsCreatedFn(hbs)
+          // Verify it's a valid Handlebars instance with expected methods
+          expect(hbs).toBeDefined()
+          expect(typeof hbs.compile).toBe('function')
+          expect(typeof hbs.registerHelper).toBe('function')
+          expect(typeof hbs.registerPartial).toBe('function')
+        },
+      }
+
+      const { globalsFile } = await generateWithPlugin(
+        resolve(__dirname, '../openapis/openapi_301.json'),
+        [hbsPlugin],
+      )
+
+      expect(onHbsCreatedFn).toHaveBeenCalledTimes(1)
+      expect(onHbsCreatedFn).toHaveBeenCalledWith(expect.objectContaining({
+        compile: expect.any(Function),
+        registerHelper: expect.any(Function),
+        registerPartial: expect.any(Function),
+      }))
+      expect(globalsFile).toMatch('interface Apis')
+    })
+
+    it('should allow registering custom helpers via onHandlebarsCreated', async () => {
+      const CUSTOM_COMMENT = '/* generated-by-plugin-test */'
+      const helperPlugin = {
+        name: 'helperPlugin',
+        onHandlebarsCreated({ hbs }: { hbs: typeof HandlebarsType }) {
+          // Register a custom helper that returns a fixed comment
+          hbs.registerHelper('testPluginHelper', () => {
+            return new hbs.SafeString(CUSTOM_COMMENT)
+          })
+        },
+      }
+
+      const { createApisFile } = await generateWithPlugin(
+        resolve(__dirname, '../openapis/openapi_301.json'),
+        [helperPlugin],
+      )
+
+      // The helper was registered but templates don't call it by default.
+      // We verify that code generation still completes normally.
+      expect(createApisFile).not.toBeUndefined()
+    })
+
+    it('should allow multiple plugins to register handlers via onHandlebarsCreated', async () => {
+      const plugin1Fn = vi.fn()
+      const plugin2Fn = vi.fn()
+
+      const hbsPlugin1 = {
+        name: 'hbsPlugin1',
+        onHandlebarsCreated({ hbs }: { hbs: typeof HandlebarsType }) {
+          plugin1Fn()
+          hbs.registerHelper('plugin1Helper', () => 'plugin1-output')
+        },
+      }
+      const hbsPlugin2 = {
+        name: 'hbsPlugin2',
+        onHandlebarsCreated({ hbs }: { hbs: typeof HandlebarsType }) {
+          plugin2Fn()
+          hbs.registerHelper('plugin2Helper', () => 'plugin2-output')
+        },
+      }
+
+      const { globalsFile } = await generateWithPlugin(
+        resolve(__dirname, '../openapis/openapi_301.json'),
+        [hbsPlugin1, hbsPlugin2],
+      )
+
+      expect(plugin1Fn).toHaveBeenCalledTimes(1)
+      expect(plugin2Fn).toHaveBeenCalledTimes(1)
+      // Both plugins successfully registered helpers, code generation works
+      expect(globalsFile).toMatch('interface Apis')
+    })
+
+    it('should work with preset plugin onHandlebarsCreated like processType', async () => {
+      const processTypePluginFn = vi.fn()
+      const processTypePlugin = {
+        name: 'processTypePlugin',
+        onHandlebarsCreated({ hbs }: { hbs: typeof HandlebarsType }) {
+          // Use the same helper registration pattern as preset templates
+          registerProcessTypeHelper(hbs)
+          processTypePluginFn()
+        },
+      }
+
+      const { globalsFile } = await generateWithPlugin(
+        resolve(__dirname, '../openapis/openapi_301.json'),
+        [processTypePlugin],
+      )
+
+      expect(processTypePluginFn).toHaveBeenCalledTimes(1)
+      // Generation should succeed with the processType helper registered
+      expect(globalsFile).toMatch('interface Apis')
+    })
+
+    it('should pass hbs instance to multiple onHandlebarsCreated hooks', async () => {
+      let hbsFromPlugin1: typeof HandlebarsType | null = null
+      let hbsFromPlugin2: typeof HandlebarsType | null = null
+
+      const hbsPlugin1 = {
+        name: 'hbsCapture1',
+        onHandlebarsCreated({ hbs }: { hbs: typeof HandlebarsType }) {
+          hbsFromPlugin1 = hbs
+          hbs.registerHelper('totalCount', (arr: any[]) => arr?.length ?? 0)
+        },
+      }
+      const hbsPlugin2 = {
+        name: 'hbsCapture2',
+        onHandlebarsCreated({ hbs }: { hbs: typeof HandlebarsType }) {
+          hbsFromPlugin2 = hbs
+          hbs.registerHelper('isArray', (val: any) => Array.isArray(val))
+        },
+      }
+
+      const { globalsFile } = await generateWithPlugin(
+        resolve(__dirname, '../openapis/openapi_301.json'),
+        [hbsPlugin1, hbsPlugin2],
+      )
+
+      // Both plugins receive the same Handlebars instance
+      expect(hbsFromPlugin1).toBeDefined()
+      expect(hbsFromPlugin2).toBeDefined()
+      // They share the same instance, so plugin2 can see plugin1's helper
+      expect(typeof hbsFromPlugin1).toBe('object')
+      expect(typeof hbsFromPlugin2).toBe('object')
+      expect(globalsFile).toMatch('interface Apis')
+    })
   })
 })

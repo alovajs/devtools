@@ -136,7 +136,6 @@ export class GeneratorHelper {
   static openApiData(config: GeneratorConfig, projectPath: string) {
     return openApiParser.parse(config.input!, {
       projectPath,
-      platformType: config.platform,
       fetchOptions: config.fetchOptions,
     })
   }

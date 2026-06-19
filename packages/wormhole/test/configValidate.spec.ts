@@ -1,4 +1,5 @@
 import type { GeneratorConfig } from '@/type'
+import { resolve } from 'node:path'
 import { generate } from '@/index'
 
 const baseConfig = {
@@ -49,12 +50,46 @@ describe('validate config', () => {
         generate({
           generator: [
             {
-              input: 'http://localhost:3000/openapi.json',
+              input: resolve(__dirname, './openapis/openapi_300.yaml'),
               output: './src/api',
             },
           ],
         } as any),
       ).rejects.toThrow('No template configured')
+    })
+
+    it('should accept input as an array of strings', async () => {
+      await expectConfigValid({
+        input: ['http://localhost:3000/openapi.json', 'http://localhost:3000/openapi.yaml'],
+      })
+    })
+
+    it('should throw error when input array is empty', async () => {
+      await expect(
+        generate({
+          generator: [
+            {
+              input: [] as any,
+              output: './src/api',
+              plugins: [{ getTemplate: () => ({ path: './template' }) }],
+            },
+          ],
+        }),
+      ).rejects.toThrow()
+    })
+
+    it('should throw error when input array contains non-string', async () => {
+      await expect(
+        generate({
+          generator: [
+            {
+              input: ['http://localhost:3000/openapi.json', 123] as any,
+              output: './src/api',
+              plugins: [{ getTemplate: () => ({ path: './template' }) }],
+            },
+          ],
+        }),
+      ).rejects.toThrow()
     })
   })
 

@@ -1,7 +1,5 @@
 import { defineConfig } from '@alova/wormhole';
-{{#if templateImport}}
-import { {{{templateImport}}} } from '@alova/wormhole/plugin';
-{{/if}}
+import { platform{{#if templateImport}}, {{{templateImport}}}{{/if}} } from '@alova/wormhole/plugin';
 
 // For more config detailed visit:
 // https://alova.js.org/tutorial/getting-started/extension-integration

@@ -4,14 +4,9 @@ generator: [
       * file input. support:
       * 1. openapi json file url
       * 2. local file
+      * 3. string array — each URL will be tried in order, first success wins
       */
     input: 'http://localhost:3000',
-
-    /**
-      * input file platform. Currently only swagger is supported.
-      * When this parameter is specified, the input field only needs to specify the document address without specifying the openapi file
-      */
-    platform: 'swagger',
 
     /**
       * output path of interface file and type file.
@@ -20,9 +15,10 @@ generator: [
     output: 'src/api',
 
     /**
-      * template preset plugin for code generation.
+      * platform plugin: auto-resolves OpenAPI file URLs from platform type.
+      * Uses config.input as base URL to construct candidate OpenAPI endpoints.
       */
-    plugins: [{{{templateCall}}}],
+    plugins: [platform('swagger'), {{{templateCall}}}],
 
     /**
       * the mediaType of the generated response data. default is `application/json`

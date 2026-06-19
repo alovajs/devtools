@@ -4,6 +4,7 @@ export * from './presets/apifox'
 export * from './presets/filterApi'
 export * from './presets/importType'
 export * from './presets/payloadModifier'
+export * from './presets/platform'
 export * from './presets/rename'
 export * from './presets/tagModifier'
 

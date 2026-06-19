@@ -11,10 +11,6 @@ export const zConfigType = z.enum(['auto', 'ts', 'typescript', 'module', 'common
  * template type
  */
 export const zTemplateType = z.enum(['typescript', 'module', 'commonjs'])
-/**
- * platform type
- */
-export const zPlatformType = z.enum(['swagger', 'knife4j', 'yapi'])
 
 export const zTemplateResult = z.object({
   path: z.string(),
@@ -42,19 +38,20 @@ export const zApiPlugin = z.object({
 
 export const _zGeneratorConfig = z.object({
   /**
-   * Openapi file path, it supports json and yaml file, and network url
+   * Openapi file path, it supports json and yaml file, and network url.
+   * Can be a single URL string or an array of URLs. When set to an array,
+   * each URL will be tried in order and the first successful response is returned.
    * @requires true
    *
    * @example
    * input: 'http://localhost:3000/openapi.json'
    * input: 'openapi/api.json' -> Take the current project as the local address of the relative directory
-   * input: 'http://192.168.5.123:8080' -> When it does not point to the openapi file, it must be used with the `platform` parameter
+   * input: ['https://primary.com/openapi.json', 'https://fallback.com/openapi.json'] -> Try each URL in order
    */
-  input: z
-    .string({
-      required_error: 'Field input is required in `config.generator`',
-    })
-    .nonempty('Field input is required in `config.generator`'),
+  input: z.union([z.string(), z.array(z.string())]).refine(
+    val => (typeof val === 'string' && val.length > 0) || (Array.isArray(val) && val.length > 0),
+    'Field input is required in `config.generator`',
+  ),
   // Fetch options used by remote OpenAPI retrieval (headers, timeout, insecure). See FetchOptions in '@/utils/base'.
   fetchOptions: zFetchOptions.optional(),
   /**
@@ -69,12 +66,6 @@ export const _zGeneratorConfig = z.object({
    * externalTypes: ['File', 'Blob', 'FormData', 'Pagination']
    */
   externalTypes: z.array(z.string()).optional(),
-  /**
-   * Platforms that support openapi. Currently `swagger` are supported. The default is empty.
-   * When this parameter is specified, the input field only needs to specify the url of the document and doesn't need to be specified to the openapi file, reducing the usage threshold.
-   * @defualt undefined
-   */
-  platform: zPlatformType.optional(),
   /**
    * The output path of the interface file and type file, multiple generators cannot have repeated addresses, otherwise the generated codes will cover each other, which is meaningless.
    * @requires true

@@ -11,8 +11,6 @@ describe('apifox preset plugin - config', () => {
   const baseInputConfig: GeneratorConfig = {
     input: 'dummy',
     output: 'xxx',
-    platform: 'swagger',
-    plugins: [],
     plugins: [alovaGlobals()],
   }
 
@@ -110,8 +108,8 @@ describe('apifox preset plugin - config', () => {
 
     expect(next1).toEqual(baseInputConfig)
     expect(next2).toEqual(baseInputConfig)
-    expect(next1.platform).toBe('swagger')
-    expect(next2.plugins).toEqual([])
+    expect(next1.plugins).toEqual(baseInputConfig.plugins)
+    expect(next2.plugins).toEqual(baseInputConfig.plugins)
   })
 
   it('should expose plugin name', () => {

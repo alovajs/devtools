@@ -1,16 +1,14 @@
-import type { OpenAPIDocument, OpenAPIV2Document, PlatformType } from '@/type'
+import type { OpenAPIDocument, OpenAPIV2Document } from '@/type'
 import type { FetchOptions } from '@/utils/base'
 import { existsSync } from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import YAML from 'js-yaml'
-import { PlatformTypeEnum } from '@/constant'
 import { WorkerPool } from '@/core/WorkerPool'
 import { logger } from '@/helper'
 import { fetchData } from '@/utils'
 
 const supportedExtname = ['json', 'yaml']
-const supportedPlatformType: PlatformType[] = [PlatformTypeEnum.SWAGGER]
 function isSwagger2(data: any): data is OpenAPIV2Document {
   return !!data?.swagger
 }
@@ -67,11 +65,7 @@ async function parseLocalFile(url: string, projectPath = process.cwd()) {
 }
 // Parse remote openapi files
 
-async function parseRemoteFile(url: string, platformType?: PlatformType, fetchOptions?: FetchOptions) {
-  // no extension and platform types
-  if (platformType) {
-    return getPlatformOpenApiData(url, platformType, fetchOptions)
-  }
+async function parseRemoteFile(url: string, fetchOptions?: FetchOptions) {
   const dataText = (await fetchData(url, fetchOptions)) ?? ''
   let data: any
   try {
@@ -100,7 +94,7 @@ async function parseRemoteFile(url: string, platformType?: PlatformType, fetchOp
   return data
 }
 
-// Parse platform openapi files
+// Validate OpenAPI data
 function isValidOpenApiData(data: any): boolean {
   if (!data || typeof data !== 'object') {
     return false
@@ -115,71 +109,56 @@ function isValidOpenApiData(data: any): boolean {
   return !!(data.openapi || data.swagger || data.info || data.paths)
 }
 
-export async function getPlatformOpenApiData(url: string, platformType: PlatformType, fetchOptions?: FetchOptions) {
-  if (!supportedPlatformType.includes(platformType)) {
-    throw logger.throwError(`Platform type ${platformType} is not supported.`, {
-      url,
-      platformType,
-    })
-  }
-  switch (platformType) {
-    case PlatformTypeEnum.SWAGGER: {
-      const urlsToTry = [url, `${url}/openapi.json`, `${url}/v2/swagger.json`]
+const isRemoteUrl = (u: string) => /^https?:\/\//.test(u)
 
-      for (const tryUrl of urlsToTry) {
-        try {
-          const dataText = await fetchData(tryUrl, fetchOptions)
-          if (!dataText)
-            continue
+/**
+ * Try each URL in order, dispatching to the appropriate local/remote parser.
+ * Returns the first successful result; throws if all URLs fail.
+ */
+async function tryUrls(
+  urls: string[],
+  options: { projectPath?: string; fetchOptions?: FetchOptions },
+): Promise<any> {
+  const { projectPath, fetchOptions } = options
+  const errors: string[] = []
 
-          const data = JSON.parse(dataText)
-          if (isValidOpenApiData(data)) {
-            return data
-          }
-          // If data is invalid, continue to next URL
-        }
-        catch {
-          // If request or parsing fails, continue to next URL
-          continue
-        }
-      }
-
-      // If all URLs fail or return invalid data, throw error
-      throw logger.throwError(`Unable to retrieve valid OpenAPI document from any URL: ${urlsToTry.join(', ')}`)
+  for (const u of urls) {
+    try {
+      const data = isRemoteUrl(u)
+        ? await parseRemoteFile(u, fetchOptions)
+        : await parseLocalFile(u, projectPath)
+      return data
     }
-    default:
-      break
+    catch (err) {
+      errors.push(`${u}: ${err instanceof Error ? err.message : String(err)}`)
+    }
   }
+  throw logger.throwError(`Unable to retrieve valid OpenAPI document from any URL:\n${errors.join('\n')}`)
 }
+
 // Parse openapi files
 
 export async function getOpenApiData(
-  url: string,
+  url: string | string[],
   options?: {
     projectPath?: string
-    platformType?: PlatformType
     fetchOptions?: FetchOptions
   },
 ): Promise<OpenAPIDocument> {
-  let data: OpenAPIDocument | null = null
-  const { projectPath, platformType, fetchOptions } = options ?? {}
-  if (!/^https?:\/\//.test(url)) {
-    // local file
-    data = await parseLocalFile(url, projectPath)
-  }
-  else {
-    // remote file
-    data = await parseRemoteFile(url, platformType, fetchOptions)
-  }
+  const { projectPath, fetchOptions } = options ?? {}
+
+  // Normalize to array — single string or array both handled uniformly
+  const urls = Array.isArray(url) ? url : [url]
+  let data = await tryUrls(urls, { projectPath, fetchOptions })
+
   // If it is a swagger2 file — convert via worker to avoid main-thread blocking
   if (isSwagger2(data)) {
     data = await convertSwagger2Async(data)
   }
   if (!data) {
-    throw logger.throwError(`Cannot read file from ${url}`, {
+    throw logger.throwError(`Cannot read file from ${urls.join(', ')}`, {
       projectPath,
       url,
-      platformType,
       fetchOptions,
     })
   }

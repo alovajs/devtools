@@ -2,7 +2,7 @@ import type { Config, SchemaObject } from '@/type'
 import fs from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { createConfig, generate } from '@/index'
-import { alovaGlobals } from '@/plugins'
+import { alovaGlobals, platform } from '@/plugins'
 import { createStrReg, getSalt } from './util'
 
 vi.mock('node:fs')
@@ -144,10 +144,9 @@ describe('generate with OpenAPI file', () => {
       generator: [
         {
           input: 'https://generator3.swagger.io',
-          platform: 'swagger',
           output: outputDir2,
           type: 'ts',
-          plugins: [alovaGlobals()],
+          plugins: [platform('swagger'), alovaGlobals()],
         },
       ],
     })
@@ -164,10 +163,9 @@ describe('generate with OpenAPI file', () => {
           fetchOptions: {
             method: 'POST',
           },
-          platform: 'swagger',
           output: outputDir3,
           type: 'ts',
-          plugins: [alovaGlobals()],
+          plugins: [platform('swagger'), alovaGlobals()],
         },
       ],
     })
@@ -215,7 +213,7 @@ describe('generate with OpenAPI file', () => {
           data: GenerationRequest;
       }>`),
     )
-    expect(globalsDeclarationFile).toMatch(`: Alova2Method<string[], 'documentation.documentationLanguages', Config>;`)
+    expect(globalsDeclarationFile).toMatch(`: Alova2Method<string[], 'Apis.documentation.documentationLanguages', Config>;`)
 
     // custom mediaType: application/json
     const outputDir2 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`)
@@ -238,7 +236,7 @@ describe('generate with OpenAPI file', () => {
           data: GenerationRequest;
       }>`),
     )
-    expect(globalsDeclarationFile).toMatch(`: Alova2Method<string[], 'documentation.documentationLanguages', Config>;`)
+    expect(globalsDeclarationFile).toMatch(`: Alova2Method<string[], 'Apis.documentation.documentationLanguages', Config>;`)
 
     // custom mediaType: application/xml
     // but if there is not `application/xml` in the schema, it will be refer to the first mediaType in the schema, so here will still generate with mediaType `application/json`
@@ -262,7 +260,7 @@ describe('generate with OpenAPI file', () => {
           data: GenerationRequest;
       }>`),
     )
-    expect(globalsDeclarationFile).toMatch(`: Alova2Method<string[], 'documentation.documentationLanguages', Config>;`)
+    expect(globalsDeclarationFile).toMatch(`: Alova2Method<string[], 'Apis.documentation.documentationLanguages', Config>;`)
   })
 
   it('should generate correspoding `mediaType` parameters if matched target `mediaType`', async () => {
@@ -286,7 +284,7 @@ describe('generate with OpenAPI file', () => {
           data: Category;
       }>(
         config: Config
-      ): Alova2Method<Tag, 'pet.pet24', Config>;`),
+      ): Alova2Method<Tag, 'Apis.pet.pet24', Config>;`),
     )
   })
 
@@ -539,8 +537,8 @@ describe('generate with OpenAPI file', () => {
     const indexFile = await fs.readFile(resolve(outputDir, 'index.ts'), 'utf-8')
     expect(indexFile).toMatch("baseURL: ''")
     const apiDefinitionsFile = await fs.readFile(resolve(outputDir, 'apiDefinitions.ts'), 'utf-8')
-    expect(apiDefinitionsFile).toMatch('\'_24pet.pet24\': [\'POST\', \'/pet\']') // non-variable specification tag
-    expect(apiDefinitionsFile).toMatch('pet.put_pet\': [\'PUT\', \'/pet\']') // `operationId` is not defined
+    expect(apiDefinitionsFile).toMatch('\'Apis._24pet.pet24\': [\'POST\', \'/pet\']') // non-variable specification tag
+    expect(apiDefinitionsFile).toMatch('\'Apis._24pet.put_pet\': [\'PUT\', \'/pet\']') // `operationId` is not defined
   })
 
   it('should classify the apis that have no tags to `general` tag', async () => {
@@ -556,9 +554,9 @@ describe('generate with OpenAPI file', () => {
       ],
     })
     const apiDefinitionsFile = await fs.readFile(resolve(outputDir, 'apiDefinitions.ts'), 'utf-8')
-    expect(apiDefinitionsFile).toMatch('\'general.addPet\': [\'POST\', \'/pet\']')
-    expect(apiDefinitionsFile).toMatch('\'general.delPet\': [\'DELETE\', \'/pet\']')
-    expect(apiDefinitionsFile).toMatch('\'general.addPet\': [\'POST\', \'/pet\']')
+    expect(apiDefinitionsFile).toMatch('\'Apis.general.addPet\': [\'POST\', \'/pet\']')
+    expect(apiDefinitionsFile).toMatch('\'Apis.general.delPet\': [\'DELETE\', \'/pet\']')
+    expect(apiDefinitionsFile).toMatch('\'Apis.general.addPet\': [\'POST\', \'/pet\']')
   })
 
   it('should generate the same api with different tag when has multiple tags', async () => {
@@ -574,11 +572,11 @@ describe('generate with OpenAPI file', () => {
       ],
     })
     const apiDefinitionsFile = await fs.readFile(resolve(outputDir, 'apiDefinitions.ts'), 'utf-8')
-    expect(apiDefinitionsFile).toMatch('\'pet.addPet\': [\'POST\', \'/pet\']')
-    expect(apiDefinitionsFile).toMatch('\'store.addPet\': [\'POST\', \'/pet\']')
+    expect(apiDefinitionsFile).toMatch('\'Apis.pet.addPet\': [\'POST\', \'/pet\']')
+    expect(apiDefinitionsFile).toMatch('\'Apis.store.addPet\': [\'POST\', \'/pet\']')
     const globalsFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8')
-    expect(globalsFile).toMatch('Alova2Method<Pet, \'pet.addPet\', Config>')
-    expect(globalsFile).toMatch('Alova2Method<Pet, \'store.addPet\', Config>')
+    expect(globalsFile).toMatch('Alova2Method<Pet, \'Apis.pet.addPet\', Config>')
+    expect(globalsFile).toMatch('Alova2Method<Pet, \'Apis.store.addPet\', Config>')
   })
 
   it('should stop endless loop when encounter circular reference in component', async () => {
@@ -693,7 +691,7 @@ describe('generate with OpenAPI file', () => {
           data: GenerationRequest;
       }>(
         config: Config
-      ): Alova2Method<GenerationRequest, 'config.generateBundle', Config>;`),
+      ): Alova2Method<GenerationRequest, 'Apis.config.generateBundle', Config>;`),
     )
     expect(globalsFile).toMatch(
       createStrReg(`clientLanguages<Config extends Alova2MethodConfig<string[]> & {
@@ -827,10 +825,10 @@ describe('generate with OpenAPI file', () => {
     const apiDefinitionsFile = await fs.readFile(resolve(outputDir, 'apiDefinitions.ts'), 'utf-8')
     expect(apiDefinitionsFile).toMatch(
       createStrReg(`const apiDefinitions = {
-  'clients.customClients': ['GET', '/clients/suffix'],
-  'clients.generateBundle': ['POST', '/model'],
-  'documentation.customClients': ['GET', '/clients/suffix'],
-  'documentation.documentationLanguages': ['GET', '/documentation']
+  'Apis.clients.customClients': ['GET', '/clients/suffix'],
+  'Apis.clients.generateBundle': ['POST', '/model'],
+  'Apis.documentation.customClients': ['GET', '/clients/suffix'],
+  'Apis.documentation.documentationLanguages': ['GET', '/documentation']
 } as const;`),
     )
   })
@@ -874,7 +872,7 @@ describe('generate with OpenAPI file', () => {
           data: Pet;
       }>(
         config: Config
-      ): Alova2Method<Pet1, 'tag.pet24', Config>;`),
+      ): Alova2Method<Pet1, 'Apis.tag.pet24', Config>;`),
     )
     // generate separated `Pet2` from `Pet`
     expect(globalsFile).toMatch(
@@ -882,7 +880,7 @@ describe('generate with OpenAPI file', () => {
           data: Pet;
       }>(
         config: Config
-      ): Alova2Method<Pet2, 'pet.updatePet', Config>;`),
+      ): Alova2Method<Pet2, 'Apis.pet.updatePet', Config>;`),
     )
     // the unmodified api still reference `Pet`
     expect(globalsFile).toMatch(
@@ -897,7 +895,7 @@ describe('generate with OpenAPI file', () => {
 };
       }>(
         config: Config
-      ): Alova2Method<Pet[], 'pet.findPetsByStatus', Config>;`),
+      ): Alova2Method<Pet[], 'Apis.pet.findPetsByStatus', Config>;`),
     )
   })
 
@@ -929,7 +927,7 @@ describe('generate with OpenAPI file', () => {
         }
       >(
         config: Config
-      ): Alova2Method<Blob, 'clients.generateCase1', Config>;`),
+      ): Alova2Method<Blob, 'Apis.clients.generateCase1', Config>;`),
     )
     // generate 201 `string` from Response
     expect(globalsFile).toMatch(
@@ -946,7 +944,7 @@ describe('generate with OpenAPI file', () => {
         }
       >(
         config: Config
-      ): Alova2Method<string, 'clients.generateCase2', Config>;`),
+      ): Alova2Method<string, 'Apis.clients.generateCase2', Config>;`),
     )
     // generate 299 `string[]` from Response
     expect(globalsFile).toMatch(
@@ -963,7 +961,7 @@ describe('generate with OpenAPI file', () => {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'clients.generateCase3', Config>;`),
+      ): Alova2Method<string[], 'Apis.clients.generateCase3', Config>;`),
     )
     // generate 200 `string[]` from Response 200、201、299
     expect(globalsFile).toMatch(
@@ -980,7 +978,7 @@ describe('generate with OpenAPI file', () => {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'clients.generateCase4', Config>;`),
+      ): Alova2Method<string[], 'Apis.clients.generateCase4', Config>;`),
     )
   })
 

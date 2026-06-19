@@ -1,5 +1,61 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`createConfig API > should create alova.config 1`] = `
+"import { defineConfig } from '@alova/wormhole';
+import { alova } from '@alova/wormhole/plugin';
+
+// For more config detailed visit:
+// https://alova.js.org/tutorial/getting-started/extension-integration
+
+export default defineConfig({
+  generator: [
+    {
+      /**
+       * file input. support:
+       * 1. openapi json file url
+       * 2. local file
+       * 3. string array — each URL will be tried in order, first success wins
+       */
+      input: 'http://localhost:3000',
+
+      /**
+       * output path of interface file and type file.
+       * Multiple generators cannot have the same address, otherwise the generated code will overwrite each other.
+       */
+      output: 'src/api',
+
+      /**
+       * template preset plugin for code generation.
+       */
+      plugins: [alova()]
+
+      /**
+       * the mediaType of the generated response data. default is \`application/json\`
+       */
+      // responseMediaType: 'application/json',
+
+      /**
+       * the bodyMediaType of the generated request body data. default is \`application/json\`
+       */
+      // bodyMediaType: 'application/json',
+
+      /**
+       * type of generated code. The options are \`auto/ts/typescript/module/commonjs\`
+       */
+      // type: 'auto',
+
+      /**
+       * filter or convert the generated api information, return an apiDescriptor, if this function is not specified, the apiDescriptor object is not converted
+       */
+      // handleApi: apiDescriptor => {
+      //  return apiDescriptor;
+      // }
+    }
+  ]
+});
+"
+`;
+
 exports[`generate API > should generate code from an url 1`] = `
 "/* tslint:disable */
 /* eslint-disable */
@@ -21,26 +77,26 @@ exports[`generate API > should generate code from an url 1`] = `
 /// <reference types='./globals.d.ts' />
 
 const apiDefinitions = {
-  'Apis.Apis.pet.uploadFile': ['POST', '/pet/{petId}/uploadImage'],
-  'Apis.Apis.pet.addPet': ['POST', '/pet'],
-  'Apis.Apis.pet.updatePet': ['PUT', '/pet'],
-  'Apis.Apis.pet.findPetsByStatus': ['GET', '/pet/findByStatus'],
-  'Apis.Apis.pet.findPetsByTags': ['GET', '/pet/findByTags'],
-  'Apis.Apis.pet.getPetById': ['GET', '/pet/{petId}'],
-  'Apis.Apis.pet.updatePetWithForm': ['POST', '/pet/{petId}'],
-  'Apis.Apis.pet.deletePet': ['DELETE', '/pet/{petId}'],
-  'Apis.Apis.store.getInventory': ['GET', '/store/inventory'],
-  'Apis.Apis.store.placeOrder': ['POST', '/store/order'],
-  'Apis.Apis.store.getOrderById': ['GET', '/store/order/{orderId}'],
-  'Apis.Apis.store.deleteOrder': ['DELETE', '/store/order/{orderId}'],
-  'Apis.Apis.user.createUsersWithListInput': ['POST', '/user/createWithList'],
-  'Apis.Apis.user.getUserByName': ['GET', '/user/{username}'],
-  'Apis.Apis.user.updateUser': ['PUT', '/user/{username}'],
-  'Apis.Apis.user.deleteUser': ['DELETE', '/user/{username}'],
-  'Apis.Apis.user.loginUser': ['GET', '/user/login'],
-  'Apis.Apis.user.logoutUser': ['GET', '/user/logout'],
-  'Apis.Apis.user.createUsersWithArrayInput': ['POST', '/user/createWithArray'],
-  'Apis.Apis.user.createUser': ['POST', '/user']
+  'Apis.pet.uploadFile': ['POST', '/pet/{petId}/uploadImage'],
+  'Apis.pet.addPet': ['POST', '/pet'],
+  'Apis.pet.updatePet': ['PUT', '/pet'],
+  'Apis.pet.findPetsByStatus': ['GET', '/pet/findByStatus'],
+  'Apis.pet.findPetsByTags': ['GET', '/pet/findByTags'],
+  'Apis.pet.getPetById': ['GET', '/pet/{petId}'],
+  'Apis.pet.updatePetWithForm': ['POST', '/pet/{petId}'],
+  'Apis.pet.deletePet': ['DELETE', '/pet/{petId}'],
+  'Apis.store.getInventory': ['GET', '/store/inventory'],
+  'Apis.store.placeOrder': ['POST', '/store/order'],
+  'Apis.store.getOrderById': ['GET', '/store/order/{orderId}'],
+  'Apis.store.deleteOrder': ['DELETE', '/store/order/{orderId}'],
+  'Apis.user.createUsersWithListInput': ['POST', '/user/createWithList'],
+  'Apis.user.getUserByName': ['GET', '/user/{username}'],
+  'Apis.user.updateUser': ['PUT', '/user/{username}'],
+  'Apis.user.deleteUser': ['DELETE', '/user/{username}'],
+  'Apis.user.loginUser': ['GET', '/user/login'],
+  'Apis.user.logoutUser': ['GET', '/user/logout'],
+  'Apis.user.createUsersWithArrayInput': ['POST', '/user/createWithArray'],
+  'Apis.user.createUser': ['POST', '/user']
 } as const;
 
 export default apiDefinitions;
@@ -410,7 +466,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<ApiResponse, 'Apis.Apis.pet.uploadFile', Config>;
+      ): Alova2Method<ApiResponse, 'Apis.pet.uploadFile', Config>;
       /**
        * ---
        *
@@ -456,7 +512,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<unknown, 'Apis.Apis.pet.addPet', Config>;
+      ): Alova2Method<unknown, 'Apis.pet.addPet', Config>;
       /**
        * ---
        *
@@ -502,7 +558,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<unknown, 'Apis.Apis.pet.updatePet', Config>;
+      ): Alova2Method<unknown, 'Apis.pet.updatePet', Config>;
       /**
        * ---
        *
@@ -559,7 +615,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Pet[], 'Apis.Apis.pet.findPetsByStatus', Config>;
+      ): Alova2Method<Pet[], 'Apis.pet.findPetsByStatus', Config>;
       /**
        * ---
        *
@@ -616,7 +672,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Pet[], 'Apis.Apis.pet.findPetsByTags', Config>;
+      ): Alova2Method<Pet[], 'Apis.pet.findPetsByTags', Config>;
       /**
        * ---
        *
@@ -671,7 +727,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Pet, 'Apis.Apis.pet.getPetById', Config>;
+      ): Alova2Method<Pet, 'Apis.pet.getPetById', Config>;
       /**
        * ---
        *
@@ -732,7 +788,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<unknown, 'Apis.Apis.pet.updatePetWithForm', Config>;
+      ): Alova2Method<unknown, 'Apis.pet.updatePetWithForm', Config>;
       /**
        * ---
        *
@@ -769,7 +825,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<unknown, 'Apis.Apis.pet.deletePet', Config>;
+      ): Alova2Method<unknown, 'Apis.pet.deletePet', Config>;
     };
     store: {
       /**
@@ -788,7 +844,7 @@ declare global {
        */
       getInventory<Config extends Alova2MethodConfig<Record<string, number>>>(
         config?: Config
-      ): Alova2Method<Record<string, number>, 'Apis.Apis.store.getInventory', Config>;
+      ): Alova2Method<Record<string, number>, 'Apis.store.getInventory', Config>;
       /**
        * ---
        *
@@ -832,7 +888,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Order, 'Apis.Apis.store.placeOrder', Config>;
+      ): Alova2Method<Order, 'Apis.store.placeOrder', Config>;
       /**
        * ---
        *
@@ -877,7 +933,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Order, 'Apis.Apis.store.getOrderById', Config>;
+      ): Alova2Method<Order, 'Apis.store.getOrderById', Config>;
       /**
        * ---
        *
@@ -914,7 +970,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<unknown, 'Apis.Apis.store.deleteOrder', Config>;
+      ): Alova2Method<unknown, 'Apis.store.deleteOrder', Config>;
     };
     user: {
       /**
@@ -954,7 +1010,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<null, 'Apis.Apis.user.createUsersWithListInput', Config>;
+      ): Alova2Method<null, 'Apis.user.createUsersWithListInput', Config>;
       /**
        * ---
        *
@@ -1001,7 +1057,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<User, 'Apis.Apis.user.getUserByName', Config>;
+      ): Alova2Method<User, 'Apis.user.getUserByName', Config>;
       /**
        * ---
        *
@@ -1056,7 +1112,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<unknown, 'Apis.Apis.user.updateUser', Config>;
+      ): Alova2Method<unknown, 'Apis.user.updateUser', Config>;
       /**
        * ---
        *
@@ -1093,7 +1149,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<unknown, 'Apis.Apis.user.deleteUser', Config>;
+      ): Alova2Method<unknown, 'Apis.user.deleteUser', Config>;
       /**
        * ---
        *
@@ -1137,7 +1193,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string, 'Apis.Apis.user.loginUser', Config>;
+      ): Alova2Method<string, 'Apis.user.loginUser', Config>;
       /**
        * ---
        *
@@ -1154,7 +1210,7 @@ declare global {
        */
       logoutUser<Config extends Alova2MethodConfig<null>>(
         config?: Config
-      ): Alova2Method<null, 'Apis.Apis.user.logoutUser', Config>;
+      ): Alova2Method<null, 'Apis.user.logoutUser', Config>;
       /**
        * ---
        *
@@ -1192,7 +1248,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<null, 'Apis.Apis.user.createUsersWithArrayInput', Config>;
+      ): Alova2Method<null, 'Apis.user.createUsersWithArrayInput', Config>;
       /**
        * ---
        *
@@ -1230,7 +1286,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<null, 'Apis.Apis.user.createUser', Config>;
+      ): Alova2Method<null, 'Apis.user.createUser', Config>;
     };
   }
 
@@ -1262,26 +1318,26 @@ exports[`generate API > should generate code from an url 5`] = `
 /// <reference types='./globals.d.ts' />
 
 const apiDefinitions = {
-  'Apis.Apis.pet.uploadFile': ['POST', '/pet/{petId}/uploadImage'],
-  'Apis.Apis.pet.addPet': ['POST', '/pet'],
-  'Apis.Apis.pet.updatePet': ['PUT', '/pet'],
-  'Apis.Apis.pet.findPetsByStatus': ['GET', '/pet/findByStatus'],
-  'Apis.Apis.pet.findPetsByTags': ['GET', '/pet/findByTags'],
-  'Apis.Apis.pet.getPetById': ['GET', '/pet/{petId}'],
-  'Apis.Apis.pet.updatePetWithForm': ['POST', '/pet/{petId}'],
-  'Apis.Apis.pet.deletePet': ['DELETE', '/pet/{petId}'],
-  'Apis.Apis.store.getInventory': ['GET', '/store/inventory'],
-  'Apis.Apis.store.placeOrder': ['POST', '/store/order'],
-  'Apis.Apis.store.getOrderById': ['GET', '/store/order/{orderId}'],
-  'Apis.Apis.store.deleteOrder': ['DELETE', '/store/order/{orderId}'],
-  'Apis.Apis.user.createUsersWithListInput': ['POST', '/user/createWithList'],
-  'Apis.Apis.user.getUserByName': ['GET', '/user/{username}'],
-  'Apis.Apis.user.updateUser': ['PUT', '/user/{username}'],
-  'Apis.Apis.user.deleteUser': ['DELETE', '/user/{username}'],
-  'Apis.Apis.user.loginUser': ['GET', '/user/login'],
-  'Apis.Apis.user.logoutUser': ['GET', '/user/logout'],
-  'Apis.Apis.user.createUsersWithArrayInput': ['POST', '/user/createWithArray'],
-  'Apis.Apis.user.createUser': ['POST', '/user']
+  'Apis.pet.uploadFile': ['POST', '/pet/{petId}/uploadImage'],
+  'Apis.pet.addPet': ['POST', '/pet'],
+  'Apis.pet.updatePet': ['PUT', '/pet'],
+  'Apis.pet.findPetsByStatus': ['GET', '/pet/findByStatus'],
+  'Apis.pet.findPetsByTags': ['GET', '/pet/findByTags'],
+  'Apis.pet.getPetById': ['GET', '/pet/{petId}'],
+  'Apis.pet.updatePetWithForm': ['POST', '/pet/{petId}'],
+  'Apis.pet.deletePet': ['DELETE', '/pet/{petId}'],
+  'Apis.store.getInventory': ['GET', '/store/inventory'],
+  'Apis.store.placeOrder': ['POST', '/store/order'],
+  'Apis.store.getOrderById': ['GET', '/store/order/{orderId}'],
+  'Apis.store.deleteOrder': ['DELETE', '/store/order/{orderId}'],
+  'Apis.user.createUsersWithListInput': ['POST', '/user/createWithList'],
+  'Apis.user.getUserByName': ['GET', '/user/{username}'],
+  'Apis.user.updateUser': ['PUT', '/user/{username}'],
+  'Apis.user.deleteUser': ['DELETE', '/user/{username}'],
+  'Apis.user.loginUser': ['GET', '/user/login'],
+  'Apis.user.logoutUser': ['GET', '/user/logout'],
+  'Apis.user.createUsersWithArrayInput': ['POST', '/user/createWithArray'],
+  'Apis.user.createUser': ['POST', '/user']
 } as const;
 
 export default apiDefinitions;
@@ -1651,7 +1707,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<ApiResponse, 'Apis.Apis.pet.uploadFile', Config>;
+      ): Alova2Method<ApiResponse, 'Apis.pet.uploadFile', Config>;
       /**
        * ---
        *
@@ -1697,7 +1753,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<unknown, 'Apis.Apis.pet.addPet', Config>;
+      ): Alova2Method<unknown, 'Apis.pet.addPet', Config>;
       /**
        * ---
        *
@@ -1743,7 +1799,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<unknown, 'Apis.Apis.pet.updatePet', Config>;
+      ): Alova2Method<unknown, 'Apis.pet.updatePet', Config>;
       /**
        * ---
        *
@@ -1800,7 +1856,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Pet[], 'Apis.Apis.pet.findPetsByStatus', Config>;
+      ): Alova2Method<Pet[], 'Apis.pet.findPetsByStatus', Config>;
       /**
        * ---
        *
@@ -1857,7 +1913,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Pet[], 'Apis.Apis.pet.findPetsByTags', Config>;
+      ): Alova2Method<Pet[], 'Apis.pet.findPetsByTags', Config>;
       /**
        * ---
        *
@@ -1912,7 +1968,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Pet, 'Apis.Apis.pet.getPetById', Config>;
+      ): Alova2Method<Pet, 'Apis.pet.getPetById', Config>;
       /**
        * ---
        *
@@ -1973,7 +2029,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<unknown, 'Apis.Apis.pet.updatePetWithForm', Config>;
+      ): Alova2Method<unknown, 'Apis.pet.updatePetWithForm', Config>;
       /**
        * ---
        *
@@ -2010,7 +2066,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<unknown, 'Apis.Apis.pet.deletePet', Config>;
+      ): Alova2Method<unknown, 'Apis.pet.deletePet', Config>;
     };
     store: {
       /**
@@ -2029,7 +2085,7 @@ declare global {
        */
       getInventory<Config extends Alova2MethodConfig<Record<string, number>>>(
         config?: Config
-      ): Alova2Method<Record<string, number>, 'Apis.Apis.store.getInventory', Config>;
+      ): Alova2Method<Record<string, number>, 'Apis.store.getInventory', Config>;
       /**
        * ---
        *
@@ -2073,7 +2129,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Order, 'Apis.Apis.store.placeOrder', Config>;
+      ): Alova2Method<Order, 'Apis.store.placeOrder', Config>;
       /**
        * ---
        *
@@ -2118,7 +2174,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Order, 'Apis.Apis.store.getOrderById', Config>;
+      ): Alova2Method<Order, 'Apis.store.getOrderById', Config>;
       /**
        * ---
        *
@@ -2155,7 +2211,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<unknown, 'Apis.Apis.store.deleteOrder', Config>;
+      ): Alova2Method<unknown, 'Apis.store.deleteOrder', Config>;
     };
     user: {
       /**
@@ -2195,7 +2251,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<null, 'Apis.Apis.user.createUsersWithListInput', Config>;
+      ): Alova2Method<null, 'Apis.user.createUsersWithListInput', Config>;
       /**
        * ---
        *
@@ -2242,7 +2298,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<User, 'Apis.Apis.user.getUserByName', Config>;
+      ): Alova2Method<User, 'Apis.user.getUserByName', Config>;
       /**
        * ---
        *
@@ -2297,7 +2353,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<unknown, 'Apis.Apis.user.updateUser', Config>;
+      ): Alova2Method<unknown, 'Apis.user.updateUser', Config>;
       /**
        * ---
        *
@@ -2334,7 +2390,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<unknown, 'Apis.Apis.user.deleteUser', Config>;
+      ): Alova2Method<unknown, 'Apis.user.deleteUser', Config>;
       /**
        * ---
        *
@@ -2378,7 +2434,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string, 'Apis.Apis.user.loginUser', Config>;
+      ): Alova2Method<string, 'Apis.user.loginUser', Config>;
       /**
        * ---
        *
@@ -2395,7 +2451,7 @@ declare global {
        */
       logoutUser<Config extends Alova2MethodConfig<null>>(
         config?: Config
-      ): Alova2Method<null, 'Apis.Apis.user.logoutUser', Config>;
+      ): Alova2Method<null, 'Apis.user.logoutUser', Config>;
       /**
        * ---
        *
@@ -2433,7 +2489,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<null, 'Apis.Apis.user.createUsersWithArrayInput', Config>;
+      ): Alova2Method<null, 'Apis.user.createUsersWithArrayInput', Config>;
       /**
        * ---
        *
@@ -2471,7 +2527,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<null, 'Apis.Apis.user.createUser', Config>;
+      ): Alova2Method<null, 'Apis.user.createUser', Config>;
     };
   }
 
@@ -2502,35 +2558,35 @@ exports[`generate API > should generate code from an url 9`] = `
 /// <reference types='./globals.d.ts' />
 
 const apiDefinitions = {
-  'Apis.Apis.clients.generateFromURL': ['GET', '/generate'],
-  'Apis.Apis.clients.generate': ['POST', '/generate'],
-  'Apis.Apis.clients.clientLanguages': ['GET', '/clients'],
-  'Apis.Apis.clients.languages': ['GET', '/{type}/{version}'],
-  'Apis.Apis.clients.languagesMulti': ['GET', '/types'],
-  'Apis.Apis.clients.listOptions': ['GET', '/options'],
-  'Apis.Apis.clients.generateBundle': ['POST', '/model'],
-  'Apis.Apis.servers.generateFromURL': ['GET', '/generate'],
-  'Apis.Apis.servers.generate': ['POST', '/generate'],
-  'Apis.Apis.servers.serverLanguages': ['GET', '/servers'],
-  'Apis.Apis.servers.languages': ['GET', '/{type}/{version}'],
-  'Apis.Apis.servers.languagesMulti': ['GET', '/types'],
-  'Apis.Apis.servers.listOptions': ['GET', '/options'],
-  'Apis.Apis.servers.generateBundle': ['POST', '/model'],
-  'Apis.Apis.documentation.generateFromURL': ['GET', '/generate'],
-  'Apis.Apis.documentation.generate': ['POST', '/generate'],
-  'Apis.Apis.documentation.clientLanguages': ['GET', '/clients'],
-  'Apis.Apis.documentation.documentationLanguages': ['GET', '/documentation'],
-  'Apis.Apis.documentation.languages': ['GET', '/{type}/{version}'],
-  'Apis.Apis.documentation.languagesMulti': ['GET', '/types'],
-  'Apis.Apis.documentation.listOptions': ['GET', '/options'],
-  'Apis.Apis.documentation.generateBundle': ['POST', '/model'],
-  'Apis.Apis.documentation.renderTemplate': ['POST', '/render'],
-  'Apis.Apis.config.generateFromURL': ['GET', '/generate'],
-  'Apis.Apis.config.generate': ['POST', '/generate'],
-  'Apis.Apis.config.languages': ['GET', '/{type}/{version}'],
-  'Apis.Apis.config.languagesMulti': ['GET', '/types'],
-  'Apis.Apis.config.listOptions': ['GET', '/options'],
-  'Apis.Apis.config.generateBundle': ['POST', '/model']
+  'Apis.clients.generateFromURL': ['GET', '/generate'],
+  'Apis.clients.generate': ['POST', '/generate'],
+  'Apis.clients.clientLanguages': ['GET', '/clients'],
+  'Apis.clients.languages': ['GET', '/{type}/{version}'],
+  'Apis.clients.languagesMulti': ['GET', '/types'],
+  'Apis.clients.listOptions': ['GET', '/options'],
+  'Apis.clients.generateBundle': ['POST', '/model'],
+  'Apis.servers.generateFromURL': ['GET', '/generate'],
+  'Apis.servers.generate': ['POST', '/generate'],
+  'Apis.servers.serverLanguages': ['GET', '/servers'],
+  'Apis.servers.languages': ['GET', '/{type}/{version}'],
+  'Apis.servers.languagesMulti': ['GET', '/types'],
+  'Apis.servers.listOptions': ['GET', '/options'],
+  'Apis.servers.generateBundle': ['POST', '/model'],
+  'Apis.documentation.generateFromURL': ['GET', '/generate'],
+  'Apis.documentation.generate': ['POST', '/generate'],
+  'Apis.documentation.clientLanguages': ['GET', '/clients'],
+  'Apis.documentation.documentationLanguages': ['GET', '/documentation'],
+  'Apis.documentation.languages': ['GET', '/{type}/{version}'],
+  'Apis.documentation.languagesMulti': ['GET', '/types'],
+  'Apis.documentation.listOptions': ['GET', '/options'],
+  'Apis.documentation.generateBundle': ['POST', '/model'],
+  'Apis.documentation.renderTemplate': ['POST', '/render'],
+  'Apis.config.generateFromURL': ['GET', '/generate'],
+  'Apis.config.generate': ['POST', '/generate'],
+  'Apis.config.languages': ['GET', '/{type}/{version}'],
+  'Apis.config.languagesMulti': ['GET', '/types'],
+  'Apis.config.listOptions': ['GET', '/options'],
+  'Apis.config.generateBundle': ['POST', '/model']
 } as const;
 
 export default apiDefinitions;
@@ -3065,7 +3121,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Blob, 'Apis.Apis.clients.generateFromURL', Config>;
+      ): Alova2Method<Blob, 'Apis.clients.generateFromURL', Config>;
       /**
        * ---
        *
@@ -3204,7 +3260,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Blob, 'Apis.Apis.clients.generate', Config>;
+      ): Alova2Method<Blob, 'Apis.clients.generate', Config>;
       /**
        * ---
        *
@@ -3248,7 +3304,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.clients.clientLanguages', Config>;
+      ): Alova2Method<string[], 'Apis.clients.clientLanguages', Config>;
       /**
        * ---
        *
@@ -3292,7 +3348,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.clients.languages', Config>;
+      ): Alova2Method<string[], 'Apis.clients.languages', Config>;
       /**
        * ---
        *
@@ -3338,7 +3394,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.clients.languagesMulti', Config>;
+      ): Alova2Method<string[], 'Apis.clients.languagesMulti', Config>;
       /**
        * ---
        *
@@ -3389,7 +3445,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Record<string, CliOption>, 'Apis.Apis.clients.listOptions', Config>;
+      ): Alova2Method<Record<string, CliOption>, 'Apis.clients.listOptions', Config>;
       /**
        * ---
        *
@@ -3615,7 +3671,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<GenerationRequest, 'Apis.Apis.clients.generateBundle', Config>;
+      ): Alova2Method<GenerationRequest, 'Apis.clients.generateBundle', Config>;
     };
     servers: {
       /**
@@ -3649,7 +3705,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Blob, 'Apis.Apis.servers.generateFromURL', Config>;
+      ): Alova2Method<Blob, 'Apis.servers.generateFromURL', Config>;
       /**
        * ---
        *
@@ -3788,7 +3844,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Blob, 'Apis.Apis.servers.generate', Config>;
+      ): Alova2Method<Blob, 'Apis.servers.generate', Config>;
       /**
        * ---
        *
@@ -3825,7 +3881,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.servers.serverLanguages', Config>;
+      ): Alova2Method<string[], 'Apis.servers.serverLanguages', Config>;
       /**
        * ---
        *
@@ -3869,7 +3925,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.servers.languages', Config>;
+      ): Alova2Method<string[], 'Apis.servers.languages', Config>;
       /**
        * ---
        *
@@ -3915,7 +3971,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.servers.languagesMulti', Config>;
+      ): Alova2Method<string[], 'Apis.servers.languagesMulti', Config>;
       /**
        * ---
        *
@@ -3966,7 +4022,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Record<string, CliOption>, 'Apis.Apis.servers.listOptions', Config>;
+      ): Alova2Method<Record<string, CliOption>, 'Apis.servers.listOptions', Config>;
       /**
        * ---
        *
@@ -4192,7 +4248,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<GenerationRequest, 'Apis.Apis.servers.generateBundle', Config>;
+      ): Alova2Method<GenerationRequest, 'Apis.servers.generateBundle', Config>;
     };
     documentation: {
       /**
@@ -4226,7 +4282,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Blob, 'Apis.Apis.documentation.generateFromURL', Config>;
+      ): Alova2Method<Blob, 'Apis.documentation.generateFromURL', Config>;
       /**
        * ---
        *
@@ -4365,7 +4421,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Blob, 'Apis.Apis.documentation.generate', Config>;
+      ): Alova2Method<Blob, 'Apis.documentation.generate', Config>;
       /**
        * ---
        *
@@ -4409,7 +4465,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.documentation.clientLanguages', Config>;
+      ): Alova2Method<string[], 'Apis.documentation.clientLanguages', Config>;
       /**
        * ---
        *
@@ -4446,7 +4502,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.documentation.documentationLanguages', Config>;
+      ): Alova2Method<string[], 'Apis.documentation.documentationLanguages', Config>;
       /**
        * ---
        *
@@ -4490,7 +4546,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.documentation.languages', Config>;
+      ): Alova2Method<string[], 'Apis.documentation.languages', Config>;
       /**
        * ---
        *
@@ -4536,7 +4592,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.documentation.languagesMulti', Config>;
+      ): Alova2Method<string[], 'Apis.documentation.languagesMulti', Config>;
       /**
        * ---
        *
@@ -4587,7 +4643,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Record<string, CliOption>, 'Apis.Apis.documentation.listOptions', Config>;
+      ): Alova2Method<Record<string, CliOption>, 'Apis.documentation.listOptions', Config>;
       /**
        * ---
        *
@@ -4813,7 +4869,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<GenerationRequest, 'Apis.Apis.documentation.generateBundle', Config>;
+      ): Alova2Method<GenerationRequest, 'Apis.documentation.generateBundle', Config>;
       /**
        * ---
        *
@@ -4848,7 +4904,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<null, 'Apis.Apis.documentation.renderTemplate', Config>;
+      ): Alova2Method<null, 'Apis.documentation.renderTemplate', Config>;
     };
     config: {
       /**
@@ -4882,7 +4938,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Blob, 'Apis.Apis.config.generateFromURL', Config>;
+      ): Alova2Method<Blob, 'Apis.config.generateFromURL', Config>;
       /**
        * ---
        *
@@ -5021,7 +5077,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Blob, 'Apis.Apis.config.generate', Config>;
+      ): Alova2Method<Blob, 'Apis.config.generate', Config>;
       /**
        * ---
        *
@@ -5065,7 +5121,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.config.languages', Config>;
+      ): Alova2Method<string[], 'Apis.config.languages', Config>;
       /**
        * ---
        *
@@ -5111,7 +5167,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.config.languagesMulti', Config>;
+      ): Alova2Method<string[], 'Apis.config.languagesMulti', Config>;
       /**
        * ---
        *
@@ -5162,7 +5218,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Record<string, CliOption>, 'Apis.Apis.config.listOptions', Config>;
+      ): Alova2Method<Record<string, CliOption>, 'Apis.config.listOptions', Config>;
       /**
        * ---
        *
@@ -5388,7 +5444,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<GenerationRequest, 'Apis.Apis.config.generateBundle', Config>;
+      ): Alova2Method<GenerationRequest, 'Apis.config.generateBundle', Config>;
     };
   }
 
@@ -5419,35 +5475,35 @@ exports[`generate API > should generate code with a variant of openapi file form
 /// <reference types='./globals.d.ts' />
 
 const apiDefinitions = {
-  'Apis.Apis.clients.generateFromURL': ['GET', '/generate'],
-  'Apis.Apis.clients.generate': ['POST', '/generate'],
-  'Apis.Apis.clients.clientLanguages': ['GET', '/clients'],
-  'Apis.Apis.clients.languages': ['GET', '/{type}/{version}'],
-  'Apis.Apis.clients.languagesMulti': ['GET', '/types'],
-  'Apis.Apis.clients.listOptions': ['GET', '/options'],
-  'Apis.Apis.clients.generateBundle': ['POST', '/model'],
-  'Apis.Apis.servers.generateFromURL': ['GET', '/generate'],
-  'Apis.Apis.servers.generate': ['POST', '/generate'],
-  'Apis.Apis.servers.serverLanguages': ['GET', '/servers'],
-  'Apis.Apis.servers.languages': ['GET', '/{type}/{version}'],
-  'Apis.Apis.servers.languagesMulti': ['GET', '/types'],
-  'Apis.Apis.servers.listOptions': ['GET', '/options'],
-  'Apis.Apis.servers.generateBundle': ['POST', '/model'],
-  'Apis.Apis.documentation.generateFromURL': ['GET', '/generate'],
-  'Apis.Apis.documentation.generate': ['POST', '/generate'],
-  'Apis.Apis.documentation.clientLanguages': ['GET', '/clients'],
-  'Apis.Apis.documentation.documentationLanguages': ['GET', '/documentation'],
-  'Apis.Apis.documentation.languages': ['GET', '/{type}/{version}'],
-  'Apis.Apis.documentation.languagesMulti': ['GET', '/types'],
-  'Apis.Apis.documentation.listOptions': ['GET', '/options'],
-  'Apis.Apis.documentation.generateBundle': ['POST', '/model'],
-  'Apis.Apis.documentation.renderTemplate': ['POST', '/render'],
-  'Apis.Apis.config.generateFromURL': ['GET', '/generate'],
-  'Apis.Apis.config.generate': ['POST', '/generate'],
-  'Apis.Apis.config.languages': ['GET', '/{type}/{version}'],
-  'Apis.Apis.config.languagesMulti': ['GET', '/types'],
-  'Apis.Apis.config.listOptions': ['GET', '/options'],
-  'Apis.Apis.config.generateBundle': ['POST', '/model']
+  'Apis.clients.generateFromURL': ['GET', '/generate'],
+  'Apis.clients.generate': ['POST', '/generate'],
+  'Apis.clients.clientLanguages': ['GET', '/clients'],
+  'Apis.clients.languages': ['GET', '/{type}/{version}'],
+  'Apis.clients.languagesMulti': ['GET', '/types'],
+  'Apis.clients.listOptions': ['GET', '/options'],
+  'Apis.clients.generateBundle': ['POST', '/model'],
+  'Apis.servers.generateFromURL': ['GET', '/generate'],
+  'Apis.servers.generate': ['POST', '/generate'],
+  'Apis.servers.serverLanguages': ['GET', '/servers'],
+  'Apis.servers.languages': ['GET', '/{type}/{version}'],
+  'Apis.servers.languagesMulti': ['GET', '/types'],
+  'Apis.servers.listOptions': ['GET', '/options'],
+  'Apis.servers.generateBundle': ['POST', '/model'],
+  'Apis.documentation.generateFromURL': ['GET', '/generate'],
+  'Apis.documentation.generate': ['POST', '/generate'],
+  'Apis.documentation.clientLanguages': ['GET', '/clients'],
+  'Apis.documentation.documentationLanguages': ['GET', '/documentation'],
+  'Apis.documentation.languages': ['GET', '/{type}/{version}'],
+  'Apis.documentation.languagesMulti': ['GET', '/types'],
+  'Apis.documentation.listOptions': ['GET', '/options'],
+  'Apis.documentation.generateBundle': ['POST', '/model'],
+  'Apis.documentation.renderTemplate': ['POST', '/render'],
+  'Apis.config.generateFromURL': ['GET', '/generate'],
+  'Apis.config.generate': ['POST', '/generate'],
+  'Apis.config.languages': ['GET', '/{type}/{version}'],
+  'Apis.config.languagesMulti': ['GET', '/types'],
+  'Apis.config.listOptions': ['GET', '/options'],
+  'Apis.config.generateBundle': ['POST', '/model']
 } as const;
 
 export default apiDefinitions;
@@ -5982,7 +6038,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Blob, 'Apis.Apis.clients.generateFromURL', Config>;
+      ): Alova2Method<Blob, 'Apis.clients.generateFromURL', Config>;
       /**
        * ---
        *
@@ -6121,7 +6177,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Blob, 'Apis.Apis.clients.generate', Config>;
+      ): Alova2Method<Blob, 'Apis.clients.generate', Config>;
       /**
        * ---
        *
@@ -6165,7 +6221,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.clients.clientLanguages', Config>;
+      ): Alova2Method<string[], 'Apis.clients.clientLanguages', Config>;
       /**
        * ---
        *
@@ -6209,7 +6265,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.clients.languages', Config>;
+      ): Alova2Method<string[], 'Apis.clients.languages', Config>;
       /**
        * ---
        *
@@ -6255,7 +6311,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.clients.languagesMulti', Config>;
+      ): Alova2Method<string[], 'Apis.clients.languagesMulti', Config>;
       /**
        * ---
        *
@@ -6306,7 +6362,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Record<string, CliOption>, 'Apis.Apis.clients.listOptions', Config>;
+      ): Alova2Method<Record<string, CliOption>, 'Apis.clients.listOptions', Config>;
       /**
        * ---
        *
@@ -6532,7 +6588,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<GenerationRequest, 'Apis.Apis.clients.generateBundle', Config>;
+      ): Alova2Method<GenerationRequest, 'Apis.clients.generateBundle', Config>;
     };
     servers: {
       /**
@@ -6566,7 +6622,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Blob, 'Apis.Apis.servers.generateFromURL', Config>;
+      ): Alova2Method<Blob, 'Apis.servers.generateFromURL', Config>;
       /**
        * ---
        *
@@ -6705,7 +6761,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Blob, 'Apis.Apis.servers.generate', Config>;
+      ): Alova2Method<Blob, 'Apis.servers.generate', Config>;
       /**
        * ---
        *
@@ -6742,7 +6798,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.servers.serverLanguages', Config>;
+      ): Alova2Method<string[], 'Apis.servers.serverLanguages', Config>;
       /**
        * ---
        *
@@ -6786,7 +6842,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.servers.languages', Config>;
+      ): Alova2Method<string[], 'Apis.servers.languages', Config>;
       /**
        * ---
        *
@@ -6832,7 +6888,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.servers.languagesMulti', Config>;
+      ): Alova2Method<string[], 'Apis.servers.languagesMulti', Config>;
       /**
        * ---
        *
@@ -6883,7 +6939,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Record<string, CliOption>, 'Apis.Apis.servers.listOptions', Config>;
+      ): Alova2Method<Record<string, CliOption>, 'Apis.servers.listOptions', Config>;
       /**
        * ---
        *
@@ -7109,7 +7165,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<GenerationRequest, 'Apis.Apis.servers.generateBundle', Config>;
+      ): Alova2Method<GenerationRequest, 'Apis.servers.generateBundle', Config>;
     };
     documentation: {
       /**
@@ -7143,7 +7199,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Blob, 'Apis.Apis.documentation.generateFromURL', Config>;
+      ): Alova2Method<Blob, 'Apis.documentation.generateFromURL', Config>;
       /**
        * ---
        *
@@ -7282,7 +7338,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Blob, 'Apis.Apis.documentation.generate', Config>;
+      ): Alova2Method<Blob, 'Apis.documentation.generate', Config>;
       /**
        * ---
        *
@@ -7326,7 +7382,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.documentation.clientLanguages', Config>;
+      ): Alova2Method<string[], 'Apis.documentation.clientLanguages', Config>;
       /**
        * ---
        *
@@ -7363,7 +7419,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.documentation.documentationLanguages', Config>;
+      ): Alova2Method<string[], 'Apis.documentation.documentationLanguages', Config>;
       /**
        * ---
        *
@@ -7407,7 +7463,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.documentation.languages', Config>;
+      ): Alova2Method<string[], 'Apis.documentation.languages', Config>;
       /**
        * ---
        *
@@ -7453,7 +7509,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.documentation.languagesMulti', Config>;
+      ): Alova2Method<string[], 'Apis.documentation.languagesMulti', Config>;
       /**
        * ---
        *
@@ -7504,7 +7560,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Record<string, CliOption>, 'Apis.Apis.documentation.listOptions', Config>;
+      ): Alova2Method<Record<string, CliOption>, 'Apis.documentation.listOptions', Config>;
       /**
        * ---
        *
@@ -7730,7 +7786,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<GenerationRequest, 'Apis.Apis.documentation.generateBundle', Config>;
+      ): Alova2Method<GenerationRequest, 'Apis.documentation.generateBundle', Config>;
       /**
        * ---
        *
@@ -7765,7 +7821,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<null, 'Apis.Apis.documentation.renderTemplate', Config>;
+      ): Alova2Method<null, 'Apis.documentation.renderTemplate', Config>;
     };
     config: {
       /**
@@ -7799,7 +7855,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Blob, 'Apis.Apis.config.generateFromURL', Config>;
+      ): Alova2Method<Blob, 'Apis.config.generateFromURL', Config>;
       /**
        * ---
        *
@@ -7938,7 +7994,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Blob, 'Apis.Apis.config.generate', Config>;
+      ): Alova2Method<Blob, 'Apis.config.generate', Config>;
       /**
        * ---
        *
@@ -7982,7 +8038,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.config.languages', Config>;
+      ): Alova2Method<string[], 'Apis.config.languages', Config>;
       /**
        * ---
        *
@@ -8028,7 +8084,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.config.languagesMulti', Config>;
+      ): Alova2Method<string[], 'Apis.config.languagesMulti', Config>;
       /**
        * ---
        *
@@ -8079,7 +8135,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Record<string, CliOption>, 'Apis.Apis.config.listOptions', Config>;
+      ): Alova2Method<Record<string, CliOption>, 'Apis.config.listOptions', Config>;
       /**
        * ---
        *
@@ -8305,7 +8361,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<GenerationRequest, 'Apis.Apis.config.generateBundle', Config>;
+      ): Alova2Method<GenerationRequest, 'Apis.config.generateBundle', Config>;
     };
   }
 
@@ -8337,26 +8393,26 @@ exports[`generate API > should generate code with a variant of openapi file form
 /// <reference types='./globals.d.ts' />
 
 const apiDefinitions = {
-  'Apis.Apis.pet.uploadFile': ['POST', '/pet/{petId}/uploadImage'],
-  'Apis.Apis.pet.addPet': ['POST', '/pet'],
-  'Apis.Apis.pet.updatePet': ['PUT', '/pet'],
-  'Apis.Apis.pet.findPetsByStatus': ['GET', '/pet/findByStatus'],
-  'Apis.Apis.pet.findPetsByTags': ['GET', '/pet/findByTags'],
-  'Apis.Apis.pet.getPetById': ['GET', '/pet/{petId}'],
-  'Apis.Apis.pet.updatePetWithForm': ['POST', '/pet/{petId}'],
-  'Apis.Apis.pet.deletePet': ['DELETE', '/pet/{petId}'],
-  'Apis.Apis.store.getInventory': ['GET', '/store/inventory'],
-  'Apis.Apis.store.placeOrder': ['POST', '/store/order'],
-  'Apis.Apis.store.getOrderById': ['GET', '/store/order/{orderId}'],
-  'Apis.Apis.store.deleteOrder': ['DELETE', '/store/order/{orderId}'],
-  'Apis.Apis.user.createUsersWithListInput': ['POST', '/user/createWithList'],
-  'Apis.Apis.user.getUserByName': ['GET', '/user/{username}'],
-  'Apis.Apis.user.updateUser': ['PUT', '/user/{username}'],
-  'Apis.Apis.user.deleteUser': ['DELETE', '/user/{username}'],
-  'Apis.Apis.user.loginUser': ['GET', '/user/login'],
-  'Apis.Apis.user.logoutUser': ['GET', '/user/logout'],
-  'Apis.Apis.user.createUsersWithArrayInput': ['POST', '/user/createWithArray'],
-  'Apis.Apis.user.createUser': ['POST', '/user']
+  'Apis.pet.uploadFile': ['POST', '/pet/{petId}/uploadImage'],
+  'Apis.pet.addPet': ['POST', '/pet'],
+  'Apis.pet.updatePet': ['PUT', '/pet'],
+  'Apis.pet.findPetsByStatus': ['GET', '/pet/findByStatus'],
+  'Apis.pet.findPetsByTags': ['GET', '/pet/findByTags'],
+  'Apis.pet.getPetById': ['GET', '/pet/{petId}'],
+  'Apis.pet.updatePetWithForm': ['POST', '/pet/{petId}'],
+  'Apis.pet.deletePet': ['DELETE', '/pet/{petId}'],
+  'Apis.store.getInventory': ['GET', '/store/inventory'],
+  'Apis.store.placeOrder': ['POST', '/store/order'],
+  'Apis.store.getOrderById': ['GET', '/store/order/{orderId}'],
+  'Apis.store.deleteOrder': ['DELETE', '/store/order/{orderId}'],
+  'Apis.user.createUsersWithListInput': ['POST', '/user/createWithList'],
+  'Apis.user.getUserByName': ['GET', '/user/{username}'],
+  'Apis.user.updateUser': ['PUT', '/user/{username}'],
+  'Apis.user.deleteUser': ['DELETE', '/user/{username}'],
+  'Apis.user.loginUser': ['GET', '/user/login'],
+  'Apis.user.logoutUser': ['GET', '/user/logout'],
+  'Apis.user.createUsersWithArrayInput': ['POST', '/user/createWithArray'],
+  'Apis.user.createUser': ['POST', '/user']
 } as const;
 
 export default apiDefinitions;
@@ -8726,7 +8782,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<ApiResponse, 'Apis.Apis.pet.uploadFile', Config>;
+      ): Alova2Method<ApiResponse, 'Apis.pet.uploadFile', Config>;
       /**
        * ---
        *
@@ -8772,7 +8828,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<unknown, 'Apis.Apis.pet.addPet', Config>;
+      ): Alova2Method<unknown, 'Apis.pet.addPet', Config>;
       /**
        * ---
        *
@@ -8818,7 +8874,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<unknown, 'Apis.Apis.pet.updatePet', Config>;
+      ): Alova2Method<unknown, 'Apis.pet.updatePet', Config>;
       /**
        * ---
        *
@@ -8875,7 +8931,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Pet[], 'Apis.Apis.pet.findPetsByStatus', Config>;
+      ): Alova2Method<Pet[], 'Apis.pet.findPetsByStatus', Config>;
       /**
        * ---
        *
@@ -8932,7 +8988,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Pet[], 'Apis.Apis.pet.findPetsByTags', Config>;
+      ): Alova2Method<Pet[], 'Apis.pet.findPetsByTags', Config>;
       /**
        * ---
        *
@@ -8987,7 +9043,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Pet, 'Apis.Apis.pet.getPetById', Config>;
+      ): Alova2Method<Pet, 'Apis.pet.getPetById', Config>;
       /**
        * ---
        *
@@ -9048,7 +9104,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<unknown, 'Apis.Apis.pet.updatePetWithForm', Config>;
+      ): Alova2Method<unknown, 'Apis.pet.updatePetWithForm', Config>;
       /**
        * ---
        *
@@ -9085,7 +9141,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<unknown, 'Apis.Apis.pet.deletePet', Config>;
+      ): Alova2Method<unknown, 'Apis.pet.deletePet', Config>;
     };
     store: {
       /**
@@ -9104,7 +9160,7 @@ declare global {
        */
       getInventory<Config extends Alova2MethodConfig<Record<string, number>>>(
         config?: Config
-      ): Alova2Method<Record<string, number>, 'Apis.Apis.store.getInventory', Config>;
+      ): Alova2Method<Record<string, number>, 'Apis.store.getInventory', Config>;
       /**
        * ---
        *
@@ -9148,7 +9204,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Order, 'Apis.Apis.store.placeOrder', Config>;
+      ): Alova2Method<Order, 'Apis.store.placeOrder', Config>;
       /**
        * ---
        *
@@ -9193,7 +9249,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Order, 'Apis.Apis.store.getOrderById', Config>;
+      ): Alova2Method<Order, 'Apis.store.getOrderById', Config>;
       /**
        * ---
        *
@@ -9230,7 +9286,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<unknown, 'Apis.Apis.store.deleteOrder', Config>;
+      ): Alova2Method<unknown, 'Apis.store.deleteOrder', Config>;
     };
     user: {
       /**
@@ -9270,7 +9326,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<null, 'Apis.Apis.user.createUsersWithListInput', Config>;
+      ): Alova2Method<null, 'Apis.user.createUsersWithListInput', Config>;
       /**
        * ---
        *
@@ -9317,7 +9373,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<User, 'Apis.Apis.user.getUserByName', Config>;
+      ): Alova2Method<User, 'Apis.user.getUserByName', Config>;
       /**
        * ---
        *
@@ -9372,7 +9428,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<unknown, 'Apis.Apis.user.updateUser', Config>;
+      ): Alova2Method<unknown, 'Apis.user.updateUser', Config>;
       /**
        * ---
        *
@@ -9409,7 +9465,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<unknown, 'Apis.Apis.user.deleteUser', Config>;
+      ): Alova2Method<unknown, 'Apis.user.deleteUser', Config>;
       /**
        * ---
        *
@@ -9453,7 +9509,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string, 'Apis.Apis.user.loginUser', Config>;
+      ): Alova2Method<string, 'Apis.user.loginUser', Config>;
       /**
        * ---
        *
@@ -9470,7 +9526,7 @@ declare global {
        */
       logoutUser<Config extends Alova2MethodConfig<null>>(
         config?: Config
-      ): Alova2Method<null, 'Apis.Apis.user.logoutUser', Config>;
+      ): Alova2Method<null, 'Apis.user.logoutUser', Config>;
       /**
        * ---
        *
@@ -9508,7 +9564,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<null, 'Apis.Apis.user.createUsersWithArrayInput', Config>;
+      ): Alova2Method<null, 'Apis.user.createUsersWithArrayInput', Config>;
       /**
        * ---
        *
@@ -9546,7 +9602,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<null, 'Apis.Apis.user.createUser', Config>;
+      ): Alova2Method<null, 'Apis.user.createUser', Config>;
     };
   }
 
@@ -9578,26 +9634,26 @@ exports[`generate API > should generate code with a variant of openapi file form
 /// <reference types='./globals.d.ts' />
 
 const apiDefinitions = {
-  'Apis.Apis.tag.pet24': ['POST', '/pet'],
-  'Apis.Apis.pet.updatePet': ['PUT', '/pet'],
-  'Apis.Apis.pet.findPetsByStatus': ['GET', '/pet/findByStatus'],
-  'Apis.Apis.pet.findPetsByTags': ['GET', '/pet/findByTags'],
-  'Apis.Apis.pet.getPetById': ['GET', '/pet/{petId}'],
-  'Apis.Apis.pet.updatePetWithForm': ['POST', '/pet/{petId}'],
-  'Apis.Apis.pet.deletePet': ['DELETE', '/pet/{petId}'],
-  'Apis.Apis.pet.uploadFile': ['POST', '/pet/{petId}/uploadImage'],
-  'Apis.Apis.store.getInventory': ['GET', '/store/inventory'],
-  'Apis.Apis.store.placeOrder': ['POST', '/store/order'],
-  'Apis.Apis.store.getOrderById': ['GET', '/store/order/{orderId}'],
-  'Apis.Apis.store.deleteOrder': ['DELETE', '/store/order/{orderId}'],
-  'Apis.Apis.user.createUser': ['POST', '/user'],
-  'Apis.Apis.user.createUsersWithArrayInput': ['POST', '/user/createWithArray'],
-  'Apis.Apis.user.createUsersWithListInput': ['POST', '/user/createWithList'],
-  'Apis.Apis.user.loginUser': ['GET', '/user/login'],
-  'Apis.Apis.user.logoutUser': ['GET', '/user/logout'],
-  'Apis.Apis.user.getUserByName': ['GET', '/user/{username}'],
-  'Apis.Apis.user.updateUser': ['PUT', '/user/{username}'],
-  'Apis.Apis.user.deleteUser': ['DELETE', '/user/{username}']
+  'Apis.tag.pet24': ['POST', '/pet'],
+  'Apis.pet.updatePet': ['PUT', '/pet'],
+  'Apis.pet.findPetsByStatus': ['GET', '/pet/findByStatus'],
+  'Apis.pet.findPetsByTags': ['GET', '/pet/findByTags'],
+  'Apis.pet.getPetById': ['GET', '/pet/{petId}'],
+  'Apis.pet.updatePetWithForm': ['POST', '/pet/{petId}'],
+  'Apis.pet.deletePet': ['DELETE', '/pet/{petId}'],
+  'Apis.pet.uploadFile': ['POST', '/pet/{petId}/uploadImage'],
+  'Apis.store.getInventory': ['GET', '/store/inventory'],
+  'Apis.store.placeOrder': ['POST', '/store/order'],
+  'Apis.store.getOrderById': ['GET', '/store/order/{orderId}'],
+  'Apis.store.deleteOrder': ['DELETE', '/store/order/{orderId}'],
+  'Apis.user.createUser': ['POST', '/user'],
+  'Apis.user.createUsersWithArrayInput': ['POST', '/user/createWithArray'],
+  'Apis.user.createUsersWithListInput': ['POST', '/user/createWithList'],
+  'Apis.user.loginUser': ['GET', '/user/login'],
+  'Apis.user.logoutUser': ['GET', '/user/logout'],
+  'Apis.user.getUserByName': ['GET', '/user/{username}'],
+  'Apis.user.updateUser': ['PUT', '/user/{username}'],
+  'Apis.user.deleteUser': ['DELETE', '/user/{username}']
 } as const;
 
 export default apiDefinitions;
@@ -9983,7 +10039,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Pet, 'Apis.Apis.tag.pet24', Config>;
+      ): Alova2Method<Pet, 'Apis.tag.pet24', Config>;
     };
     pet: {
       /**
@@ -10059,7 +10115,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Pet, 'Apis.Apis.pet.updatePet', Config>;
+      ): Alova2Method<Pet, 'Apis.pet.updatePet', Config>;
       /**
        * ---
        *
@@ -10123,7 +10179,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Pet[], 'Apis.Apis.pet.findPetsByStatus', Config>;
+      ): Alova2Method<Pet[], 'Apis.pet.findPetsByStatus', Config>;
       /**
        * ---
        *
@@ -10185,7 +10241,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Pet[], 'Apis.Apis.pet.findPetsByTags', Config>;
+      ): Alova2Method<Pet[], 'Apis.pet.findPetsByTags', Config>;
       /**
        * ---
        *
@@ -10245,7 +10301,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Pet, 'Apis.Apis.pet.getPetById', Config>;
+      ): Alova2Method<Pet, 'Apis.pet.getPetById', Config>;
       /**
        * ---
        *
@@ -10306,7 +10362,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<unknown, 'Apis.Apis.pet.updatePetWithForm', Config>;
+      ): Alova2Method<unknown, 'Apis.pet.updatePetWithForm', Config>;
       /**
        * ---
        *
@@ -10343,7 +10399,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<unknown, 'Apis.Apis.pet.deletePet', Config>;
+      ): Alova2Method<unknown, 'Apis.pet.deletePet', Config>;
       /**
        * ---
        *
@@ -10408,7 +10464,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<ApiResponse, 'Apis.Apis.pet.uploadFile', Config>;
+      ): Alova2Method<ApiResponse, 'Apis.pet.uploadFile', Config>;
     };
     store: {
       /**
@@ -10427,7 +10483,7 @@ declare global {
        */
       getInventory<Config extends Alova2MethodConfig<Record<string, number>>>(
         config?: Config
-      ): Alova2Method<Record<string, number>, 'Apis.Apis.store.getInventory', Config>;
+      ): Alova2Method<Record<string, number>, 'Apis.store.getInventory', Config>;
       /**
        * ---
        *
@@ -10471,7 +10527,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Order, 'Apis.Apis.store.placeOrder', Config>;
+      ): Alova2Method<Order, 'Apis.store.placeOrder', Config>;
       /**
        * ---
        *
@@ -10516,7 +10572,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Order, 'Apis.Apis.store.getOrderById', Config>;
+      ): Alova2Method<Order, 'Apis.store.getOrderById', Config>;
       /**
        * ---
        *
@@ -10553,7 +10609,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<unknown, 'Apis.Apis.store.deleteOrder', Config>;
+      ): Alova2Method<unknown, 'Apis.store.deleteOrder', Config>;
     };
     user: {
       /**
@@ -10593,7 +10649,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<null, 'Apis.Apis.user.createUser', Config>;
+      ): Alova2Method<null, 'Apis.user.createUser', Config>;
       /**
        * ---
        *
@@ -10631,7 +10687,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<null, 'Apis.Apis.user.createUsersWithArrayInput', Config>;
+      ): Alova2Method<null, 'Apis.user.createUsersWithArrayInput', Config>;
       /**
        * ---
        *
@@ -10669,7 +10725,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<null, 'Apis.Apis.user.createUsersWithListInput', Config>;
+      ): Alova2Method<null, 'Apis.user.createUsersWithListInput', Config>;
       /**
        * ---
        *
@@ -10713,7 +10769,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string, 'Apis.Apis.user.loginUser', Config>;
+      ): Alova2Method<string, 'Apis.user.loginUser', Config>;
       /**
        * ---
        *
@@ -10730,7 +10786,7 @@ declare global {
        */
       logoutUser<Config extends Alova2MethodConfig<null>>(
         config?: Config
-      ): Alova2Method<null, 'Apis.Apis.user.logoutUser', Config>;
+      ): Alova2Method<null, 'Apis.user.logoutUser', Config>;
       /**
        * ---
        *
@@ -10777,7 +10833,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<User, 'Apis.Apis.user.getUserByName', Config>;
+      ): Alova2Method<User, 'Apis.user.getUserByName', Config>;
       /**
        * ---
        *
@@ -10832,7 +10888,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<unknown, 'Apis.Apis.user.updateUser', Config>;
+      ): Alova2Method<unknown, 'Apis.user.updateUser', Config>;
       /**
        * ---
        *
@@ -10869,7 +10925,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<unknown, 'Apis.Apis.user.deleteUser', Config>;
+      ): Alova2Method<unknown, 'Apis.user.deleteUser', Config>;
     };
   }
 
@@ -10900,35 +10956,35 @@ exports[`generate API > should generate target versioned code 1`] = `
 /// <reference types='./globals.d.ts' />
 
 const apiDefinitions = {
-  'Apis.Apis.clients.generateFromURL': ['GET', '/generate'],
-  'Apis.Apis.clients.generate': ['POST', '/generate'],
-  'Apis.Apis.clients.clientLanguages': ['GET', '/clients'],
-  'Apis.Apis.clients.languages': ['GET', '/{type}/{version}'],
-  'Apis.Apis.clients.languagesMulti': ['GET', '/types'],
-  'Apis.Apis.clients.listOptions': ['GET', '/options'],
-  'Apis.Apis.clients.generateBundle': ['POST', '/model'],
-  'Apis.Apis.servers.generateFromURL': ['GET', '/generate'],
-  'Apis.Apis.servers.generate': ['POST', '/generate'],
-  'Apis.Apis.servers.serverLanguages': ['GET', '/servers'],
-  'Apis.Apis.servers.languages': ['GET', '/{type}/{version}'],
-  'Apis.Apis.servers.languagesMulti': ['GET', '/types'],
-  'Apis.Apis.servers.listOptions': ['GET', '/options'],
-  'Apis.Apis.servers.generateBundle': ['POST', '/model'],
-  'Apis.Apis.documentation.generateFromURL': ['GET', '/generate'],
-  'Apis.Apis.documentation.generate': ['POST', '/generate'],
-  'Apis.Apis.documentation.clientLanguages': ['GET', '/clients'],
-  'Apis.Apis.documentation.documentationLanguages': ['GET', '/documentation'],
-  'Apis.Apis.documentation.languages': ['GET', '/{type}/{version}'],
-  'Apis.Apis.documentation.languagesMulti': ['GET', '/types'],
-  'Apis.Apis.documentation.listOptions': ['GET', '/options'],
-  'Apis.Apis.documentation.generateBundle': ['POST', '/model'],
-  'Apis.Apis.documentation.renderTemplate': ['POST', '/render'],
-  'Apis.Apis.config.generateFromURL': ['GET', '/generate'],
-  'Apis.Apis.config.generate': ['POST', '/generate'],
-  'Apis.Apis.config.languages': ['GET', '/{type}/{version}'],
-  'Apis.Apis.config.languagesMulti': ['GET', '/types'],
-  'Apis.Apis.config.listOptions': ['GET', '/options'],
-  'Apis.Apis.config.generateBundle': ['POST', '/model']
+  'Apis.clients.generateFromURL': ['GET', '/generate'],
+  'Apis.clients.generate': ['POST', '/generate'],
+  'Apis.clients.clientLanguages': ['GET', '/clients'],
+  'Apis.clients.languages': ['GET', '/{type}/{version}'],
+  'Apis.clients.languagesMulti': ['GET', '/types'],
+  'Apis.clients.listOptions': ['GET', '/options'],
+  'Apis.clients.generateBundle': ['POST', '/model'],
+  'Apis.servers.generateFromURL': ['GET', '/generate'],
+  'Apis.servers.generate': ['POST', '/generate'],
+  'Apis.servers.serverLanguages': ['GET', '/servers'],
+  'Apis.servers.languages': ['GET', '/{type}/{version}'],
+  'Apis.servers.languagesMulti': ['GET', '/types'],
+  'Apis.servers.listOptions': ['GET', '/options'],
+  'Apis.servers.generateBundle': ['POST', '/model'],
+  'Apis.documentation.generateFromURL': ['GET', '/generate'],
+  'Apis.documentation.generate': ['POST', '/generate'],
+  'Apis.documentation.clientLanguages': ['GET', '/clients'],
+  'Apis.documentation.documentationLanguages': ['GET', '/documentation'],
+  'Apis.documentation.languages': ['GET', '/{type}/{version}'],
+  'Apis.documentation.languagesMulti': ['GET', '/types'],
+  'Apis.documentation.listOptions': ['GET', '/options'],
+  'Apis.documentation.generateBundle': ['POST', '/model'],
+  'Apis.documentation.renderTemplate': ['POST', '/render'],
+  'Apis.config.generateFromURL': ['GET', '/generate'],
+  'Apis.config.generate': ['POST', '/generate'],
+  'Apis.config.languages': ['GET', '/{type}/{version}'],
+  'Apis.config.languagesMulti': ['GET', '/types'],
+  'Apis.config.listOptions': ['GET', '/options'],
+  'Apis.config.generateBundle': ['POST', '/model']
 } as const;
 
 export default apiDefinitions;
@@ -11463,7 +11519,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Blob, 'Apis.Apis.clients.generateFromURL', Config>;
+      ): Alova2Method<Blob, 'Apis.clients.generateFromURL', Config>;
       /**
        * ---
        *
@@ -11602,7 +11658,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Blob, 'Apis.Apis.clients.generate', Config>;
+      ): Alova2Method<Blob, 'Apis.clients.generate', Config>;
       /**
        * ---
        *
@@ -11646,7 +11702,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.clients.clientLanguages', Config>;
+      ): Alova2Method<string[], 'Apis.clients.clientLanguages', Config>;
       /**
        * ---
        *
@@ -11690,7 +11746,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.clients.languages', Config>;
+      ): Alova2Method<string[], 'Apis.clients.languages', Config>;
       /**
        * ---
        *
@@ -11736,7 +11792,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.clients.languagesMulti', Config>;
+      ): Alova2Method<string[], 'Apis.clients.languagesMulti', Config>;
       /**
        * ---
        *
@@ -11787,7 +11843,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Record<string, CliOption>, 'Apis.Apis.clients.listOptions', Config>;
+      ): Alova2Method<Record<string, CliOption>, 'Apis.clients.listOptions', Config>;
       /**
        * ---
        *
@@ -12013,7 +12069,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<GenerationRequest, 'Apis.Apis.clients.generateBundle', Config>;
+      ): Alova2Method<GenerationRequest, 'Apis.clients.generateBundle', Config>;
     };
     servers: {
       /**
@@ -12047,7 +12103,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Blob, 'Apis.Apis.servers.generateFromURL', Config>;
+      ): Alova2Method<Blob, 'Apis.servers.generateFromURL', Config>;
       /**
        * ---
        *
@@ -12186,7 +12242,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Blob, 'Apis.Apis.servers.generate', Config>;
+      ): Alova2Method<Blob, 'Apis.servers.generate', Config>;
       /**
        * ---
        *
@@ -12223,7 +12279,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.servers.serverLanguages', Config>;
+      ): Alova2Method<string[], 'Apis.servers.serverLanguages', Config>;
       /**
        * ---
        *
@@ -12267,7 +12323,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.servers.languages', Config>;
+      ): Alova2Method<string[], 'Apis.servers.languages', Config>;
       /**
        * ---
        *
@@ -12313,7 +12369,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.servers.languagesMulti', Config>;
+      ): Alova2Method<string[], 'Apis.servers.languagesMulti', Config>;
       /**
        * ---
        *
@@ -12364,7 +12420,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Record<string, CliOption>, 'Apis.Apis.servers.listOptions', Config>;
+      ): Alova2Method<Record<string, CliOption>, 'Apis.servers.listOptions', Config>;
       /**
        * ---
        *
@@ -12590,7 +12646,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<GenerationRequest, 'Apis.Apis.servers.generateBundle', Config>;
+      ): Alova2Method<GenerationRequest, 'Apis.servers.generateBundle', Config>;
     };
     documentation: {
       /**
@@ -12624,7 +12680,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Blob, 'Apis.Apis.documentation.generateFromURL', Config>;
+      ): Alova2Method<Blob, 'Apis.documentation.generateFromURL', Config>;
       /**
        * ---
        *
@@ -12763,7 +12819,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Blob, 'Apis.Apis.documentation.generate', Config>;
+      ): Alova2Method<Blob, 'Apis.documentation.generate', Config>;
       /**
        * ---
        *
@@ -12807,7 +12863,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.documentation.clientLanguages', Config>;
+      ): Alova2Method<string[], 'Apis.documentation.clientLanguages', Config>;
       /**
        * ---
        *
@@ -12844,7 +12900,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.documentation.documentationLanguages', Config>;
+      ): Alova2Method<string[], 'Apis.documentation.documentationLanguages', Config>;
       /**
        * ---
        *
@@ -12888,7 +12944,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.documentation.languages', Config>;
+      ): Alova2Method<string[], 'Apis.documentation.languages', Config>;
       /**
        * ---
        *
@@ -12934,7 +12990,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.documentation.languagesMulti', Config>;
+      ): Alova2Method<string[], 'Apis.documentation.languagesMulti', Config>;
       /**
        * ---
        *
@@ -12985,7 +13041,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Record<string, CliOption>, 'Apis.Apis.documentation.listOptions', Config>;
+      ): Alova2Method<Record<string, CliOption>, 'Apis.documentation.listOptions', Config>;
       /**
        * ---
        *
@@ -13211,7 +13267,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<GenerationRequest, 'Apis.Apis.documentation.generateBundle', Config>;
+      ): Alova2Method<GenerationRequest, 'Apis.documentation.generateBundle', Config>;
       /**
        * ---
        *
@@ -13246,7 +13302,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<null, 'Apis.Apis.documentation.renderTemplate', Config>;
+      ): Alova2Method<null, 'Apis.documentation.renderTemplate', Config>;
     };
     config: {
       /**
@@ -13280,7 +13336,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Blob, 'Apis.Apis.config.generateFromURL', Config>;
+      ): Alova2Method<Blob, 'Apis.config.generateFromURL', Config>;
       /**
        * ---
        *
@@ -13419,7 +13475,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Blob, 'Apis.Apis.config.generate', Config>;
+      ): Alova2Method<Blob, 'Apis.config.generate', Config>;
       /**
        * ---
        *
@@ -13463,7 +13519,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.config.languages', Config>;
+      ): Alova2Method<string[], 'Apis.config.languages', Config>;
       /**
        * ---
        *
@@ -13509,7 +13565,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<string[], 'Apis.Apis.config.languagesMulti', Config>;
+      ): Alova2Method<string[], 'Apis.config.languagesMulti', Config>;
       /**
        * ---
        *
@@ -13560,7 +13616,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<Record<string, CliOption>, 'Apis.Apis.config.listOptions', Config>;
+      ): Alova2Method<Record<string, CliOption>, 'Apis.config.listOptions', Config>;
       /**
        * ---
        *
@@ -13786,7 +13842,7 @@ declare global {
         }
       >(
         config: Config
-      ): Alova2Method<GenerationRequest, 'Apis.Apis.config.generateBundle', Config>;
+      ): Alova2Method<GenerationRequest, 'Apis.config.generateBundle', Config>;
     };
   }
 

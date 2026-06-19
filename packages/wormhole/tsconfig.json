@@ -4,15 +4,32 @@
     "baseUrl": ".",
     "module": "CommonJS",
     "paths": {
-      "~/*": ["./typings/*"],
-      "@/*": ["./src/*"],
-      "#/*": ["./*"]
+      "~/*": [
+        "./typings/*"
+      ],
+      "@/*": [
+        "./src/*"
+      ],
+      "#/*": [
+        "./*"
+      ]
     },
     "resolveJsonModule": false,
-    "types": ["vitest/globals"],
+    "types": [
+      "vitest/globals"
+    ],
     "esModuleInterop": true,
     "skipLibCheck": false
   },
-  "include": ["src/**/*.ts", "test/**/*", "./*.ts", "typings/**/*.d.ts", "./scripts/**/*", "vitest.config.mts"],
-  "exclude": ["test/output/**/*"]
+  "include": [
+    "src/**/*.ts",
+    "test/**/*",
+    "./*.ts",
+    "typings/**/*.d.ts",
+    "./scripts/**/*",
+    "vitest.config.mts"
+  ],
+  "exclude": [
+    "test/output/**/*"
+  ]
 }

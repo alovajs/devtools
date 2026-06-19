@@ -58,7 +58,9 @@ export class PluginDriver {
   ): Promise<any> {
     let prev: any
     for (const plugin of this.plugins) {
-      prev = await this._call(plugin, name, this._params(plugin, makeArgs(plugin, prev, CTX)))
+      const result = await this._call(plugin, name, this._params(plugin, makeArgs(plugin, prev, CTX)))
+      if (result != null)
+        prev = result
     }
     return prev
   }
