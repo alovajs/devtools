@@ -35,7 +35,10 @@ export async function readConfig(projectPath = process.cwd()) {
   // 获取用户已安装的依赖
   const userDependencies = await getUserInstalledDependencies(projectPath)
   const configTmpFileName = `alova_tmp_${Date.now()}.cjs`
-  const outfile = path.join(projectPath, configTmpFileName)
+  // 使用绝对路径：esbuild 写入相对 outfile 时按 cwd 解析，
+  // 而 require() 解析相对路径时基于调用模块所在目录，二者不一致会导致 require 失败。
+  // 绝对路径可保证写入与 require 指向同一文件。
+  const outfile = path.resolve(projectPath, configTmpFileName)
   await esbuild.build({
     entryPoints: [configFile],
     // 排除用户已安装的依赖，避免打包进最终文件
@@ -46,9 +49,15 @@ export async function readConfig(projectPath = process.cwd()) {
     outfile,
     logLevel: 'silent',
   })
-  // eslint-disable-next-line ts/no-require-imports
-  const module = require(outfile)
-  unlink(outfile)
+  // try/finally 保证临时文件在任何情况下（require 抛错）都被清理
+  let module
+  try {
+    // eslint-disable-next-line ts/no-require-imports
+    module = require(outfile)
+  }
+  finally {
+    await unlink(outfile)
+  }
   const config = await configHelper.readUserConfig(module.default || module)
   // Read the cache file and save it
   await configHelper.load(config, projectPath)

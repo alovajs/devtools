@@ -131,7 +131,12 @@ export class TemplateParser implements Parser<OpenAPIDocument, TemplateData, Tem
           workerScript,
           sharedContext: {
             document: this.document,
-            config: this.options.generatorConfig,
+            // 仅传递 worker 所需的可序列化字段；plugins/fetchOptions 等含函数，
+            // 无法通过 workerData 的 structured clone 传递，会导致 "could not be cloned" 错误
+            config: {
+              defaultRequire: this.options.generatorConfig.defaultRequire,
+              externalTypes: this.options.generatorConfig.externalTypes,
+            },
             refNameMapEntries: [...this.refNameMap.entries()],
           },
           poolSize,

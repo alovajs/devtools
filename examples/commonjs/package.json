@@ -1,0 +1,17 @@
+{
+  "name": "worma-demo-commonjs",
+  "private": true,
+  "description": "Worma CommonJS example - all templates for CJS projects",
+  "type": "commonjs",
+  "scripts": {
+    "gen": "worma gen -f",
+    "start": "node src/demo.js"
+  },
+  "dependencies": {
+    "alova": "^3.0.0",
+    "axios": "^1.7.0"
+  },
+  "devDependencies": {
+    "worma": "workspace:*"
+  }
+}

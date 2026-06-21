@@ -16,7 +16,8 @@ setGlobalConfig({ Error })
 
 interface WorkerSetup {
   document: OpenAPIDocument
-  config: GeneratorConfig
+  /** 仅包含 worker 所需的可序列化字段（避免传递含函数的 plugins/fetchOptions） */
+  config: Pick<GeneratorConfig, 'defaultRequire' | 'externalTypes'>
   refNameMapEntries: [string, string][]
 }
 

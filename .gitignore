@@ -18,7 +18,7 @@ dist-ssr
 # testing
 /coverage
 alova_tmp_*
-.alova-cache
+.worma-cache
 .idea/
 *.log
 examples/**/src

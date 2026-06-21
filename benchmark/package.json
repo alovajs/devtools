@@ -1,0 +1,35 @@
+{
+  "name": "worma-benchmark",
+  "private": true,
+  "type": "module",
+  "description": "Benchmark comparing worma with other OpenAPI TypeScript code generators",
+  "scripts": {
+    "generate-specs": "tsx scripts/generate-specs.ts",
+    "bench": "tsx bench.ts",
+    "dev": "concurrently -n vite,hono -c blue,green 'NODE_OPTIONS=--expose-gc vite' 'tsx server.ts'",
+    "dev:vite": "NODE_OPTIONS='--expose-gc' vite",
+    "dev:server": "tsx server.ts",
+    "build": "vite build",
+    "start": "tsx server.ts --prod",
+    "preview": "vite preview",
+    "clean": "rm -rf output node_modules dist results"
+  },
+  "devDependencies": {
+    "@ant-design/icons-vue": "^7.0.1",
+    "@hey-api/client-fetch": "^0.8.4",
+    "@hey-api/openapi-ts": "^0.64.0",
+    "@hono/node-server": "^1.14.0",
+    "@vitejs/plugin-vue": "catalog:build",
+    "ant-design-vue": "^4.2.6",
+    "concurrently": "^9.1.0",
+    "echarts": "^5.6.0",
+    "hono": "^4.7.0",
+    "openapi-typescript": "^7.6.0",
+    "tsx": "catalog:dev",
+    "typescript": "catalog:dev",
+    "vite": "catalog:build",
+    "vue": "catalog:frontend",
+    "vue-echarts": "^7.0.3",
+    "worma": "workspace:*"
+  }
+}

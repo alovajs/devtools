@@ -1,0 +1,14 @@
+# Benchmark outputs (generated)
+output/
+results/
+.temp-*.config.ts
+
+# worma readConfig 临时打包文件 & openapi-ts 错误日志
+alova_tmp_*.cjs
+openapi-ts-error-*.log
+
+# Specs are generated, but we track them for convenience
+# specs/ is git tracked
+
+# Dependencies
+node_modules/

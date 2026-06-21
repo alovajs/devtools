@@ -434,4 +434,8 @@ describe('config', () => {
     const tsConfig = await readConfig(customPath)
     expectConfigEqual(tsConfig, configMap.tsWithoutImport.expectedConfig)
   })
+
+  // readConfig 的相对路径 / try-finally 清理回归测试见 test/readConfig.spec.ts
+  // （需真实文件系统 + 真实 esbuild，memfs 的 esbuild mock 会预填充 Module._cache
+  //  绕过 require 的路径解析，无法捕获相关回归）
 })
