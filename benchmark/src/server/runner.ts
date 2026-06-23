@@ -5,8 +5,9 @@
  * 由 benchmark/server.ts 的 Hono 服务直接 import。
  */
 
-import { spawn, execSync } from 'node:child_process'
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync, rmSync } from 'node:fs'
+import type { Buffer } from 'node:buffer'
+import { execSync, spawn } from 'node:child_process'
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { performance } from 'node:perf_hooks'
 import { fileURLToPath } from 'node:url'
@@ -40,7 +41,8 @@ export interface AggregatedResult extends BenchmarkResult {
 function defaultBaseDir(): string {
   try {
     return resolve(fileURLToPath(import.meta.url), '..', '..', '..')
-  } catch {
+  }
+  catch {
     return process.cwd()
   }
 }
@@ -64,8 +66,9 @@ function getProcessRSS(pid: number): number {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'ignore'],
     }).trim()
-    return parseInt(out, 10) || 0
-  } catch {
+    return Number.parseInt(out, 10) || 0
+  }
+  catch {
     return 0
   }
 }
@@ -79,9 +82,10 @@ function getProcessTreeRSS(rootPid: number): number {
       stdio: ['pipe', 'pipe', 'ignore'],
     }).trim().split('\n').filter(Boolean)
     for (const cp of children) {
-      total += getProcessTreeRSS(parseInt(cp, 10))
+      total += getProcessTreeRSS(Number.parseInt(cp, 10))
     }
-  } catch {
+  }
+  catch {
     // pgrep 可能不存在，仅取主进程 RSS
   }
   return total
@@ -120,7 +124,10 @@ function runCmdAsync(cmd: string, cwd?: string): Promise<CmdResult> {
       child.kill('SIGTERM')
       // 如果 SIGTERM 后 3 秒还不死，SIGKILL
       setTimeout(() => {
-        try { child.kill('SIGKILL') } catch { /* ignore */ }
+        try {
+          child.kill('SIGKILL')
+        }
+        catch { /* ignore */ }
       }, 3000)
     }, 120_000)
 
@@ -128,15 +135,21 @@ function runCmdAsync(cmd: string, cwd?: string): Promise<CmdResult> {
       try {
         if (child.pid) {
           const rss = getProcessTreeRSS(child.pid)
-          if (rss > peakRSS) peakRSS = rss
+          if (rss > peakRSS)
+            peakRSS = rss
         }
-      } catch {
+      }
+      catch {
         // 进程可能已结束
       }
     }, 100)
 
-    child.stdout?.on('data', (d: Buffer) => { stdout += d.toString() })
-    child.stderr?.on('data', (d: Buffer) => { stderr += d.toString() })
+    child.stdout?.on('data', (d: Buffer) => {
+      stdout += d.toString()
+    })
+    child.stderr?.on('data', (d: Buffer) => {
+      stderr += d.toString()
+    })
 
     child.on('close', (code) => {
       clearTimeout(timeoutId)
@@ -146,9 +159,11 @@ function runCmdAsync(cmd: string, cwd?: string): Promise<CmdResult> {
       try {
         if (child.pid) {
           const rss = getProcessTreeRSS(child.pid)
-          if (rss > peakRSS) peakRSS = rss
+          if (rss > peakRSS)
+            peakRSS = rss
         }
-      } catch { /* ignore */ }
+      }
+      catch { /* ignore */ }
 
       const timeMs = Math.round(performance.now() - start)
       resolve({
@@ -177,23 +192,26 @@ function runCmdAsync(cmd: string, cwd?: string): Promise<CmdResult> {
 
 // ─── 目录统计 ────────────────────────────────────────
 
-function measureDir(dir: string): { fileCount: number; totalSize: number; files: string[] } {
+function measureDir(dir: string): { fileCount: number, totalSize: number, files: string[] } {
   const files: string[] = []
   let totalSize = 0
 
   function walk(d: string) {
-    if (!existsSync(d)) return
+    if (!existsSync(d))
+      return
     const entries = readdirSync(d, { withFileTypes: true })
     for (const entry of entries) {
       const fullPath = join(d, entry.name)
       if (entry.isDirectory()) {
         walk(fullPath)
-      } else if (entry.isFile()) {
+      }
+      else if (entry.isFile()) {
         const rel = fullPath.substring(dir.length + 1)
         files.push(rel)
         try {
           totalSize += statSync(fullPath).size
-        } catch { /* ignore */ }
+        }
+        catch { /* ignore */ }
       }
     }
   }
@@ -213,14 +231,16 @@ export function warmupVersionCache(): void {
 }
 
 function getPackageVersion(name: string): string {
-  if (_versionCache.has(name)) return _versionCache.get(name)!
+  if (_versionCache.has(name))
+    return _versionCache.get(name)!
   try {
     const pkgPath = resolve(baseDir(), 'node_modules', name, 'package.json')
     const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'))
     const ver = pkg.version || '?'
     _versionCache.set(name, ver)
     return ver
-  } catch {
+  }
+  catch {
     _versionCache.set(name, '?')
     return '?'
   }
@@ -233,19 +253,17 @@ async function runWorma(specFile: string, outputDir: string): Promise<void> {
 
   // 通过环境变量注入动态 input/output，统一使用根目录的 worma.config.ts
   const envPrefix = `BENCHMARK_SPEC='${specFile}' BENCHMARK_OUTPUT='${outputDir}'`
-  const result = await runCmdAsync(`${envPrefix} pnpm exec worma gen -f`, configDir)
-  if (!result.ok) throw new Error(result.stderr || 'worma generation failed')
-
-  // 清理 worma 缓存
-  const cacheDir = join(configDir, '.worma-cache')
-  if (existsSync(cacheDir)) rmSync(cacheDir, { recursive: true, force: true })
+  const result = await runCmdAsync(`${envPrefix} pnpm exec worma gen`, configDir)
+  if (!result.ok)
+    throw new Error(result.stderr || 'worma generation failed')
 }
 
 async function runOpenapiTS(specFile: string, outputDir: string): Promise<void> {
   const outFile = join(outputDir, 'schema.d.ts')
   mkdirSync(outputDir, { recursive: true })
   const result = await runCmdAsync(`npx openapi-typescript '${specFile}' -o '${outFile}'`)
-  if (!result.ok) throw new Error(result.stderr || 'openapi-typescript failed')
+  if (!result.ok)
+    throw new Error(result.stderr || 'openapi-typescript failed')
 }
 
 async function runHeyApi(specFile: string, outputDir: string): Promise<void> {
@@ -262,8 +280,10 @@ export default defineConfig({
   mkdirSync(outputDir, { recursive: true })
   try {
     const result = await runCmdAsync(`pnpm exec openapi-ts -f ${configPath}`)
-    if (!result.ok) throw new Error(result.stderr || '@hey-api/openapi-ts failed')
-  } finally {
+    if (!result.ok)
+      throw new Error(result.stderr || '@hey-api/openapi-ts failed')
+  }
+  finally {
     rmSync(configPath, { force: true })
   }
 }
@@ -275,7 +295,7 @@ export default defineConfig({
  */
 export async function runSingleBenchmark(scale: number, tool: string): Promise<BenchmarkResult> {
   const specFile = resolve(baseDir(), 'specs', `petstore-${scale}.json`)
-  const outputDir = resolve(baseDir(), 'output', `${tool}-${scale}-${Date.now()}`)
+  const outputDir = resolve(baseDir(), 'output', `${tool}-${scale}`)
 
   rmSync(outputDir, { recursive: true, force: true })
   mkdirSync(outputDir, { recursive: true })
@@ -320,7 +340,8 @@ export async function runSingleBenchmark(scale: number, tool: string): Promise<B
       version,
       error: null,
     }
-  } catch (e: any) {
+  }
+  catch (e: any) {
     const after = performance.now()
     return {
       tool,
@@ -343,7 +364,7 @@ export async function runSingleBenchmark(scale: number, tool: string): Promise<B
  */
 export async function runSingleBenchmarkWithMem(scale: number, tool: string): Promise<BenchmarkResult> {
   const specFile = resolve(baseDir(), 'specs', `petstore-${scale}.json`)
-  const outputDir = resolve(baseDir(), 'output', `${tool}-${scale}-${Date.now()}`)
+  const outputDir = resolve(baseDir(), 'output', `${tool}-${scale}`)
 
   rmSync(outputDir, { recursive: true, force: true })
   mkdirSync(outputDir, { recursive: true })
@@ -361,18 +382,16 @@ export async function runSingleBenchmarkWithMem(scale: number, tool: string): Pr
         const envPrefix = `BENCHMARK_SPEC='${specFile}' BENCHMARK_OUTPUT='${outputDir}'`
         cmdResult = await runCmdAsync(`${envPrefix} pnpm exec worma gen -f`, configDir)
 
-        // 清理 worma 缓存
-        const cacheDir = join(configDir, '.worma-cache')
-        if (existsSync(cacheDir)) rmSync(cacheDir, { recursive: true, force: true })
-
-        if (!cmdResult.ok) throw new Error(cmdResult.stderr || 'worma generation failed')
+        if (!cmdResult.ok)
+          throw new Error(cmdResult.stderr || 'worma generation failed')
         break
       }
       case 'openapi-typescript': {
         const outFile = join(outputDir, 'schema.d.ts')
         mkdirSync(outputDir, { recursive: true })
         cmdResult = await runCmdAsync(`npx openapi-typescript '${specFile}' -o '${outFile}'`)
-        if (!cmdResult.ok) throw new Error(cmdResult.stderr || 'openapi-typescript failed')
+        if (!cmdResult.ok)
+          throw new Error(cmdResult.stderr || 'openapi-typescript failed')
         break
       }
       case '@hey-api/openapi-ts': {
@@ -389,10 +408,12 @@ export default defineConfig({
         mkdirSync(outputDir, { recursive: true })
         try {
           cmdResult = await runCmdAsync(`pnpm exec openapi-ts -f ${configPath}`)
-        } finally {
+        }
+        finally {
           rmSync(configPath, { force: true })
         }
-        if (!cmdResult.ok) throw new Error(cmdResult.stderr || '@hey-api/openapi-ts failed')
+        if (!cmdResult.ok)
+          throw new Error(cmdResult.stderr || '@hey-api/openapi-ts failed')
         break
       }
       default:
@@ -412,7 +433,8 @@ export default defineConfig({
       version,
       error: null,
     }
-  } catch (e: any) {
+  }
+  catch (e: any) {
     return {
       tool,
       scale,
@@ -440,26 +462,27 @@ export function aggregateResults(rawResults: BenchmarkResult[]): AggregatedResul
   const groups = new Map<string, BenchmarkResult[]>()
   for (const r of rawResults) {
     const key = `${r.tool}-${r.scale}`
-    if (!groups.has(key)) groups.set(key, [])
+    if (!groups.has(key))
+      groups.set(key, [])
     groups.get(key)!.push(r)
   }
 
   const aggregated: AggregatedResult[] = []
   for (const [, items] of groups) {
-    const valid = items.filter((i) => !i.error && i.timeMs >= 0)
+    const valid = items.filter(i => !i.error && i.timeMs >= 0)
     if (valid.length === 0) {
       aggregated.push({ ...items[0], avgTimeMs: -1, minTimeMs: -1, maxTimeMs: -1, iterations: items.length })
       continue
     }
-    const times = valid.map((i) => i.timeMs)
-    const mems = valid.filter((i) => i.memoryMB > 0).map((i) => i.memoryMB)
+    const times = valid.map(i => i.timeMs)
+    const mems = valid.filter(i => i.memoryMB > 0).map(i => i.memoryMB)
 
     const avgMem = mems.length > 0
       ? Math.round(mems.reduce((a, b) => a + b, 0) / mems.length)
       : -1
 
     // avgTotalSize: 取每组的平均 totalSize
-    const sizes = valid.map((i) => i.totalSize)
+    const sizes = valid.map(i => i.totalSize)
     const avgSize = sizes.length > 0
       ? Math.round(sizes.reduce((a, b) => a + b, 0) / sizes.length)
       : -1

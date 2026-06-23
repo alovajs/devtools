@@ -761,8 +761,8 @@ interface GeneratorConfig {
 
 ### 环境变量覆盖
 
-| 环境变量                      | 说明                             |
-| ----------------------------- | -------------------------------- |
+| 环境变量                   | 说明                             |
+| -------------------------- | -------------------------------- |
 | `WORMA_WORKERS=auto\|N\|0` | 覆盖 `performance.workerPool`    |
 | `WORMA_PRETTIER=0\|1`      | 覆盖 `performance.prettierFinal` |
 
@@ -842,25 +842,25 @@ export default defineConfig({
 
 ## 支持的平台
 
-| 平台 / 技术栈 | Demo / UI 地址 | OpenAPI / Swagger 文件获取方式 |
-|---|---|---|
-| **Swagger Petstore (OAS 3.0)** | https://petstore3.swagger.io/ | GET `https://petstore3.swagger.io/api/v3/openapi.json` |
-| **Swagger Petstore (Swagger 2.0)** | https://petstore.swagger.io/ | GET `https://petstore.swagger.io/v2/swagger.json` |
-| **Spring Boot + Knife4j (OAS3 / springdoc)** | https://openapi3.demo.knife4jnext.com/doc.html | GET `https://openapi3.demo.knife4jnext.com/v3/api-docs` |
-| **Spring Boot + Knife4j (Swagger2 / springfox)** | http://knife4j.xiaominfo.com/doc.html | GET `http://knife4j.xiaominfo.com/v2/api-docs` |
-| **FastAPI** | http://fastapi-example.dokkuapp.com/docs | GET `http://fastapi-example.dokkuapp.com/openapi.json` |
-| **YApi** | http://yapi.demo.qunar.com/ 或 https://yapi.smart-xwork.cn/ | 无公开端点，需登录→项目→数据管理→导出 Swagger JSON；或用接口 `GET /api/open/plugin/export?type=swagger&pid={pid}&token={token}` |
+| 平台 / 技术栈                                    | Demo / UI 地址                                              | OpenAPI / Swagger 文件获取方式                                                                                                  |
+| ------------------------------------------------ | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| **Swagger Petstore (OAS 3.0)**                   | https://petstore3.swagger.io/                               | GET `https://petstore3.swagger.io/api/v3/openapi.json`                                                                          |
+| **Swagger Petstore (Swagger 2.0)**               | https://petstore.swagger.io/                                | GET `https://petstore.swagger.io/v2/swagger.json`                                                                               |
+| **Spring Boot + Knife4j (OAS3 / springdoc)**     | https://openapi3.demo.knife4jnext.com/doc.html              | GET `https://openapi3.demo.knife4jnext.com/v3/api-docs`                                                                         |
+| **Spring Boot + Knife4j (Swagger2 / springfox)** | http://knife4j.xiaominfo.com/doc.html                       | GET `http://knife4j.xiaominfo.com/v2/api-docs`                                                                                  |
+| **FastAPI**                                      | http://fastapi-example.dokkuapp.com/docs                    | GET `http://fastapi-example.dokkuapp.com/openapi.json`                                                                          |
+| **YApi**                                         | http://yapi.demo.qunar.com/ 或 https://yapi.smart-xwork.cn/ | 无公开端点，需登录→项目→数据管理→导出 Swagger JSON；或用接口 `GET /api/open/plugin/export?type=swagger&pid={pid}&token={token}` |
 
 ### 平台规则
 
 用户通过 `platform('<type>')` 传入平台类型字符串，插件内部使用 `config.input` 作为 API 文档项目 URL，根据平台类型自动拼接 OpenAPI 文件地址，赋值数组给 `config.input` 供后续依次尝试。
 
-| 平台类型 | 生成的 input 数组 |
-|----------|-------------------|
+| 平台类型    | 生成的 input 数组                                                                    |
+| ----------- | ------------------------------------------------------------------------------------ |
 | `'swagger'` | `['<input>/api/v3/openapi.json', '<input>/v2/swagger.json', '<input>/openapi.json']` |
-| `'knife4j'` | `['<input>/v3/api-docs', '<input>/v2/api-docs']` |
-| `'fastapi'` | `['<input>/openapi.json']` |
-| `'yapi'` | `['<input>']`（需包含 pid/token 参数） |
+| `'knife4j'` | `['<input>/v3/api-docs', '<input>/v2/api-docs']`                                     |
+| `'fastapi'` | `['<input>/openapi.json']`                                                           |
+| `'yapi'`    | `['<input>']`（需包含 pid/token 参数）                                               |
 
 ## config.input 支持 string[]
 
@@ -886,6 +886,7 @@ defineConfig({
 ## 内部实现
 
 `platform` 插件通过 `config` hook 修改 `config.input`：
+
 1. 接收用户传入的平台类型字符串（如 `'swagger'`）
 2. 从 `config.input` 读取 API 文档项目 URL
 3. 根据平台类型自动拼接生成 OpenAPI 文件 URL 数组
@@ -1468,28 +1469,39 @@ Generating `./packages/app`...
 | 状态栏 | `Alova` | `Worma` |
 | 提示文字 | `module \`@alova/wormhole\` not found` | `module \`worma\` not found` |
 
-### 源码文件重命名
+### defineConfig 使用示例
 
-| 旧文件名 | 新文件名 |
-|----------|----------|
-| `packages/wormhole/` | `packages/worma/` |
-| `src/functions/getWormhole.ts` | `src/functions/getWorma.ts` |
-| `src/helper/wormhole.ts` | `src/helper/worma.ts` |
-| `src/functions/alovaJson.ts` | `src/functions/wormaJson.ts` |
-| `src/functions/readAlovaRc.ts` | `src/functions/readWormaRc.ts` |
-| `test/alovarc.spec.ts` | `test/wormarc.spec.ts` |
-| `test/alovaCache.spec.ts` | `test/wormaCache.spec.ts` |
-| 模板 `alova.config.*.handlebars` | `worma.config.*.handlebars` |
-| 示例 `alova.config.*` | `worma.config.*` |
+```ts
+// 旧
+import { defineConfig } from '@alova/wormhole';
+// 新
+import { defineConfig } from 'worma';
 
-### 全局变量/类型重命名
+// 旧
+import { platform } from '@alova/wormhole/plugin';
+// 新
+import { platform } from 'worma/plugin';
+```
 
-| 旧名称 | 新名称 |
-|--------|--------|
-| `ALOVA_WORMHOLE_CONFIG` | `WORMA_CONFIG` |
-| `Wormhole` (类型) | `Worma` |
-| `MockWormhole` | `MockWorma` |
-| `getWormhole()` | `getWorma()` |
-| `readAlovaRc()` | `readWormaRc()` |
-| `hasAlovaRc()` | `hasWormaRc()` |
-| `WORMHOLE_ROOT` | `WORMA_ROOT` |
+### 配置文件命名
+
+使用者需要将项目中的配置文件名从 `alova.config` 改为 `worma.config`：
+
+```bash
+# 旧文件名
+alova.config.ts
+alova.config.js
+
+# 新文件名
+worma.config.ts
+worma.config.js
+```
+
+### 简易配置文件 `.wormarc`
+
+原 `.alovarc` 重命名为 `.wormarc`，格式和用法保持不变。
+
+### 缓存产出物
+
+生成的缓存文件从 `.alova-cache/` 目录改为 `.worma-cache/`，建议更新 `.gitignore`（若之前有配置）。
+````
