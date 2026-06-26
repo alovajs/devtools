@@ -1,9 +1,20 @@
-import type { MethodType, RequestBody } from 'alova'
+import type { AlovaRequestAdapter, MethodType, RequestBody } from 'alova'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { createAlova } from 'alova'
-import adapterFetch from 'alova/fetch'
 import { logger } from '@/helper/logger'
+
+// Use lazy require for alova/fetch to avoid dts-bundle-generator TS 6.0
+// CJS module resolution issue (fetch.d.cts uses export = FetchTypes which
+// doesn't include the adapterFetch function in the export)
+let _adapterFetch: (() => AlovaRequestAdapter<any, Response, Headers>) | undefined
+function getAdapterFetch() {
+  if (!_adapterFetch) {
+    // eslint-disable-next-line ts/no-require-imports
+    _adapterFetch = require('alova/fetch') as () => AlovaRequestAdapter<any, Response, Headers>
+  }
+  return _adapterFetch
+}
 
 export interface FetchOptions {
   headers?: Record<string, string>
@@ -18,7 +29,7 @@ export interface FetchOptions {
 
 export async function fetchData(url: string, options: FetchOptions = {}) {
   const { headers, timeout, insecure, method = 'GET', data, params } = options
-  return createAlova({ requestAdapter: adapterFetch() }).Request<Response>({
+  return createAlova({ requestAdapter: getAdapterFetch()() }).Request<Response>({
     url,
     method,
     data,
