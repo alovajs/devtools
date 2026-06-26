@@ -1,0 +1,104 @@
+---
+title: 预定义模板
+description: 使用内置的五套预定义模板
+---
+
+
+## alova（functional）
+
+按需引入模式，每个 API 作为独立函数导出，支持 Tree-shaking。
+
+```javascript
+import { alova } from 'worma/template';
+
+template: alova({ framework: 'vue' })
+```
+
+**模板结构：**
+
+```text
+alova-functional/typescript/
+├── index.ts.handlebars       # alovaInstance + 重导出
+├── {tag}.ts.handlebars       # 按 tag 生成 API 函数
+└── types.ts.handlebars       # 类型声明
+```
+
+**调用示例：**
+
+```typescript
+import { getUser } from './api/user';
+const user = await getUser({ params: { id: 1 } });
+```
+
+## alovaGlobals
+
+全局挂载模式，兼容 alova@3。
+
+```javascript
+import { alovaGlobals } from 'worma/template';
+
+template: alovaGlobals({
+  global: 'Apis',
+  globalHost: 'globalThis',
+})
+```
+
+**调用示例：**
+
+```typescript
+const users = await Apis.user.getUserList({ params: { page: 1 } });
+```
+
+## axios
+
+生成基于 axios 的调用函数。
+
+```javascript
+import { axios } from 'worma/template';
+template: axios();
+```
+
+**调用示例：**
+
+```typescript
+import { getUser } from './api/user';
+const user = await getUser({ params: { id: 1 } });
+```
+
+## fetch
+
+生成基于原生 fetch 的调用函数，无需额外依赖。
+
+```javascript
+import { fetch } from 'worma/template';
+template: fetch();
+```
+
+## ky
+
+生成基于 [ky](https://github.com/sindresorhus/ky) 的调用函数。
+
+```javascript
+import { ky } from 'worma/template';
+template: ky();
+```
+
+## importDescriptor 自动推导
+
+每个按需引入模板（functional / axios / fetch / ky）的 API 自动生成 `importDescriptor`，用于 AI Skill 中的 import 语句：
+
+```json
+{
+  "needed": true,
+  "names": ["getUser"],
+  "source": "./user"
+}
+```
+
+根据模块类型自动渲染：
+
+| type 值 | 生成语句 |
+|---------|---------|
+| `typescript` | `import { getUser } from './user'` |
+| `module` | `import { getUser } from './user'` |
+| `commonjs` | `const { getUser } = require('./user')` |

@@ -135,5 +135,8 @@
     "vnode",
     "vueuse",
     "yapi"
-  ]
+  ],
+  "files.associations": {
+    "*.mdx": "markdown"
+  }
 }

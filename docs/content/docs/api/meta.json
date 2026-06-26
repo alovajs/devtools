@@ -1,0 +1,8 @@
+{
+  "pages": [
+    "core-functions",
+    "configuration",
+    "plugin-api"
+  ],
+  "title": "API 参考"
+}

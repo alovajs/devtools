@@ -1,0 +1,73 @@
+---
+title: CLI 命令
+description: wormhole init / gen 命令参数详解
+---
+
+
+## wormhole init
+
+初始化配置文件。
+
+```bash
+# 在当前目录创建 .wormarc
+npx worma init
+
+# 指定模板
+npx worma init --template axios
+```
+
+## wormhole gen
+
+根据配置生成 API 代码。
+
+```bash
+# 基本用法
+npx worma gen
+
+# 强制重新生成所有文件
+npx worma gen --force
+
+# 指定项目路径
+npx worma gen --project-path ./packages/app
+
+# 查看详细日志
+npx worma gen --verbose
+```
+
+### 参数详解
+
+| 参数 | 说明 | 默认值 |
+|------|------|--------|
+| `--force` | 强制重新生成，忽略缓存 | `false` |
+| `--project-path <path>` | 指定项目根目录 | 当前目录 |
+| `--verbose` | 详细日志输出 | `false` |
+
+### 进度展示
+
+`gen` 命令默认显示多行进度条：
+
+```text
+Generating `./src/api`...
+  [core]   ████████████░░░░░░░░   60% template data parsed
+  [aiDoc]  ████░░░░░░░░░░░░░░░░   20% rendering references
+```
+
+### 退出码
+
+| 退出码 | 说明 |
+|--------|------|
+| 0 | 生成成功 |
+| 1 | 生成失败（配置错误、网络错误等） |
+
+## workspace 模式
+
+在 monorepo 项目的根目录运行，为所有子项目并行生成：
+
+```bash
+# 如果根目录有 worma.config 配置了多个 generator
+npx worma gen
+
+# 或者在 workspace 模式下指定子项目
+npx worma gen --project-path ./packages/user-service
+npx worma gen --project-path ./packages/order-service
+```

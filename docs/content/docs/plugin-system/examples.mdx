@@ -1,0 +1,99 @@
+---
+title: 示例：修改函数名/响应类型的插件
+description: 通过实际示例学习插件开发
+---
+
+
+## 示例 1：统一修改函数名前缀
+
+为所有自动生成的 API 函数添加统一前缀：
+
+```javascript
+import { defineConfig } from 'worma';
+
+export default defineConfig({
+  generator: [
+    {
+      plugins: [
+        {
+          name: 'prefix-api',
+          beforeCodeGenerate({ data }) {
+            data.apis = data.apis.map(api => ({
+              ...api,
+              name: `api_${api.name}`,
+              responseName: `Api${api.responseName}`,
+            }));
+            return data;
+          },
+        },
+      ],
+    },
+  ],
+});
+```
+
+## 示例 2：包装响应类型
+
+将所有响应类型包装在统一的 `ApiResponse<T>` 泛型中：
+
+```javascript
+{
+  name: 'wrap-response',
+  beforeCodeGenerate({ data, reportProgress }) {
+    reportProgress(50, 'wrapping response types');
+
+    // 在每个 API 的 responseName 前加上 AutoWrapped 前缀
+    data.apis = data.apis.map(api => ({
+      ...api,
+      responseName: `AutoWrapped${api.responseName}`,
+    }));
+    return data;
+  },
+  codeGenerated({ files }) {
+    // 在 types.ts 中追加包装类型
+    const typesFile = Object.keys(files).find(f => f.endsWith('types.ts'));
+    if (typesFile) {
+      files[typesFile] += `
+
+// 自动包装的响应类型
+type ApiResponse<T> = {
+  code: number;
+  message: string;
+  data: T;
+};
+`;
+    }
+  },
+}
+```
+
+## 示例 3：报告生成进度
+
+```javascript
+{
+  name: 'progress-demo',
+  async openapiParsed({ document, reportProgress }) {
+    const apis = Object.values(document.paths || {}).flatMap(
+      (pathItem) => Object.values(pathItem || {})
+    );
+    const total = apis.length;
+
+    for (let i = 0; i < total; i++) {
+      // 模拟处理
+      await new Promise(r => setTimeout(r, 10));
+      reportProgress(
+        Math.round(((i + 1) / total) * 100),
+        `processing api ${i + 1}/${total}`
+      );
+    }
+  },
+}
+```
+
+CLI 输出效果：
+
+```text
+Generating `./src/api`...
+  [core]     ████████████████████   100% completed
+  [progress-demo] ████████████░░░░░░   60% processing api 6/10
+```

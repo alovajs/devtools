@@ -3,6 +3,7 @@ packages:
   - examples/*
   - packages/*
   - e2e-fixtures-temp/*
+  - docs
 
 catalog:
   '@ant-design/icons-vue': ^7.0.1

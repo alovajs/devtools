@@ -1,0 +1,79 @@
+---
+title: 插件 API
+description: ApiPlugin 接口和内置插件 API
+---
+
+
+## ApiPlugin 接口
+
+```typescript
+type ReportProgress = (progress: number, message?: string) => void;
+
+interface ApiPlugin {
+  name?: string;
+
+  config?: (params: {
+    config: GeneratorConfig;
+    projectPath: string;
+    reportProgress: ReportProgress;
+  }) => MaybePromise<GeneratorConfig | undefined | null | void>;
+
+  beforeOpenapiParse?: (params: {
+    config: Readonly<GeneratorConfig>;
+    projectPath: string;
+    reportProgress: ReportProgress;
+  }) => void;
+
+  openapiParsed?: (params: {
+    config: Readonly<GeneratorConfig>;
+    document: OpenAPIDocument;
+    projectPath: string;
+    reportProgress: ReportProgress;
+  }) => MaybePromise<OpenAPIDocument | undefined | null | void>;
+
+  beforeCodeGenerate?: (params: {
+    config: Readonly<GeneratorConfig>;
+    data: TemplateData;
+    projectPath: string;
+    reportProgress: ReportProgress;
+  }) => MaybePromise<string | undefined | null | void>;
+
+  codeGenerated?: (params: {
+    config: Readonly<GeneratorConfig>;
+    data: TemplateData;
+    files: Record<string, string>;
+    projectPath: string;
+    error?: Error;
+    reportProgress: ReportProgress;
+  }) => MaybePromise<void>;
+}
+```
+
+## 内置插件
+
+### importType
+
+```typescript
+import { importType } from 'worma/plugin';
+
+function importType(
+  imports: Record<string, string[]>,
+  options?: { files?: string[] }
+): ApiPlugin;
+```
+
+### rename
+
+```typescript
+import { rename } from 'worma/plugin';
+
+function rename(mapping: Record<string, string>): ApiPlugin;
+```
+
+### aiDoc
+
+```typescript
+import { aiDoc } from 'worma/plugin';
+
+function aiDoc(options?: { template?: string }): ApiPlugin;
+```

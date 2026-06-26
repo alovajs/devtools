@@ -1,0 +1,102 @@
+---
+title: 核心函数
+description: defineConfig 和 generate 的编程 API
+---
+
+
+## defineConfig
+
+定义 wormhole 配置。
+
+```typescript
+import { defineConfig } from 'worma';
+
+export default defineConfig({
+  generator: [...],
+});
+```
+
+**类型签名：**
+
+```typescript
+function defineConfig(config: Config): Config;
+```
+
+`Config` 包含一个必填的 `generator: GeneratorConfig[]` 数组。
+
+## generate
+
+编程方式调用代码生成，适用于 CI/CD 或自定义脚本集成。
+
+```typescript
+import { generate } from 'worma';
+
+await generate(
+  {
+    generator: [
+      {
+        input: 'https://api.example.com/openapi.json',
+        output: 'src/api',
+        template: () => ({ path: './node_modules/...' }),
+      },
+    ],
+  },
+  {
+    force: true,
+    onProgress: (snapshot) => {
+      for (const [source, p] of Object.entries(snapshot)) {
+        console.log(`[${source}] ${p.progress}% - ${p.message}`);
+      }
+    },
+  }
+);
+```
+
+**类型签名：**
+
+```typescript
+async function generate(
+  config: Config,
+  options?: GenerateApiOptions
+): Promise<void>;
+```
+
+### GenerateApiOptions
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `force` | `boolean` | `false` | 强制重新生成 |
+| `projectPath` | `string` | `process.cwd()` | 项目根目录 |
+| `onProgress` | `function` | — | 进度回调 |
+| `progressInterval` | `number` | `500` | 进度推送间隔(ms) |
+
+### 使用场景
+
+**CI/CD 集成：**
+
+```javascript
+const { generate } = require('worma');
+
+await generate(config, {
+  onProgress: (snapshot) => {
+    console.log(JSON.stringify(snapshot));
+  },
+});
+```
+
+**自定义脚本：**
+
+```javascript
+import { generate, defineConfig } from 'worma';
+
+const config = defineConfig({
+  generator: [
+    {
+      input: process.env.OPENAPI_URL,
+      output: 'src/api',
+    },
+  ],
+});
+
+await generate(config, { force: true });
+```

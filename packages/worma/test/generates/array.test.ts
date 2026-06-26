@@ -167,4 +167,22 @@ describe('array Type Generator', () => {
     })
     expect(result).toEqual(expectResult)
   })
+
+  it('should generate array type with ANY default', async () => {
+    const ast: TArray = {
+      type: ASTType.ARRAY,
+      keyName: 'AnyArray',
+      params: {
+        type: ASTType.ANY,
+      },
+    }
+    const result = await normalizeGeneratorResult(arrayTypeGenerator(ast, defaultCtx))
+    const expectResult = await normalizeGeneratorResult({
+      name: 'AnyArray',
+      comment: ``,
+      type: 'type',
+      code: `any[]`,
+    })
+    expect(result).toEqual(expectResult)
+  })
 })

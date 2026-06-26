@@ -14,6 +14,9 @@ export default antfu({
     "design",
     "test/**/src/*",
     "test/**/{*openapi*.*,*swagger*.*,alova_tmp*.*}",
+    ".agents",
+    ".next",
+    "**/.source"
   ],
   markdown: false,
   unocss: true,
@@ -28,7 +31,29 @@ export default antfu({
       {
         ignores: [
           "alova",
-          "@types/vscode"
+          "@types/vscode",
+          "@orama/orama",
+          "fumadocs-core",
+          "fumadocs-mdx",
+          "fumadocs-ui",
+          "lucide-react",
+          "mermaid",
+          "next",
+          "next-themes",
+          "playwright",
+          "react",
+          "react-dom",
+          "tailwind-merge",
+          "@tailwindcss/postcss",
+          "@types/mdx",
+          "@types/node",
+          "@types/react",
+          "@types/react-dom",
+          "oxlint",
+          "postcss",
+          "serve",
+          "tailwindcss",
+          "typescript"
         ],
         allowedProtocols: [
           "workspace",

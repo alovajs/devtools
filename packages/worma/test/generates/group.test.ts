@@ -36,6 +36,7 @@ describe('group Type Generator', () => {
       comment: `
       /**
        * Status type
+       * Status type
        */`,
       type: 'type',
       code: 'string | number',
@@ -289,6 +290,32 @@ describe('group Type Generator', () => {
 } | {
   value?: number
 }`,
+    })
+    expect(result).toEqual(expectResult)
+  })
+
+  it('should generate union including array(any) and null (fix #140)', async () => {
+    const ast: TUnion = {
+      type: ASTType.UNION,
+      keyName: 'MaybeArray',
+      params: [
+        {
+          type: ASTType.ARRAY,
+          params: {
+            type: ASTType.ANY,
+          },
+        },
+        {
+          type: ASTType.NULL,
+        },
+      ],
+    }
+    const result = await normalizeGeneratorResult(groupTypeGenerator(ast, defaultCtx))
+    const expectResult = await normalizeGeneratorResult({
+      name: 'MaybeArray',
+      comment: '',
+      type: 'type',
+      code: 'any[] | null',
     })
     expect(result).toEqual(expectResult)
   })

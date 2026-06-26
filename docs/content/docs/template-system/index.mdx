@@ -1,0 +1,53 @@
+---
+title: 模板系统
+description: 了解模板系统的整体架构
+---
+
+模板是 wormhole 灵活性的核心。它决定了生成代码的结构、风格和请求方式。wormhole 提供多套内置模板，同时支持完全自定义的 Handlebars 模板。
+
+```mermaid
+graph TD
+    A[模板系统] --> B[预定义模板]
+    A --> C[自定义模板]
+    B --> D[alova / alovaGlobals]
+    B --> E[axios]
+    B --> F[fetch]
+    B --> G[ky]
+    C --> H["Handlebars 语法"]
+    C --> I["{tag} 动态文件名"]
+    C --> J[partials]
+    C --> K[模块类型区分]
+```
+
+### 模板配置
+
+通过 `template` 配置项指定：
+
+```javascript
+import { defineConfig } from 'worma';
+import { alova, axios, fetch, ky } from 'worma/template';
+
+export default defineConfig({
+  generator: [
+    {
+      template: axios(),
+    },
+  ],
+});
+```
+
+### 模板函数签名
+
+```typescript
+interface TemplateConfig {
+  // 模板路径
+  path: string;
+  // 自定义模板参数
+  config: Record<string, any>;
+}
+
+// 模板配置函数
+function templateConfig(): TemplateConfig | Promise<TemplateConfig>;
+```
+
+接下来：[预定义模板](/docs/guide/04-template-system/predefined-templates) | [自定义模板](/docs/guide/04-template-system/custom-templates) | [模板参数参考](/docs/guide/04-template-system/template-data)

@@ -164,6 +164,46 @@ describe('schema Normalizer', () => {
       expect(stringBranch.minLength).toBe(5)
       expect((stringBranch as ArraySchemaObject).items).toBeUndefined()
     })
+
+    it('should assign default items for array branch when items missing', () => {
+      const schema: SchemaObject = {
+        type: ['array', 'string'],
+        minLength: 5,
+        title: 'Test',
+      }
+
+      const result = normalizer.normalize(schema) as SchemaObject
+      expect(result.anyOf).toBeDefined()
+      expect(result.anyOf).toHaveLength(2)
+
+      const arrayBranch = result.anyOf![0] as ArraySchemaObject
+      const stringBranch = result.anyOf![1] as SchemaObject
+
+      expect(arrayBranch.type).toBe('array')
+      expect(arrayBranch.items).toBeDefined()
+      expect((arrayBranch.items as SchemaObject).type).toBeDefined()
+      expect(stringBranch.type).toBe('string')
+      expect(stringBranch.minLength).toBe(5)
+    })
+
+    it('should handle array | null union by injecting default items into array branch (fix #140)', () => {
+      const schema: SchemaObject = {
+        type: ['array', 'null'] as any,
+        title: 'Issue 140',
+      }
+      const result = normalizer.normalize(schema) as SchemaObject
+      expect(result.type).toBeUndefined()
+      expect(result.anyOf).toBeDefined()
+      expect(result.anyOf).toHaveLength(2)
+
+      const arrayBranch = result.anyOf![0] as ArraySchemaObject
+      const nullBranch = result.anyOf![1] as SchemaObject
+
+      expect(arrayBranch.type).toBe('array')
+      expect(arrayBranch.items).toBeDefined()
+      expect((arrayBranch.items as SchemaObject).type).toBeDefined()
+      expect(nullBranch.type).toBe('null')
+    })
   })
 
   describe('mergeAnyOf rule', () => {

@@ -1,0 +1,268 @@
+---
+title: 自定义模板
+description: 使用 Handlebars 创建自定义代码生成模板
+---
+
+
+当预定义模板不满足需求时，创建完全自定义的 Handlebars 模板。
+
+## 基本用法
+
+```javascript
+import { defineConfig } from 'worma';
+
+export default defineConfig({
+  generator: [
+    {
+      template: () => ({
+        path: './my-template',
+        config: { customOption: 'value' },
+      }),
+    },
+  ],
+});
+```
+
+## 目录结构与文件规则
+
+### 基本结构
+
+模板目录中的 `.handlebars` 文件（除 `partials/` 外）都作为目标模板渲染，生成代码的文件结构与模板保持一致。
+
+### `{tag}` 动态文件名
+
+在文件名中使用 `{tag}` 占位符，生成时按 OpenAPI 的 tag 遍历生成多个文件：
+
+```text
+my-template/
+├── index.ts.handlebars       # → index.ts
+└── {tag}.ts.handlebars       # → user.ts, article.ts, order.ts ...
+```
+
+### `#` 不覆盖前缀
+
+文件名前加 `#`，表示首次生成后不再覆盖：
+
+```text
+my-template/
+├── #index.ts.handlebars      # 首次创建，后续不覆盖
+└── index.ts.handlebars       # 每次都覆盖
+```
+
+### 模块类型区分
+
+按模块类型分子目录，适配不同项目配置：
+
+```text
+my-template/
+├── typescript/               # 生成 .ts 文件
+│   ├── index.ts.handlebars
+│   └── types.ts.handlebars
+├── module/                   # 生成 .mjs 文件
+│   ├── index.mjs.handlebars
+│   └── types.d.ts.handlebars
+└── common/                   # 生成 .cjs 文件
+    ├── index.cjs.handlebars
+    └── types.d.cts.handlebars
+```
+
+`TemplateData.type` 取值：
+
+- `typescript` — 使用 `typescript/` 目录
+- `module` — 使用 `module/` 目录
+- `commonjs` — 使用 `common/` 目录
+- `auto` — 自动检测
+
+模板可以只提供部分类型目录。缺少的类型会抛出明确错误：
+
+```text
+Template "ky" does not support module type "commonjs". Supported types: typescript, module
+```
+
+不区分模块类型时，所有文件直接渲染。
+
+## Handlebars 语法
+
+```handlebars
+{{! 注释 }}
+
+{{! 变量输出 }}
+{{ keyName }}
+{{{ unescapedHtml }}}
+
+{{! 条件 }}
+{{#if pathParameters}} ... {{/if}}
+{{#or pathParameters queryParameters}} ... {{/or}}
+
+{{! 循环 }}
+{{#each pathApis}}
+  {{#apis}}
+    export const {{{name}}} = () => {};
+  {{/apis}}
+{{/each}}
+
+{{! 比较 }}
+{{#if (eq type "typescript")}} ... {{/if}}
+```
+
+## 模板数据结构
+
+模板渲染时可以访问以下数据。`TemplateData` 继承自 OpenAPI 文档标准结构，并附加了 wormhole 自动生成的辅助字段。
+
+### 顶层字段
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `baseUrl` | `string` | API 基础 URL，从 OpenAPI 的 `servers[0].url` 提取 |
+| `type` | `string` | 模块类型：`'typescript'` \| `'module'` \| `'commonjs'` |
+| `moduleType` | `string` | `'ESModule'` \| `'commonJs'` |
+| `global` | `string` | 全局变量名，默认 `'Apis'` |
+| `globalHost` | `string` | 全局挂载宿主，默认 `'globalThis'` |
+| `alovaVersion` | `string` | alova 版本，`'v2'` \| `'v3'` |
+| `useImportType` | `boolean` | 是否使用 `import type` 语句 |
+| `vue` | `boolean` | 是否为 Vue 项目 |
+| `react` | `boolean` | 是否为 React 项目 |
+| `commentText` | `string` | 文件头注释文本（从 `comment.handlebars` partial 渲染） |
+| `schemas` | `string[]` | 所有引用的 schema TypeScript 类型定义字符串数组 |
+
+### 继承自 OpenAPI 的字段
+
+`TemplateData` 展开了整个 OpenAPI 文档对象，因此模板中也可直接访问：
+
+| 字段 | 说明 |
+|------|------|
+| `openapi` | OpenAPI 规范版本号 |
+| `info.title` | 文档标题 |
+| `info.version` | 文档版本 |
+| `info.description` | 文档描述 |
+| `info.contact` | 联系人信息 |
+| `servers` | 服务器列表 |
+| `paths` | API 路径定义 |
+| `components` | 组件定义（schemas、responses 等） |
+| `tags` | 标签列表 |
+
+### 生成的 API 分组数据
+
+#### `pathApis: ApiDoc[]`
+
+按 OpenAPI tag 分组的 API 列表。每个 `ApiDoc` 结构如下：
+
+```typescript
+interface ApiDoc {
+  /** 该分组的 tag 名称 */
+  tag: string;
+  /** 该 tag 下的所有 API */
+  apis: Api[];
+}
+
+interface Api {
+  /** 所属 tag */
+  tag: string;
+  /** HTTP 方法（大写），如 GET、POST */
+  method: string;
+  /** API 摘要 / 描述 */
+  summary: string;
+  /** URL 路径 */
+  path: string;
+  /** 函数名（operationId） */
+  name: string;
+  /** 全局变量名，如 'Apis' */
+  global: string;
+  /** 响应体 TypeScript 类型字符串 */
+  responseName: string;
+  /** 请求体 TypeScript 类型字符串（可选） */
+  requestName?: string;
+  /** 路径参数类型字符串 */
+  pathParameters: string;
+  /** 查询参数类型字符串 */
+  queryParameters: string;
+  /** 路径参数 JSDoc 注释（可选） */
+  pathParametersComment?: string;
+  /** 查询参数 JSDoc 注释（可选） */
+  queryParametersComment?: string;
+  /** 请求体 JSDoc 注释（可选） */
+  requestComment?: string;
+  /** 响应体 JSDoc 注释（可选） */
+  responseComment?: string;
+  /** 格式: `${tag}.${operationId}` */
+  pathKey: string;
+}
+```
+
+模板中遍历写法示例：
+
+```handlebars
+{{#each pathApis}}
+// tag: {{tag}}
+{{#each apis}}
+export function {{{name}}}(params: {{{pathParameters}}}) {
+  return request('{{method}}', '{{path}}');
+}
+{{/each}}
+{{/each}}
+```
+
+#### `pathsArr: ApiPath[]`
+
+所有 API 的路径键值数组，用于生成路由映射：
+
+```typescript
+interface ApiPath {
+  /** 格式: `${tag}.${operationId}` */
+  key: string;
+  /** HTTP 方法（大写） */
+  method: string;
+  /** URL 路径 */
+  path: string;
+}
+```
+
+模板中渲染示例：
+
+```handlebars
+const apiRoutes: Record<string, { method: string; path: string }> = {
+{{#each pathsArr}}
+  '{{key}}': { method: '{{method}}', path: '{{path}}' },
+{{/each}}
+};
+```
+
+### 生成的文件名
+
+| 字段 | 说明 |
+|------|------|
+| `createApisFileName` | `createApis` 文件名（按 `fileNameCase` 转换） |
+| `apiDefinitionsFileName` | `apiDefinitions` 文件名 |
+| `globalsDFileName` | `globals.d` 文件名 |
+| `indexFileName` | `index` 文件名 |
+
+## Partials
+
+模板根目录下 `partials/` 文件夹自动注册为 partial，通过文件名引入：
+
+```text
+my-template/
+├── partials/
+│   └── comment.handlebars     # {{> comment}}
+├── index.ts.handlebars
+└── {tag}.ts.handlebars
+```
+
+```handlebars
+{{> comment}}  <!-- 引入 partials/comment.handlebars -->
+```
+
+## 完整示例
+
+```text
+my-template/
+├── partials/
+│   └── license.handlebars
+├── typescript/
+│   ├── index.ts.handlebars
+│   ├── {tag}.ts.handlebars
+│   └── #config.ts.handlebars
+└── module/
+    ├── index.mjs.handlebars
+    └── {tag}.mjs.handlebars
+```
