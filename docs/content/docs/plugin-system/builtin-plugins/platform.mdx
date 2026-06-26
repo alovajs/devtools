@@ -1,0 +1,91 @@
+---
+title: 平台拉取器
+description: 自动拼接 Swagger / Knife4j / FastAPI / YApi 的 OpenAPI 文件地址
+---
+
+# 平台拉取器
+
+本插件用于根据 API 文档平台的类型，自动拼接 OpenAPI 文件地址，无需手动查找和拼接 URL。
+
+## 主要功能
+
+- 支持 Swagger、Knife4j、FastAPI、YApi 四大平台
+- 自动生成多个 URL 依次尝试，提高获取成功率
+- 内部使用 `config` hook 修改 `config.input`，与其他插件兼容
+
+## 基本使用
+
+```javascript
+import { defineConfig } from 'worma';
+import { platform, alovaGlobals } from 'worma/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      input: 'https://petstore3.swagger.io',
+      output: './src/api',
+      plugins: [platform('swagger'), alovaGlobals()],
+    },
+  ],
+});
+```
+
+> 旧的 `platform` 配置项已移除，请使用 `platform` 插件替代。
+
+## 支持的平台
+
+| 平台 / 技术栈 | Demo / UI 地址 | OpenAPI / Swagger 文件获取方式 |
+|--------------|---------------|-------------------------------|
+| **Swagger Petstore (OAS 3.0)** | https://petstore3.swagger.io/ | GET `https://petstore3.swagger.io/api/v3/openapi.json` |
+| **Swagger Petstore (Swagger 2.0)** | https://petstore.swagger.io/ | GET `https://petstore.swagger.io/v2/swagger.json` |
+| **Spring Boot + Knife4j (OAS3 / springdoc)** | https://openapi3.demo.knife4jnext.com/doc.html | GET `https://openapi3.demo.knife4jnext.com/v3/api-docs` |
+| **Spring Boot + Knife4j (Swagger2 / springfox)** | http://knife4j.xiaominfo.com/doc.html | GET `http://knife4j.xiaominfo.com/v2/api-docs` |
+| **FastAPI** | http://fastapi-example.dokkuapp.com/docs | GET `http://fastapi-example.dokkuapp.com/openapi.json` |
+| **YApi** | http://yapi.demo.qunar.com/ | 需登录 → 数据管理 → 导出 Swagger JSON；或用接口 `GET /api/open/plugin/export?type=swagger&pid={pid}&token={token}` |
+
+## 平台规则
+
+| 平台类型 | 生成的 input 数组 |
+|----------|------------------|
+| `'swagger'` | `['<input>/api/v3/openapi.json', '<input>/v2/swagger.json', '<input>/openapi.json']` |
+| `'knife4j'` | `['<input>/v3/api-docs', '<input>/v2/api-docs']` |
+| `'fastapi'` | `['<input>/openapi.json']` |
+| `'yapi'` | `['<input>']`（需包含 pid/token 参数） |
+
+## 类型签名
+
+```typescript
+import { platform } from 'worma/plugin';
+
+function platform(type: 'swagger' | 'knife4j' | 'fastapi' | 'yapi'): ApiPlugin;
+```
+
+## 工作原理
+
+`platform` 插件通过 `config` hook 修改 `config.input`：
+
+1. 接收用户传入的平台类型字符串（如 `'swagger'`）
+2. 从 `config.input` 读取 API 文档项目 URL
+3. 根据平台类型自动拼接生成 OpenAPI 文件 URL 数组
+4. 将数组赋值给 `config.input`
+
+核心解析逻辑在 `getOpenApiData` 中：当 `input` 为数组时，依次尝试每个 URL，返回第一个成功的结果。
+
+## 与 `input: string[]` 配合
+
+`platform` 插件生成的 `input` 本身就是数组，你也可以手动指定多个 URL 作为 fallback：
+
+```javascript
+defineConfig({
+  generator: [
+    {
+      input: [
+        'https://primary-server.com/openapi.json',
+        'https://fallback-server.com/openapi.json',
+      ],
+      output: './src/api',
+      plugins: [alovaGlobals()],
+    },
+  ],
+});
+```

@@ -4,26 +4,38 @@ description: VSCode 扩展：悬停查看 API 详情、侧边栏 API 浏览器
 slug: guide/editor-docs
 ---
 
-
-VSCode 扩展将 wormhole 生成的 API 信息直接嵌入到编辑器中，让你无需切换工具即可完成 API 查阅和代码编写。
+VSCode 扩展将 worma 生成的 API 信息直接嵌入到编辑器中，让你无需切换工具即可完成 API 查阅和代码编写。
 
 ## 安装 VSCode 扩展
 
-在 VSCode 扩展市场搜索 **"alova wormhole"** 并安装，或通过命令行：
+<a
+  href="vscode:extension/worma.worma-vscode-extension"
+  style={{
+    display: "inline-block",
+    padding: "0 24px",
+    background: "#0078d4",
+    color: "#fff",
+    borderRadius: "6px",
+    textDecoration: "none",
+    fontWeight: 500,
+    cursor: "pointer",
+    lineHeight: "1",
+  }}
+>
+  在 VSCode 中安装 Worma 扩展
+</a>
 
-```bash
-code --install-extension alova.wormhole-vscode
-```
+或在扩展市场搜索 **"worma"**。
 
 ## 悬停查看 API 详情
 
 安装扩展后，将鼠标悬停在生成的 API 调用上：
 
 ```typescript
-import { getUserInfo } from './api/user';
+import { getUserInfo } from "./api/user";
 
 const user = await getUserInfo({
-  pathParams: { id: '123' },
+  pathParams: { id: "123" },
 });
 //       ^ 悬停此处
 ```
@@ -89,13 +101,13 @@ flowchart LR
 
 ## JS 项目也能获得 TS 级别的提示
 
-即使项目使用纯 JavaScript，wormhole 生成的 `.d.ts` 文件仍能让 VSCode 提供完整的类型提示和文档展示：
+即使项目使用纯 JavaScript，worma 生成的 `.d.ts` 文件仍能让 VSCode 提供完整的类型提示和文档展示：
 
 ```javascript
 // 在 .js 文件中，悬停一样有效
-import { getUserInfo } from './api/user';
+import { getUserInfo } from "./api/user";
 
-const user = await getUserInfo({ pathParams: { id: '123' } });
+const user = await getUserInfo({ pathParams: { id: "123" } });
 // 同样能看到参数表和响应结构
 ```
 

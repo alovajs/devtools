@@ -1,55 +1,69 @@
 ---
 title: CLI 命令
-description: wormhole init / gen 命令参数详解
+description: worma init / gen 命令参数详解
 ---
 
 
-## wormhole init
+## worma init
 
 初始化配置文件。
 
 ```bash
-# 在当前目录创建 .wormarc
+# 在当前目录创建 worma.config.js
 npx worma init
 
-# 指定模板
-npx worma init --template axios
-```
+# 指定配置文件类型
+npx worma init -t typescript
+npx worma init --type commonjs
 
-## wormhole gen
+# 指定模板预设
+npx worma init -T axios
+npx worma init --template ky
 
-根据配置生成 API 代码。
-
-```bash
-# 基本用法
-npx worma gen
-
-# 强制重新生成所有文件
-npx worma gen --force
-
-# 指定项目路径
-npx worma gen --project-path ./packages/app
-
-# 查看详细日志
-npx worma gen --verbose
+# 指定项目目录
+npx worma init -p ./packages/app
 ```
 
 ### 参数详解
 
-| 参数 | 说明 | 默认值 |
+| 参数 | 说明 | 可选值 |
 |------|------|--------|
-| `--force` | 强制重新生成，忽略缓存 | `false` |
-| `--project-path <path>` | 指定项目根目录 | 当前目录 |
-| `--verbose` | 详细日志输出 | `false` |
+| `-t, --type <type>` | 配置文件类型 | `typescript` / `ts` / `commonjs` / `module` |
+| `-T, --template <template>` | 模板预设，默认 `alova` | `alova` / `functional` / `axios` / `fetch` / `ky` |
+| `-p, --project <path>` | 指定项目目录 | — |
 
-### 进度展示
+## worma gen
 
-`gen` 命令默认显示多行进度条：
+根据配置生成 API 代码。
+
+```bash
+# 基本用法（默认 workspace 模式，扫描所有子项目）
+npx worma gen
+
+# 强制重新生成所有文件（忽略缓存）
+npx worma gen -f
+npx worma gen --force
+
+# 指定项目路径（单项目模式）
+npx worma gen -p ./packages/app
+npx worma gen --project ./packages/app
+```
+
+### 参数详解
+
+| 参数 | 说明 |
+|------|------|
+| `-f, --force` | 强制重新生成，忽略缓存 |
+| `-p, --project <path>` | 指定项目目录。传入后仅对该项目生成；未传入时以 workspace 模式扫描所有子项目 |
+
+### 行为逻辑
 
 ```text
-Generating `./src/api`...
-  [core]   ████████████░░░░░░░░   60% template data parsed
-  [aiDoc]  ████░░░░░░░░░░░░░░░░   20% rendering references
+worma gen
+  → 默认 workspace 模式：扫描所有子项目，逐一生成
+
+worma gen -p ./packages/app
+  → 单项目模式：仅对指定目录读取配置并生成
 ```
 
 ### 退出码
@@ -59,15 +73,12 @@ Generating `./src/api`...
 | 0 | 生成成功 |
 | 1 | 生成失败（配置错误、网络错误等） |
 
-## workspace 模式
+## v1 到 v2 的 CLI 变化
 
-在 monorepo 项目的根目录运行，为所有子项目并行生成：
-
-```bash
-# 如果根目录有 worma.config 配置了多个 generator
-npx worma gen
-
-# 或者在 workspace 模式下指定子项目
-npx worma gen --project-path ./packages/user-service
-npx worma gen --project-path ./packages/order-service
-```
+| 项目 | v1（旧） | v2（新） |
+|------|---------|---------|
+| 命令名 | `alova init` / `alova gen` | `worma init` / `worma gen` |
+| 指定项目目录 | `-c, --cwd` | `-p, --project` |
+| Workspace 模式 | `-w, --workspace` | 默认行为，无需 flag |
+| 强制生成 | — | `-f, --force` |
+| 详细日志 | `--verbose` | 已移除 |

@@ -44,11 +44,11 @@ bun add worma -D
 npx worma init
 ```
 
-此命令在项目根目录创建 `worma.config.js`（也支持 `.cjs` 或 `.ts` 扩展名），默认配置了 alova 模板和 `aiDoc` 插件：
+此命令在项目根目录创建 `worma.config.js`（也支持 `.cjs`、`.mjs` 或 `.ts` 扩展名），默认配置了 alova 模板和 `aiDoc` 插件：
 
 ```javascript
 import { defineConfig } from 'worma';
-import { alova } from 'worma/template';
+import { alova } from 'worma/plugin';
 import { aiDoc } from 'worma/plugin';
 
 export default defineConfig({
@@ -56,26 +56,26 @@ export default defineConfig({
     {
       input: 'https://api.example.com/openapi.json',
       output: 'src/api',
-      template: alova(),
-      plugins: [aiDoc()],
+      plugins: [alova(), aiDoc()],
     },
   ],
 });
 ```
 
-`init` 也可通过 `--template` 参数指定其他初始模板：
+`init` 也可通过 `-T, --template` 参数指定其他初始模板：
 
 ```bash
-npx worma init --template axios
+npx worma init -T axios
+npx worma init --template ky
+npx worma init -T fetch -t typescript
 ```
 
 ## worma.config.js 完整配置
 
 ```javascript
 import { defineConfig } from 'worma';
-import { rename } from 'worma/plugin';
-import { alova, functional } from 'worma/template';
-import { aiDoc } from 'worma/plugin';
+import { rename, aiDoc } from 'worma/plugin';
+import { alova, platform } from 'worma/plugin';
 
 export default defineConfig({
   generator: [
@@ -86,8 +86,9 @@ export default defineConfig({
       responseMediaType: 'application/json',
       bodyMediaType: 'application/json',
       serverName: '用户服务',
-      template: alova({ framework: 'vue' }),
       plugins: [
+        platform('swagger'),
+        alova({ framework: 'vue' }),
         aiDoc(),
         rename({ getUserInfo: 'fetchUserProfile' }),
       ],
@@ -100,14 +101,14 @@ export default defineConfig({
 
 | 字段 | 类型 | 必填 | 默认值 | 说明 |
 |------|------|------|--------|------|
-| `input` | `string` | 是 | — | OpenAPI 文档地址 |
+| `input` | `string \| string[]` | 是 | — | OpenAPI 文档地址，支持数组依次尝试 |
 | `output` | `string` | 否 | 由模板决定 | 输出目录 |
-| `docComment` | `boolean` | 否 | `true` | 是否生成文档注释 |
-| `responseMediaType` | `string \| string[]` | 否 | — | 响应 MediaType |
-| `bodyMediaType` | `string \| string[]` | 否 | — | 请求体 MediaType |
-| `serverName` | `string` | 否 | 文档 `info.title` | 服务端名称 |
-| `template` | `Function` | 是 | — | 模板配置函数 |
-| `plugins` | `ApiPlugin[]` | 否 | — | 插件数组 |
+| `docComment` | `boolean` | 否 | `true` | 是否生成文档注释，设为 `false` 可提高性能 |
+| `responseMediaType` | `string \| string[]` | 否 | `'application/json'` | 响应 MediaType，可设数组依次指向 |
+| `bodyMediaType` | `string \| string[]` | 否 | `'application/json'` | 请求体 MediaType，可设数组依次指向 |
+| `serverName` | `string` | 否 | 文档 `info.title` | 多文档时的自定义服务名称，用于侧边栏展示 |
+| `plugins` | `ApiPlugin[]` | 是 | — | 插件数组（模板也通过 plugin 的 getTemplate hook 设置） |
+| `performance` | `PerformanceConfig` | 否 | — | 性能配置 |
 
 ## 多数据源配置
 
@@ -115,7 +116,7 @@ export default defineConfig({
 
 ```javascript
 import { defineConfig } from 'worma';
-import { alova, axios } from 'worma/template';
+import { alova, axios } from 'worma/plugin';
 import { aiDoc } from 'worma/plugin';
 
 export default defineConfig({
@@ -124,21 +125,38 @@ export default defineConfig({
       input: 'https://user-service.example.com/openapi.json',
       output: 'src/api/user-service',
       serverName: '用户服务',
-      template: alova({ framework: 'vue' }),
-      plugins: [aiDoc()],
+      plugins: [alova({ framework: 'vue' }), aiDoc()],
     },
     {
       input: 'https://order-service.example.com/openapi.json',
       output: 'src/api/order-service',
       serverName: '订单服务',
-      template: axios(),
-      plugins: [aiDoc()],
+      plugins: [axios(), aiDoc()],
     },
   ],
 });
 ```
 
 多数据源时，建议为每个 generator 设置 `serverName`，便于 VSCode 扩展侧边栏分组以及 AI Skill 文档按服务分类。
+
+### 多地址 fallback
+
+`input` 支持 `string[]` 数组，依次访问每个 URL，返回第一个成功的数据：
+
+```javascript
+defineConfig({
+  generator: [
+    {
+      input: [
+        'https://primary-server.com/openapi.json',
+        'https://fallback-server.com/openapi.json',
+      ],
+      output: './src/api',
+      plugins: [alova()],
+    },
+  ],
+});
+```
 
 ## 简易配置 `.wormarc`
 

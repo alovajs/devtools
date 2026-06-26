@@ -8,16 +8,21 @@ description: 使用 Handlebars 创建自定义代码生成模板
 
 ## 基本用法
 
+自定义模板通过插件的 `getTemplate` hook 返回模板路径。也可以在 `plugins` 中使用直接返回模板路径的插件函数：
+
 ```javascript
 import { defineConfig } from 'worma';
+import { functional } from 'worma/plugin';
 
 export default defineConfig({
   generator: [
     {
-      template: () => ({
-        path: './my-template',
-        config: { customOption: 'value' },
-      }),
+      plugins: [
+        functional({
+          path: './my-template',
+          config: { customOption: 'value' },
+        }),
+      ],
     },
   ],
 });
@@ -39,13 +44,27 @@ my-template/
 └── {tag}.ts.handlebars       # → user.ts, article.ts, order.ts ...
 ```
 
+在 `{tag}` 模板中可访问 `currentTag` 对象（类型为 `ApiDoc`），通过 `currentTag.tagName` 访问当前 tag 名称，通过 `currentTag.apis` 访问当前 tag 下的接口列表。
+
+### `{api}` 动态文件名
+
+文件名可指定为 `{api}`（例如 `{api}.ts`），生成时遍历 `allApis` 数组生成多个文件，将 `{api}` 替换为对应接口名称。在 `{api}` 模板中可访问 `currentApi` 对象（类型为 `Api`）。
+
+```text
+my-template/
+├── index.ts.handlebars       # → index.ts
+└── {api}.ts.handlebars       # → getUser.ts, createUser.ts, deleteUser.ts ...
+```
+
+模板数据中 `currentTag` 和 `currentApi` 仅在对应动态文件名的上下文中有效。
+
 ### `#` 不覆盖前缀
 
 文件名前加 `#`，表示首次生成后不再覆盖：
 
 ```text
 my-template/
-├── #index.ts.handlebars      # 首次创建，后续不覆盖
+├── #index.ts.handlebars      # 首次创建，后续不覆盖（生成后命名为 index.ts）
 └── index.ts.handlebars       # 每次都覆盖
 ```
 
@@ -79,7 +98,7 @@ my-template/
 Template "ky" does not support module type "commonjs". Supported types: typescript, module
 ```
 
-不区分模块类型时，所有文件直接渲染。
+不区分模块类型时，模板路径下的所有 handlebars 文件都作为目标模板渲染。
 
 ## Handlebars 语法
 
@@ -95,7 +114,7 @@ Template "ky" does not support module type "commonjs". Supported types: typescri
 {{#or pathParameters queryParameters}} ... {{/or}}
 
 {{! 循环 }}
-{{#each pathApis}}
+{{#each tagedApis}}
   {{#apis}}
     export const {{{name}}} = () => {};
   {{/apis}}
@@ -107,7 +126,7 @@ Template "ky" does not support module type "commonjs". Supported types: typescri
 
 ## 模板数据结构
 
-模板渲染时可以访问以下数据。`TemplateData` 继承自 OpenAPI 文档标准结构，并附加了 wormhole 自动生成的辅助字段。
+模板渲染时可以访问以下数据。`TemplateData` 继承自 OpenAPI 文档标准结构，并附加了 worma 自动生成的辅助字段。
 
 ### 顶层字段
 
@@ -115,15 +134,14 @@ Template "ky" does not support module type "commonjs". Supported types: typescri
 |------|------|------|
 | `baseUrl` | `string` | API 基础 URL，从 OpenAPI 的 `servers[0].url` 提取 |
 | `type` | `string` | 模块类型：`'typescript'` \| `'module'` \| `'commonjs'` |
-| `moduleType` | `string` | `'ESModule'` \| `'commonJs'` |
-| `global` | `string` | 全局变量名，默认 `'Apis'` |
-| `globalHost` | `string` | 全局挂载宿主，默认 `'globalThis'` |
-| `alovaVersion` | `string` | alova 版本，`'v2'` \| `'v3'` |
-| `useImportType` | `boolean` | 是否使用 `import type` 语句 |
-| `vue` | `boolean` | 是否为 Vue 项目 |
-| `react` | `boolean` | 是否为 React 项目 |
-| `commentText` | `string` | 文件头注释文本（从 `comment.handlebars` partial 渲染） |
-| `schemas` | `string[]` | 所有引用的 schema TypeScript 类型定义字符串数组 |
+| `title` | `string` | OpenAPI 文档的 `info.title` |
+| `version` | `string` | OpenAPI 文档的 `info.version` |
+| `description` | `string` | OpenAPI 文档的 `info.description` |
+| `contact` | `object` | OpenAPI 文档的 `info.contact` |
+| `framework` | `string` | 框架标记：`vue` \| `react` \| `svelte` \| `solid-js` \| `nuxt` |
+| `defaultKey` | `boolean` | 是否为默认配置 |
+| `components` | `string[]` | Schema/Component 定义 |
+| `config` | `Record<string, any>` | 由插件通过 `beforeCodeGenerate` hook 注入的配置参数 |
 
 ### 继承自 OpenAPI 的字段
 
@@ -143,14 +161,14 @@ Template "ky" does not support module type "commonjs". Supported types: typescri
 
 ### 生成的 API 分组数据
 
-#### `pathApis: ApiDoc[]`
+#### `tagedApis: ApiDoc[]`
 
 按 OpenAPI tag 分组的 API 列表。每个 `ApiDoc` 结构如下：
 
 ```typescript
 interface ApiDoc {
-  /** 该分组的 tag 名称 */
-  tag: string;
+  /** 该分组的 tag 名称（原 tag 字段更名为 tagName） */
+  tagName: string;
   /** 该 tag 下的所有 API */
   apis: Api[];
 }
@@ -166,8 +184,6 @@ interface Api {
   path: string;
   /** 函数名（operationId） */
   name: string;
-  /** 全局变量名，如 'Apis' */
-  global: string;
   /** 响应体 TypeScript 类型字符串 */
   responseName: string;
   /** 请求体 TypeScript 类型字符串（可选） */
@@ -186,14 +202,20 @@ interface Api {
   responseComment?: string;
   /** 格式: `${tag}.${operationId}` */
   pathKey: string;
+  /** API 调用默认值（全局挂载路径） */
+  defaultValue?: string;
+  /** 文件位置信息，由 aiDoc 插件注入 */
+  fileLocation?: string;
 }
 ```
+
+> `Api` 不再包含 `importDescriptor` 和 `global` 字段。
 
 模板中遍历写法示例：
 
 ```handlebars
-{{#each pathApis}}
-// tag: {{tag}}
+{{#each tagedApis}}
+// tag: {{tagName}}
 {{#each apis}}
 export function {{{name}}}(params: {{{pathParameters}}}) {
   return request('{{method}}', '{{path}}');
@@ -202,39 +224,9 @@ export function {{{name}}}(params: {{{pathParameters}}}) {
 {{/each}}
 ```
 
-#### `pathsArr: ApiPath[]`
+#### `apis: Api[]`
 
-所有 API 的路径键值数组，用于生成路由映射：
-
-```typescript
-interface ApiPath {
-  /** 格式: `${tag}.${operationId}` */
-  key: string;
-  /** HTTP 方法（大写） */
-  method: string;
-  /** URL 路径 */
-  path: string;
-}
-```
-
-模板中渲染示例：
-
-```handlebars
-const apiRoutes: Record<string, { method: string; path: string }> = {
-{{#each pathsArr}}
-  '{{key}}': { method: '{{method}}', path: '{{path}}' },
-{{/each}}
-};
-```
-
-### 生成的文件名
-
-| 字段 | 说明 |
-|------|------|
-| `createApisFileName` | `createApis` 文件名（按 `fileNameCase` 转换） |
-| `apiDefinitionsFileName` | `apiDefinitions` 文件名 |
-| `globalsDFileName` | `globals.d` 文件名 |
-| `indexFileName` | `index` 文件名 |
+所有 API 的扁平数组，按 tag 分组前的原始顺序排列。
 
 ## Partials
 
@@ -250,6 +242,20 @@ my-template/
 
 ```handlebars
 {{> comment}}  <!-- 引入 partials/comment.handlebars -->
+```
+
+## fileLocation（文件位置）
+
+在 AI Skill 文档中，不再使用 `importDescriptor` 解析 jsconfig/tsconfig 的路径别名。改为在每个 API 文档中展示文件所在位置（`fileLocation`），由 aiDoc 插件在 `codeGenerated` 中计算并注入模板渲染数据中。
+
+`fileLocation` 是 `Api` 接口的一个字段，可在模板中直接引用：
+
+```handlebars
+{{#each tagedApis}}
+  {{#apis}}
+    <!-- 接口文件位置：{{{fileLocation}}} -->
+  {{/apis}}
+{{/each}}
 ```
 
 ## 完整示例

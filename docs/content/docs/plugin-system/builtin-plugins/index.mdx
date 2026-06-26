@@ -1,20 +1,42 @@
 ---
 title: 内置插件
-description: 全部内置插件的使用，包括 importType、aiDoc、rename、tagModifier 等
+description: 全部内置插件的使用，包括 importType、aiDoc、platform、rename、tagModifier 等
 ---
 
 
-wormhole 内置了以下预设插件，可在 `plugins` 数组中按顺序配置使用。
+worma 内置了以下预设插件，可在 `plugins` 数组中按顺序配置使用。
 
 | 插件 | 说明 | 文档 |
 |------|------|------|
+| template 插件 | alova / alovaGlobals / axios / fetch / ky 模板 | [预定义模板](/docs/template-system/predefined-templates) |
 | rename | 重命名 API 调用函数和参数名，支持多种命名风格 | [查看详情](/docs/plugin-system/builtin-plugins/rename) |
 | tagModifier | 修改 API 的 tag 名称 | [查看详情](/docs/plugin-system/builtin-plugins/tag-modifier) |
 | payloadModifier | 增加、删除和修改 API 的参数类型 | [查看详情](/docs/plugin-system/builtin-plugins/payload-modifier) |
 | filterApi | 根据 URL 和 tag 匹配过滤 API | [查看详情](/docs/plugin-system/builtin-plugins/filter-api) |
 | apifox | 自动导入 Apifox 中的项目 | [查看详情](/docs/plugin-system/builtin-plugins/apifox) |
+| platform | 自动拼接 Swagger / Knife4j / FastAPI / YApi 的 OpenAPI 文件地址 | [查看详情](/docs/plugin-system/builtin-plugins/platform) |
 | importType | 复用外部类型，排除自动生成 | [查看详情](/docs/plugin-system/builtin-plugins/import-type) |
 | aiDoc | 生成 AI Skill 文档 | 详见 [AI Skills 集成](/docs/ai-skills) |
+
+## 模板插件
+
+预定义的五套模板（alova、alovaGlobals、axios、fetch、ky）现在以插件方式提供。每个模板插件通过 `getTemplate` hook 返回模板路径：
+
+```javascript
+import { defineConfig } from 'worma';
+import { alova, alovaGlobals, axios, fetch, ky } from 'worma/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      // 使用 alova functional 模板
+      plugins: [alova({ framework: 'vue' })],
+    },
+  ],
+});
+```
+
+详细用法参考[预定义模板](/docs/template-system/predefined-templates)。
 
 ## 插件排序
 
@@ -22,19 +44,23 @@ wormhole 内置了以下预设插件，可在 `plugins` 数组中按顺序配置
 
 ```javascript
 import { defineConfig } from 'worma';
-import { rename, tagModifier, payloadModifier, filterApi, apifox, importType } from 'worma/plugin';
+import {
+  rename, tagModifier, payloadModifier, filterApi, apifox, importType,
+  alova, platform
+} from 'worma/plugin';
 import { aiDoc } from 'worma/plugin';
 
 export default defineConfig({
   generator: [
     {
-      // ...
       plugins: [
+        platform('swagger'),
         rename({ style: 'camelCase' }),
         tagModifier(tag => `api_${tag}`),
         payloadModifier([/* ... */]),
         filterApi({ include: '/api/v1' }),
         importType({ 'my-types|type': ['Pagination'] }),
+        alova(),
         aiDoc(),
       ],
     },

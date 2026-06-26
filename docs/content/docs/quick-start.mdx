@@ -47,11 +47,11 @@ bun add worma -D
 npx worma init
 ```
 
-这会创建一个 `worma.config.js`（或 `.cjs`/`.ts`）文件，并且默认配置了 alova 模板和 `aiDoc` 插件用于生成 AI Skill 文档：
+这会创建一个 `worma.config.js`（或 `.cjs`/`.mjs`/`.ts`）文件，并且默认配置了 alova 模板和 `aiDoc` 插件用于生成 AI Skill 文档：
 
 ```javascript
 import { defineConfig } from 'worma';
-import { alova } from 'worma/template';
+import { alova } from 'worma/plugin';
 import { aiDoc } from 'worma/plugin';
 
 export default defineConfig({
@@ -59,8 +59,7 @@ export default defineConfig({
     {
       input: 'https://api.example.com/openapi.json',
       output: 'src/api',
-      template: alova(),
-      plugins: [aiDoc()],
+      plugins: [alova(), aiDoc()],
     },
   ],
 });
@@ -78,18 +77,6 @@ https://api.example.com/openapi.json
 npx worma gen
 ```
 
-生成完成后，你会看到多行进度条输出：
-
-```text
-Generating `./src/api`...
-  [core]   ████████████████████   100% completed
-
-✓ src/api/index.ts
-✓ src/api/user.ts
-✓ src/api/types.ts
-✓ .worma-cache.json
-```
-
 ## 生成结果
 
 `npx worma gen` 会在输出目录中生成以下内容：
@@ -100,12 +87,17 @@ src/api/
 ├── user.ts               # ② 调用函数：按 tag 拆分的 API 函数文件
 ├── article.ts
 ├── types.ts              # ③ 类型定义：请求参数和响应的 TypeScript 类型
-├── .worma-cache.json     # ④ VSCode 扩展缓存：供编辑器内嵌文档使用
-└── aidocs/               # ⑤ AI Skill 文档：让 Cursor / Copilot 读懂你的接口
-    ├── SKILL.md          #    主文档
-    └── references/       #    每个接口的详细文档
-        ├── user.info.md
-        └── user.login.md
+├── aidocs/               # ④ AI Skill 文档：让 Cursor / Copilot 读懂你的接口
+│   ├── SKILL.md          #    主文档
+│   └── references/       #    每个接口的详细文档
+│       ├── user.info.md
+│       └── user.login.md
+
+.worma-cache/             # ⑤ VSCode 扩展缓存（团队共享）
+├── index.json            #    元数据 + 聚合哈希
+└── data/                 #    按需加载的 API 数据
+    ├── user.json
+    └── article.json
 ```
 
 各产出物说明：
@@ -115,13 +107,13 @@ src/api/
 | `index.ts` | 请求客户端实例（如 alova/axios/fetch），重导出所有 tag 模块 |
 | `{tag}.ts` | 按 OpenAPI tag 拆分的函数文件，每个 API 对应一个导出函数 |
 | `types.ts` | 自动推导的请求参数和响应数据类型 |
-| `.worma-cache.json` | VSCode 扩展的接口缓存，用于搜索和悬停显示 |
 | `aidocs/SKILL.md` | AI Skill 主索引，AI 工具读取后了解所有接口概览 |
 | `aidocs/references/*.md` | 每个接口的详细参数、类型和调用示例 |
+| `.worma-cache/` | VSCode 扩展的接口缓存目录（取代之前的单文件 `.worma-cache.json`） |
 
 ## 选择模板
 
-wormhole 内置了多套预定义模板，覆盖主流的请求库：
+worma 内置了多套预定义模板，覆盖主流的请求库：
 
 | 模板 | 请求库 | 特点 |
 |------|--------|------|
@@ -131,7 +123,7 @@ wormhole 内置了多套预定义模板，覆盖主流的请求库：
 | [fetch](/docs/template-system/predefined-templates#fetch) | 原生 fetch | 零额外依赖 |
 | [ky](/docs/template-system/predefined-templates#ky) | ky | 轻量级 fetch 封装 |
 
-如果以上都不满足你的需求，wormhole 支持[完全自定义模板](/docs/template-system/custom-templates)，使用 Handlebars 语法自由控制生成代码的结构和内容。
+如果以上都不满足你的需求，worma 支持[完全自定义模板](/docs/template-system/custom-templates)，使用 Handlebars 语法自由控制生成代码的结构和内容。
 
 ## 第四步：体验 VSCode 悬停
 
@@ -153,7 +145,7 @@ const user = await getUserInfo({
 - 响应结构示例
 - 接口描述
 
-> 无需切换窗口，无需打开浏览器，所有信息就在你的代码中。这就是 wormhole 要消除的"摩擦"。
+> 无需切换窗口，无需打开浏览器，所有信息就在你的代码中。这就是 worma 要消除的"摩擦"。
 
 ## 下一步
 

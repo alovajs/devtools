@@ -362,7 +362,7 @@ export class TemplateHelper {
     files: Record<string, string>,
     output: string,
     writeConcurrency = 32,
-    prettierFinal = true,
+    formatFile = true,
   ) {
     const entries = Object.entries(files)
     if (!entries.length)
@@ -389,7 +389,7 @@ export class TemplateHelper {
         const op = path.isAbsolute(rp) ? rp : path.join(output, rp)
         // 9.5.2: Apply prettier at file level for .ts/.js files
         let finalContent = content
-        if (prettierFinal && /\.(?:ts|js|mjs|cjs|tsx|jsx)$/.test(rp)) {
+        if (formatFile && /\.(?:ts|js|mjs|cjs|tsx|jsx)$/.test(rp)) {
           try {
             finalContent = await format(content)
           }
@@ -403,7 +403,7 @@ export class TemplateHelper {
     logger.debug('Batch file write complete', {
       total: entries.length,
       concurrency,
-      prettierFinal,
+      formatFile,
       outputDir: output,
     })
   }
@@ -429,7 +429,7 @@ export class TemplateHelper {
         meta: { templateType?: 'tag' | 'api', tag?: string, api?: string }
       }) => MaybePromise<string>
       writeConcurrency?: number
-      prettierFinal?: boolean
+      formatFile?: boolean
     },
   ): Promise<{ filePaths: string[] }> {
     const tpls = await this.resolveTemplateFiles(templatePath)
@@ -447,7 +447,7 @@ export class TemplateHelper {
       staticTemplates,
     })
 
-    const { changedTags, beforeFileWrite, writeConcurrency = 32, prettierFinal = true } = options ?? {}
+    const { changedTags, beforeFileWrite, writeConcurrency = 32, formatFile = true } = options ?? {}
 
     const hbs = await this.createHbs()
     const tags = data.tagedApis?.map(item => item.tagName) || []
@@ -516,7 +516,7 @@ export class TemplateHelper {
 
     // P1: Single batch write for ALL per-tag files — fully utilizes writeConcurrency
     if (Object.keys(allTagFiles).length) {
-      await this.outputFiles(allTagFiles, outputDir, writeConcurrency, prettierFinal)
+      await this.outputFiles(allTagFiles, outputDir, writeConcurrency, formatFile)
     }
 
     logger.debug('Phase 1 complete', { tagFilesWritten })
@@ -536,7 +536,7 @@ export class TemplateHelper {
       }
     }
 
-    await this.applyHooksAndWrite(globalFiles, outputDir, beforeFileWrite, undefined, undefined, undefined, writeConcurrency, prettierFinal, allFilePaths)
+    await this.applyHooksAndWrite(globalFiles, outputDir, beforeFileWrite, undefined, undefined, undefined, writeConcurrency, formatFile, allFilePaths)
 
     logger.debug('Phase 2 complete', { globalFilesWritten: Object.keys(globalFiles).length })
     logger.debug('Generation summary', { totalOutputFiles: allFilePaths.length })
@@ -551,7 +551,7 @@ export class TemplateHelper {
     tag: string | undefined,
     api: string | undefined,
     writeConcurrency: number,
-    prettierFinal: boolean,
+    formatFile: boolean,
     allFilePaths: string[],
   ) {
     if (beforeFileWrite) {
@@ -570,7 +570,7 @@ export class TemplateHelper {
       const op = path.isAbsolute(rp) ? rp : path.resolve(outputDir, rp)
       allFilePaths.push(op)
     }
-    await this.outputFiles(files, outputDir, writeConcurrency, prettierFinal)
+    await this.outputFiles(files, outputDir, writeConcurrency, formatFile)
   }
 
   private async expandByApi(hbs: typeof HandlebarsType, tf: TemplateFileInfo, _data: any, apis: any[], ctxFn: (api: any) => any, out: Record<string, string>, outputDir: string, tag?: string) {

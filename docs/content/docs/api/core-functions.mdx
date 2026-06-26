@@ -6,7 +6,7 @@ description: defineConfig 和 generate 的编程 API
 
 ## defineConfig
 
-定义 wormhole 配置。
+定义 worma 配置。
 
 ```typescript
 import { defineConfig } from 'worma';
@@ -94,9 +94,43 @@ const config = defineConfig({
     {
       input: process.env.OPENAPI_URL,
       output: 'src/api',
+      plugins: [axios()],
     },
   ],
 });
 
 await generate(config, { force: true });
 ```
+
+## WorkerPool API
+
+worma 内部使用 `WorkerPool` 进行多线程 schema→TS 转换和 Swagger2→3 转换，通过 `performance.workerPool` 配置。
+
+```typescript
+import { WorkerPool } from 'worma';
+
+interface WorkerPoolOptions {
+  /** Worker 脚本路径 */
+  workerScript: string;
+  /** 共享上下文（通过 workerData 传递给每个 worker） */
+  sharedContext: Record<string, unknown>;
+  /** 线程数 */
+  poolSize: number;
+  /** 空闲回收超时 ms，默认 30000 */
+  idleTimeout?: number;
+}
+
+class WorkerPool<Task, Result> {
+  constructor(options: WorkerPoolOptions);
+  get size(): number;
+  async processBatch(tasks: Task[]): Promise<Result[]>;
+  terminate(): void;
+}
+```
+
+**特点：**
+
+- 零依赖，全部使用 `node:worker_threads` 内置模块
+- 懒启动：首个任务到达时才 spawn worker
+- 30s 空闲自动回收
+- Round-Robin 负载均衡

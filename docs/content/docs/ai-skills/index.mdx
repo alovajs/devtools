@@ -4,7 +4,7 @@ description: 让 AI 工具精准理解你的 API 接口
 ---
 
 
-AI Skill 是 wormhole 为 AI 编码工具生成的结构化接口描述。它让 Cursor、Copilot、Continue 等 AI 能够精准理解你的每一个接口。
+AI Skill 是 worma 为 AI 编码工具生成的结构化接口描述。它让 Cursor、Copilot、Continue 等 AI 能够精准理解你的每一个接口。
 
 ## 核心思想
 
@@ -59,10 +59,12 @@ export default defineConfig({
 
 ```text
 aidocs/
-├── SKILL.md              # 主文档：接口索引 + 使用约定
+├── SKILL.md              # 主文档：接口索引 + 使用约定 + 文件位置
 └── references/           # 每个接口一个独立文档
     ├── user.info.md
     ├── user.login.md
     ├── admin.permissions.md
     └── ...
 ```
+
+> v2 中的 AI Skill 文档使用 `fileLocation`（文件实际位置）代替原来的 `importDescriptor`，由 aiDoc 插件在 `codeGenerated` 生命周期中自动计算并注入，不再依赖 jsconfig/tsconfig 的路径解析。

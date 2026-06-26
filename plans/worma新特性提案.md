@@ -744,7 +744,7 @@ interface PerformanceConfig {
   writeConcurrency?: number
 
   /** 是否对最终文件做 prettier 格式化。默认 true */
-  prettierFinal?: boolean
+  formatFile?: boolean
 
   /** 是否对输出做确定性排序（tag/API/component 按名称字典序）。默认 true */
   deterministicSort?: boolean
@@ -761,10 +761,10 @@ interface GeneratorConfig {
 
 ### 环境变量覆盖
 
-| 环境变量                   | 说明                             |
-| -------------------------- | -------------------------------- |
-| `WORMA_WORKERS=auto\|N\|0` | 覆盖 `performance.workerPool`    |
-| `WORMA_PRETTIER=0\|1`      | 覆盖 `performance.prettierFinal` |
+| 环境变量                   | 说明                          |
+| -------------------------- | ----------------------------- |
+| `WORMA_WORKERS=auto\|N\|0` | 覆盖 `performance.workerPool` |
+| `WORMA_PRETTIER=0\|1`      | 覆盖 `performance.formatFile` |
 
 ---
 

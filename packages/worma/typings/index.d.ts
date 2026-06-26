@@ -175,7 +175,7 @@ export interface PerformanceConfig {
 	/** Max parallelism for file writes. Default 32 */
 	writeConcurrency?: number;
 	/** Apply prettier formatting to final files before write. Default true (schema-level prettier is always disabled) */
-	prettierFinal?: boolean;
+	formatFile?: boolean;
 	/** Sort tags/APIs/components alphabetically for deterministic output. Default true */
 	deterministicSort?: boolean;
 }

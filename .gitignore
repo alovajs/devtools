@@ -27,4 +27,4 @@ examples/**/*swagger.*
 # test files
 cypress/downloads
 e2e-fixtures-temp
-docs
+.next

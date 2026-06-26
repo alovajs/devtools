@@ -3,5 +3,6 @@
     "builtin-plugins",
     "custom-plugin",
     "examples"
-  ]
+  ],
+  "title": "插件系统"
 }

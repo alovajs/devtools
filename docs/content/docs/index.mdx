@@ -36,11 +36,18 @@ v2 是一次重大升级，主要体现在：
 | 维度 | v1 | v2 |
 |------|----|----|
 | 模板 | 仅 alova 全局模板 | 内置 alova / axios / fetch / ky + 自定义模板 |
-| 插件系统 | — | 完整的生命周期 Hook 体系 |
-| AI Skill | — | 专为 AI 编码工具生成的接口文档 |
-| 缓存 | `node_modules/.alova`（不可提交） | `.worma-cache.json`（团队共享） |
+| 模板配置 | `template` 配置项 | 通过插件（plugin）的 `getTemplate` hook |
+| 插件系统 | — | 完整的生命周期 Hook 体系（含 `beforeFileWrite`、`getTemplate`） |
+| Hook 命名 | `afterOpenapiParse` / `afterCodeGenerate` | `openapiParsed` / `codeGenerated`（语义化过去式） |
+| AI Skill | — | 专为 AI 编码工具生成的接口文档（`aiDoc` 插件） |
+| 缓存 | `node_modules/.alova`（不可提交） | `.worma-cache/` 目录（团队共享） |
 | 模块类型 | 仅 TypeScript | typescript / module(ESM) / commonjs |
-| 生成进度 | spinner | 多行进度条，支持 onProgress 回调 |
+| 生成进度 | spinner | 多行进度条，支持 `onProgress` 回调 + `reportProgress` 钩子 |
+| CLI 参数 | `-c` 指定 cwd，`-w` 开启 workspace | `-p, --project` 指定项目，workspace 为默认行为 |
+| `input` | `string` | `string \| string[]`（支持 fallback） |
+| `platform` | 配置项 | `platform` 插件 |
+| `fileNameCase` | 支持 | 已移除 |
+| `autoUpdate` | 支持 | 已移除 |
 
 ## 一次生成，四种产出
 

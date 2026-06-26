@@ -1,17 +1,18 @@
 ---
 title: 类型替换器
-description: 替换 global.d.ts 中需要自定义的类型，通过引入名称查找和替换
+description: 复用外部类型，排除自动生成，支持 import type
 ---
 
 # 类型替换器
 
-本插件用于替换 `global.d.ts` 中需要自定义的类型，通过引入名称查找和替换。
+本插件用于将外部类型注入到生成的代码中，避免 worma 自动重复生成这些类型。
 
 ## 主要功能
 
-- 支持批量替换全局类型定义中的引入类型
-- 支持多模块引入和类型替换
-- 支持自定义模块路径和类型名称
+- 引入自定义类型，替换自动生成
+- 支持 `import type` 语法（通过 `|type` 后缀标记）
+- 支持指定目标文件（默认 `globals.d`）
+- 内部使用 `beforeCodeGenerate` + `beforeFileWrite` 实现，兼容流式渲染
 
 ## 基本使用
 
@@ -22,54 +23,70 @@ import { importType } from 'worma/plugin';
 export default defineConfig({
   generator: [
     {
-      // ...
       plugins: [
-        // 替换 global.d.ts 中的类型引入
-        importType({
-          bar: ['Apis', 'Foo'],        // import { Apis, Foo } from "bar"
-          '@types/bar': ['Bar'],       // import { Bar } from "@types/bar"
-          'vue|type': ['Vue'],         // import type { Vue } from "vue"
-        }),
+        importType(
+          {
+            'my-types|type': ['Pagination', 'BaseResponse'],  // import type
+            '@/shared': ['File', 'FormData'],                 // import
+          },
+          { files: ['globals.d', 'types'] }                   // 目标文件
+        ),
       ],
     },
   ],
 });
 ```
 
-配置后，`global.d.ts` 中自动生成的类型定义会被替换为用户引入的类型。
+以上配置将生成：
+
+```typescript
+import type { Pagination, BaseResponse } from "my-types";
+import { File, FormData } from "@/shared";
+```
+
+并将 `Pagination`、`BaseResponse`、`File`、`FormData` 排除在自动生成之外。
 
 ## 配置参数
 
 ```typescript
-interface ImportTypeConfig {
-  /**
-   * 模块路径
-   * 支持普通模块路径（如 'bar'）或带类型的模块路径（如 'vue|type'）
-   */
-  [modulePath: string]: string[];
-}
-
-function importType(config: ImportTypeConfig): ApiPlugin;
+function importType(
+  imports: Record<string, string[]>,
+  options?: { files?: string[] }
+): ApiPlugin;
 ```
+
+### 参数说明
+
+- `imports`：模块路径到类型名称的映射
+  - key 包含 `|type` 后缀时（如 `'module-name|type'`），生成 `import type { ... }` 语句
+  - 否则生成普通 `import { ... }` 语句
+- `options.files`：目标文件名匹配列表，默认为 `['globals.d']`
 
 ### 多模块配置
 
-同时配置多个模块的类型替换：
-
 ```javascript
 importType({
-  bar: ['Apis', 'Foo'],
-  '@types/bar': ['Bar'],
+  'my-types|type': ['Pagination', 'BaseResponse'],
+  '@/shared': ['File', 'FormData'],
   'vue|type': ['Vue'],
 });
 ```
 
-### 自定义模块路径
+生成结果：
 
-使用带类型的模块路径：
+```typescript
+import type { Pagination, BaseResponse } from "my-types";
+import { File, FormData } from "@/shared";
+import type { Vue } from "vue";
+```
+
+### 自定义目标文件
+
+默认注入到 `globals.d` 文件，也可以通过 `files` 参数指定其他文件：
 
 ```javascript
-importType({
-  'vue|type': ['Vue'], // import type { Vue } from "vue"
-});
+importType(
+  { 'my-types|type': ['Pagination'] },
+  { files: ['globals.d', 'types', 'index'] }
+);
 ```

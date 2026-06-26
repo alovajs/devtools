@@ -1,6 +1,6 @@
 ---
 title: 更新日志
-description: alova/wormhole 版本更新记录
+description: worma 版本更新记录
 ---
 
 
@@ -11,22 +11,49 @@ description: alova/wormhole 版本更新记录
 - **自定义模板** — 基于 Handlebars 模板引擎，支持完全自定义生成代码结构
 - **多模板支持** — 内置 alova（functional/alovaGlobals）、axios、fetch、ky 五套模板
 - **AI Skill 文档** — 通过 `aiDoc` 插件生成 AI 可读的接口文档
-- **插件系统** — 完整的生命周期 Hook（config / beforeOpenapiParse / openapiParsed / beforeCodeGenerate / codeGenerated）
+- **插件系统** — 完整的生命周期 Hook（config / beforeOpenapiParse / openapiParsed / getTemplate / beforeCodeGenerate / beforeFileWrite / codeGenerated）
 - **`importType` 插件** — 注入外部类型，避免重复生成
 - **生成进度上报** — 三层可观察性：`onProgress` 回调 + `reportProgress` 钩子 + CLI 多行进度条
 - **模块类型区分** — 模板支持 typescript / module(ESM) / commonjs 三种类型
-- **`{tag}` 动态文件名** — 按 OpenAPI tag 拆分文件
+- **`{tag}` / `{api}` 动态文件名** — 按 tag 或 API 名动态拆分文件
 - **`#` 前缀不覆盖机制** — 文件名前加 `#` 表示首次生成后不再覆盖
-- **`importDescriptor` 自动推导** — 为 AI Skill 和模板自适应生成 import/require 语句
-- **缓存文件迁移** — 从 `node_modules/.alova` 迁移到项目根目录的 `.worma-cache.json`
+- **`platform` 插件** — 自动拼接 Swagger / Knife4j / FastAPI 等平台的 OpenAPI 文件地址
+- **`config.input` 支持数组** — 多个 URL 依次尝试，支持 fallback
+- **`performance` 配置** — worker 池、并发数、prettier 等性能调优
+- **Worker 线程池** — `WorkerPool` 泛型实现，零依赖多线程 schema 转换
+- **缓存文件迁移** — 从 `node_modules/.alova` 迁移到 `.worma-cache/` 目录
+- **缓存目录结构** — 从单文件改为目录结构（`index.json` + `data/{slug}.json`），增量性能提升
 - **`.wormarc` 简易配置** — 纯文本格式，支持 URL、模板、自定义路径和注释
+- **`fileLocation` 代替 `importDescriptor`** — AI Skill 文档展示文件实际位置
+- **`createPlugin` 工厂函数** — 更方便地创建带参数的自定义插件
 
 ### 变更
 
+- **品牌重命名**：`@alova/wormhole` → `worma`
+- **配置文件重命名**：`alova.config` → `worma.config`，`.alovarc` → `.wormarc`
+- **CLI 命令重命名**：`alova init` / `alova gen` → `worma init` / `worma gen`
+- **模板改为插件方式**：从 `worma/template` 改为 `worma/plugin` 导入
+- **Hook 名称变更**：`afterOpenapiParse` → `openapiParsed`，`afterCodeGenerate` → `codeGenerated`
+- **Hook 参数对象化**：所有 hook 参数统一为对象形式
+- **`beforeCodeGenerate` 语义变更**：不再返回值，直接修改 `params.data`
+- **`codeGenerated` 参数变更**：`files` 替换为 `filePaths`，支持流式写盘
+- **新钩子 `beforeFileWrite`**：逐个文件修改，替代原来 `codeGenerated` 的文件修改逻辑
+- **CLI 参数变更**：`-c` → `-p, --project`，`-w` 移除（workspace 为默认行为），新增 `-f, --force`
 - alova 模板仅支持 alova@3，不再支持 alova@2
-- functional 模板移除 `createApis.ts.handlebars`（按需引入模式下不需要全局 `Apis` 对象）
-- 配置方式改为 `defineConfig` + `generator` 数组格式
+- functional 模板移除 `createApis.ts.handlebars`
+- `platform` 配置项改为 `platform` 插件
+- 移除 `fileNameCase` 配置
+- 移除 `autoUpdate` 配置（由 VSCode 扩展自行管理）
 
 ### 迁移
 
-从 v1 迁移请参考[迁移指南](/docs/guide/08-migration)。
+1. 将 `@alova/wormhole` 替换为 `worma`
+2. 将配置文件名改为 `worma.config.{js,ts}`
+3. 将模板导入从 `worma/template` 改为 `worma/plugin`
+4. 将 `template: alova()` 改为 `plugins: [alova()]`
+5. 将 hook 名称中的 `afterOpenapiParse` / `afterCodeGenerate` 改为 `openapiParsed` / `codeGenerated`
+6. 更新 `beforeCodeGenerate` 直接修改 `data` 对象，不再返回
+7. 将 `codeGenerated({ files })` 中的文件修改逻辑迁移到 `beforeFileWrite`
+8. 将 `platform` 配置项改为 `platform()` 插件
+9. CLI 中使用 `-p, --project` 替代 `-c, --cwd`
+10. 更新 `.gitignore`：将 `.alova-cache/` 改为 `.worma-cache/`

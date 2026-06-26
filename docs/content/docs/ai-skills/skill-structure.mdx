@@ -96,6 +96,16 @@ selectWarnSecurity({
 ```
 ```
 
+## fileLocation（文件位置展示）
+
+在 v2 中，AI Skill 文档不再使用 `importDescriptor` 解析 jsconfig/tsconfig 的路径别名。改为在每个 API 文档中展示**文件所在位置**（`fileLocation`），由 aiDoc 插件在 `codeGenerated` 中计算并注入模板渲染数据中。这使得文档更清晰地告诉 AI 代码应该放在哪个文件中：
+
+```markdown
+**## 文件位置**
+
+src/api/user/userInfo.ts
+```
+
 ## import 语句自适应
 
 Skill 文档根据模块类型自适应生成 import 语句：

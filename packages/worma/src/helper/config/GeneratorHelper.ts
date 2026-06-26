@@ -329,10 +329,10 @@ export class GeneratorHelper {
       // 9.2.1: Unified streaming pipeline — render + beforeFileWrite hooks + write
       const perf = config.performance
       const writeConcurrency = perf?.writeConcurrency ?? 32
-      const prettierFinal = perf?.prettierFinal ?? true
+      const formatFile = perf?.formatFile ?? true
       logger.debug('Starting template generation', {
         writeConcurrency,
-        prettierFinal,
+        formatFile,
         changedTagsCount: changedTags?.size ?? 'all',
       })
       const result = await templateHelper.generateFromTemplateDir(
@@ -342,7 +342,7 @@ export class GeneratorHelper {
         {
           changedTags,
           writeConcurrency,
-          prettierFinal,
+          formatFile,
           beforeFileWrite: async ({ filePath: relPath, content: fileContent, meta }) => {
             return pluginDriver.hookPipe('beforeFileWrite', fileContent, (_p, currentContent, _ctx) => ({
               config: frozenConfig,

@@ -1,29 +1,39 @@
 ---
 title: 插件 API
-description: ApiPlugin 接口和内置插件 API
+description: ApiPlugin 接口（v2 更新）
 ---
 
 
-## ApiPlugin 接口
+## ApiPlugin 接口（v2）
+
+所有 hook 参数统一改为对象形式。`beforeCodeGenerate` 不再返回值，改为直接修改 `params.data`。`afterOpenapiParse` / `afterCodeGenerate` 已重命名为 `openapiParsed` / `codeGenerated`。新增 `getTemplate` 和 `beforeFileWrite` 钩子：
 
 ```typescript
 type ReportProgress = (progress: number, message?: string) => void;
 
+interface TemplateConfigResult {
+  /** 模板路径（相对或绝对，相对是相对于 process.cwd()） */
+  path: string;
+}
+
 interface ApiPlugin {
   name?: string;
 
+  /** ① 配置阶段：可修改 config */
   config?: (params: {
     config: GeneratorConfig;
     projectPath: string;
     reportProgress: ReportProgress;
   }) => MaybePromise<GeneratorConfig | undefined | null | void>;
 
+  /** ② OpenAPI 解析前 */
   beforeOpenapiParse?: (params: {
     config: Readonly<GeneratorConfig>;
     projectPath: string;
     reportProgress: ReportProgress;
   }) => void;
 
+  /** ③ OpenAPI 解析后：可修改 document */
   openapiParsed?: (params: {
     config: Readonly<GeneratorConfig>;
     document: OpenAPIDocument;
@@ -31,49 +41,55 @@ interface ApiPlugin {
     reportProgress: ReportProgress;
   }) => MaybePromise<OpenAPIDocument | undefined | null | void>;
 
+  /** ④ 获取模板路径 */
+  getTemplate?: (params: {
+    config: Readonly<GeneratorConfig>;
+    projectPath: string;
+    reportProgress: ReportProgress;
+  }) => MaybePromise<TemplateConfigResult | undefined | null | void>;
+
+  /** ⑤ 渲染前：注入/修改 templateData */
   beforeCodeGenerate?: (params: {
     config: Readonly<GeneratorConfig>;
     data: TemplateData;
     projectPath: string;
     reportProgress: ReportProgress;
-  }) => MaybePromise<string | undefined | null | void>;
+  }) => MaybePromise<void>;
 
+  /** ⑥ 每个文件写盘前：可修改单个文件内容 */
+  beforeFileWrite?: (params: {
+    filePath: string;
+    content: string;
+    fileName: string;
+    tag?: string;
+    api?: string;
+    config: Readonly<GeneratorConfig>;
+    data: TemplateData;
+    projectPath: string;
+    isNoOverwrite: boolean;
+  }) => MaybePromise<string | void>;
+
+  /** ⑦ 所有文件写盘完成后 */
   codeGenerated?: (params: {
     config: Readonly<GeneratorConfig>;
     data: TemplateData;
-    files: Record<string, string>;
+    filePaths: string[];
     projectPath: string;
+    outputDir: string;
     error?: Error;
     reportProgress: ReportProgress;
   }) => MaybePromise<void>;
 }
 ```
 
-## 内置插件
+### 钩子执行时序
 
-### importType
-
-```typescript
-import { importType } from 'worma/plugin';
-
-function importType(
-  imports: Record<string, string[]>,
-  options?: { files?: string[] }
-): ApiPlugin;
 ```
-
-### rename
-
-```typescript
-import { rename } from 'worma/plugin';
-
-function rename(mapping: Record<string, string>): ApiPlugin;
-```
-
-### aiDoc
-
-```typescript
-import { aiDoc } from 'worma/plugin';
-
-function aiDoc(options?: { template?: string }): ApiPlugin;
+config() → beforeOpenapiParse() → 解析 OpenAPI → openapiParsed()
+→ getTemplate()                     ← 插件返回模板路径
+→ beforeCodeGenerate(data)          ← 插件注入配置数据
+→ loop 每个文件:
+    beforeFileWrite(filePath, content)  ← 逐个修改
+    writeFile(filePath)
+→ codeGenerated(filePaths)          ← 通知完成
 ```

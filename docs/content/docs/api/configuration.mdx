@@ -23,8 +23,8 @@ interface Config {
 
 ```typescript
 interface GeneratorConfig {
-  /** OpenAPI 文档地址（URL 或本地路径） */
-  input: string;
+  /** OpenAPI 文档地址（URL 或本地路径），支持 string[] 依次尝试 */
+  input: string | string[];
 
   /** 输出目录 */
   output?: string;
@@ -32,37 +32,37 @@ interface GeneratorConfig {
   /** 是否生成文档注释，默认 true */
   docComment?: boolean;
 
-  /** 响应 MediaType，可设置数组 */
+  /** 响应 MediaType，可设置数组，表示依次指向的 media type */
   responseMediaType?: string | string[];
 
-  /** 请求体 MediaType，可设置数组 */
+  /** 请求体 MediaType，可设置数组，表示依次指向的 media type */
   bodyMediaType?: string | string[];
 
-  /** 多文档时的自定义服务名称 */
+  /** 多文档时的自定义服务名称，未设置时默认为 info.title */
   serverName?: string;
 
-  /** 模板配置函数 */
-  template: () => TemplateConfig | Promise<TemplateConfig>;
-
-  /** 插件数组 */
+  /** 插件数组（模板也通过 plugin 的 getTemplate hook 设置） */
   plugins?: ApiPlugin[];
 
-  /**
-   * 自定义修改 API 配置的钩子函数。
-   * 将在生成每个 API 前被调用，接收 apiDescription 并返回修改后的结果。
-   */
-  handleApi?: (apiDescription: ApiDescription) => ApiDescription;
+  /** 性能配置 */
+  performance?: PerformanceConfig;
 }
 ```
 
-## TemplateConfig
+## PerformanceConfig
 
 ```typescript
-interface TemplateConfig {
-  /** 模板路径 */
-  path: string;
-  /** 模板参数 */
-  config?: Record<string, any>;
+interface PerformanceConfig {
+  /** schema→TS worker 池策略：'auto' | number | false。默认 'auto'（按接口数自适应） */
+  workerPool?: 'auto' | number | false;
+  /** transform 阶段并发上限。默认 auto（min(64, max(8, cpus*4))） */
+  transformConcurrency?: number;
+  /** 写盘并发数。默认 32 */
+  writeConcurrency?: number;
+  /** 是否对最终文件做 prettier 格式化。默认 true */
+  formatFile?: boolean;
+  /** 是否对输出做确定性排序（tag/API/component 按名称字典序）。默认 true */
+  deterministicSort?: boolean;
 }
 ```
 
@@ -79,77 +79,32 @@ interface GenerateProgress {
 }
 
 interface GenerateApiOptions {
-  /** 强制重新生成 */
+  /** 强制重新生成，忽略缓存 */
   force?: boolean;
   /** 项目路径 */
   projectPath?: string;
-  /** 进度回调 */
+  /** 进度回调。框架按 progressInterval 节流后推送所有 source 的最新进度 */
   onProgress?: (snapshot: Record<string, GenerateProgress>) => void;
-  /** 推送间隔（毫秒），默认 500 */
+  /** 推送间隔（毫秒），默认 500。<= 0 时关闭节流 */
   progressInterval?: number;
 }
 ```
 
-## handleApi 钩子函数
+## 环境变量覆盖
 
-`handleApi` 是一个自定义修改 API 配置的钩子函数。它会在生成每个 API 前被调用，接收 `apiDescription` 并返回修改后的结果。当 OpenAPI 文件不准确或不详细时，这个钩子非常有用。
+| 环境变量 | 说明 |
+|---------|------|
+| `WORMA_WORKERS=auto\|N\|0` | 覆盖 `performance.workerPool` |
+| `WORMA_PRETTIER=0\|1` | 覆盖 `performance.formatFile` |
 
-`apiDescription` 包含对应 OpenAPI 文件中每个 API 的信息，具体结构可参考 [OpenAPI Spec Operation Object](https://spec.openapis.org/oas/v3.1.0.html#operation-object)。
+## 配置变化（v1 → v2）
 
-在 `worma.config.js` 中配置：
+以下配置项已在 v2 中移除：
 
-```javascript
-export default defineConfig({
-  generator: [
-    {
-      input: 'https://api.example.com/openapi.json',
-      output: 'src/api',
-      template: alova(),
-      handleApi: apiDescription => {
-        // 自定义修改
-        return apiDescription;
-      },
-    },
-  ],
-});
-```
-
-### 修改 API 函数名
-
-将下划线命名改为驼峰：
-
-```javascript
-const handleApi = apiDescription => {
-  apiDescription.operationId = apiDescription.operationId.replace(
-    /_([a-z])/g,
-    function (match, group) {
-      return group.toUpperCase();
-    }
-  );
-  return apiDescription;
-};
-```
-
-### 修改 tag
-
-根据 URL 或其它条件修改 API 的 tag：
-
-```javascript
-const handleApi = apiDescription => {
-  if (apiDescription.url.includes('/user')) {
-    apiDescription.tags = ['userTag'];
-  }
-  return apiDescription;
-};
-```
-
-### 修改 response 数据生成
-
-生成 `response.data` 对应的类型：
-
-```javascript
-const handleApi = apiDescription => {
-  apiDescription.responses = apiDescription.responses?.properties?.data;
-  return apiDescription;
-};
-```
+| 移除的配置项 | 替代方案 |
+|------------|---------|
+| `template` | 改为插件方式，使用 `plugins` 数组中的模板插件 |
+| `handleApi` | 使用 `openapiParsed` 钩子替代 |
+| `fileNameCase` | 已移除 |
+| `autoUpdate`（根配置） | VSCode 扩展自行管理 |
+| `platform` 参数 | 改为 `platform` 插件 |
