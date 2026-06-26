@@ -1,0 +1,13 @@
+{
+  "name": "axios-app",
+  "type": "module",
+  "private": true,
+  "description": "Worma monorepo sub-package — axios template",
+  "scripts": {
+    "gen": "worma gen -f",
+    "start": "node src/main.js"
+  },
+  "dependencies": {
+    "axios": "catalog:default"
+  }
+}

@@ -1,5 +1,5 @@
 /* tslint:disable */
-/* eslint-disable */
+
 /**
  * OpenAPI - version 1.0.0
  *
@@ -17,7 +17,7 @@
 /// <reference types='./globals.d.ts' />
 
 const apiDefinitions = {
-  'general.addPet': ['POST', '/pet']
-} as const;
+  'general.addPet': ['POST', '/pet'],
+} as const
 
-export default apiDefinitions;
+export default apiDefinitions

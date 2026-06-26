@@ -1,16 +1,16 @@
 {
   "name": "worma-demo-esm",
+  "type": "module",
   "private": true,
   "description": "Worma ESM example - all templates for ES Module projects",
-  "type": "module",
   "scripts": {
     "gen": "worma gen -f",
-    "start": "node src/demo.js"
+    "start": "node --experimental-specifier-resolution=node src/main.js"
   },
   "dependencies": {
     "alova": "^3.0.0",
-    "axios": "^1.7.0",
-    "ky": "^1.7.0"
+    "axios": "catalog:default",
+    "ky": "catalog:default"
   },
   "devDependencies": {
     "worma": "workspace:*"

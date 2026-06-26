@@ -1,17 +1,20 @@
 import type { GeneratorConfig } from '@/type'
 import { describe, expect, it } from 'vitest'
-import { platform } from '@/plugins/presets/platform'
 import { alovaGlobals } from '@/plugins'
+import { platform } from '@/plugins/presets/platform'
 
-type Req = { config: GeneratorConfig; projectPath: string; reportProgress: () => void }
-const noop = () => { }
+// eslint-disable-next-line unused-imports/no-unused-vars
+interface Req { config: GeneratorConfig, projectPath: string, reportProgress: () => void }
+function noop() { }
 
-const makeConfig = (overrides?: Partial<GeneratorConfig>): GeneratorConfig => ({
-  input: 'https://petstore3.swagger.io',
-  output: 'xxx',
-  plugins: [alovaGlobals()],
-  ...overrides,
-})
+function makeConfig(overrides?: Partial<GeneratorConfig>): GeneratorConfig {
+  return {
+    input: 'https://petstore3.swagger.io',
+    output: 'xxx',
+    plugins: [alovaGlobals()],
+    ...overrides,
+  }
+}
 
 describe('platform preset plugin - config', () => {
   describe('swagger platform', () => {

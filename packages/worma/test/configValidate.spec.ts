@@ -107,12 +107,12 @@ describe('validate config', () => {
             {
               input: 'http://localhost:3000/openapi.json',
               output: './src/api',
-              plugins: [{getTemplate: () => ({path: ''})}],
+              plugins: [{ getTemplate: () => ({ path: '' }) }],
             },
             {
               input: 'http://localhost:3000/openapi2.json',
               output: './src/api',
-              plugins: [{getTemplate: () => ({path: ''})}],
+              plugins: [{ getTemplate: () => ({ path: '' }) }],
             },
           ],
         }),
@@ -432,7 +432,7 @@ describe('validate config', () => {
           {
             input: 'http://localhost:3000/openapi.json',
             output: './src/api',
-            plugins: [{getTemplate: () => ({path: ''})}],
+            plugins: [{ getTemplate: () => ({ path: '' }) }],
           },
         ],
       })

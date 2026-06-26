@@ -2,7 +2,6 @@
 import { resolve } from 'node:path'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
 import { aiDoc } from '@/plugins/presets/aiDoc'
-import { alovaGlobals } from '@/plugins'
 import { generateWithPlugin } from '../util'
 
 // Hoisted: create the shared memfs volume before any module imports
@@ -162,7 +161,7 @@ describe('plugins/aiDoc', () => {
         queryParameters: 'params?: { limit?: number }',
         queryParametersComment: '// limit: number of items',
         responseComment: '// returns Pet[]',
-        defaultValue: '',
+        callingCode: '',
       }
       const apiCreatePet = {
         tag: 'pets',
@@ -177,7 +176,7 @@ describe('plugins/aiDoc', () => {
         queryParameters: '',
         requestBodyComment: '// body: CreatePetRequest',
         responseComment: '// returns Pet',
-        defaultValue: '',
+        callingCode: '',
       }
       const data: any = {
         title: 'Pet Store API',
@@ -261,7 +260,7 @@ describe('plugins/aiDoc', () => {
         pathKey: 'test.testApi',
         pathParameters: '',
         queryParameters: '',
-        defaultValue: '',
+        callingCode: '',
       }
       const data: any = {
         title: 'Test',
@@ -313,7 +312,7 @@ describe('plugins/aiDoc', () => {
         pathKey: 'default.hello',
         pathParameters: '',
         queryParameters: '',
-        defaultValue: '',
+        callingCode: '',
       }
       const data: any = {
         title: 'Fallback Title',
@@ -367,7 +366,7 @@ describe('plugins/aiDoc', () => {
         pathParameters: 'id: string',
         pathParametersComment: '// id: user ID',
         queryParameters: '',
-        defaultValue: '',
+        callingCode: '',
       }
       const data: any = {
         title: 'File Location Test',

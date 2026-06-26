@@ -34,6 +34,9 @@ interface SchemaResultItem {
 const { document, config, refNameMapEntries } = workerData as WorkerSetup
 const refNameMap = new Map<string, string>(refNameMapEntries)
 
+/** Worker-local cache: keyName → generated TS string, avoids re-transforming the same referenced schema. */
+const schemaCache = new Map<string, string>()
+
 async function processSchema(key: string, schema: SchemaObject): Promise<SchemaResultItem[]> {
   const results: SchemaResultItem[] = []
 
@@ -49,13 +52,17 @@ async function processSchema(key: string, schema: SchemaObject): Promise<SchemaR
       if (config.externalTypes?.includes(ast.keyName ?? ''))
         return
       if (ast.keyName) {
-        const result = await astLoader.transformTsStr(ast, {
-          shallowDeep: true,
-          commentType: 'doc',
-          noEnum: true,
-          format: true,
-          export: true,
-        })
+        let result = schemaCache.get(ast.keyName)
+        if (!result) {
+          result = await astLoader.transformTsStr(ast, {
+            shallowDeep: true,
+            commentType: 'doc',
+            noEnum: true,
+            format: true,
+            export: true,
+          })
+          schemaCache.set(ast.keyName, result)
+        }
         results.push({ key: ast.keyName, result })
       }
     },

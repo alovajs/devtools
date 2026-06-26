@@ -6,16 +6,16 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { pickPoolSize, WorkerPool as WorkerPoolClass } from '@/core/WorkerPool'
 
 describe('pickPoolSize', () => {
-  // 阈值 200 是 worker 池启用的边界：apiCount > 200 才会 spawn worker 线程，
-  // 进而触发 sharedContext 的 structured clone。该阈值是 "could not be cloned" bug 的触发前提。
-  it('returns 0 (no worker pool) when apiCount <= 200', () => {
+  // P2: 阈值从 200 降至 20，使中等规模 API 也能受益于 Worker 并行
+  it('returns 0 (no worker pool) when apiCount <= 20', () => {
     expect(pickPoolSize(0)).toBe(0)
     expect(pickPoolSize(1)).toBe(0)
-    expect(pickPoolSize(200)).toBe(0)
+    expect(pickPoolSize(20)).toBe(0)
   })
 
-  it('returns >0 (worker pool enabled) when apiCount > 200', () => {
-    expect(pickPoolSize(201)).toBeGreaterThan(0)
+  it('returns >0 (worker pool enabled) when apiCount > 20', () => {
+    expect(pickPoolSize(21)).toBeGreaterThan(0)
+    expect(pickPoolSize(200)).toBeGreaterThan(0)
     expect(pickPoolSize(1000)).toBeGreaterThan(0)
     expect(pickPoolSize(5000)).toBeGreaterThan(0)
   })
@@ -27,7 +27,7 @@ describe('pickPoolSize', () => {
   })
 })
 
-describe('WorkerPool sharedContext serialization', () => {
+describe('workerPool sharedContext serialization', () => {
   // 回归：apiCount > 200 时 templateParser 会启用 worker 池并把 sharedContext 通过
   // workerData 传给 worker 线程。Node 对 workerData 做 structured clone，函数无法被克隆。
   // 修复前调用方传入了完整 generatorConfig（含 plugins 函数），导致

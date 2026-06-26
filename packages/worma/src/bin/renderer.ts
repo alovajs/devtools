@@ -1,8 +1,9 @@
+import type { TemplatePreset } from '@/createConfig'
 import type { GeneratorConfig } from '@/type'
 import type { GeneratorProgressEvent } from '@/type/lib'
-import type { TemplatePreset } from '@/createConfig'
+/* eslint-disable no-console */
 import { createLogUpdate } from 'log-update'
-import { theme, icons } from './theme'
+import { icons, theme } from './theme'
 
 type LogUpdateFn = ReturnType<typeof createLogUpdate>
 
@@ -48,7 +49,7 @@ export interface ProjectInfo {
 }
 
 /**
- * Terminal live-progress renderer for the `alova gen` command.
+ * Terminal live-progress renderer for the `worma gen` command.
  *
  * Layout (three phases)
  * ──────────────────────────────────────────
@@ -147,7 +148,8 @@ export class MultiGeneratorRenderer {
     st.progress = 100
     st.stage = 'completed'
     st.endTime = Date.now()
-    if (resolvedInput) st.input = resolvedInput
+    if (resolvedInput)
+      st.input = resolvedInput
     this.render()
   }
 
@@ -164,14 +166,16 @@ export class MultiGeneratorRenderer {
     st.status = 'skipped'
     st.stage = 'skipped'
     st.endTime = Date.now()
-    if (resolvedInput) st.input = resolvedInput
+    if (resolvedInput)
+      st.input = resolvedInput
     this.render()
   }
 
   // ── Phase 2: Live-update rendering ─────────────────────────────
 
   render(): void {
-    if (!this.logUpdateInstance) return
+    if (!this.logUpdateInstance)
+      return
 
     const elapsed = ((Date.now() - this.startTime) / 1000).toFixed(1)
     const doneCount = this.states.filter(s => s.status === 'done').length
@@ -253,13 +257,13 @@ export class MultiGeneratorRenderer {
       console.log(theme.success('\n✔ Generated successfully!\n'))
     }
     else {
-      console.log(theme.dim('\n  Try `alova gen -f` to force regenerate.\n'))
+      console.log(theme.dim('\n  Try `worma gen -f` to force regenerate.\n'))
     }
   }
 }
 
 /**
- * Terminal live-progress renderer for the `alova gen` command in monorepo
+ * Terminal live-progress renderer for the `worma gen` command in monorepo
  * (multi-project) mode.
  *
  * Displays every sub-package's generator progress simultaneously so the user
@@ -302,6 +306,7 @@ export class MultiProjectRenderer {
     states: GeneratorState[]
     startTime: number
   }[]
+
   private version: string
   private logUpdateInstance: LogUpdateFn | null = null
 
@@ -333,9 +338,11 @@ export class MultiProjectRenderer {
   /** Route a per-generator progress event to its project. */
   onProjectEvent(projectIndex: number, event: GeneratorProgressEvent): void {
     const proj = this.projects[projectIndex]
-    if (!proj) return
+    if (!proj)
+      return
     const st = proj.states[event.index]
-    if (!st) return
+    if (!st)
+      return
 
     switch (event.phase) {
       case 'active':
@@ -358,7 +365,8 @@ export class MultiProjectRenderer {
         st.progress = 100
         st.stage = 'completed'
         st.endTime = Date.now()
-        if (event.resolvedInput) st.input = event.resolvedInput
+        if (event.resolvedInput)
+          st.input = event.resolvedInput
         break
       case 'failed':
         st.status = 'failed'
@@ -369,7 +377,8 @@ export class MultiProjectRenderer {
         st.status = 'skipped'
         st.stage = 'skipped'
         st.endTime = Date.now()
-        if (event.resolvedInput) st.input = event.resolvedInput
+        if (event.resolvedInput)
+          st.input = event.resolvedInput
         break
     }
     this.render()
@@ -395,7 +404,8 @@ export class MultiProjectRenderer {
   // ── Phase 2: Live-update rendering ─────────────────────────────
 
   render(): void {
-    if (!this.logUpdateInstance) return
+    if (!this.logUpdateInstance)
+      return
 
     const lines: string[] = []
 
@@ -429,6 +439,15 @@ export class MultiProjectRenderer {
         if (skippedCount > 0)
           parts.push(theme.warning(`⊗ ${skippedCount}`))
         lines.push(`  ${parts.join('  ')}`)
+
+        // Show error details for failed generators in collapsed projects
+        if (failedCount > 0) {
+          for (const st of proj.states) {
+            if (st.status === 'failed' && st.error) {
+              lines.push(`      ${theme.error(`✖ ${st.error}`)}`)
+            }
+          }
+        }
       }
       else {
         // ── Expanded: full project detail ──
@@ -495,7 +514,11 @@ export class MultiProjectRenderer {
     // Global separator and aggregate stats
     lines.push(`  ${sep()}`)
 
-    let totalDone = 0, totalFailed = 0, totalActive = 0, totalSkipped = 0, totalGens = 0
+    let totalDone = 0
+    let totalFailed = 0
+    let totalActive = 0
+    let totalSkipped = 0
+    let totalGens = 0
     for (const proj of this.projects) {
       totalDone += proj.states.filter(s => s.status === 'done').length
       totalFailed += proj.states.filter(s => s.status === 'failed').length
@@ -541,13 +564,13 @@ export class MultiProjectRenderer {
       console.log(theme.success('\n✔ Generated successfully!\n'))
     }
     else {
-      console.log(theme.dim('\n  Try `alova gen -f` to force regenerate.\n'))
+      console.log(theme.dim('\n  Try `worma gen -f` to force regenerate.\n'))
     }
   }
 }
 
 // ─────────────────────────────────────────────────────────────────
-// InitRenderer — static display for `alova init`
+// InitRenderer — static display for `worma init`
 // ─────────────────────────────────────────────────────────────────
 
 /** Available template presets for interactive selection. */
@@ -577,7 +600,7 @@ export const INIT_TEMPLATE_CHOICES: { name: string, value: TemplatePreset }[] = 
  *   ✔ Configuration initialized successfully!
  *
  *     Next steps:
- *       alova gen
+ *       worma gen
  */
 export class InitRenderer {
   private version: string
@@ -618,7 +641,7 @@ export class InitRenderer {
     console.log(theme.success('✔ Configuration initialized successfully!'))
     console.log('')
     console.log(`    ${theme.label('Next steps:')}`)
-    console.log('      alova gen')
+    console.log('      worma gen')
     console.log('')
   }
 

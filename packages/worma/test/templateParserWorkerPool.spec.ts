@@ -1,5 +1,4 @@
 import { vol } from 'memfs'
-import { resolve } from 'node:path'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 /**
@@ -28,10 +27,12 @@ vi.mock('@/core/WorkerPool', async (importActual) => {
         capturedSharedContext = opts.sharedContext
         workerSpawned = true
       }
+
       async processBatch(tasks: Task[]): Promise<Result[]> {
         // 返回与任务一一对应的空结果，保证调用方后续流程可继续
         return tasks.map((t: any) => ({ key: t.key, result: '' }) as unknown as Result)
       }
+
       terminate() { /* noop */ }
     },
   }
@@ -49,7 +50,7 @@ function makeBigSpec(endpointCount: number) {
         tags: [`tag${i % 10}`],
         operationId: `getItem${i}`,
         responses: {
-          '200': {
+          200: {
             description: 'ok',
             content: { 'application/json': { schema: { $ref: '#/components/schemas/Item' } } },
           },

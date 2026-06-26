@@ -15,8 +15,8 @@ export {
   axios,
   config,
   fetch,
-  ky,
   type FunctionalTemplateOptions,
   type GlobalsTemplateOptions,
+  ky,
   type RequestLibTemplateOptions,
 } from '@/template'

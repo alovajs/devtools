@@ -1,10 +1,5 @@
 import type HandlebarsType from 'handlebars'
-import type { ApiPlugin } from '@/helper/config/type'
-import type {
-  FunctionalTemplateOptions,
-  GlobalsTemplateOptions,
-  RequestLibTemplateOptions,
-} from '@/helper/config/type'
+import type { ApiPlugin, FunctionalTemplateOptions, GlobalsTemplateOptions, RequestLibTemplateOptions } from '@/helper/config/type'
 import path from 'node:path'
 import { PluginName, PresetTemplateName } from '@/constant'
 
@@ -50,6 +45,9 @@ export function config(): ApiPlugin {
     getTemplate() {
       return { path: getPresetTemplatePath(PresetTemplateName.CONFIG) }
     },
+    beforeCodeGenerate({ data }) {
+      data.config = { ...data.config, templateName: 'config' }
+    },
   }
 }
 
@@ -69,15 +67,18 @@ export function alovaGlobals(opts?: GlobalsTemplateOptions): ApiPlugin {
       // Inject template config into templateData
       data.config = {
         ...data.config,
+        templateName: 'alova-globals',
         global,
         globalHost,
         useImportType: opts?.useImportType ?? false,
       }
-      // Prefix pathKey and defaultValue with global name
+      // Prefix callingCode with global.tag for full call chain
+      // Also compute apiKey for globals-specific identifiers
       for (const api of data.allApis) {
-        api.pathKey = `${global}.${api.pathKey}`
-        if (api.defaultValue) {
-          api.defaultValue = `${global}.${api.defaultValue}`
+        const fullKey = `${global}.${api.tag}.${api.name}`;
+        (api as any).apiKey = fullKey
+        if (api.callingCode) {
+          api.callingCode = `${global}.${api.tag}.${api.callingCode}`
         }
       }
     },
@@ -100,6 +101,7 @@ export function alova(opts?: FunctionalTemplateOptions): ApiPlugin {
     beforeCodeGenerate({ data }) {
       data.config = {
         ...data.config,
+        templateName: 'alova',
         useImportType: opts?.useImportType ?? false,
       }
     },
@@ -122,6 +124,7 @@ export function axios(opts?: RequestLibTemplateOptions): ApiPlugin {
     beforeCodeGenerate({ data }) {
       data.config = {
         ...data.config,
+        templateName: 'axios',
         useImportType: opts?.useImportType ?? false,
       }
     },
@@ -144,6 +147,7 @@ export function fetch(opts?: RequestLibTemplateOptions): ApiPlugin {
     beforeCodeGenerate({ data }) {
       data.config = {
         ...data.config,
+        templateName: 'fetch',
         useImportType: opts?.useImportType ?? false,
       }
     },
@@ -166,6 +170,7 @@ export function ky(opts?: RequestLibTemplateOptions): ApiPlugin {
     beforeCodeGenerate({ data }) {
       data.config = {
         ...data.config,
+        templateName: 'ky',
         useImportType: opts?.useImportType ?? false,
       }
     },

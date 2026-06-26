@@ -7,7 +7,8 @@ import { Worker } from 'node:worker_threads'
 
 export function pickPoolSize(apiCount: number): number {
   const cpu = Math.max(1, cpus().length)
-  if (apiCount <= 200)
+  // P2: Lowered threshold from 200→20 so moderate API counts benefit from workers
+  if (apiCount <= 20)
     return 0
   if (apiCount <= 1000)
     return Math.min(2, cpu)

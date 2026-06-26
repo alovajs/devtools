@@ -2,6 +2,7 @@ import type { ProgressTracker } from '@/helper/progress'
 import type { Config, GeneratorConfig, UserConfigExport } from '@/type'
 import { isArray } from 'lodash'
 import { TemplateHelper } from '@/helper'
+import { logger } from '@/helper/logger'
 import { ConfigManager } from './ConfigManager'
 import { GeneratorHelper } from './GeneratorHelper'
 
@@ -18,8 +19,11 @@ export class ConfigHelper {
 
   public async load(config: Partial<Config>, projectPath = process.cwd(), tracker?: ProgressTracker): Promise<void> {
     this.projectPath = projectPath
+    logger.debug('ConfigHelper.load — loading config manager', { projectPath, generatorCount: config.generator?.length ?? 0 })
     await this.configManager.load(config, projectPath, tracker)
+    logger.debug('ConfigHelper.load — reading cache data')
     await this.readAlovaJson()
+    logger.debug('ConfigHelper.load — complete')
   }
 
   public async readUserConfig(userConfig: UserConfigExport) {

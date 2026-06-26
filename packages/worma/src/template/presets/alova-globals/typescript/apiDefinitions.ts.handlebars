@@ -4,7 +4,7 @@
 const apiDefinitions = {
 {{#each tagedApis}}
   {{#apis}}
-  '{{{pathKey}}}': ['{{method}}', '{{{path}}}'],
+  '{{{tag}}}.{{{name}}}': ['{{method}}', '{{{path}}}'],
   {{/apis}}
 {{/each}}
 } as const;

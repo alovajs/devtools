@@ -8,7 +8,7 @@ describe('defineConfig', () => {
       generator: [{
         input: './openapi.json',
         output: './src/api',
-        plugins: [{getTemplate: () => ({ path: 'template' })}],
+        plugins: [{ getTemplate: () => ({ path: 'template' }) }],
       }],
     }
     expect(defineConfig(config)).toBe(config)
@@ -19,7 +19,7 @@ describe('defineConfig', () => {
       generator: [{
         input: './openapi.json',
         output: './src/api',
-        plugins: [{getTemplate: () => ({ path: 'template' })}],
+        plugins: [{ getTemplate: () => ({ path: 'template' }) }],
       }],
     })
     expect(defineConfig(configFn)).toBe(configFn)
@@ -30,7 +30,7 @@ describe('defineConfig', () => {
       generator: [{
         input: './openapi.json',
         output: './src/api',
-        plugins: [{getTemplate: () => ({ path: 'template' })}],
+        plugins: [{ getTemplate: () => ({ path: 'template' }) }],
       }],
     })
     expect(defineConfig(configPromise)).toBe(configPromise)
@@ -59,7 +59,7 @@ describe('configHelper.readUserConfig', () => {
       generator: [{
         input: './openapi.json',
         output: './src/api',
-        plugins: [{getTemplate: () => ({ path: 'template' })}],
+        plugins: [{ getTemplate: () => ({ path: 'template' }) }],
       }],
     }
     const result = await configHelper.readUserConfig(config)
@@ -71,7 +71,7 @@ describe('configHelper.readUserConfig', () => {
       generator: [{
         input: './openapi.json',
         output: './src/api',
-        plugins: [{getTemplate: () => ({ path: 'template' })}],
+        plugins: [{ getTemplate: () => ({ path: 'template' }) }],
       }],
     })
     const result = await configHelper.readUserConfig(configFn)
@@ -85,7 +85,7 @@ describe('configHelper.readUserConfig', () => {
       generator: [{
         input: './openapi.json',
         output: './src/api',
-        plugins: [{getTemplate: () => ({ path: 'template' })}],
+        plugins: [{ getTemplate: () => ({ path: 'template' }) }],
       }],
     })
     const result = await configHelper.readUserConfig(configPromise)
@@ -99,7 +99,7 @@ describe('configHelper.readUserConfig', () => {
       generator: [{
         input: './openapi.json',
         output: './src/api',
-        plugins: [{getTemplate: () => ({ path: 'template' })}],
+        plugins: [{ getTemplate: () => ({ path: 'template' }) }],
       }],
     })
     const result = await configHelper.readUserConfig(asyncConfigFn)

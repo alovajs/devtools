@@ -1,5 +1,5 @@
 /* tslint:disable */
-/* eslint-disable */
+
 /**
  * Swagger Generator - version 3.0.57
  *
@@ -14,23 +14,23 @@
  *
  * **Do not edit the file manually.**
  */
-import { createAlova } from 'alova';
-import fetchAdapter from 'alova/fetch';
-import { createApis, mountApis, withConfigType } from './createApis';
+import { createAlova } from 'alova'
+import fetchAdapter from 'alova/fetch'
+import { createApis, mountApis, withConfigType } from './createApis'
 
 export const alovaInstance = createAlova({
   baseURL: '/api1',
   requestAdapter: fetchAdapter(),
-  beforeRequest: method => {},
-  responded: res => {
-    return res.json();
-  }
-});
+  beforeRequest: (_method) => {},
+  responded: (res) => {
+    return res.json()
+  },
+})
 
-export const $$userConfigMap = withConfigType({});
+export const $$userConfigMap = withConfigType({})
 
-const Apis = createApis(alovaInstance, $$userConfigMap);
+const Apis = createApis(alovaInstance, $$userConfigMap)
 
-mountApis(Apis);
+mountApis(Apis)
 
-export { Apis };
+export { Apis }

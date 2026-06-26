@@ -34,12 +34,12 @@ export function normalInterfaceGenerator(ast: TInterface, ctx: GeneratorCtx) {
     ctx.pathKey = keyName
     const nextResult = ctx.next(param.ast, ctx.options)
     const value = getValue(nextResult, ctx.options);
-    `${nextResult.comment ?? ''}${keyName}${optionalFlag}:${value}`.split('\n').forEach(line => lines.push(` ${line}`))
+    `${nextResult.comment ?? ''}${keyName}${optionalFlag}: ${value}`.split('\n').forEach(line => lines.push(`  ${line}`))
   })
   if (ast.addParams) {
     ctx.pathKey = '[key: string]'
     const nextResult = ctx.next(ast.addParams, ctx.options)
-    lines.push(`[key: string]:${getValue(nextResult, ctx.options) || 'any'}`)
+    lines.push(`  [key: string]: ${getValue(nextResult, ctx.options) || 'any'}`)
   }
   lines.push(`}`)
   result.code = lines.join('\n')

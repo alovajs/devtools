@@ -1,4 +1,5 @@
 import type { GeneratorProgressEvent } from 'worma'
+import path from 'node:path'
 import { ProgressLocation, window } from 'vscode'
 import { showError } from '@/components/event'
 import ApiGenerate from '@/core/ApiGenerate'
@@ -34,9 +35,19 @@ async function pickProject(projects: string[]): Promise<string[] | undefined> {
   if (projects.length <= 1) {
     return projects
   }
+  // 将绝对路径转为相对于 workspace 根目录的相对路径显示
+  const workspaceRoots = getWorkspacePaths()
+  function toLabel(p: string): string {
+    for (const root of workspaceRoots) {
+      const rel = path.relative(root, p)
+      if (rel && !rel.startsWith('..'))
+        return rel || path.basename(p)
+    }
+    return path.basename(p)
+  }
   const items: ProjectItem[] = [
     { label: 'All', description: 'Run in all projects', projectPath: 'all', picked: true },
-    ...projects.map(p => ({ label: p, projectPath: p })),
+    ...projects.map(p => ({ label: toLabel(p), projectPath: p })),
   ]
   const picked = await window.showQuickPick(items, {
     title: 'Select project',
@@ -94,10 +105,11 @@ export const showStatusBarActions: CommandType = {
           },
           async (progress) => {
             await ApiGenerate.generate({
-              force: true,
+              force: false,
               projectPath,
               onProgress(event: GeneratorProgressEvent) {
-                if (event.phase !== 'progress') return
+                if (event.phase !== 'progress')
+                  return
                 progress.report({
                   message: `[${event.source ?? 'core'}] ${event.progress}%${event.message ? ` ${event.message}` : ''}`,
                 })

@@ -92,7 +92,7 @@ async function makeProcessedConfig(overrides: Partial<GeneratorConfig> = {}): Pr
   const helper = await GeneratorHelper.load({
     input: resolve(OPENAPI_DIR, 'openapi_300.yaml'),
     output: './src/api',
-    plugins: [{getTemplate: () => ({path: ''})}],
+    plugins: [{ getTemplate: () => ({ path: '' }) }],
     ...overrides,
   })
   return helper.getConfig() as GeneratorConfig

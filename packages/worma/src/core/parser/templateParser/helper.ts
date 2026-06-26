@@ -23,39 +23,6 @@ import {
   removeAll$ref,
 } from '@/utils'
 
-function getTsStr(originObj: SchemaObject | ReferenceObject, options: {
-  document: OpenAPIDocument
-  config: GeneratorConfig
-  schemasMap?: Map<string, string>
-  refNameMap?: Map<string, string>
-  preText?: string
-}): Promise<string> {
-  const { document, preText = '', config, schemasMap, refNameMap } = options
-  return schemaLoader.transform(originObj, {
-    document,
-    deep: false,
-    noEnum: true,
-    commentType: 'doc',
-    preText,
-    defaultRequire: config.defaultRequire,
-    refNameMap,
-    async onReference(ast) {
-      if (config.externalTypes?.includes(ast.keyName ?? '')) {
-        return
-      }
-      if (ast.keyName && schemasMap && !schemasMap.has(ast.keyName)) {
-        const result = await astLoader.transformTsStr(ast, {
-          shallowDeep: true,
-          commentType: 'doc',
-          noEnum: true,
-          format: true,
-          export: true,
-        })
-        schemasMap.set(ast.keyName, result)
-      }
-    },
-  })
-}
 export async function parseResponse(responses: ResponsesObject | undefined, options: {
   document: OpenAPIDocument
   config: GeneratorConfig
@@ -76,24 +43,46 @@ export async function parseResponse(responses: ResponsesObject | undefined, opti
     : responseInfo
   const key = getContentKey(responseObject.content, config.responseMediaType)
   const responseSchema = responseObject?.content?.[key]?.schema ?? {}
-  const response = await getTsStr(responseSchema, {
-    document,
-    config,
-    schemasMap,
-    refNameMap,
-  })
-  let responseComment = ''
-  if (config.docComment !== false) {
-    responseComment = await schemaLoader.transform(responseSchema, {
+
+  // P0: Single AST parse for both type + comment
+  const result = await schemaLoader.transform(
+    responseSchema,
+    {
       document,
-      deep: true,
-      preText: '* ',
+      deep: false,
+      noEnum: true,
+      commentType: config.docComment !== false ? 'doc' : 'line',
+      preText: '',
       defaultRequire: config.defaultRequire,
-    })
-  }
+      refNameMap,
+      async onReference(ast) {
+        if (config.externalTypes?.includes(ast.keyName ?? '')) {
+          return
+        }
+        if (ast.keyName && schemasMap && !schemasMap.has(ast.keyName)) {
+          const refResult = await astLoader.transformTsStr(ast, {
+            shallowDeep: true,
+            commentType: 'doc',
+            noEnum: true,
+            format: true,
+            export: true,
+          })
+          schemasMap.set(ast.keyName, refResult)
+        }
+      },
+    },
+    config.docComment !== false
+      ? {
+          document,
+          deep: true,
+          preText: '* ',
+          defaultRequire: config.defaultRequire,
+        }
+      : undefined,
+  )
   return {
-    response,
-    responseComment,
+    response: result.type,
+    responseComment: result.comment ?? '',
   }
 }
 export async function parseRequestBody(requestBody: RequestBodyObject | ReferenceObject | undefined, options: {
@@ -114,19 +103,46 @@ export async function parseRequestBody(requestBody: RequestBodyObject | Referenc
     : requestBody
   const key = getContentKey(requestBodyObject.content, config.bodyMediaType)
   const requestBodySchema = requestBodyObject?.content?.[key]?.schema ?? {}
-  const requestBody_ = await getTsStr(requestBodySchema, { document, config, schemasMap, refNameMap })
-  let requestBodyComment = ''
-  if (config.docComment !== false) {
-    requestBodyComment = await schemaLoader.transform(requestBodySchema, {
+
+  // P0: Single AST parse for both type + comment
+  const result = await schemaLoader.transform(
+    requestBodySchema,
+    {
       document,
-      deep: true,
-      preText: '* ',
+      deep: false,
+      noEnum: true,
+      commentType: config.docComment !== false ? 'doc' : 'line',
+      preText: '',
       defaultRequire: config.defaultRequire,
-    })
-  }
+      refNameMap,
+      async onReference(ast) {
+        if (config.externalTypes?.includes(ast.keyName ?? '')) {
+          return
+        }
+        if (ast.keyName && schemasMap && !schemasMap.has(ast.keyName)) {
+          const refResult = await astLoader.transformTsStr(ast, {
+            shallowDeep: true,
+            commentType: 'doc',
+            noEnum: true,
+            format: true,
+            export: true,
+          })
+          schemasMap.set(ast.keyName, refResult)
+        }
+      },
+    },
+    config.docComment !== false
+      ? {
+          document,
+          deep: true,
+          preText: '* ',
+          defaultRequire: config.defaultRequire,
+        }
+      : undefined,
+  )
   return {
-    requestBody: requestBody_,
-    requestBodyComment,
+    requestBody: result.type,
+    requestBodyComment: result.comment ?? '',
   }
 }
 export function getContentKey(content: Record<string, any> = {}, requireKey: string | string[] = 'application/json') {
@@ -176,20 +192,44 @@ export async function parseParameters(parameters: (ReferenceObject | ParameterOb
     let parametersStr = ''
     let parametersComment = ''
     if (Object.keys(parameters.properties ?? {}).length) {
-      parametersStr = await getTsStr(parameters, {
-        document,
-        config,
-        schemasMap,
-        refNameMap,
-      })
-      if (config.docComment !== false) {
-        parametersComment = await schemaLoader.transform(parameters, {
+      // P0: Single AST parse for both type + comment
+      const result = await schemaLoader.transform(
+        parameters,
+        {
           document,
-          deep: true,
-          preText: '* ',
+          deep: false,
+          noEnum: true,
+          commentType: config.docComment !== false ? 'doc' : 'line',
+          preText: '',
           defaultRequire: config.defaultRequire,
-        })
-      }
+          refNameMap,
+          async onReference(ast) {
+            if (config.externalTypes?.includes(ast.keyName ?? '')) {
+              return
+            }
+            if (ast.keyName && schemasMap && !schemasMap.has(ast.keyName)) {
+              const refResult = await astLoader.transformTsStr(ast, {
+                shallowDeep: true,
+                commentType: 'doc',
+                noEnum: true,
+                format: true,
+                export: true,
+              })
+              schemasMap.set(ast.keyName, refResult)
+            }
+          },
+        },
+        config.docComment !== false
+          ? {
+              document,
+              deep: true,
+              preText: '* ',
+              defaultRequire: config.defaultRequire,
+            }
+          : undefined,
+      )
+      parametersStr = result.type
+      parametersComment = result.comment ?? ''
     }
     return [parametersStr, parametersComment]
   }
@@ -265,6 +305,7 @@ export function apiMethod2ApiDescriptor(apiMethod: ApiMethod, options: {
 }) {
   const { url, method } = apiMethod
   const { document, config } = options
+  // 需要深拷贝：handleApi 可能修改 tags/security 等嵌套字段，浅拷贝会污染原始 operationObject
   const operationObject = cloneDeep(apiMethod.operationObject)
   const { requestBody, responses, parameters } = operationObject
   const apiDescriptor: ApiDescriptor = {
@@ -326,8 +367,8 @@ export function apiDescriptor2apiMethod(apiDescriptor: ApiDescriptor, options: {
     response: ResponseObject
   }
 }) {
-  const apiDescriptorValue = cloneDeep(apiDescriptor)
-  const operationObject = cloneDeep(options.operationObject)
+  const apiDescriptorValue = { ...apiDescriptor }
+  const operationObject = cloneDeep(options.operationObject) // 仍需深拷贝：content[key].schema 等深路径赋值后通过 mergeObject 回写
   const { url, method } = apiDescriptorValue
   const { successKey, requestKey, responseKey, hasResponse, hasParameters, hasRequestBody, requestBody, response }
     = options.oldApiInfo

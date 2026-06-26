@@ -1,0 +1,13 @@
+{
+  "name": "alova-app",
+  "type": "module",
+  "private": true,
+  "description": "Worma monorepo sub-package — alova template",
+  "scripts": {
+    "gen": "worma gen -f",
+    "start": "node src/main.js"
+  },
+  "dependencies": {
+    "alova": "^3.0.0"
+  }
+}

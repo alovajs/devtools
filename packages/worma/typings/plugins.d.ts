@@ -335,10 +335,7 @@ export interface Api {
 	name: string;
 	response: string;
 	requestBody?: string;
-	defaultValue?: string;
-	pathKey: string;
-	/** Global namespace name (e.g. 'Apis') for globals template mode */
-	global?: string;
+	callingCode?: string;
 }
 export interface ApiDoc {
 	apis: Api[];

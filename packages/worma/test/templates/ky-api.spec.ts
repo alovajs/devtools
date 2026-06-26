@@ -7,7 +7,9 @@ const BASE = 'http://petstore.swagger.io/v2'
 
 describe('ky template — API call execution', () => {
   let mod: GeneratedModule
-  afterEach(async () => { await mod?.cleanup() })
+  afterEach(async () => {
+    await mod?.cleanup()
+  })
 
   describe('typescript', () => {
     it('gET with searchParams: params forwarded, returns data', async () => {

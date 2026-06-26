@@ -5,6 +5,8 @@ declare global {
 
 const DEFAULT_CONFIG = {
   cacheDir: '.worma-cache',
+  /** Overrides cacheDir's parent directory for monorepo unified cache. */
+  cacheRoot: undefined as string | undefined,
   Error,
   templateData: new Map<string, any>(),
 }

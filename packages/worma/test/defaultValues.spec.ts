@@ -1,10 +1,10 @@
-import { defaultValueLoader } from '@/core/loader'
+import { callingCodeLoader } from '@/core/loader'
 import { createStrReg } from './util'
 
 describe('generate default values for types and interfaces', () => {
   it('should generate default value for simple type', async () => {
     const sourceCode = 'string'
-    const result = await defaultValueLoader.transform(sourceCode)
+    const result = await callingCodeLoader.transform(sourceCode)
     expect(result).toBe('""')
   })
 
@@ -17,7 +17,7 @@ describe('generate default values for types and interfaces', () => {
           | 'MONITOR_TASK_TYPE'
       }
     `
-    const result = await defaultValueLoader.transform(sourceCode)
+    const result = await callingCodeLoader.transform(sourceCode)
     expect(result).toMatch(
       createStrReg(`{
           typeEnum: 'CERT_TYPE'
@@ -32,7 +32,7 @@ describe('generate default values for types and interfaces', () => {
       active: boolean
       [key: string]: any
     }`
-    const result = await defaultValueLoader.transform(sourceCode)
+    const result = await callingCodeLoader.transform(sourceCode)
     expect(result).toMatch(
       createStrReg(`{
   name: "",
@@ -49,7 +49,7 @@ describe('generate default values for types and interfaces', () => {
           & { prop2: number }
       }
     `
-    const result = await defaultValueLoader.transform(sourceCode)
+    const result = await callingCodeLoader.transform(sourceCode)
     expect(result).toMatch(
       createStrReg(`{
   combined: {
@@ -74,7 +74,7 @@ describe('generate default values for types and interfaces', () => {
         };
       }
     }`
-    const result = await defaultValueLoader.transform(sourceCode)
+    const result = await callingCodeLoader.transform(sourceCode)
     expect(result).toMatch(
       createStrReg(`{
   info: {

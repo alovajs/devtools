@@ -2,7 +2,7 @@
 import ky from 'ky';
 
 export const kyInstance = ky.create({
-  baseUrl: '{{{baseUrl}}}/',
+  prefix: '{{{baseUrl}}}/',
   hooks: {
     beforeRequest: [
       _state => { },

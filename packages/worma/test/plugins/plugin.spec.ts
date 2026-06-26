@@ -1,9 +1,9 @@
-import path, { resolve } from 'node:path'
 import type HandlebarsType from 'handlebars'
+import { resolve } from 'node:path'
+import { TemplateHelper } from '@/helper/template'
 import { createPlugin } from '@/plugins'
 import { extend } from '@/plugins/presets/utils'
 import { getPresetTemplatePath, registerProcessTypeHelper } from '@/template'
-import { TemplateHelper } from '@/helper/template'
 import { generateWithPlugin } from '../util'
 
 vi.mock('node:fs')

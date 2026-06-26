@@ -4,8 +4,12 @@ Before executing the code generation task, recite the following usage convention
 
 ## Usage Conventions
 
+{{#if currentApi.fileLocation}}
 1. The API defined in this document is located at `{{{currentApi.fileLocation}}}`
 2. Follow the calling method shown in the example below.
+{{else}}
+1. Follow the calling method shown in the example below.
+{{/if}}
 
 ## API
 
@@ -19,7 +23,7 @@ Before executing the code generation task, recite the following usage convention
 Pass the required parameters in `pathParams`:
 
 ```typescript
-{{{currentApi.pathParametersComment}}}
+{{{stripStarPrefix currentApi.pathParametersComment}}}
 ```
 {{/if}}
 
@@ -29,7 +33,7 @@ Pass the required parameters in `pathParams`:
 Pass the required request body in `data`:
 
 ```typescript
-{{{currentApi.requestBodyComment}}}
+{{{stripStarPrefix currentApi.requestBodyComment}}}
 ```
 {{/if}}
 
@@ -39,19 +43,12 @@ Pass the required request body in `data`:
 Use the response data as needed:
 
 ```typescript
-{{{currentApi.responseComment}}}
+{{{stripStarPrefix currentApi.responseComment}}}
 ```
 {{/if}}
 
 ## Usage Example
 
 ```typescript
-{{{currentApi.name}}}({{#if currentApi.pathParameters}}{
-  pathParams: {
-    {{{currentApi.pathParameters}}}
-  }{{#if currentApi.requestBody}},
-  data: {}{{/if}}
-}{{else}}{{#if currentApi.requestBody}}{
-  data: {}
-}{{/if}}{{/if}})
+{{{currentApi.callingCode}}}
 ```

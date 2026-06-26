@@ -50,7 +50,7 @@ async function patchBaseURL(dir: string, ext: string, baseURL: string) {
   let content = readFileSync(indexFile, 'utf-8')
   // Replace quoted URL values (single or double quotes), preserving trailing slash if present
   content = content.replace(
-    /(baseURL|prefixUrl|baseUrl)\s*:\s*(["'])([^"']*)\2/g,
+    /(baseURL|prefixUrl|prefix|baseUrl)\s*:\s*(["'])([^"']*)\2/g,
     (_, key: string, quote: string, currentVal: string) => {
       const trailingSlash = currentVal.endsWith('/') ? '/' : ''
       const normalized = baseURL.replace(/\/+$/, '')
@@ -105,7 +105,7 @@ export async function buildGeneratedModule(opts: BuildOptions): Promise<Generate
     logLevel: 'error',
   })
 
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  // eslint-disable-next-line ts/no-require-imports
   const mod = require(bundleOut)
 
   return {
@@ -117,8 +117,12 @@ export async function buildGeneratedModule(opts: BuildOptions): Promise<Generate
       return fn(config)
     },
     async cleanup() {
-      try { rmSync(tmpDir, { recursive: true, force: true }) }
-      catch { /* ignore */ }
+      try {
+        rmSync(tmpDir, { recursive: true, force: true })
+      }
+      catch {
+        /* ignore */
+      }
     },
   }
 }

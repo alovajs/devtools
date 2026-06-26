@@ -68,6 +68,11 @@ export function registerCommonHelpers(hbs: typeof HandlebarsType) {
     return args.join('')
   })
   hbs.registerHelper('raw', text => new hbs.SafeString(text))
+  hbs.registerHelper('stripStarPrefix', (text: string) => {
+    if (!text || typeof text !== 'string')
+      return text
+    return text.split('\n').map(line => line.replace(/^\* ?/, '')).join('\n')
+  })
 }
 
 /**

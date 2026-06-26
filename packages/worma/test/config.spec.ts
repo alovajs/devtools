@@ -16,11 +16,11 @@ const requireResult = new Map<string, any>()
 // resolve without filesystem access. Falls back to the original resolver.
 const originalResolveFilename = (Module as any)._resolveFilename
   ; (Module as any)._resolveFilename = function patchedResolveFilename(request: string, ...rest: any[]) {
-    if ((Module as any)._cache && (Module as any)._cache[request]) {
-      return request
-    }
-    return originalResolveFilename.call(this, request, ...rest)
+  if ((Module as any)._cache && (Module as any)._cache[request]) {
+    return request
   }
+  return originalResolveFilename.call(this, request, ...rest)
+}
 
 // Mock esbuild so build() operates entirely in-memory:
 // - reads entry source from the memfs-mocked fs
@@ -55,7 +55,8 @@ vi.mock('esbuild', async () => {
         // Check requireResult map first (used to mock specific module results)
         if (requireResult.has(target)) {
           const cached = requireResult.get(target)
-          if (cached === null) throw new Error(`Cannot find module '${spec}'`)
+          if (cached === null)
+            throw new Error(`Cannot find module '${spec}'`)
           return cached
         }
         // try direct, then with .json extension
@@ -89,7 +90,7 @@ vi.mock('esbuild', async () => {
     cached.filename = outfile
     cached.loaded = true
     cached.exports = moduleObj.exports
-      ; (Module as any)._cache[outfile] = cached
+    ; (Module as any)._cache[outfile] = cached
     return { errors: [], warnings: [], outputFiles: [] } as any
   }
   return {
@@ -122,9 +123,9 @@ function expectConfigEqual(actual: Config, expected: Config) {
 
 const configMap: Record<string, { file: string, content: string, expectedConfig: Config, transformContent?: string }>
   = {
-  ts: {
-    file: 'worma.config.ts',
-    content: `import type { Config } from 'worma';
+    ts: {
+      file: 'worma.config.ts',
+      content: `import type { Config } from 'worma';
 import pkg from './package.json';
 export default <Config>{
   generator: [
@@ -136,23 +137,23 @@ export default <Config>{
     }
   ]
 }`,
-    expectedConfig: {
-      generator: [
-        {
-          input: 'http://localhost:3000/alova-devtools',
-          output: 'src/api',
-          type: 'ts',
-          bodyMediaType: 'application/json',
-          responseMediaType: 'application/json',
-          defaultRequire: false,
-          plugins: [{ getTemplate() { return { path: '' }; } }],
-        },
-      ],
+      expectedConfig: {
+        generator: [
+          {
+            input: 'http://localhost:3000/alova-devtools',
+            output: 'src/api',
+            type: 'ts',
+            bodyMediaType: 'application/json',
+            responseMediaType: 'application/json',
+            defaultRequire: false,
+            plugins: [{ getTemplate() { return { path: '' } } }],
+          },
+        ],
+      },
     },
-  },
-  tsWithoutImport: {
-    file: 'worma.config.ts',
-    content: `import type { Config } from 'worma';
+    tsWithoutImport: {
+      file: 'worma.config.ts',
+      content: `import type { Config } from 'worma';
 export default <Config>{
   generator: [
     {
@@ -163,23 +164,23 @@ export default <Config>{
     }
   ]
 }`,
-    expectedConfig: {
-      generator: [
-        {
-          input: 'http://localhost:3000/',
-          output: 'src/api',
-          type: 'ts',
-          bodyMediaType: 'application/json',
-          responseMediaType: 'application/json',
-          defaultRequire: false,
-          plugins: [{ getTemplate() { return { path: '' }; } }],
-        },
-      ],
+      expectedConfig: {
+        generator: [
+          {
+            input: 'http://localhost:3000/',
+            output: 'src/api',
+            type: 'ts',
+            bodyMediaType: 'application/json',
+            responseMediaType: 'application/json',
+            defaultRequire: false,
+            plugins: [{ getTemplate() { return { path: '' } } }],
+          },
+        ],
+      },
     },
-  },
-  module: {
-    file: 'worma.config.js',
-    content: `import pkg from './package.json';
+    module: {
+      file: 'worma.config.js',
+      content: `import pkg from './package.json';
 export default {
   generator: [
     {
@@ -190,23 +191,23 @@ export default {
     }
   ]
 }`,
-    expectedConfig: {
-      generator: [
-        {
-          input: 'http://localhost:3000/alova-devtools',
-          output: 'src/api',
-          type: 'module',
-          bodyMediaType: 'application/json',
-          responseMediaType: 'application/json',
-          defaultRequire: false,
-          plugins: [{ getTemplate() { return { path: '' }; } }],
-        },
-      ],
+      expectedConfig: {
+        generator: [
+          {
+            input: 'http://localhost:3000/alova-devtools',
+            output: 'src/api',
+            type: 'module',
+            bodyMediaType: 'application/json',
+            responseMediaType: 'application/json',
+            defaultRequire: false,
+            plugins: [{ getTemplate() { return { path: '' } } }],
+          },
+        ],
+      },
     },
-  },
-  commonjs: {
-    file: 'worma.config.js',
-    content: `const pkg = require('./package.json');
+    commonjs: {
+      file: 'worma.config.js',
+      content: `const pkg = require('./package.json');
 module.exports = {
   generator: [
     {
@@ -217,21 +218,21 @@ module.exports = {
     }
   ]
 }`,
-    expectedConfig: {
-      generator: [
-        {
-          input: 'http://localhost:3000/alova-devtools',
-          output: 'src/api',
-          type: 'commonjs',
-          bodyMediaType: 'application/json',
-          responseMediaType: 'application/json',
-          defaultRequire: false,
-          plugins: [{ getTemplate() { return { path: '' }; } }],
-        },
-      ],
+      expectedConfig: {
+        generator: [
+          {
+            input: 'http://localhost:3000/alova-devtools',
+            output: 'src/api',
+            type: 'commonjs',
+            bodyMediaType: 'application/json',
+            responseMediaType: 'application/json',
+            defaultRequire: false,
+            plugins: [{ getTemplate() { return { path: '' } } }],
+          },
+        ],
+      },
     },
-  },
-}
+  }
 
 describe('config', () => {
   it('should create config file under project root path', async () => {

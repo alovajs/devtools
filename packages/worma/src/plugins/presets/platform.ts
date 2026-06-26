@@ -21,7 +21,7 @@ function resolvePlatformUrls(baseUrl: string, platformType: PlatformType): strin
         `${base}/openapi.json`,
         `${base}/v2/swagger.json`,
         `${base}/api/v3/openapi.json`,
-        baseUrl
+        baseUrl,
       ]
     case 'knife4j':
       // Try OAS3 first (springdoc), then Swagger2 (springfox)
@@ -66,7 +66,8 @@ export function platform(platformType: PlatformType): ApiPlugin {
     name: PluginName.PLATFORM,
     config({ config }) {
       const raw = config.input
-      if (!raw) return config
+      if (!raw)
+        return config
 
       // Normalize to an array of base URLs, deduplicate
       const inputs = Array.isArray(raw) ? [...new Set(raw)] : [raw]

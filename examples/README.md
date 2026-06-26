@@ -14,24 +14,24 @@
 
 ## 项目概览
 
-| 项目 | 语言 | 模块规范 | 模板数 | 特色亮点 |
-|------|------|----------|--------|----------|
-| [**typescript**](./typescript/) | TypeScript | ESM | 6 | 全模板 + aiDoc + input fallback + .wormarc 极简配置 |
-| [**esm**](./esm/) | JavaScript | ES Module | 5 | 全模板、纯 JS、JSDoc 类型提示 |
-| [**commonjs**](./commonjs/) | JavaScript | CommonJS | 4 | CJS 规范、ky 以外全模板 |
+| 项目                            | 语言       | 模块规范  | 模板数 | 特色亮点                                            |
+| ------------------------------- | ---------- | --------- | ------ | --------------------------------------------------- |
+| [**typescript**](./typescript/) | TypeScript | ESM       | 6      | 全模板 + aiDoc + input fallback + .wormarc 极简配置 |
+| [**esm**](./esm/)               | JavaScript | ES Module | 5      | 全模板、纯 JS、JSDoc 类型提示                       |
+| [**commonjs**](./commonjs/)     | JavaScript | CommonJS  | 4      | CJS 规范、ky 以外全模板                             |
 
 ## 模板 × 项目类型 对照矩阵
 
-| 模板 | typescript | esm | commonjs |
-|------|:---------:|:---:|:--------:|
-| `alova()` — 函数式 | ✅ | ✅ | ✅ |
-| `alovaGlobals()` — 全局式 | ✅ | ✅ | ✅ |
-| `axios()` — Axios | ✅ | ✅ | ✅ |
-| `fetch()` — 原生 fetch | ✅ | ✅ | ✅ |
-| `ky()` — ky | ✅ | ✅ | ❌ * |
-| Input 数组 fallback | ✅ | — | — |
-| `aiDoc()` 插件 | ✅ | — | — |
-| `.wormarc` 极简配置 | ✅ | — | — |
+| 模板                      | typescript | esm | commonjs |
+| ------------------------- | :--------: | :-: | :------: |
+| `alova()` — 函数式        |     ✅     | ✅  |    ✅    |
+| `alovaGlobals()` — 全局式 |     ✅     | ✅  |    ✅    |
+| `axios()` — Axios         |     ✅     | ✅  |    ✅    |
+| `fetch()` — 原生 fetch    |     ✅     | ✅  |    ✅    |
+| `ky()` — ky               |     ✅     | ✅  |  ❌ \*   |
+| Input 数组 fallback       |     ✅     |  —  |    —     |
+| `aiDoc()` 插件            |     ✅     |  —  |    —     |
+| `.wormarc` 极简配置       |     ✅     |  —  |    —     |
 
 > \* ky 为纯 ESM 包，不支持 CommonJS 格式。
 

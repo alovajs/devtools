@@ -1,5 +1,5 @@
 /* tslint:disable */
-/* eslint-disable */
+
 /**
  * Nullable Test API - version 1.0.0
  *
@@ -17,7 +17,7 @@
 /// <reference types='./globals.d.ts' />
 
 const apiDefinitions = {
-  'pet.addPet': ['POST', '/pet']
-};
+  'pet.addPet': ['POST', '/pet'],
+}
 
-export default apiDefinitions;
+export default apiDefinitions

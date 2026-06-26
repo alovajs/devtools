@@ -13,8 +13,10 @@ type Worma = typeof import('worma')
 export const MockWorma = {
 
 } as Worma
+
 export function getWorma() {
   let worma: Worma | null = null
+  let wormaRoot: string | undefined
   for (const workspaceRootPath of getWorkspacePaths()) {
     if (worma) {
       break
@@ -29,6 +31,7 @@ export function getWorma() {
         const wormaPath = path.join(path.dirname(configPath), './node_modules/worma')
         if (existsSync(wormaPath)) {
           worma = importFresh(wormaPath)
+          wormaRoot = workspaceRootPath
           break
         }
       }
@@ -39,10 +42,13 @@ export function getWorma() {
   }
   if (worma) {
     enable()
-    // Global configuration
+    // Always set cacheRoot to the workspace directory where worma was found.
+    // In monorepo this unifies all sub-package caches under the workspace root.
+    // In single-package this is the project root itself — a natural no-op.
     worma.setGlobalConfig({
       Error: AlovaErrorConstructor,
       templateData: Global.templateData,
+      cacheRoot: wormaRoot,
     })
   }
   else {

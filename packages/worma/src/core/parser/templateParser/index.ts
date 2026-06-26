@@ -1,8 +1,9 @@
 import type { Api, ApiMethod, GeneratorConfig, OpenAPIDocument, Parser, SchemaObject, TemplateData } from '@/type'
 import { cpus } from 'node:os'
 import path from 'node:path'
-import { defaultValueLoader, standardLoader } from '@/core/loader'
-import { pickPoolSize, WorkerPool } from '@/core/WorkerPool'
+import { callingCodeLoader, standardLoader } from '@/core/loader'
+import { pickPoolSize } from '@/core/WorkerPool'
+import { PoolManager } from '@/core/workerPool/poolManager'
 import getFrameworkTag from '@/functions/getFrameworkTag'
 import { GeneratorHelper } from '@/helper'
 import { OpenApiHelper } from '@/helper/document'
@@ -127,12 +128,12 @@ export class TemplateParser implements Parser<OpenAPIDocument, TemplateData, Tem
         const { existsSync: fex } = await import('node:fs')
         const workerScript = fex(jsWp) ? jsWp : tsWp
 
-        const pool = new WorkerPool<{ key: string, schema: SchemaObject }, { key: string, result: string }>({
+        // P2: Reuse worker pool via PoolManager singleton — avoids create/destroy overhead across repeated generate() calls
+        const pool = PoolManager.getInstance().get<{ key: string, schema: SchemaObject }, { key: string, result: string }>({
+          key: `schemaWorker_${this.options.projectPath}`,
           workerScript,
           sharedContext: {
             document: this.document,
-            // 仅传递 worker 所需的可序列化字段；plugins/fetchOptions 等含函数，
-            // 无法通过 workerData 的 structured clone 传递，会导致 "could not be cloned" 错误
             config: {
               defaultRequire: this.options.generatorConfig.defaultRequire,
               externalTypes: this.options.generatorConfig.externalTypes,
@@ -145,7 +146,6 @@ export class TemplateParser implements Parser<OpenAPIDocument, TemplateData, Tem
         for (const { key, result } of results) {
           this.schemasMap.set(key, result)
         }
-        pool.terminate()
       }
     }
 
@@ -284,16 +284,15 @@ export class TemplateParser implements Parser<OpenAPIDocument, TemplateData, Tem
         name: operationObject.operationId ?? '',
         response,
         requestBody,
-        pathKey: `${tag}.${operationObject.operationId}`,
         queryParameters,
         queryParametersComment,
         pathParameters,
         pathParametersComment,
         responseComment,
         requestBodyComment,
-        defaultValue: '',
+        callingCode: '',
       }
-      api.defaultValue = await defaultValueLoader.transformApi(api)
+      api.callingCode = await callingCodeLoader.transformApi(api)
       apis.push(api)
     }
     return apis

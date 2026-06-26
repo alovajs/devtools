@@ -30,7 +30,7 @@ function makeData(overrides: any = {}) {
             pathKey: 'pets.listPets',
             pathParameters: '',
             queryParameters: '',
-            defaultValue: '',
+            callingCode: '',
           },
         ],
       },
@@ -47,7 +47,7 @@ function makeData(overrides: any = {}) {
             pathKey: 'users.createUser',
             pathParameters: '',
             queryParameters: '',
-            defaultValue: '',
+            callingCode: '',
           },
         ],
       },
@@ -102,7 +102,7 @@ describe('templateHelper rendering', () => {
         templatePath: resolve(FIXTURES_DIR, 'custom-typed'),
       })
 
-      const result = await helper.generateFromTemplateDir(
+      await helper.generateFromTemplateDir(
         resolve(FIXTURES_DIR, 'custom-typed'),
         '/output',
         makeData({ title: 'My Wonderful API', version: '2.5.0', baseUrl: 'https://example.com' }) as any,
@@ -127,7 +127,7 @@ describe('templateHelper rendering', () => {
         config: { customField: 'config-value', framework: 'vue' },
       })
 
-      const result = await helper.generateFromTemplateDir(
+      await helper.generateFromTemplateDir(
         resolve(FIXTURES_DIR, 'custom-typed'),
         '/output',
         data as any,
@@ -147,7 +147,7 @@ describe('templateHelper rendering', () => {
         templatePath: resolve(FIXTURES_DIR, 'custom-typed'),
       })
 
-      const result = await helper.generateFromTemplateDir(
+      await helper.generateFromTemplateDir(
         resolve(FIXTURES_DIR, 'custom-typed'),
         '/output',
         makeData() as any,
@@ -175,7 +175,7 @@ describe('templateHelper rendering', () => {
         templatePath: resolve(FIXTURES_DIR, 'custom-typed'),
       })
 
-      const result = await helper.generateFromTemplateDir(
+      await helper.generateFromTemplateDir(
         resolve(FIXTURES_DIR, 'custom-typed'),
         '/output',
         makeData({ title: 'Partial Test', config: { customField: 'from-config' } }) as any,
@@ -272,13 +272,15 @@ describe('templateHelper rendering', () => {
         templatePath: resolve(FIXTURES_DIR, 'ts-module-only'),
       })
 
-      const result = await helper.generateFromTemplateDir(
+      await helper.generateFromTemplateDir(
         resolve(FIXTURES_DIR, 'ts-module-only'),
         '/output',
         makeData() as any,
       )
 
-      expect(result.filePaths.some(p => p.endsWith('index.ts'))).toBe(true)
+      const { vol } = await import('memfs')
+      const content = vol.readFileSync('/output/index.ts', 'utf-8') as string
+      expect(content).toBeDefined()
     })
   })
 
@@ -289,7 +291,7 @@ describe('templateHelper rendering', () => {
         templatePath: resolve(FIXTURES_DIR, 'custom-tagdir'),
       })
 
-      const result = await helper.generateFromTemplateDir(
+      await helper.generateFromTemplateDir(
         resolve(FIXTURES_DIR, 'custom-tagdir'),
         '/output',
         makeData() as any,
@@ -318,7 +320,7 @@ describe('templateHelper rendering', () => {
         templatePath: resolve(FIXTURES_DIR, 'custom-tagdir'),
       })
 
-      const result = await helper.generateFromTemplateDir(
+      await helper.generateFromTemplateDir(
         resolve(FIXTURES_DIR, 'custom-tagdir'),
         '/output',
         makeData() as any,

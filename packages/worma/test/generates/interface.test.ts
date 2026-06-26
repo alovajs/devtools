@@ -47,15 +47,15 @@ describe('interface Type Generator', () => {
       */`,
       type: 'interface',
       code: `{
-        /**
-         * User ID
-         */
-        id?:number
-        /**
-         * User name
-         */
-        name:string
-      }`,
+  /**
+  * User ID
+   */
+  id?: number
+  /**
+  * User name
+   */
+  name: string
+}`,
     })
     expect(result).toEqual(expectResult)
   })
@@ -103,12 +103,12 @@ describe('interface Type Generator', () => {
       comment: '',
       type: 'interface',
       code: `{
-        street?:string
-        location?:{
-          lat?:number
-          lng?:number
-        }
-      }`,
+  street?: string
+  location?: {
+    lat?: number
+    lng?: number
+  }
+}`,
     })
     expect(result).toEqual(expectResult)
   })
@@ -140,9 +140,9 @@ describe('interface Type Generator', () => {
       comment: '',
       type: 'interface',
       code: `{
-        "123-invalid"?:string
-        "valid-name"?:number
-       }`,
+  "123-invalid"?: string
+  "valid-name"?: number
+}`,
     })
     expect(result).toEqual(expectResult)
   })
@@ -179,10 +179,10 @@ describe('interface Type Generator', () => {
       comment: '',
       type: 'interface',
       code: `{
-        nested?:{
-          value?:string
-        }
-      }`,
+  nested?: {
+    value?: string
+  }
+}`,
     })
     expect(result).toEqual(expectResult)
   })

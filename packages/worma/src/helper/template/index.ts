@@ -178,9 +178,12 @@ export class TemplateHelper {
     })
   }
 
-  /** Flush all in-memory cache entries to disk using directory-based format */
+  /** Flush all in-memory cache entries to disk using directory-based format. Only flushes entries belonging to the given projectPath. */
   static async flushAllData(projectPath: string) {
-    for (const [, cd] of TemplateHelper._cacheData) {
+    const prefix = `${projectPath}::`
+    for (const [key, cd] of TemplateHelper._cacheData) {
+      if (!key.startsWith(prefix))
+        continue
       const apis = cd.apis || []
       const hashInfo = computePerTagHashes(apis)
       await writeCacheEntry(projectPath, cd.path, cd.serverName || '', apis, hashInfo)
@@ -210,8 +213,10 @@ export class TemplateHelper {
     if (await this.checkModuleTypeDirs(absolute)) {
       const mt = this.resolveModuleType()
       const md = path.join(absolute, mt)
-      if (await existsPromise(md))
+      if (await existsPromise(md)) {
+        logger.debug('Resolving template files via module-type dir', { moduleType: mt, templatePath: absolute })
         return this.scanDir(md, '')
+      }
       const supported: string[] = []
       for (const m of MODULE_TYPES) {
         if (await existsPromise(path.join(absolute, m)))
@@ -328,13 +333,17 @@ export class TemplateHelper {
   private async createHbs() {
     const cacheKey = this.config.templatePath
     const cached = hbsInstanceCache.get(cacheKey)
-    if (cached)
+    if (cached) {
+      logger.debug('Handlebars instance loaded from cache', { templatePath: cacheKey })
       return cached
+    }
 
+    logger.debug('Creating new Handlebars instance', { templatePath: cacheKey })
     const hbs = handlebars.create()
     registerCommonHelpers(hbs)
     await registerPartials(this.config.templatePath, hbs)
     if (this.config.onHandlebarsCreated?.length) {
+      logger.debug('Running onHandlebarsCreated callbacks', { count: this.config.onHandlebarsCreated.length })
       for (const fn of this.config.onHandlebarsCreated) {
         if (typeof fn === 'function')
           await fn(hbs)
@@ -391,6 +400,12 @@ export class TemplateHelper {
         return fs.writeFile(op, finalContent)
       }))
     }
+    logger.debug('Batch file write complete', {
+      total: entries.length,
+      concurrency,
+      prettierFinal,
+      outputDir: output,
+    })
   }
 
   // ============ generateFromTemplateDir (unified streaming pipeline) ============
@@ -421,6 +436,17 @@ export class TemplateHelper {
     if (!tpls.length)
       throw logger.throwError(`No template files found in: ${templatePath}`)
 
+    const totalTemplates = tpls.length
+    const tagTemplates = tpls.filter(f => f.templateType === 'tag').length
+    const apiTemplates = tpls.filter(f => f.templateType === 'api').length
+    const staticTemplates = totalTemplates - tagTemplates - apiTemplates
+    logger.debug('Template files resolved', {
+      total: totalTemplates,
+      tagTemplates,
+      apiTemplates,
+      staticTemplates,
+    })
+
     const { changedTags, beforeFileWrite, writeConcurrency = 32, prettierFinal = true } = options ?? {}
 
     const hbs = await this.createHbs()
@@ -432,13 +458,24 @@ export class TemplateHelper {
     // Collect all file paths for codeGenerated notification
     const allFilePaths: string[] = []
 
-    // --- Phase 1: Per-tag streaming (render → write → free immediately) ---
+    // --- Phase 1: Per-tag streaming (render → collect → batch write) ---
     const nonDirTagTpls = tpls.filter(f => !f.insideTagDir && f.templateType === 'tag')
     const dirTpls = tpls.filter(f => f.insideTagDir)
 
-    for (const tag of tags) {
-      if (changedTags && !changedTags.has(tag))
-        continue
+    const effectiveTags = changedTags ? tags.filter(t => changedTags.has(t)) : tags
+    let tagFilesWritten = 0
+    logger.debug('Phase 1: Per-tag streaming', {
+      totalTags: tags.length,
+      effectiveTags: effectiveTags.length,
+      changedMode: !!changedTags,
+    })
+
+    // P1: Collect all per-tag files across all tags, then write in ONE batch.
+    // Previously each tag wrote its files immediately via outputFiles(), which
+    // meant 35+ small sequential write batches instead of one fully-concurrent batch.
+    const allTagFiles: Record<string, string> = {}
+
+    for (const tag of effectiveTags) {
       const tagApis = tagApisMap.get(tag)
       if (!tagApis)
         continue
@@ -458,13 +495,37 @@ export class TemplateHelper {
         }
       }
 
-      // Apply beforeFileWrite and write immediately (streaming)
-      await this.applyHooksAndWrite(tagFiles, outputDir, beforeFileWrite, 'tag', tag, undefined, writeConcurrency, prettierFinal, allFilePaths)
+      // Apply beforeFileWrite with per-tag metadata, then collect into allTagFiles
+      if (beforeFileWrite) {
+        for (const [rp, content] of Object.entries(tagFiles)) {
+          tagFiles[rp] = await beforeFileWrite({
+            filePath: rp,
+            content,
+            meta: { templateType: 'tag', tag, api: undefined },
+          })
+        }
+      }
+      // Collect paths for codeGenerated notification
+      for (const rp of Object.keys(tagFiles)) {
+        const op = path.isAbsolute(rp) ? rp : path.resolve(outputDir, rp)
+        allFilePaths.push(op)
+      }
+      Object.assign(allTagFiles, tagFiles)
+      tagFilesWritten += Object.keys(tagFiles).length
     }
+
+    // P1: Single batch write for ALL per-tag files — fully utilizes writeConcurrency
+    if (Object.keys(allTagFiles).length) {
+      await this.outputFiles(allTagFiles, outputDir, writeConcurrency, prettierFinal)
+    }
+
+    logger.debug('Phase 1 complete', { tagFilesWritten })
 
     // --- Phase 2: Global files (API-level + non-tag templates) ---
     const globalFiles: Record<string, string> = {}
-    for (const tf of tpls.filter(f => !f.insideTagDir)) {
+    const globalTpls = tpls.filter(f => !f.insideTagDir)
+    logger.debug('Phase 2: Global files', { globalTemplateCount: globalTpls.length })
+    for (const tf of globalTpls) {
       if (tf.templateType === 'tag' && tags.length)
         continue
       if (tf.templateType === 'api' && apis.length) {
@@ -476,6 +537,9 @@ export class TemplateHelper {
     }
 
     await this.applyHooksAndWrite(globalFiles, outputDir, beforeFileWrite, undefined, undefined, undefined, writeConcurrency, prettierFinal, allFilePaths)
+
+    logger.debug('Phase 2 complete', { globalFilesWritten: Object.keys(globalFiles).length })
+    logger.debug('Generation summary', { totalOutputFiles: allFilePaths.length })
     return { filePaths: allFilePaths }
   }
 

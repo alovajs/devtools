@@ -4,6 +4,8 @@ import { z } from 'zod/v3';
 
 declare const DEFAULT_CONFIG: {
 	cacheDir: string;
+	/** Overrides cacheDir's parent directory for monorepo unified cache. */
+	cacheRoot: string | undefined;
 	Error: ErrorConstructor;
 	templateData: Map<string, any>;
 };
@@ -313,10 +315,7 @@ export interface Api {
 	name: string;
 	response: string;
 	requestBody?: string;
-	defaultValue?: string;
-	pathKey: string;
-	/** Global namespace name (e.g. 'Apis') for globals template mode */
-	global?: string;
+	callingCode?: string;
 }
 export interface ApiDoc {
 	apis: Api[];
@@ -449,7 +448,14 @@ export declare function generate(config: Config, options?: GenerateApiOptions): 
  * @returns a promise instance that contains configuration object.
  */
 export declare function readConfig(projectPath?: string): Promise<Readonly<Config>>;
-export declare function getApiDocs(config: Config, projectPath?: string): Promise<CacheData[]>;
+/**
+ * Get cached API docs. Cache is self-describing — no config needed.
+ * In monorepo, pass ANY sub-package path; cache is always read from the unified cacheRoot.
+ * @param outputs Optional filter: only return entries matching these output paths.
+ *                If omitted, returns ALL cached entries (including all monorepo sub-projects).
+ * @param projectPath Project root, defaults to `process.cwd()`.
+ */
+export declare function getApiDocs(outputs?: string[], projectPath?: string): Promise<CacheData[]>;
 /**
  * Search for all directories containing worma.config configuration files under the monorepo project. It will search for configuration files based on `workspaces` in `package.json` or sub packages defined in `pnpm-workspace.yaml`
  * @param projectPath The project path to search, defaults to `process.cwd()`.

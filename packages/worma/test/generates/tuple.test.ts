@@ -38,9 +38,9 @@ describe('tuple Type Generator', () => {
        */`,
       type: 'type',
       code: `[
-      number,
-      number
-      ]`,
+  number,
+  number
+]`,
     })
     expect(result).toEqual(expectResult)
   })
@@ -69,12 +69,12 @@ describe('tuple Type Generator', () => {
        */`,
       type: 'type',
       code: `[
-        string,
-        string,
-        string
-        ,
-        ...Array<string>
-      ]`,
+  string,
+  string,
+  string
+  ,
+  ...Array<string>
+]`,
     })
     expect(result).toEqual(expectResult)
   })
@@ -100,19 +100,19 @@ describe('tuple Type Generator', () => {
       comment: '',
       type: 'type',
       code: `[
-        number
-      ]
+  number
+]
 
-          | [
-        number,
-        number
-      ]
+  | [
+  number,
+  number
+]
 
-          | [
-        number,
-        number,
-        number
-      ]`,
+  | [
+  number,
+  number,
+  number
+]`,
     })
     expect(result).toEqual(expectResult)
   })
@@ -138,11 +138,11 @@ describe('tuple Type Generator', () => {
       comment: '',
       type: 'type',
       code: `[
-        string,
-        string
-        ,
-        ...Array<string>
-      ]`,
+  string,
+  string
+  ,
+  ...Array<string>
+]`,
     })
     expect(result).toEqual(expectResult)
   })
@@ -184,18 +184,18 @@ describe('tuple Type Generator', () => {
       comment: '',
       type: 'type',
       code: `[
-        string,
-        {
-          /**
-           * X coordinate
-           */
-          x?:number
-          /**
-           * Y coordinate
-           */
-          y?:number
-        }
-      ]`,
+  string,
+  {
+   /**
+   * X coordinate
+    */
+   x?: number
+   /**
+   * Y coordinate
+    */
+   y?: number
+  }
+]`,
     })
     expect(result).toEqual(expectResult)
   })

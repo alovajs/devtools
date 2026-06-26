@@ -1,5 +1,5 @@
-import type { Config, TemplateData } from 'worma'
 import type { ExtensionContext } from 'vscode'
+import type { Config, TemplateData } from 'worma'
 import type { Timer } from '@/utils'
 import { EventEmitter } from 'vscode'
 

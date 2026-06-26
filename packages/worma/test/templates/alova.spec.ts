@@ -142,8 +142,8 @@ describe('alova template', () => {
 
       expect(await fs.readFile(resolve(outputDir, 'index.cjs'), 'utf-8')).toMatchSnapshot()
       expect(await fs.readFile(resolve(outputDir, 'helper.cjs'), 'utf-8')).toMatchSnapshot()
-      expect(await fs.readFile(resolve(outputDir, 'typed.d.ts'), 'utf-8')).toMatchSnapshot()
-      expect(await fs.readFile(resolve(outputDir, 'components.d.ts'), 'utf-8')).toMatchSnapshot()
+      expect(await fs.readFile(resolve(outputDir, 'typed.d.cts'), 'utf-8')).toMatchSnapshot()
+      expect(await fs.readFile(resolve(outputDir, 'components.d.cts'), 'utf-8')).toMatchSnapshot()
       expect(await fs.readFile(resolve(outputDir, 'services/index.cjs'), 'utf-8')).toMatchSnapshot()
       const serviceFiles = (vol.readdirSync(resolve(outputDir, 'services')) as string[]).sort()
       for (const f of serviceFiles.filter(f => f !== 'index.cjs' && f.endsWith('.cjs'))) {

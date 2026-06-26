@@ -4,14 +4,14 @@
 
 ## 📋 包含的模板
 
-| # | 模板 | 输出目录 | 说明 |
-|---|------|----------|------|
-| ① | `alova()` | `src/api/alova/` | **函数式模板** — 每个 API 独立导出，支持 tree-shaking，附带 aiDoc 生成 AI Skill 文档 |
-| ② | `alovaGlobals()` | `src/api/alova-globals/` | **全局式模板** — 所有 API 注册到 `MyApis` 全局对象，零 import 调用 |
-| ③ | `axios()` | `src/api/axios/` | **Axios 模板** — 基于 axios 实例，适合已有 axios 项目的平滑接入 |
-| ④ | `fetch()` | `src/api/fetch/` | **Fetch 模板** — 零依赖，基于原生 `fetch` API，极致轻量 |
-| ⑤ | `ky()` | `src/api/ky/` | **Ky 模板** — 基于现代化 ky 请求库，自动 JSON 解析 |
-| ⑥ | `alova()` + fallback | `src/api/fallback/` | **Input 数组 Fallback** — 演示远程 URL 失败时自动回退到本地文件 |
+| #   | 模板                 | 输出目录                 | 说明                                                                                 |
+| --- | -------------------- | ------------------------ | ------------------------------------------------------------------------------------ |
+| ①   | `alova()`            | `src/api/alova/`         | **函数式模板** — 每个 API 独立导出，支持 tree-shaking，附带 aiDoc 生成 AI Skill 文档 |
+| ②   | `alovaGlobals()`     | `src/api/alova-globals/` | **全局式模板** — 所有 API 注册到 `MyApis` 全局对象，零 import 调用                   |
+| ③   | `axios()`            | `src/api/axios/`         | **Axios 模板** — 基于 axios 实例，适合已有 axios 项目的平滑接入                      |
+| ④   | `fetch()`            | `src/api/fetch/`         | **Fetch 模板** — 零依赖，基于原生 `fetch` API，极致轻量                              |
+| ⑤   | `ky()`               | `src/api/ky/`            | **Ky 模板** — 基于现代化 ky 请求库，自动 JSON 解析                                   |
+| ⑥   | `alova()` + fallback | `src/api/fallback/`      | **Input 数组 Fallback** — 演示远程 URL 失败时自动回退到本地文件                      |
 
 ## 🚀 快速开始
 

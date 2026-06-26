@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import type { AggregatedResult } from '../types'
-import { formatBytes, formatTime, formatMemory, toolShortName, TOOL_CONFIGS } from '../types'
+import { computed } from 'vue'
+import { formatBytes, formatMemory, formatTime, TOOL_CONFIGS, toolShortName } from '../types'
 
 const props = defineProps<{
   results: AggregatedResult[]
@@ -118,7 +118,7 @@ function getToolColor(tool: string): string {
           </a-tag>
         </template>
         <template v-else-if="column.key === 'avgTimeMs'">
-          <span :class="{ 'fast': record.avgTimeMs < 1000, 'slow': record.avgTimeMs >= 5000 }">
+          <span :class="{ fast: record.avgTimeMs < 1000, slow: record.avgTimeMs >= 5000 }">
             {{ formatTime(record.avgTimeMs) }}
           </span>
         </template>
@@ -138,8 +138,12 @@ function getToolColor(tool: string): string {
           {{ formatBytes(record.totalSize) }}
         </template>
         <template v-else-if="column.key === 'status'">
-          <a-tag v-if="record.error" color="error">失败</a-tag>
-          <a-tag v-else color="success">成功</a-tag>
+          <a-tag v-if="record.error" color="error">
+            失败
+          </a-tag>
+          <a-tag v-else color="success">
+            成功
+          </a-tag>
         </template>
       </template>
     </a-table>
@@ -153,7 +157,9 @@ function getToolColor(tool: string): string {
           :key="scale"
           class="best-card"
         >
-          <div class="best-scale">{{ scale }} 端点</div>
+          <div class="best-scale">
+            {{ scale }} 端点
+          </div>
           <template v-for="tool in tools" :key="tool">
             <div
               v-if="results.find(r => r.tool === tool && r.scale === scale && !r.error)"

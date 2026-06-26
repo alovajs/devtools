@@ -1,7 +1,8 @@
 import type { CancellationToken, CodeLensProvider, ExtensionContext, TextDocument } from 'vscode'
+import type { ApiRef, ApiWithSource } from '~/types'
 import { CodeLens, EventEmitter, languages, Position, Range, workspace } from 'vscode'
 import { commandsMap } from '@/commands'
-import { getApis } from '@/functions/getApis'
+import { getApisWithContext } from '@/functions/getApis'
 
 interface CodeLensMatch {
   text: string
@@ -34,14 +35,31 @@ export class ApiCodeLensProvider implements CodeLensProvider {
     const escaped = target.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     // 允许点前后有空格和换行
     const withSpaces = escaped.replace(/\\./g, `\\s*\\.\\s*`)
-    // 允许整个表达式跨行
-    return new RegExp(`${withSpaces}\\s*\\(`, 's')
+
+    // Pattern 1: 带点调用匹配  obj.addPet( / .addPet( / Apis.addPet(
+    let pattern = `${withSpaces}\\s*\\(`
+
+    // Pattern 2: 无命名空间时(target 以 "." 开头)，增加裸函数名调用匹配
+    // (?<![.\w]) 负向 lookbehind 确保前一个字符不是 . 或单词字符(\w)
+    //   ✅ 可匹配: addPet( | =addPet( | <空格>addPet( | ;addPet( | !addPet(
+    //   ✅ 可匹配: await addPet( | return addPet( | const x = addPet(
+    //   ✅ 可匹配: fn(addPet()) | if(addPet()) | [addPet()] | ${addPet()}
+    //   ✅ 可匹配: void addPet( | condition ? addPet( : ...
+    //   ❌ 排除: obj.addPet( → 由 Pattern 1 覆盖，不重复匹配
+    //   ❌ 排除: myAddPet( / _addPet( → 不同标识符子串，正确拒绝
+    if (target.startsWith('.')) {
+      const bareName = target.slice(1)
+      const escapedBare = bareName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      pattern += `|(?<![.\\w])${escapedBare}\\s*\\(`
+    }
+
+    return new RegExp(pattern, 'gs')
   }
 
   private getMatchesWithPositionAndLine(text: string, target: string) {
     // 分割文本为行数组
     const lines = text.split('\n')
-    const regex = new RegExp(this.createTargetRegex(target), 'g')
+    const regex = this.createTargetRegex(target)
     // 计算每行的起始位置和长度
     const lineStarts: number[] = []
     const lineLengths: number[] = []
@@ -108,35 +126,57 @@ export class ApiCodeLensProvider implements CodeLensProvider {
   async provideCodeLenses(document: TextDocument, _token: CancellationToken) {
     const codeLenses: CodeLens[] = []
     const filePath = document.uri.fsPath
-    // 定义需要匹配的目标字符串
-    const TARGET_STRINGS = (await getApis(filePath)).map(item => `${item.global}.${item.pathKey}`)
-    const documentText = document.getText()
-    const matches: Array<{
-      result: CodeLensMatch[]
-      target: string
-    }> = []
-    for (const target of TARGET_STRINGS) {
-      // Log.info(`[apiCodeLen] 正在匹配 ${target}`)
-      matches.push({
-        result: this.getMatchesWithPositionAndLine(documentText, target),
-        target,
-      })
+    const apis = await getApisWithContext(filePath)
+
+    // 按 target key (global.name) 分组
+    const apiGroups = new Map<string, ApiWithSource[]>()
+    for (const api of apis) {
+      const targetKey = `.${api.name}`
+      if (!apiGroups.has(targetKey)) {
+        apiGroups.set(targetKey, [])
+      }
+      apiGroups.get(targetKey)!.push(api)
     }
-    for (const { target, result } of matches) {
-      for (const { startLine, lineLengths } of result) {
+
+    const documentText = document.getText()
+
+    // 对每个唯一的 target key 进行匹配
+    for (const [targetKey, apiGroup] of apiGroups) {
+      const matches = this.getMatchesWithPositionAndLine(documentText, targetKey)
+      if (matches.length === 0)
+        continue
+
+      // 构建标题
+      const sourceCount = apiGroup.length
+      const title = sourceCount === 1
+        ? `📖 View Api: ${targetKey}`
+        : `📖 View Api: ${targetKey} (${sourceCount} sources)`
+
+      // 构建参数：传递所有匹配 API 的必要信息
+      const apiRefs: ApiRef[] = apiGroup.map(api => ({
+        uniqueKey: `${api.projectName}/${api.serverIndex}/${api.name}`,
+        serverName: api.serverName,
+        serverPath: api.serverPath,
+        method: api.method,
+        path: api.path,
+        summary: api.summary,
+        targetKey,
+      }))
+
+      for (const match of matches) {
         const range = new Range(
-          new Position(startLine, 0),
-          new Position(startLine, lineLengths[startLine]),
+          new Position(match.startLine, 0),
+          new Position(match.startLine, match.lineLengths[match.startLine]),
         )
         const codeLens = new CodeLens(range, {
-          title: `📚 View Api Documentation`,
-          tooltip: `Open Api Documentation: ${target}`,
+          title,
           command: commandsMap.openDocs.commandId,
-          arguments: [target],
+          arguments: [apiRefs],
         })
         codeLenses.push(codeLens)
       }
     }
+
     return codeLenses
   }
 }

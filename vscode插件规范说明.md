@@ -8,12 +8,12 @@
 
 ## 开发进度总览
 
-| #   | 特性                        | 状态      | 说明                               |
-| --- | --------------------------- | --------- | ---------------------------------- |
-| 1   | 状态栏禁用样式优化          | ✅ 已完成 | 灰色 → 白色半透明                  |
-| 2   | 状态栏 Action 列表          | ✅ 已完成 | 点击弹框选择动作 + 子项目选择      |
-| 3   | 生成进度展示                | ✅ 已完成 | 状态栏百分比 + 右下角进度通知      |
-| 4   | 侧边栏/快速搜索数据结构适配 | ✅ 已完成 | CacheData 结构，serverName         |
+| #   | 特性                        | 状态      | 说明                            |
+| --- | --------------------------- | --------- | ------------------------------- |
+| 1   | 状态栏禁用样式优化          | ✅ 已完成 | 灰色 → 白色半透明               |
+| 2   | 状态栏 Action 列表          | ✅ 已完成 | 点击弹框选择动作 + 子项目选择   |
+| 3   | 生成进度展示                | ✅ 已完成 | 状态栏百分比 + 右下角进度通知   |
+| 4   | 侧边栏/快速搜索数据结构适配 | ✅ 已完成 | CacheData 结构，serverName      |
 | 5   | autoUpdate 参数迁移         | ✅ 已完成 | 从 worma 配置迁移到 VSCode 设置 |
 
 ---
@@ -120,8 +120,8 @@ const items: ProjectItem[] = [
 
 | action       | projectPath | 实际执行                                                                                    |
 | ------------ | ----------- | ------------------------------------------------------------------------------------------- |
-| createConfig | all         | 遍历所有项目 `worma.createConfig({ projectPath })`                                       |
-| createConfig | 具体路径    | `worma.createConfig({ projectPath })`                                                    |
+| createConfig | all         | 遍历所有项目 `worma.createConfig({ projectPath })`                                          |
+| createConfig | 具体路径    | `worma.createConfig({ projectPath })`                                                       |
 | generateApis | all         | `ApiGenerate.readConfig()` + `ApiGenerate.generate({ force: true })`                        |
 | generateApis | 具体路径    | `ApiGenerate.readConfig(path)` + `ApiGenerate.generate({ force: true, projectPath: path })` |
 

@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import type { ProgressEvent } from '../types'
 import {
   CaretRightOutlined,
-  LoadingOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
+  LoadingOutlined,
 } from '@ant-design/icons-vue'
-import type { AggregatedResult, ProgressEvent } from '../types'
+import { computed, ref } from 'vue'
 import { SCALE_OPTIONS } from '../types'
 
-const props = defineProps<{
+defineProps<{
   loading: boolean
   progress: number
   progressText: string
@@ -30,13 +30,15 @@ const allScalesSelected = computed(() => selectedScales.value.length === SCALE_O
 function toggleAllScales() {
   if (allScalesSelected.value) {
     selectedScales.value = []
-  } else {
+  }
+  else {
     selectedScales.value = [...SCALE_OPTIONS]
   }
 }
 
 function onRun() {
-  if (selectedScales.value.length === 0) return
+  if (selectedScales.value.length === 0)
+    return
   emit('run', selectedScales.value, iterations.value)
 }
 </script>
@@ -52,7 +54,7 @@ function onRun() {
             {{ s }}
           </a-checkbox>
         </a-checkbox-group>
-        <a-button size="small" type="link" @click="toggleAllScales" :disabled="loading">
+        <a-button size="small" type="link" :disabled="loading" @click="toggleAllScales">
           {{ allScalesSelected ? '取消全选' : '全选' }}
         </a-button>
       </div>
@@ -76,10 +78,12 @@ function onRun() {
         size="large"
         :loading="loading"
         :disabled="selectedScales.length === 0"
-        @click="onRun"
         class="run-btn"
+        @click="onRun"
       >
-        <template #icon><CaretRightOutlined /></template>
+        <template #icon>
+          <CaretRightOutlined />
+        </template>
         {{ loading ? '运行中...' : '运行 Benchmark' }}
       </a-button>
     </div>
@@ -91,7 +95,9 @@ function onRun() {
         :status="progress === 100 ? 'success' : 'active'"
         :stroke-color="{ '0%': '#1677ff', '100%': '#52c41a' }"
       />
-      <div class="progress-text">{{ progressText }}</div>
+      <div class="progress-text">
+        {{ progressText }}
+      </div>
 
       <!-- 实时事件 -->
       <div class="events-list">

@@ -5,15 +5,30 @@ packages:
   - e2e-fixtures-temp/*
 
 catalog:
+  '@ant-design/icons-vue': ^7.0.1
+  '@hey-api/client-fetch': ^0.8.4
+  '@hey-api/openapi-ts': ^0.64.0
+  '@hono/node-server': ^1.14.0
+  ant-design-vue: ^4.2.6
   axios: ^1.17.0
+  cli-truncate: ^4.0.0
+  concurrently: ^9.1.0
+  cross-env: ^7.0.3
+  echarts: ^5.6.0
+  hono: ^4.7.0
   ky: ^2.0.2
+  log-update: ^6.1.0
+  openapi-typescript: ^7.6.0
+  string-width: ^7.2.0
+  vue-echarts: ^7.0.3
+
 catalogs:
   build:
     '@czhlin/vite-plugin-vscode': ^4.3.0
     '@intlify/unplugin-vue-i18n': ^6.0.8
     '@shikijs/markdown-it': ^3.8.1
-    '@unocss/eslint-config': ^66.3.3
-    '@unocss/preset-web-fonts': ^66.3.3
+    '@unocss/eslint-config': ^66.7.3
+    '@unocss/preset-web-fonts': ^66.7.3
     '@vitejs/plugin-vue': ^6.0.0
     '@vitejs/plugin-vue-jsx': ^5.0.1
     dts-bundle-generator: ^9.5.1
@@ -21,7 +36,7 @@ catalogs:
     markdown-it-link-attributes: ^4.0.1
     ncp: ^2.0.0
     tsc-alias: ^1.8.16
-    unocss: ^66.3.3
+    unocss: ^66.7.3
     unplugin: ^2.3.5
     unplugin-auto-import: ^19.3.0
     unplugin-vue-components: ^28.8.0
@@ -36,14 +51,14 @@ catalogs:
   dev:
     '@antfu/eslint-config': ^5.4.1
     '@antfu/ni': ^25.0.0
-    '@changesets/changelog-github': ^0.5.1
-    '@changesets/cli': ^2.29.5
-    '@changesets/get-release-plan': ^4.0.13
+    '@changesets/changelog-github': ^0.5.2
+    '@changesets/cli': ^2.31.0
+    '@changesets/get-release-plan': ^4.0.16
     '@commitlint/cli': ^19.8.1
     '@commitlint/config-conventional': ^19.8.1
     '@iconify-json/carbon': ^1.2.10
     '@tomjs/tsconfig': ^2.0.0
-    '@vitest/coverage-v8': ^3.2.4
+    '@vitest/coverage-v8': ^3.2.6
     '@vscode/test-electron': ^2.5.2
     '@vscode/vsce': ^3.6.0
     '@vue/test-utils': ^2.4.6
@@ -51,11 +66,11 @@ catalogs:
     chai-jest-snapshot: ^2.0.0
     chalk: 4.1.2
     commander: ^14.0.0
-    commitizen: ^4.3.1
+    commitizen: ^4.3.2
     coveralls-next: ^5.0.0
     cz-conventional-changelog: ^3.3.0
-    eslint: ^9.31.0
-    eslint-plugin-format: ^1.0.1
+    eslint: ^9.39.4
+    eslint-plugin-format: ^1.5.0
     fast-glob: ^3.3.3
     fs-extra: ^11.3.1
     glob: ^11.0.3
@@ -63,34 +78,31 @@ catalogs:
     import-fresh: ^3.3.1
     js-yaml: ^4.1.0
     jsdom: ^26.1.0
-    lint-staged: ^16.1.2
+    lint-staged: ^16.4.0
     memfs: ^4.17.2
     mocha: ^11.7.1
-    msw: ^2.10.4
+    msw: ^2.14.6
     npm-run-all2: ^8.0.4
-    openapi: ^1.0.1
     ora: 5.4.1
     ovsx: ^0.10.5
     pino: ^9.9.1
     prettier: ^3.6.2
-    rimraf: ^6.0.1
+    rimraf: ^6.1.3
     sinon: ^21.0.0
-    taze: ^19.1.0
+    taze: ^19.14.1
     tslib: ^2.8.1
-    tsx: ^4.20.3
-    typescript: ^5.8.3
-    vitest: ^3.2.4
+    tsx: ^4.22.4
+    typescript: ^5.9.3
+    vitest: ^3.2.6
     vue-tsc: ^3.0.2
   frontend:
-    '@alova/adapter-xhr': ^2.2.0
-    '@alova/mock': ^2.0.17
     '@jsonrpc-rx/client': ^0.2.2
     '@jsonrpc-rx/server': ^0.2.1
     '@tomjs/vscode-webview': ^2.0.2
     '@unhead/vue': ^2.0.12
     '@unocss/reset': ^66.3.3
     '@vicons/ionicons5': ^0.13.0
-    '@vueuse/core': ^13.5.0
+    '@vueuse/core': ^13.9.0
     alova: ^3.3.4
     handlebars: ^4.7.8
     highlight.js: ^11.11.1
@@ -113,10 +125,10 @@ catalogs:
     '@types/chai-jest-snapshot': ^1.3.6
     '@types/fs-extra': ^11.0.4
     '@types/js-yaml': ^4.0.9
-    '@types/lodash': ^4.17.20
+    '@types/lodash': ^4.17.24
     '@types/markdown-it-link-attributes': ^3.0.5
     '@types/mocha': ^10.0.10
-    '@types/node': ^24.0.14
+    '@types/node': ^24.13.2
     '@types/nprogress': ^0.2.3
     '@types/sinon': ^17.0.4
     '@types/swagger2openapi': ^7.0.4

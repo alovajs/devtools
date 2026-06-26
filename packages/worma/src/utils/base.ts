@@ -75,11 +75,17 @@ export async function existsPromise(path: string, mode?: number) {
 
 export async function resolveConfigFile(projectPath: string) {
   const extensions = ['js', 'cjs', 'mjs', 'ts', 'mts', 'cts']
+  // JS/TS config takes priority per spec
   for (const ext of extensions) {
     const configFile = path.join(projectPath, `worma.config.${ext}`)
     if (await existsPromise(configFile)) {
       return configFile
     }
+  }
+  // Fallback to .wormarc if no worma.config.* found
+  const rcFile = path.join(projectPath, '.wormarc')
+  if (await existsPromise(rcFile)) {
+    return rcFile
   }
   return null
 }

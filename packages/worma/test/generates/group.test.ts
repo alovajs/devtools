@@ -38,7 +38,7 @@ describe('group Type Generator', () => {
        * Status type
        */`,
       type: 'type',
-      code: '(string) | (number)',
+      code: 'string | number',
     })
     expect(result).toEqual(expectResult)
   })
@@ -83,11 +83,11 @@ describe('group Type Generator', () => {
        * User with role
        */`,
       type: 'type',
-      code: `({
- name?:string
-}) & ({
- role?:string
-})`,
+      code: `{
+  name?: string
+} & {
+  role?: string
+}`,
     })
     expect(result).toEqual(expectResult)
   })
@@ -145,13 +145,101 @@ describe('group Type Generator', () => {
       name: 'ComplexType',
       comment: '',
       type: 'type',
-      code: `(({
- id?:number
-}) & ({
- name?:string
-})) | ({
- code?:string
-})`,
+      code: `{
+  id?: number
+} & {
+  name?: string
+} | {
+  code?: string
+}`,
+    })
+    expect(result).toEqual(expectResult)
+  })
+
+  it('should not add parens for ARRAY member in UNION', async () => {
+    // UNION(|) with ARRAY member: `[]` binds tighter than `|`, no parens needed
+    const ast: TUnion = {
+      type: ASTType.UNION,
+      keyName: 'UnionWithArray',
+      params: [
+        {
+          type: ASTType.ARRAY,
+          params: {
+            type: ASTType.STRING,
+          },
+        },
+        {
+          type: ASTType.REFERENCE,
+          params: 'Admin',
+        },
+      ],
+    }
+    const result = await normalizeGeneratorResult(groupTypeGenerator(ast, defaultCtx))
+    const expectResult = await normalizeGeneratorResult({
+      name: 'UnionWithArray',
+      comment: '',
+      type: 'type',
+      code: 'string[] | Admin',
+    })
+    expect(result).toEqual(expectResult)
+  })
+
+  it('should add parens for UNION member in INTERSECTION', async () => {
+    // INTERSECTION(&) with UNION member: `|` has lower precedence, parens REQUIRED
+    // Without parens: string | number & Pet = string | (number & Pet)  WRONG
+    // With parens:    (string | number) & Pet                        CORRECT
+    const ast: TIntersection = {
+      type: ASTType.INTERSECTION,
+      keyName: 'IntersectionWithUnion',
+      params: [
+        {
+          type: ASTType.UNION,
+          params: [
+            { type: ASTType.STRING },
+            { type: ASTType.NUMBER },
+          ],
+        },
+        {
+          type: ASTType.REFERENCE,
+          params: 'Pet',
+        },
+      ],
+    }
+    const result = await normalizeGeneratorResult(groupTypeGenerator(ast, defaultCtx))
+    const expectResult = await normalizeGeneratorResult({
+      name: 'IntersectionWithUnion',
+      comment: '',
+      type: 'type',
+      code: '(string | number) & Pet',
+    })
+    expect(result).toEqual(expectResult)
+  })
+
+  it('should not add parens for ARRAY member in INTERSECTION', async () => {
+    // INTERSECTION(&) with ARRAY member: `[]` binds tighter than `&`, no parens needed
+    const ast: TIntersection = {
+      type: ASTType.INTERSECTION,
+      keyName: 'IntersectionWithArray',
+      params: [
+        {
+          type: ASTType.ARRAY,
+          params: {
+            type: ASTType.REFERENCE,
+            params: 'Pet',
+          },
+        },
+        {
+          type: ASTType.REFERENCE,
+          params: 'User',
+        },
+      ],
+    }
+    const result = await normalizeGeneratorResult(groupTypeGenerator(ast, defaultCtx))
+    const expectResult = await normalizeGeneratorResult({
+      name: 'IntersectionWithArray',
+      comment: '',
+      type: 'type',
+      code: 'Pet[] & User',
     })
     expect(result).toEqual(expectResult)
   })
@@ -196,11 +284,11 @@ describe('group Type Generator', () => {
       name: 'DeepTest',
       comment: '',
       type: 'type',
-      code: `({
- value?:string
-}) | ({
- value?:number
-})`,
+      code: `{
+  value?: string
+} | {
+  value?: number
+}`,
     })
     expect(result).toEqual(expectResult)
   })

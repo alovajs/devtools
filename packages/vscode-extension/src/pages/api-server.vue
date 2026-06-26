@@ -60,13 +60,19 @@ onMounted(() => {
 
 <template>
   <n-scrollbar class="pos-relative h-full overflow-hidden pt-2" content-class="px-3">
-    <n-input
-      v-model:value="search"
-      :placeholder="t('api-server.search-placeholder')"
-      size="small"
-      clearable
-      class="sticky top-0 z-1 my-1 w-full"
-    />
+    <div class="search-bar sticky top-0 z-1">
+      <n-input
+        v-model:value="search"
+        :placeholder="t('api-server.search-placeholder')"
+        size="small"
+        clearable
+        round
+      >
+        <template #prefix>
+          <i class="i-carbon-search text-xs opacity-50" />
+        </template>
+      </n-input>
+    </div>
     <api-tree
       ref="treeRef"
       v-model:selected="selectdKeys"

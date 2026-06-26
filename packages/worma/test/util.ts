@@ -32,7 +32,7 @@ export function initExpect() {
 }
 export function createStrReg(str: string) {
   str = str
-    .replace(/\r\n/g, '\n')        // normalize Windows line endings
+    .replace(/\r\n/g, '\n') // normalize Windows line endings
     .replace(/([[\](){}.*+|\\/^$?])/g, '\\$1')
     .replace(/\s+/g, '\\s+')
     // Prettier may add newlines around angle brackets and other type boundaries

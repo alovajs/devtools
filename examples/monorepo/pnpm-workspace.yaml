@@ -1,0 +1,5 @@
+packages:
+  - 'packages/*'
+catalog:
+  axios: ^0.0.0
+  ky: ^0.0.0

@@ -4,7 +4,7 @@ import { existsSync } from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import YAML from 'js-yaml'
-import { WorkerPool } from '@/core/WorkerPool'
+import { PoolManager } from '@/core/workerPool/poolManager'
 import { logger } from '@/helper'
 import { fetchData } from '@/utils'
 
@@ -13,7 +13,7 @@ function isSwagger2(data: any): data is OpenAPIV2Document {
   return !!data?.swagger
 }
 
-/** 9.3.4: Run CPU-heavy Swagger2→OpenAPI3 conversion via WorkerPool */
+/** 9.3.4: Run CPU-heavy Swagger2→OpenAPI3 conversion via PoolManager */
 function convertSwagger2Async(data: OpenAPIV2Document): Promise<OpenAPIDocument> {
   return new Promise((resolve, reject) => {
     // Resolve worker path: .js for production, .ts for vitest/dev
@@ -22,7 +22,8 @@ function convertSwagger2Async(data: OpenAPIV2Document): Promise<OpenAPIDocument>
     const tsPath = path.resolve(__dirname, '../../workerPool/swagger2Worker.ts')
     const workerScript = existsSync(jsPath) ? jsPath : tsPath
 
-    const pool = new WorkerPool<OpenAPIV2Document, { openapi: OpenAPIDocument }>({
+    const pool = PoolManager.getInstance().get<OpenAPIV2Document, { openapi: OpenAPIDocument }>({
+      key: 'swagger2Worker',
       workerScript,
       sharedContext: {},
       poolSize: 1,
@@ -117,8 +118,8 @@ const isRemoteUrl = (u: string) => /^https?:\/\//.test(u)
  */
 async function tryUrls(
   urls: string[],
-  options: { projectPath?: string; fetchOptions?: FetchOptions },
-): Promise<{ data: any; url: string }> {
+  options: { projectPath?: string, fetchOptions?: FetchOptions },
+): Promise<{ data: any, url: string }> {
   if (urls.length === 0) {
     throw logger.throwError('No URLs provided to fetch OpenAPI document')
   }

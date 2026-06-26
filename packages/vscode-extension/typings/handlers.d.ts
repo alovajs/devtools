@@ -1,31 +1,28 @@
 import type { Publisher } from '@jsonrpc-rx/server'
 import type { ExtensionContext, TextDocument } from 'vscode'
 
-export interface Api {
-  tag: string
+export type { Api, ApiDoc, CacheData } from 'worma'
+
+export interface ApiWithSource extends Api {
+  serverName: string
+  serverPath: string
+  projectName: string
+  serverIndex: number
+}
+
+export interface ApiRef {
+  uniqueKey: string
+  serverName: string
+  serverPath: string
   method: string
-  summary: string
   path: string
-  pathParameters: string
-  queryParameters: string
-  pathParametersComment?: string
-  queryParametersComment?: string
-  responseComment?: string
-  requestComment?: string
-  name: string
-  global: string
-  responseName: string
-  requestName?: string
-  defaultValue?: string
-  pathKey: string
+  summary: string
+  targetKey: string
 }
-export interface ApiDoc {
-  apis: Api[]
-  tagName: string
-}
+
 declare function getApiDocs(): Promise<{
   name: string
-  apiDocs: ApiDoc[][]
+  servers: CacheData[]
 }[]>
 export interface DataType<T = any> {
   type: string
@@ -53,5 +50,3 @@ export declare function getHandlers(context: ExtensionContext): {
   execCommand: (command: string, ...rest: any[]) => Promise<unknown>
   onDidOpenTextDocument: import('@jsonrpc-rx/server').Observable<({ next }: Publisher<TextDocument>) => () => any>
 }
-
-export {}

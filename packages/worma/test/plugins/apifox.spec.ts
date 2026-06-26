@@ -1,8 +1,8 @@
 import type { ApifoxOptions } from '@/plugins/presets/apifox'
 import type { GeneratorConfig } from '@/type'
 import { describe, expect, it } from 'vitest'
-import { apifox } from '@/plugins/presets/apifox'
 import { alovaGlobals } from '@/plugins'
+import { apifox } from '@/plugins/presets/apifox'
 import { generateWithPlugin } from '../util'
 
 vi.mock('node:fs')

@@ -66,22 +66,28 @@ export const SCALE_OPTIONS = [200, 500, 1000, 5000]
 
 /** 格式化字节 */
 export function formatBytes(bytes: number): string {
-  if (bytes < 0) return '-'
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  if (bytes < 0)
+    return '-'
+  if (bytes < 1024)
+    return `${bytes} B`
+  if (bytes < 1024 * 1024)
+    return `${(bytes / 1024).toFixed(1)} KB`
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
 }
 
 /** 格式化时间 */
 export function formatTime(ms: number): string {
-  if (ms < 0) return '-'
-  if (ms < 1000) return `${ms}ms`
+  if (ms < 0)
+    return '-'
+  if (ms < 1000)
+    return `${ms}ms`
   return `${(ms / 1000).toFixed(2)}s`
 }
 
 /** 格式化内存 */
 export function formatMemory(mb: number): string {
-  if (mb < 0) return '-'
+  if (mb < 0)
+    return '-'
   return `${mb} MB`
 }
 

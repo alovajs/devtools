@@ -1,6 +1,6 @@
 import { mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { readConfig } from '@/index'
 
@@ -24,8 +24,12 @@ beforeAll(() => {
 })
 
 afterAll(() => {
-  try { rmSync(tmpRoot, { recursive: true, force: true }) }
-  catch { /* ignore */ }
+  try {
+    rmSync(tmpRoot, { recursive: true, force: true })
+  }
+  catch {
+    /* ignore */
+  }
 })
 
 /** 写一个不依赖外部包的最小 cjs 配置到指定目录 */

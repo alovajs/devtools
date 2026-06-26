@@ -136,7 +136,7 @@ declare global {
           {{/if}}
       }{{/or}}>(
         config{{#or pathParameters queryParameters requestBody }}{{else}}?{{/or}}: Config
-      ): Alova2Method<{{{response}}}, '{{{pathKey}}}', Config>;
+      ): Alova2Method<{{{response}}}, '{{{tag}}}.{{{name}}}', Config>;
      {{/apis}}
     };
     {{/each}}

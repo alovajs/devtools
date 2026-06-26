@@ -35,8 +35,8 @@ export function enable() {
 }
 export function disable() {
   Global.setEnabled(false)
-    statusBarItem.text = `$(alova-icon-id) Worma`
-    statusBarItem.tooltip = 'module `worma` not found'
+  statusBarItem.text = `$(alova-icon-id) Worma`
+  statusBarItem.tooltip = 'module `worma` not found'
   statusBarItem.color = '#FFFFFF80'
   statusBarItem.command = undefined
 }

@@ -4,13 +4,13 @@
 
 ## 📋 包含的模板
 
-| # | 模板 | 输出目录 | 说明 |
-|---|------|----------|------|
-| ① | `alova()` | `src/api/alova/` | 函数式模板 — 每个 API 独立 `export` |
-| ② | `alovaGlobals()` | `src/api/alova-globals/` | 全局式模板 — API 挂载到 `MyApis` 对象 |
-| ③ | `axios()` | `src/api/axios/` | Axios 模板 — 基于 axios 实例 |
-| ④ | `fetch()` | `src/api/fetch/` | Fetch 模板 — 零依赖，原生 fetch |
-| ⑤ | `ky()` | `src/api/ky/` | Ky 模板 — 现代化 ky 请求库 |
+| #   | 模板             | 输出目录                 | 说明                                  |
+| --- | ---------------- | ------------------------ | ------------------------------------- |
+| ①   | `alova()`        | `src/api/alova/`         | 函数式模板 — 每个 API 独立 `export`   |
+| ②   | `alovaGlobals()` | `src/api/alova-globals/` | 全局式模板 — API 挂载到 `MyApis` 对象 |
+| ③   | `axios()`        | `src/api/axios/`         | Axios 模板 — 基于 axios 实例          |
+| ④   | `fetch()`        | `src/api/fetch/`         | Fetch 模板 — 零依赖，原生 fetch       |
+| ⑤   | `ky()`           | `src/api/ky/`            | Ky 模板 — 现代化 ky 请求库            |
 
 ## 🚀 快速开始
 

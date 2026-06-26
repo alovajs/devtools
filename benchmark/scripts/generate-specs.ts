@@ -259,10 +259,6 @@ const SCHEMAS: Record<string, SchemaDef> = {
   },
 }
 
-const SCHEMA_KEYS = Object.keys(SCHEMAS).filter(
-  k => !['PaginatedResponse', 'ErrorResponse', 'HealthCheck'].includes(k),
-)
-
 // ─── 资源组 ──────────────────────────────────────────
 
 interface ResourceDef {
@@ -286,18 +282,18 @@ const RESOURCES: ResourceDef[] = [
     { name: 'orders', schemaName: 'Order' },
     { name: 'reviews', schemaName: 'Review' },
     { name: 'notifications', schemaName: 'Notification' },
-  ]},
+  ] },
   { name: 'pets', schemaName: 'Pet', hasSearch: true, hasCount: true, hasBatch: false, hasNested: true, nestedResources: [
     { name: 'orders', schemaName: 'Order' },
     { name: 'reviews', schemaName: 'Review' },
-  ]},
+  ] },
   { name: 'orders', schemaName: 'Order', hasSearch: true, hasCount: true, hasBatch: true, hasNested: false },
   { name: 'products', schemaName: 'Product', hasSearch: true, hasCount: true, hasBatch: true, hasNested: true, nestedResources: [
     { name: 'reviews', schemaName: 'Review' },
-  ]},
+  ] },
   { name: 'categories', schemaName: 'Category', hasSearch: false, hasCount: true, hasBatch: false, hasNested: true, nestedResources: [
     { name: 'products', schemaName: 'Product' },
-  ]},
+  ] },
   { name: 'reviews', schemaName: 'Review', hasSearch: false, hasCount: true, hasBatch: false, hasNested: false },
   { name: 'notifications', schemaName: 'Notification', hasSearch: false, hasCount: true, hasBatch: true, hasNested: false },
   { name: 'files', schemaName: 'File', hasSearch: false, hasCount: false, hasBatch: true, hasNested: false },
@@ -333,11 +329,11 @@ function createRequestBody(ref: string, required: boolean = true) {
 
 function createErrorResponses() {
   return {
-    '400': createRefResponse('#/components/schemas/ErrorResponse', '请求参数错误'),
-    '401': createRefResponse('#/components/schemas/ErrorResponse', '未认证'),
-    '403': createRefResponse('#/components/schemas/ErrorResponse', '权限不足'),
-    '404': createRefResponse('#/components/schemas/ErrorResponse', '资源不存在'),
-    '500': createRefResponse('#/components/schemas/ErrorResponse', '服务器内部错误'),
+    400: createRefResponse('#/components/schemas/ErrorResponse', '请求参数错误'),
+    401: createRefResponse('#/components/schemas/ErrorResponse', '未认证'),
+    403: createRefResponse('#/components/schemas/ErrorResponse', '权限不足'),
+    404: createRefResponse('#/components/schemas/ErrorResponse', '资源不存在'),
+    500: createRefResponse('#/components/schemas/ErrorResponse', '服务器内部错误'),
   }
 }
 
@@ -355,7 +351,7 @@ function addListOperation(pathObj: Record<string, any>, resource: ResourceDef) {
     operationId: `list${capitalize(resource.name)}`,
     parameters: [...COMMON_LIST_PARAMS],
     responses: {
-      '200': createArrayResponse(`#/components/schemas/${resource.schemaName}`, `成功获取${resource.name}列表`),
+      200: createArrayResponse(`#/components/schemas/${resource.schemaName}`, `成功获取${resource.name}列表`),
       ...createErrorResponses(),
     },
   }
@@ -368,7 +364,7 @@ function addCreateOperation(pathObj: Record<string, any>, resource: ResourceDef)
     operationId: `create${capitalizeSingular(resource.name)}`,
     requestBody: createRequestBody(`#/components/schemas/${resource.schemaName}`),
     responses: {
-      '201': createRefResponse(`#/components/schemas/${resource.schemaName}`, '创建成功'),
+      201: createRefResponse(`#/components/schemas/${resource.schemaName}`, '创建成功'),
       ...createErrorResponses(),
     },
   }
@@ -381,7 +377,7 @@ function addGetByIdOperation(pathObj: Record<string, any>, resource: ResourceDef
     operationId: `get${capitalizeSingular(resource.name)}ById`,
     parameters: [createParam('id', 'path', 'integer', true, `${singular(resource.name)} ID`)],
     responses: {
-      '200': createRefResponse(`#/components/schemas/${resource.schemaName}`, '获取成功'),
+      200: createRefResponse(`#/components/schemas/${resource.schemaName}`, '获取成功'),
       ...createErrorResponses(),
     },
   }
@@ -395,7 +391,7 @@ function addUpdateOperation(pathObj: Record<string, any>, resource: ResourceDef)
     parameters: [createParam('id', 'path', 'integer', true, `${singular(resource.name)} ID`)],
     requestBody: createRequestBody(`#/components/schemas/${resource.schemaName}`),
     responses: {
-      '200': createRefResponse(`#/components/schemas/${resource.schemaName}`, '更新成功'),
+      200: createRefResponse(`#/components/schemas/${resource.schemaName}`, '更新成功'),
       ...createErrorResponses(),
     },
   }
@@ -408,7 +404,7 @@ function addDeleteOperation(pathObj: Record<string, any>, resource: ResourceDef)
     operationId: `delete${capitalizeSingular(resource.name)}`,
     parameters: [createParam('id', 'path', 'integer', true, `${singular(resource.name)} ID`)],
     responses: {
-      '204': createEmptyResponse('删除成功'),
+      204: createEmptyResponse('删除成功'),
       ...createErrorResponses(),
     },
   }
@@ -426,7 +422,7 @@ function addSearchOperation(pathObj: Record<string, any>, resource: ResourceDef)
       ...COMMON_LIST_PARAMS,
     ],
     responses: {
-      '200': createArrayResponse(`#/components/schemas/${resource.schemaName}`, '搜索结果'),
+      200: createArrayResponse(`#/components/schemas/${resource.schemaName}`, '搜索结果'),
       ...createErrorResponses(),
     },
   }
@@ -438,7 +434,7 @@ function addCountOperation(pathObj: Record<string, any>, resource: ResourceDef) 
     summary: `统计${resource.name}数量`,
     operationId: `count${capitalize(resource.name)}`,
     responses: {
-      '200': {
+      200: {
         description: '统计结果',
         content: { 'application/json': { schema: { type: 'object', properties: { count: { type: 'integer' } } } } },
       },
@@ -466,7 +462,7 @@ function addBatchCreate(pathObj: Record<string, any>, resource: ResourceDef) {
       },
     },
     responses: {
-      '201': {
+      201: {
         description: '批量创建成功',
         content: {
           'application/json': {
@@ -487,9 +483,15 @@ function addBatchCreate(pathObj: Record<string, any>, resource: ResourceDef) {
 
 // ─── 辅助函数 ────────────────────────────────────────
 
-function capitalize(s: string) { return s.charAt(0).toUpperCase() + s.slice(1) }
-function singular(s: string) { return s.endsWith('s') ? s.slice(0, -1) : s }
-function capitalizeSingular(s: string) { return capitalize(singular(s)) }
+function capitalize(s: string) {
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
+function singular(s: string) {
+  return s.endsWith('s') ? s.slice(0, -1) : s
+}
+function capitalizeSingular(s: string) {
+  return capitalize(singular(s))
+}
 
 // ─── 基础资源路径生成 ────────────────────────────────
 
@@ -559,7 +561,7 @@ function addBaseResourcePaths(paths: Record<string, any>, resource: ResourceDef)
               ...COMMON_LIST_PARAMS,
             ],
             responses: {
-              '200': createArrayResponse(`#/components/schemas/${nested.schemaName}`, `成功获取列表`),
+              200: createArrayResponse(`#/components/schemas/${nested.schemaName}`, `成功获取列表`),
               ...createErrorResponses(),
             },
           },
@@ -570,7 +572,7 @@ function addBaseResourcePaths(paths: Record<string, any>, resource: ResourceDef)
             parameters: [createParam('parentId', 'path', 'integer', true, `${singular(resource.name)} ID`)],
             requestBody: createRequestBody(`#/components/schemas/${nested.schemaName}`),
             responses: {
-              '201': createRefResponse(`#/components/schemas/${nested.schemaName}`, '创建成功'),
+              201: createRefResponse(`#/components/schemas/${nested.schemaName}`, '创建成功'),
               ...createErrorResponses(),
             },
           },
@@ -597,7 +599,7 @@ function addNumberedResource(paths: Record<string, any>, resource: ResourceDef, 
       operationId: `list${capitalize(resName)}`,
       parameters: [...COMMON_LIST_PARAMS],
       responses: {
-        '200': createArrayResponse(`#/components/schemas/${resource.schemaName}`, '成功'),
+        200: createArrayResponse(`#/components/schemas/${resource.schemaName}`, '成功'),
         ...createErrorResponses(),
       },
     },
@@ -607,7 +609,7 @@ function addNumberedResource(paths: Record<string, any>, resource: ResourceDef, 
       operationId: `create${capitalizeSingular(resName)}`,
       requestBody: createRequestBody(`#/components/schemas/${resource.schemaName}`),
       responses: {
-        '201': createRefResponse(`#/components/schemas/${resource.schemaName}`, '创建成功'),
+        201: createRefResponse(`#/components/schemas/${resource.schemaName}`, '创建成功'),
         ...createErrorResponses(),
       },
     },
@@ -623,7 +625,7 @@ function addNumberedResource(paths: Record<string, any>, resource: ResourceDef, 
       operationId: `get${capitalizeSingular(resName)}ById`,
       parameters: [createParam('id', 'path', 'integer', true, `${singular(resName)} ID`)],
       responses: {
-        '200': createRefResponse(`#/components/schemas/${resource.schemaName}`, '获取成功'),
+        200: createRefResponse(`#/components/schemas/${resource.schemaName}`, '获取成功'),
         ...createErrorResponses(),
       },
     },
@@ -634,7 +636,7 @@ function addNumberedResource(paths: Record<string, any>, resource: ResourceDef, 
       parameters: [createParam('id', 'path', 'integer', true, `${singular(resName)} ID`)],
       requestBody: createRequestBody(`#/components/schemas/${resource.schemaName}`),
       responses: {
-        '200': createRefResponse(`#/components/schemas/${resource.schemaName}`, '更新成功'),
+        200: createRefResponse(`#/components/schemas/${resource.schemaName}`, '更新成功'),
         ...createErrorResponses(),
       },
     },
@@ -644,7 +646,7 @@ function addNumberedResource(paths: Record<string, any>, resource: ResourceDef, 
       operationId: `delete${capitalizeSingular(resName)}`,
       parameters: [createParam('id', 'path', 'integer', true, `${singular(resName)} ID`)],
       responses: {
-        '204': createEmptyResponse('删除成功'),
+        204: createEmptyResponse('删除成功'),
         ...createErrorResponses(),
       },
     },
@@ -670,7 +672,7 @@ function generateSpec(totalEndpoints: number) {
       summary: '健康检查',
       operationId: 'healthCheck',
       responses: {
-        '200': createRefResponse('#/components/schemas/HealthCheck', '服务健康状态'),
+        200: createRefResponse('#/components/schemas/HealthCheck', '服务健康状态'),
         ...createErrorResponses(),
       },
     },
@@ -696,7 +698,7 @@ function generateSpec(totalEndpoints: number) {
         },
       },
       responses: {
-        '201': createRefResponse('#/components/schemas/File', '上传成功'),
+        201: createRefResponse('#/components/schemas/File', '上传成功'),
         ...createErrorResponses(),
       },
     },
@@ -705,7 +707,8 @@ function generateSpec(totalEndpoints: number) {
 
   // 阶段 1：生成所有 8 个基础资源的完整路径
   for (const resource of RESOURCES) {
-    if (endpointCount >= totalEndpoints) break
+    if (endpointCount >= totalEndpoints)
+      break
     endpointCount += addBaseResourcePaths(paths, resource)
   }
 

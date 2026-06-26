@@ -8,6 +8,7 @@
 import type { Buffer } from 'node:buffer'
 import { execSync, spawn } from 'node:child_process'
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { platform } from 'node:os'
 import { join, resolve } from 'node:path'
 import { performance } from 'node:perf_hooks'
 import { fileURLToPath } from 'node:url'
@@ -62,6 +63,9 @@ function baseDir(): string {
 /** 获取单个进程的 RSS（KB） */
 function getProcessRSS(pid: number): number {
   try {
+    if (platform() === 'win32') {
+      return 0 // Windows 不支持通过命令行获取其他进程 RSS
+    }
     const out = execSync(`ps -o rss= -p ${pid}`, {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'ignore'],
@@ -77,6 +81,9 @@ function getProcessRSS(pid: number): number {
 function getProcessTreeRSS(rootPid: number): number {
   let total = getProcessRSS(rootPid)
   try {
+    if (platform() === 'win32') {
+      return total // Windows 不支持通过命令行递归获取子进程 RSS
+    }
     const children = execSync(`pgrep -P ${rootPid} 2>/dev/null || true`, {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'ignore'],
@@ -106,7 +113,7 @@ export interface CmdResult {
  * 异步执行 shell 命令，期间以 100ms 间隔轮询子进程树的 RSS 内存峰值。
  * 使用 spawn + shell 模式，事件循环不被阻塞。
  */
-function runCmdAsync(cmd: string, cwd?: string): Promise<CmdResult> {
+function runCmdAsync(cmd: string, cwd?: string, env?: Record<string, string>): Promise<CmdResult> {
   const start = performance.now()
   let peakRSS = 0
   let stdout = ''
@@ -115,8 +122,9 @@ function runCmdAsync(cmd: string, cwd?: string): Promise<CmdResult> {
   return new Promise((resolve) => {
     const child = spawn(cmd, {
       cwd: cwd || baseDir(),
-      shell: '/bin/bash',
+      shell: platform() === 'win32' ? 'cmd.exe' : '/bin/bash',
       stdio: ['pipe', 'pipe', 'pipe'],
+      env: env ? { ...process.env, ...env } : undefined,
     })
 
     // 超时保护（120s）
@@ -252,8 +260,10 @@ async function runWorma(specFile: string, outputDir: string): Promise<void> {
   const configDir = baseDir()
 
   // 通过环境变量注入动态 input/output，统一使用根目录的 worma.config.ts
-  const envPrefix = `BENCHMARK_SPEC='${specFile}' BENCHMARK_OUTPUT='${outputDir}'`
-  const result = await runCmdAsync(`${envPrefix} pnpm exec worma gen`, configDir)
+  const result = await runCmdAsync('npx worma gen', configDir, {
+    BENCHMARK_SPEC: specFile,
+    BENCHMARK_OUTPUT: outputDir,
+  })
   if (!result.ok)
     throw new Error(result.stderr || 'worma generation failed')
 }
@@ -261,7 +271,7 @@ async function runWorma(specFile: string, outputDir: string): Promise<void> {
 async function runOpenapiTS(specFile: string, outputDir: string): Promise<void> {
   const outFile = join(outputDir, 'schema.d.ts')
   mkdirSync(outputDir, { recursive: true })
-  const result = await runCmdAsync(`npx openapi-typescript '${specFile}' -o '${outFile}'`)
+  const result = await runCmdAsync(`npx openapi-typescript "${specFile}" -o "${outFile}"`)
   if (!result.ok)
     throw new Error(result.stderr || 'openapi-typescript failed')
 }
@@ -270,8 +280,8 @@ async function runHeyApi(specFile: string, outputDir: string): Promise<void> {
   const configContent = `import { defineConfig } from '@hey-api/openapi-ts'
 
 export default defineConfig({
-  input: '${specFile}',
-  output: '${outputDir}',
+  input: '${specFile.replace(/\\/g, '/')}',
+  output: '${outputDir.replace(/\\/g, '/')}',
   plugins: ['@hey-api/typescript', '@hey-api/sdk', '@hey-api/client-fetch'],
 })
 `
@@ -279,7 +289,7 @@ export default defineConfig({
   writeFileSync(configPath, configContent)
   mkdirSync(outputDir, { recursive: true })
   try {
-    const result = await runCmdAsync(`pnpm exec openapi-ts -f ${configPath}`)
+    const result = await runCmdAsync(`npx openapi-ts -f ${configPath}`)
     if (!result.ok)
       throw new Error(result.stderr || '@hey-api/openapi-ts failed')
   }
@@ -379,8 +389,10 @@ export async function runSingleBenchmarkWithMem(scale: number, tool: string): Pr
         const configDir = baseDir()
 
         // 通过环境变量注入动态 input/output，统一使用根目录的 worma.config.ts
-        const envPrefix = `BENCHMARK_SPEC='${specFile}' BENCHMARK_OUTPUT='${outputDir}'`
-        cmdResult = await runCmdAsync(`${envPrefix} pnpm exec worma gen -f`, configDir)
+        cmdResult = await runCmdAsync('npx worma gen -f', configDir, {
+          BENCHMARK_SPEC: specFile,
+          BENCHMARK_OUTPUT: outputDir,
+        })
 
         if (!cmdResult.ok)
           throw new Error(cmdResult.stderr || 'worma generation failed')
@@ -389,7 +401,7 @@ export async function runSingleBenchmarkWithMem(scale: number, tool: string): Pr
       case 'openapi-typescript': {
         const outFile = join(outputDir, 'schema.d.ts')
         mkdirSync(outputDir, { recursive: true })
-        cmdResult = await runCmdAsync(`npx openapi-typescript '${specFile}' -o '${outFile}'`)
+        cmdResult = await runCmdAsync(`npx openapi-typescript "${specFile}" -o "${outFile}"`)
         if (!cmdResult.ok)
           throw new Error(cmdResult.stderr || 'openapi-typescript failed')
         break
@@ -398,8 +410,8 @@ export async function runSingleBenchmarkWithMem(scale: number, tool: string): Pr
         const configContent = `import { defineConfig } from '@hey-api/openapi-ts'
 
 export default defineConfig({
-  input: '${specFile}',
-  output: '${outputDir}',
+  input: '${specFile.replace(/\\/g, '/')}',
+  output: '${outputDir.replace(/\\/g, '/')}',
   plugins: ['@hey-api/typescript', '@hey-api/sdk', '@hey-api/client-fetch'],
 })
 `
@@ -407,7 +419,7 @@ export default defineConfig({
         writeFileSync(configPath, configContent)
         mkdirSync(outputDir, { recursive: true })
         try {
-          cmdResult = await runCmdAsync(`pnpm exec openapi-ts -f ${configPath}`)
+          cmdResult = await runCmdAsync(`npx openapi-ts -f ${configPath}`)
         }
         finally {
           rmSync(configPath, { force: true })

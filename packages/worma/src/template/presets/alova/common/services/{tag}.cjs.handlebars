@@ -1,13 +1,13 @@
 {{> comment}}
-const { alovaInstance } = require('../index');
-const { buildPayload } = require('../helper');
-const { {{currentTag.tagName}}DefaultConfig } = require('.');
+const { alovaInstance } = require('../index.cjs');
+const { buildPayload } = require('../helper.cjs');
+const _index = require('./index.cjs');
 
 {{#each tagedApis}}
 {{#each apis}}
 {{> api-jsdoc}}
 function {{{name}}}(config) {
-  const { url, data, mergedConfig } = buildPayload('{{{path}}}', {{{tag}}}DefaultConfig, {{{name}}}.name, config);
+  const { url, data, mergedConfig } = buildPayload('{{{path}}}', _index.{{{tag}}}DefaultConfig, {{{name}}}.name, config);
   return alovaInstance.Request({
     ...mergedConfig,
     url,

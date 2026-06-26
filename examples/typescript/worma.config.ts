@@ -1,8 +1,8 @@
 import { defineConfig } from 'worma'
 import { aiDoc, alova, alovaGlobals, axios, fetch, ky, platform } from 'worma/plugin'
 
-// ─── Worma TypeScript 旗舰示例 ──────────────────────────
-// 本文件展示了单项目中配置 6 个 generator 的方式，
+// ─── Worma TypeScript 示例 ──────────────────────────
+// 本文件展示了单项目中配置 5 个 generator 的方式，
 // 一次性生成多套模板代码，方便对比选择。
 //
 // 运行 `pnpm gen` 即可生成所有 API 客户端代码。
@@ -36,6 +36,7 @@ export default defineConfig({
       plugins: [
         platform('swagger'),
         alovaGlobals({ global: 'MyApis' }),
+        aiDoc(),
       ],
     },
 
@@ -79,20 +80,6 @@ export default defineConfig({
       plugins: [
         platform('swagger'),
         ky(),
-      ],
-    },
-
-    /* ───── ⑥ input 数组 fallback 演示 ─────
-     *   • input 可以是字符串数组，依次尝试直到成功
-     *   • 第一个 URL 故意写错，worma 会自动 fallback 到本地文件
-     */
-    {
-      input: ['https://invalid.example.com/openapi.json', 'petstore.json'],
-      output: 'src/api/fallback',
-      serverName: 'Fallback Demo',
-      plugins: [
-        platform('swagger'),
-        alova(),
       ],
     },
   ],

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { createStrReg } from './util'
 
 const pattern = `

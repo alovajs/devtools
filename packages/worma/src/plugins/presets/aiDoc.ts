@@ -41,19 +41,21 @@ export function aiDoc(config?: AiDocConfig): ApiPlugin {
       const serverName = capturedServerName || templateData.title || 'API'
 
       // Compute file location for each API (relative path from project root to generated file)
+      // Skip fileLocation for alova-globals since APIs are called globally, not from a specific file
+      const isGlobals = templateData.config?.templateName === 'alova-globals'
       const outputRel = path.relative(projectPath, outputBase)
       const enrichedData: TemplateData = {
         ...templateData,
         allApis: templateData.allApis.map(api => ({
           ...api,
           // Store the generated file location where this API's code lives
-          fileLocation: `./${outputRel}/${api.tag}`,
+          ...(isGlobals ? {} : { fileLocation: `${outputRel.replace(/\\/g, '/')}/${api.tag}` }),
         })),
         tagedApis: templateData.tagedApis.map(group => ({
           ...group,
           apis: group.apis.map(api => ({
             ...api,
-            fileLocation: `./${outputRel}/${group.tagName}`,
+            ...(isGlobals ? {} : { fileLocation: `${outputRel.replace(/\\/g, '/')}/${group.tagName}` }),
           })),
         })),
       }

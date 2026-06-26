@@ -50,7 +50,8 @@ export function normalizeCode(code: string, type: GeneratorResult['type']) {
   if (!type || !blockTypes.includes(type))
     return trimmed
 
-  const isBlock = trimmed.startsWith('{') || trimmed.startsWith('[')
+  // Match { ... } blocks (interface/enum) or Array<{ ... }> blocks
+  const isBlock = trimmed.startsWith('{') || trimmed.startsWith('[') || trimmed.startsWith('Array<{')
   if (!isBlock)
     return trimmed
 
@@ -61,7 +62,10 @@ export function normalizeCode(code: string, type: GeneratorResult['type']) {
   return lines.map((line, i) => {
     if (i === 0 || i === lines.length - 1)
       return line.trim()
-    return `  ${line.trimStart()}`
+    // Preserve nested indentation: lines already indented >= 2 spaces keep their depth
+    const trimmed = line.trimStart()
+    const leadingSpaces = line.length - trimmed.length
+    return leadingSpaces >= 2 ? line : `  ${trimmed}`
   }).join('\n')
 }
 

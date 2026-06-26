@@ -31,17 +31,17 @@ export type GeneratorProgressEvent = {
 } & (
   | { phase: 'active' }
   | {
-      phase: 'progress'
-      /** 0–100 percentage */
-      progress: number
-      /** Human-readable stage (e.g. 'parsing openapi document') */
-      message: string
-      /** Source of the progress event. `'core'` for the framework lifecycle, otherwise the plugin name. */
-      source?: string
-    }
-  | { phase: 'done'; /** The actual URL that was successfully parsed (may differ from config.input) */ resolvedInput?: string }
-  | { phase: 'skipped'; /** The actual URL that was successfully parsed (may differ from config.input) */ resolvedInput?: string }
-  | { phase: 'failed'; error: string }
+    phase: 'progress'
+    /** 0–100 percentage */
+    progress: number
+    /** Human-readable stage (e.g. 'parsing openapi document') */
+    message: string
+    /** Source of the progress event. `'core'` for the framework lifecycle, otherwise the plugin name. */
+    source?: string
+  }
+  | { phase: 'done', /** The actual URL that was successfully parsed (may differ from config.input) */ resolvedInput?: string }
+  | { phase: 'skipped', /** The actual URL that was successfully parsed (may differ from config.input) */ resolvedInput?: string }
+  | { phase: 'failed', error: string }
 )
 
 export interface GenerateApiOptions {

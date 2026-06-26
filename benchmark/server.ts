@@ -9,14 +9,14 @@
  * Runner 使用 spawn 异步执行，事件循环不被阻塞。
  */
 
-import { Hono } from 'hono'
-import { cors } from 'hono/cors'
-import { streamSSE } from 'hono/streaming'
-import { serveStatic } from 'hono/serve-static'
-import { serve } from '@hono/node-server'
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { serve } from '@hono/node-server'
+import { Hono } from 'hono'
+import { cors } from 'hono/cors'
+import { serveStatic } from 'hono/serve-static'
+import { streamSSE } from 'hono/streaming'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = resolve(__filename, '..')
@@ -39,6 +39,7 @@ if (isProd) {
 // ─── API 路由 ─────────────────────────────────────────
 
 // 设置 runner 的 baseDir
+// eslint-disable-next-line antfu/no-top-level-await
 const { setBaseDir, runSingleBenchmarkWithMem, aggregateResults, warmupVersionCache } = await import('./src/server/runner.js')
 setBaseDir(__dirname)
 
@@ -50,7 +51,9 @@ app.post('/api/benchmark/run', async (c) => {
 
   return streamSSE(c, async (stream) => {
     let aborted = false
-    stream.onAbort(() => { aborted = true })
+    stream.onAbort(() => {
+      aborted = true
+    })
 
     const rawResults: any[] = []
     const totalSteps = scales.length * 3 * iterations // 3 tools
@@ -61,10 +64,12 @@ app.post('/api/benchmark/run', async (c) => {
     warmupVersionCache()
 
     const writeEvent = async (event: string, data: any) => {
-      if (aborted) return
+      if (aborted)
+        return
       try {
         await stream.writeSSE({ event, data: JSON.stringify(data) })
-      } catch {
+      }
+      catch {
         aborted = true
       }
     }
@@ -73,7 +78,8 @@ app.post('/api/benchmark/run', async (c) => {
       for (const scale of scales) {
         for (const tool of ['worma', 'openapi-typescript', '@hey-api/openapi-ts']) {
           for (let i = 0; i < iterations; i++) {
-            if (aborted) return
+            if (aborted)
+              return
 
             await writeEvent('progress', {
               tool,
@@ -101,7 +107,8 @@ app.post('/api/benchmark/run', async (c) => {
         }
       }
 
-      if (aborted) return
+      if (aborted)
+        return
 
       // 聚合结果
       const aggregated = aggregateResults(rawResults)
@@ -125,7 +132,8 @@ app.post('/api/benchmark/run', async (c) => {
       )
 
       await writeEvent('complete', reportData)
-    } catch (e: any) {
+    }
+    catch (e: any) {
       if (!aborted) {
         await writeEvent('error', { message: e.message || String(e) })
       }
@@ -142,7 +150,8 @@ app.get('/api/benchmark/pre-generated', (c) => {
       return c.json(data)
     }
     return c.json({ error: 'No pre-generated results found. Click "Run Benchmark" to generate.' }, 404)
-  } catch (e: any) {
+  }
+  catch (e: any) {
     return c.json({ error: e.message || 'Internal error' }, 500)
   }
 })
@@ -164,7 +173,8 @@ app.get('/api/benchmark/history', (c) => {
     }
 
     return c.json(files)
-  } catch (e: any) {
+  }
+  catch (e: any) {
     return c.json({ error: e.message }, 500)
   }
 })
@@ -183,7 +193,8 @@ app.get('/api/benchmark/history-detail', (c) => {
       return c.json(data)
     }
     return c.json({ error: 'History not found' }, 404)
-  } catch (e: any) {
+  }
+  catch (e: any) {
     return c.json({ error: e.message }, 500)
   }
 })
@@ -191,10 +202,14 @@ app.get('/api/benchmark/history-detail', (c) => {
 // ─── 启动 ─────────────────────────────────────────────
 
 serve({ fetch: app.fetch, port: PORT }, (info) => {
+  // eslint-disable-next-line no-console
   console.log(`[benchmark-api] Hono server running → http://localhost:${info.port}`)
   if (isProd) {
+    // eslint-disable-next-line no-console
     console.log(`[benchmark-api] Serving static files from dist/`)
-  } else {
+  }
+  else {
+    // eslint-disable-next-line no-console
     console.log(`[benchmark-api] Dev mode — API only (Vite proxies /api here)`)
   }
 })

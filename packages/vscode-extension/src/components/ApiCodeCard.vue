@@ -21,20 +21,21 @@ function ShowCode({ code, empty }: {
     return <n-empty description={empty || t('api-info.no-data')} />
   }
   return (
-    <div class="pos-relative">
-      <n-float-button
-        shape="square"
-        right={6}
-        top={6}
-        position="absolute"
-        width="2rem"
-        height="2rem"
-        onClick={() => handleCopy(code)}
-      >
-        <i class="i-carbon-copy text-sm" />
-      </n-float-button>
+    <div class="api-code-wrapper">
+      <div class="api-code-toolbar">
+        <span class="api-code-lang-label">TypeScript</span>
+        <n-button
+          text
+          size="tiny"
+          onClick={() => handleCopy(code)}
+        >
+          {{
+            icon: () => <i class="i-carbon-copy text-xs" />,
+          }}
+        </n-button>
+      </div>
       <n-code
-        class="min-h-8 p-4"
+        class="api-code-block"
         word-wrap={true}
         code={code}
         language="typescript"

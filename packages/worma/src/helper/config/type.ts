@@ -124,21 +124,21 @@ export interface ApiPlugin {
    * Returning null does NOT replacing anything.
    */
   openapiParsed?: (
-    params: OpenapiParsedHookParams
+    params: OpenapiParsedHookParams,
   ) => MaybePromise<OpenAPIDocument | undefined | null | void>
   /**
    * Called before code generation. Mutate `params.data` directly to inject
    * configuration data (no longer returns a value).
    */
   beforeCodeGenerate?: (
-    params: BeforeCodeGenerateHookParams
+    params: BeforeCodeGenerateHookParams,
   ) => MaybePromise<void>
   /**
    * Called right before each file is written to disk.
    * Can modify the file content by returning the new content.
    */
   beforeFileWrite?: (
-    params: BeforeFileWriteHookParams
+    params: BeforeFileWriteHookParams,
   ) => MaybePromise<string>
   /**
    * Called after ALL files have been written to disk.
@@ -151,14 +151,14 @@ export interface ApiPlugin {
    * Multiple plugins can implement this; the last non-nil return value wins.
    */
   getTemplate?: (
-    params: GetTemplateHookParams
+    params: GetTemplateHookParams,
   ) => MaybePromise<TemplateConfigResult | undefined | null | void>
   /**
    * Called when a new Handlebars instance is created for template rendering.
    * Use this to register custom helpers or partials on the hbs instance.
    */
   onHandlebarsCreated?: (
-    params: OnHandlebarsCreatedHookParams
+    params: OnHandlebarsCreatedHookParams,
   ) => MaybePromise<void>
 }
 export type ApiPluginHooks = keyof Omit<ApiPlugin, 'name' | 'extends'>

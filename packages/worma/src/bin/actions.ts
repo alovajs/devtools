@@ -1,18 +1,20 @@
+/* eslint-disable no-console */
+import type { ProjectInfo } from './renderer'
+import type { TemplatePreset } from '@/createConfig'
+import type { Config, GeneratorConfig, TemplateType } from '@/type/lib'
 import path from 'node:path'
 import * as readline from 'node:readline/promises'
-import type { Config, GeneratorConfig } from '@/type/lib'
-import type { TemplatePreset } from '@/createConfig'
-import type { TemplateType } from '@/type/lib'
-import { createConfig, readConfig, resolveWorkspaces } from '@/index'
-import generate from '@/generate'
-import { resolveConfigFile, existsPromise } from '@/utils'
-import getAutoTemplateType from '@/functions/getAutoTemplateType'
+import { setGlobalConfig } from '@/config'
 import { PresetTemplateName, TemplateTypeEnum } from '@/constant'
-import { InitRenderer, INIT_TEMPLATE_CHOICES, MultiGeneratorRenderer, MultiProjectRenderer } from './renderer'
-import { theme } from './theme'
-import type { ProjectInfo } from './renderer'
+import getAutoTemplateType from '@/functions/getAutoTemplateType'
+import generate from '@/generate'
+import { logger } from '@/helper'
+import { createConfig, readConfig, resolveWorkspaces } from '@/index'
+import { existsPromise, resolveConfigFile } from '@/utils'
 
-// eslint-disable-next-line ts/no-require-imports
+import { INIT_TEMPLATE_CHOICES, InitRenderer, MultiGeneratorRenderer, MultiProjectRenderer } from './renderer'
+import { theme } from './theme'
+// eslint-disable-next-line ts/no-require-imports, perfectionist/sort-imports
 const pkg = require('../../package.json')
 
 export async function actionInit({ type, template, project }: { type?: TemplateType, template?: TemplatePreset, project?: string }) {
@@ -119,11 +121,22 @@ interface ProjectEntry {
 export async function actionGen({
   project,
   force,
+  debug,
 }: {
   project?: string
   force?: boolean
+  debug?: boolean
 }) {
-  // 1. Resolve project directories
+  if (debug) {
+    logger.configure({ level: 'debug' })
+  }
+
+  // 1. Always use CWD as cache root — in monorepo this naturally unifies all sub-package caches;
+  //    in single-package this is a no-op since cacheRoot === projectPath.
+  setGlobalConfig({ cacheRoot: process.cwd() })
+  logger.debug('Cache root:', process.cwd())
+
+  // 2. Resolve project directories
   const projectDirs = project ? [project] : await resolveWorkspaces()
   if (projectDirs.length === 0) {
     console.error('No workspaces found.')
@@ -152,7 +165,8 @@ export async function actionGen({
     projects.push({ dir, configPath: configPath ?? dir, config, generators })
   }
 
-  if (projects.length === 0) return
+  if (projects.length === 0)
+    return
 
   // 3. Branch routing
   if (projects.length === 1) {
@@ -161,7 +175,9 @@ export async function actionGen({
     await generateForProject(proj, force)
   }
   else {
-    // Multi-project: new MultiProjectRenderer + Promise.all for parallel execution
+    // Multi-project: new MultiProjectRenderer + sequential execution
+    // Sequential execution avoids singleton config state clashes and ensures
+    // one project's failure doesn't affect others.
     const projectInfos: ProjectInfo[] = projects.map(p => ({
       dir: p.dir,
       configPath: p.configPath,
@@ -169,17 +185,29 @@ export async function actionGen({
     }))
     const renderer = new MultiProjectRenderer(projectInfos, pkg.version)
 
-    const allResults = await Promise.all(
-      projects.map((proj, pi) =>
-        generate(proj.config, {
+    const allResults: boolean[][] = []
+    for (let pi = 0; pi < projects.length; pi++) {
+      const proj = projects[pi]
+      try {
+        const results = await generate(proj.config, {
           force,
           projectPath: proj.dir,
           onProgress(event) {
             renderer.onProjectEvent(pi, event)
           },
-        }),
-      ),
-    )
+        })
+        allResults.push(results)
+      }
+      catch (error: any) {
+        // Mark all generators as failed for this project so the renderer
+        // can display the error properly.
+        const failResults = proj.generators.map((_, gi) => {
+          renderer.onProjectEvent(pi, { index: gi, phase: 'failed', error: error.message || 'Unknown error' })
+          return false
+        })
+        allResults.push(failResults)
+      }
+    }
 
     renderer.finalize(allResults)
   }

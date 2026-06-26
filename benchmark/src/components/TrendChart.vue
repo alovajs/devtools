@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
-import * as echarts from 'echarts/core'
-import { LineChart as ELineChart } from 'echarts/charts'
-import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components'
-import { CanvasRenderer } from 'echarts/renderers'
 import type { AggregatedResult } from '../types'
-import { toolShortName, TOOL_CONFIGS, formatTime } from '../types'
-
-echarts.use([ELineChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer])
+import { LineChart as ELineChart } from 'echarts/charts'
+import { GridComponent, LegendComponent, TooltipComponent } from 'echarts/components'
+import * as echarts from 'echarts/core'
+import { CanvasRenderer } from 'echarts/renderers'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { formatTime, TOOL_CONFIGS, toolShortName } from '../types'
 
 const props = defineProps<{
   results: AggregatedResult[]
@@ -15,16 +13,18 @@ const props = defineProps<{
   scales: number[]
 }>()
 
+echarts.use([ELineChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer])
+
 const chartRef = ref<HTMLDivElement>()
 let chartInstance: echarts.ECharts | null = null
 
 function buildOption() {
-  const series = props.tools.map(tool => {
+  const series = props.tools.map((tool) => {
     const config = TOOL_CONFIGS.find(t => t.key === tool)
     return {
       name: toolShortName(tool),
       type: 'line' as const,
-      data: props.scales.map(scale => {
+      data: props.scales.map((scale) => {
         const r = props.results.find(_r => _r.tool === tool && _r.scale === scale)
         return r && !r.error ? (r.avgTimeMs || r.timeMs) : null
       }),
@@ -77,14 +77,16 @@ function buildOption() {
 }
 
 function renderChart(retries = 0) {
-  if (!chartRef.value) return
+  if (!chartRef.value)
+    return
   // tab 切换后容器可能尚未完成布局（display:none 时尺寸为 0），
   // 用 rAF 有限重试，避免死循环
   if ((chartRef.value.clientWidth === 0 || chartRef.value.clientHeight === 0) && retries < 10) {
     requestAnimationFrame(() => renderChart(retries + 1))
     return
   }
-  if (chartInstance) chartInstance.dispose()
+  if (chartInstance)
+    chartInstance.dispose()
   chartInstance = echarts.init(chartRef.value)
   chartInstance.setOption(buildOption())
 }

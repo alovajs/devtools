@@ -10,7 +10,7 @@ const svelteHook = require('alova/svelte');
 {{else if (eq framework "solid")}}
 const solidHook = require('alova/solid');
 {{/if}}
-const { createApis, mountApis, withConfigType } = require('./createApis');
+const { createApis, mountApis, withConfigType } = require('./createApis.cjs');
 
 const alovaInstance = createAlova({
   baseURL: "{{{baseUrl}}}",

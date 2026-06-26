@@ -3,7 +3,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { PresetTemplateName } from '@/constant'
 import { logger } from '@/helper/logger'
-import { alova as templateAlova, alovaGlobals, axios, fetch, ky } from '@/template'
+import { alovaGlobals, axios, fetch, ky, alova as templateAlova } from '@/template'
 
 /**
  * .wormarc configuration line parsed result

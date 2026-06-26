@@ -1,5 +1,6 @@
-import { ref, type Ref } from 'vue'
+import type { Ref } from 'vue'
 import type { AggregatedResult, BenchmarkReport, ProgressEvent } from '../types'
+import { ref } from 'vue'
 import { TOOL_CONFIGS } from '../types'
 
 export function useBenchmark() {
@@ -24,7 +25,8 @@ export function useBenchmark() {
       results.value = data.results
       reportTimestamp.value = data.timestamp
       hasPreGenerated.value = true
-    } catch {
+    }
+    catch {
       hasPreGenerated.value = false
     }
   }
@@ -34,7 +36,8 @@ export function useBenchmark() {
     try {
       const res = await fetch('/api/benchmark/history')
       return await res.json()
-    } catch {
+    }
+    catch {
       return []
     }
   }
@@ -43,9 +46,11 @@ export function useBenchmark() {
   async function loadHistoryDetail(id: string): Promise<BenchmarkReport | null> {
     try {
       const res = await fetch(`/api/benchmark/history-detail?id=${encodeURIComponent(id)}`)
-      if (!res.ok) return null
+      if (!res.ok)
+        return null
       return await res.json()
-    } catch {
+    }
+    catch {
       return null
     }
   }
@@ -69,7 +74,8 @@ export function useBenchmark() {
       }
 
       const reader = res.body?.getReader()
-      if (!reader) throw new Error('No response body')
+      if (!reader)
+        throw new Error('No response body')
 
       const decoder = new TextDecoder()
       let buffer = ''
@@ -79,7 +85,8 @@ export function useBenchmark() {
 
       while (true) {
         const { done, value } = await reader.read()
-        if (done) break
+        if (done)
+          break
 
         buffer += decoder.decode(value, { stream: true })
         const lines = buffer.split('\n')
@@ -88,7 +95,8 @@ export function useBenchmark() {
         for (const line of lines) {
           if (line.startsWith('event: ')) {
             currentEventType = line.slice(7).trim()
-          } else if (line.startsWith('data: ')) {
+          }
+          else if (line.startsWith('data: ')) {
             const data = JSON.parse(line.slice(6))
 
             if (currentEventType === 'progress') {
@@ -108,23 +116,28 @@ export function useBenchmark() {
                   evt,
                   ...currentEvents.value.slice(idx + 1),
                 ]
-              } else {
+              }
+              else {
                 // 新任务，添加到头部
                 currentEvents.value = [evt, ...currentEvents.value].slice(0, 10)
               }
-            } else if (currentEventType === 'complete') {
+            }
+            else if (currentEventType === 'complete') {
               results.value = data.results
               reportTimestamp.value = data.timestamp
               progress.value = 100
-            } else if (currentEventType === 'error') {
+            }
+            else if (currentEventType === 'error') {
               throw new Error(data.message)
             }
           }
         }
       }
-    } catch (e: any) {
+    }
+    catch (e: any) {
       error.value = e.message || String(e)
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -162,7 +175,7 @@ export function useBenchmark() {
       scales,
       series: tools.map(tool => ({
         name: tool,
-        data: scales.map(scale => {
+        data: scales.map((scale) => {
           const r = getToolScaleResult(tool, scale)
           return r && !r.error ? r.avgTimeMs || r.timeMs : 0
         }),
@@ -179,7 +192,7 @@ export function useBenchmark() {
       scales,
       series: tools.map(tool => ({
         name: tool,
-        data: scales.map(scale => {
+        data: scales.map((scale) => {
           const r = getToolScaleResult(tool, scale)
           return r && !r.error ? r.avgTimeMs || r.timeMs : null
         }),

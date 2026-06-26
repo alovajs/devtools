@@ -21,9 +21,10 @@ export const refresh: CommandType = {
         },
         async (progress) => {
           await ApiGenerate.generate({
-            force: true,
+            force: false,
             onProgress(event: GeneratorProgressEvent) {
-              if (event.phase !== 'progress') return
+              if (event.phase !== 'progress')
+                return
               progress.report({
                 message: `[${event.source ?? 'core'}] ${event.progress}%${event.message ? ` ${event.message}` : ''}`,
               })

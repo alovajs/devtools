@@ -24,6 +24,7 @@ export const GeneratorStage = {
   SKIPPED: 'skipped',
 } as const
 
+// eslint-disable-next-line ts/no-redeclare
 export type GeneratorStage = (typeof GeneratorStage)[keyof typeof GeneratorStage]
 
 export class ProgressTracker {

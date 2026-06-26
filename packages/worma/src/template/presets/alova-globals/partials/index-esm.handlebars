@@ -9,7 +9,7 @@ import svelteHook from 'alova/svelte';
 {{else if (eq framework "solid")}}
 import solidHook from 'alova/solid';
 {{/if}}
-import { createApis, mountApis, withConfigType } from './createApis';
+import { createApis, mountApis, withConfigType } from './createApis.js';
 
 export const alovaInstance = createAlova({
   baseURL: "{{{baseUrl}}}",

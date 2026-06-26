@@ -60,17 +60,15 @@ describe('generate() progress reporting', () => {
             input: resolve(__dirname, './openapis/openapi_300.yaml'),
             output: outputDir,
             type: 'ts',
-            plugins: [(await import('@/plugins')).alova(),
-              {
-                name: 'my-plugin',
-                openapiParsed({ reportProgress }) {
-                  reportProgress(50, 'merging schemas')
-                },
-                codeGenerated({ reportProgress }) {
-                  reportProgress(100, 'finalised')
-                },
+            plugins: [(await import('@/plugins')).alova(), {
+              name: 'my-plugin',
+              openapiParsed({ reportProgress }) {
+                reportProgress(50, 'merging schemas')
               },
-            ],
+              codeGenerated({ reportProgress }) {
+                reportProgress(100, 'finalised')
+              },
+            }],
           },
         ],
       },
@@ -85,7 +83,7 @@ describe('generate() progress reporting', () => {
     // Find plugin progress events
     const pluginEvents = events.filter(
       e => e.phase === 'progress' && e.source === 'my-plugin',
-    ) as Array<{ progress: number; message: string }>
+    ) as Array<{ progress: number, message: string }>
     expect(pluginEvents.length).toBeGreaterThan(0)
 
     // Verify plugin reported progress=100 with message 'finalised'

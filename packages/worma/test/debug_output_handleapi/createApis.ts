@@ -1,5 +1,5 @@
 /* tslint:disable */
-/* eslint-disable */
+
 /**
  * Swagger Generator - version 3.0.57
  *
@@ -14,93 +14,94 @@
  *
  * **Do not edit the file manually.**
  */
-import type { Alova, MethodType, AlovaGenerics, AlovaMethodCreateConfig } from 'alova';
-import { Method } from 'alova';
-import apiDefinitions from './apiDefinitions';
+import type { Alova, AlovaGenerics, AlovaMethodCreateConfig, MethodType } from 'alova'
+import { Method } from 'alova'
+import apiDefinitions from './apiDefinitions'
 
-const cache = Object.create(null);
-const createFunctionalProxy = (array: (string | symbol)[], alovaInstance: Alova<AlovaGenerics>, configMap: any) => {
-  const apiPathKey = array.join('.') as keyof typeof apiDefinitions;
+const cache = Object.create(null)
+function createFunctionalProxy(array: (string | symbol)[], alovaInstance: Alova<AlovaGenerics>, configMap: any) {
+  const apiPathKey = array.join('.') as keyof typeof apiDefinitions
   if (cache[apiPathKey]) {
-    return cache[apiPathKey];
+    return cache[apiPathKey]
   }
-  const proxy = new Proxy(function () {}, {
+  const proxy = new Proxy(() => {}, {
     get(_, property) {
-      const newArray = [...array, property];
-      return createFunctionalProxy(newArray, alovaInstance, configMap);
+      const newArray = [...array, property]
+      return createFunctionalProxy(newArray, alovaInstance, configMap)
     },
     apply(_, __, [config]) {
-      const apiItem = apiDefinitions[apiPathKey];
+      const apiItem = apiDefinitions[apiPathKey]
       if (!apiItem) {
-        throw new Error(`the api path of \`${apiPathKey}\` is not found`);
+        throw new Error(`the api path of \`${apiPathKey}\` is not found`)
       }
       const mergedConfig = {
         ...configMap[apiPathKey],
-        ...config
-      };
-      const [method, url] = apiItem;
-      const pathParams = mergedConfig.pathParams;
+        ...config,
+      }
+      const [method, url] = apiItem
+      const pathParams = mergedConfig.pathParams
       const urlReplaced = url!.replace(/\{([^}]+)\}/g, (_, key) => {
-        const pathParam = pathParams[key];
-        return pathParam;
-      });
-      delete mergedConfig.pathParams;
-      let data = mergedConfig.data;
+        const pathParam = pathParams[key]
+        return pathParam
+      })
+      delete mergedConfig.pathParams
+      let data = mergedConfig.data
       if (Object.prototype.toString.call(data) === '[object Object]' && typeof FormData !== 'undefined') {
-        let hasBlobData = false;
-        const formData = new FormData();
+        let hasBlobData = false
+        const formData = new FormData()
         for (const key in data) {
           if (Array.isArray(data[key])) {
             for (const ele of data[key]) {
-              formData.append(key, ele);
+              formData.append(key, ele)
               if (ele instanceof Blob) {
-                hasBlobData = true;
+                hasBlobData = true
               }
             }
-          } else {
-            formData.append(key, data[key]);
+          }
+          else {
+            formData.append(key, data[key])
             if (data[key] instanceof Blob) {
-              hasBlobData = true;
+              hasBlobData = true
             }
           }
         }
-        data = hasBlobData ? formData : data;
+        data = hasBlobData ? formData : data
       }
-      return new Method(method!.toUpperCase() as MethodType, alovaInstance, urlReplaced, mergedConfig, data);
-    }
-  });
-  cache[apiPathKey] = proxy;
-  return proxy;
-};
+      return new Method(method!.toUpperCase() as MethodType, alovaInstance, urlReplaced, mergedConfig, data)
+    },
+  })
+  cache[apiPathKey] = proxy
+  return proxy
+}
 
-export const createApis = (alovaInstance: Alova<AlovaGenerics>, configMap: any) => {
+export function createApis(alovaInstance: Alova<AlovaGenerics>, configMap: any) {
   const Apis = new Proxy({} as Apis, {
     get(_, property) {
-      return createFunctionalProxy([property], alovaInstance, configMap);
-    }
-  });
-  return Apis;
-};
+      return createFunctionalProxy([property], alovaInstance, configMap)
+    },
+  })
+  return Apis
+}
 
-export const mountApis = (Apis: Apis) => {
-  (globalThis as any).Apis = Apis;
-};
+export function mountApis(Apis: Apis) {
+  (globalThis as any).Apis = Apis
+}
 
 type MethodConfig<T> = AlovaMethodCreateConfig<
   (typeof import('./index'))['alovaInstance'] extends Alova<infer AG> ? AG : any,
   any,
   T
->;
+>
 type APISofParameters<Tag extends string, Url extends string> = Tag extends keyof Apis
   ? Url extends keyof Apis[Tag]
     ? Apis[Tag][Url] extends (...args: any) => any
       ? Parameters<Apis[Tag][Url]>
       : any
     : any
-  : any;
+  : any
 type MethodsConfigMap = {
   [P in keyof typeof import('./apiDefinitions').default]?: MethodConfig<
     P extends `${infer Tag}.${infer Url}` ? Parameters<NonNullable<APISofParameters<Tag, Url>[0]>['transform']>[0] : any
   >;
-};
-export const withConfigType = <Config extends MethodsConfigMap>(config: Config) => config;
+}
+export const withConfigType = <Config extends MethodsConfigMap>(config: Config) => config

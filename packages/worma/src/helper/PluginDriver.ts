@@ -1,4 +1,5 @@
 import type { ApiPlugin, ReportProgress } from '@/type'
+import { logger } from '@/helper/logger'
 import { noopReportProgress } from '@/helper/progress'
 
 /** A shared frozen empty context — avoids repeated allocations. */
@@ -24,8 +25,14 @@ export class PluginDriver {
   /** Run a single hook on one plugin. Returns the handler's result or null. */
   private async _call(plugin: ApiPlugin, name: string, params: Record<string, any>): Promise<any> {
     const handler = (plugin as any)[name]
-    if (typeof handler !== 'function') return null
+    if (typeof handler !== 'function')
+      return null
     return handler.call(plugin, params)
+  }
+
+  /** Resolve a human-readable name for a plugin (constructor name fallback). */
+  private _pluginName(plugin: ApiPlugin): string {
+    return plugin.name || plugin.constructor?.name || 'anonymous'
   }
 
   /** Build full params by auto-injecting reportProgress into the partial object. */
@@ -43,8 +50,17 @@ export class PluginDriver {
     name: string,
     makeArgs: (plugin: ApiPlugin, ctx: PluginDriverContext) => Record<string, any>,
   ): Promise<void> {
+    const pluginsWithHook = this.plugins.filter(p => typeof (p as any)[name] === 'function')
+    if (!pluginsWithHook.length) {
+      logger.debug(`hookParallelEach [${name}] — no plugins registered`, { totalPlugins: this.plugins.length })
+      return
+    }
+    logger.debug(`hookParallelEach [${name}]`, {
+      plugins: pluginsWithHook.map(p => this._pluginName(p)),
+      totalPlugins: this.plugins.length,
+    })
     await Promise.all(
-      this.plugins.map(p => this._call(p, name, this._params(p, makeArgs(p, CTX))))
+      pluginsWithHook.map(p => this._call(p, name, this._params(p, makeArgs(p, CTX)))),
     )
   }
 
@@ -56,11 +72,21 @@ export class PluginDriver {
     name: string,
     makeArgs: (plugin: ApiPlugin, prevResult: any, ctx: PluginDriverContext) => Record<string, any>,
   ): Promise<any> {
+    const pluginsWithHook = this.plugins.filter(p => typeof (p as any)[name] === 'function')
+    if (!pluginsWithHook.length) {
+      logger.debug(`hookSeqEach [${name}] — no plugins registered`, { totalPlugins: this.plugins.length })
+      return undefined
+    }
+    logger.debug(`hookSeqEach [${name}]`, {
+      plugins: pluginsWithHook.map(p => this._pluginName(p)),
+    })
     let prev: any
-    for (const plugin of this.plugins) {
+    for (const plugin of pluginsWithHook) {
       const result = await this._call(plugin, name, this._params(plugin, makeArgs(plugin, prev, CTX)))
-      if (result != null)
+      if (result != null) {
+        logger.debug(`hookSeqEach [${name}] — ${this._pluginName(plugin)} returned a result, chaining forward`)
         prev = result
+      }
     }
     return prev
   }
@@ -76,12 +102,18 @@ export class PluginDriver {
     makeArgs: (plugin: ApiPlugin, currentValue: string, ctx: PluginDriverContext) => Record<string, any>,
   ): Promise<string> {
     let current = initialValue
+    let modifiedCount = 0
     for (const plugin of this.plugins) {
       const handler = (plugin as any)[name]
-      if (typeof handler !== 'function') continue
+      if (typeof handler !== 'function')
+        continue
       const result = await handler.call(plugin, this._params(plugin, makeArgs(plugin, current, CTX)))
-      if (typeof result === 'string') current = result
+      if (typeof result === 'string') {
+        modifiedCount++
+        current = result
+      }
     }
+    logger.debug(`hookPipe [${name}]`, { plugins: this.plugins.length, modifiedCount })
     return current
   }
 }

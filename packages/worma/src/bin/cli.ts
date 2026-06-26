@@ -3,10 +3,10 @@
 import { Command, Option } from 'commander'
 
 import { ConfigTypeEnum, PresetTemplateName, TemplateTypeEnum } from '@/constant'
-
-// eslint-disable-next-line ts/no-require-imports
-const pkg = require('../../package.json')
 import { actionGen, actionInit } from './actions'
+
+// eslint-disable-next-line ts/no-require-imports, perfectionist/sort-imports
+const pkg = require('../../package.json')
 
 const program = new Command()
 program.name('worma').description('CLI to generate API from OpenAPI specs').version(pkg.version)
@@ -22,6 +22,7 @@ program
   .command('gen')
   .description('generate API from OpenAPI specs')
   .option('-f, --force', 'force generate api')
+  .option('-d, --debug', 'enable debug logging')
   .option('-p, --project <path>', 'project directory (single project mode)')
   .action(actionGen)
 

@@ -13,7 +13,9 @@ async function send(mod: GeneratedModule, fnName: string, config: Record<string,
 
 describe('alova template — API call execution', () => {
   let mod: GeneratedModule
-  afterEach(async () => { await mod?.cleanup() })
+  afterEach(async () => {
+    await mod?.cleanup()
+  })
 
   describe('typescript', () => {
     it('gET with query params: passes params and returns response', async () => {

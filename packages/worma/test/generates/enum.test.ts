@@ -50,15 +50,15 @@ describe('enum Type Generator', () => {
       `,
       type: 'enum',
       code: `{
-        /**
-         * Active status
-         */
-        ACTIVE = "active",
-        /**
-         * Inactive status
-         */
-        INACTIVE = "inactive"
-      }`,
+  /**
+  * Active status
+  */
+  ACTIVE = "active",
+  /**
+  * Inactive status
+  */
+  INACTIVE = "inactive"
+}`,
     })
     expect(result).toEqual(expectResult)
   })
@@ -94,9 +94,9 @@ describe('enum Type Generator', () => {
        */`,
       type: 'enum',
       code: `{
-        LOW = 0,
-        HIGH = 1
-      }`,
+  LOW = 0,
+  HIGH = 1
+}`,
     })
     expect(result).toEqual(expectResult)
   })
@@ -154,8 +154,8 @@ describe('enum Type Generator', () => {
       comment: '',
       type: 'enum',
       code: `{
-        validName = "valid"
-      }`,
+  validName = "valid"
+}`,
     })
     expect(result).toEqual(expectResult)
   })
@@ -180,8 +180,8 @@ describe('enum Type Generator', () => {
       comment: '',
       type: 'enum',
       code: `{
-        "123-invalid" = "invalid"
-      }`,
+  "123-invalid" = "invalid"
+}`,
     })
     expect(result).toEqual(expectResult)
   })

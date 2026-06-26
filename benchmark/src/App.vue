@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import type { BenchmarkReport } from './types'
+import { HistoryOutlined, ReloadOutlined, ThunderboltOutlined } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
-import { ThunderboltOutlined, HistoryOutlined, ReloadOutlined } from '@ant-design/icons-vue'
-import { useBenchmark } from './composables/useBenchmark'
+import { onMounted, ref } from 'vue'
+import BarChart from './components/BarChart.vue'
 import ControlPanel from './components/ControlPanel.vue'
 import ResultTable from './components/ResultTable.vue'
-import BarChart from './components/BarChart.vue'
 import TrendChart from './components/TrendChart.vue'
-import type { BenchmarkReport } from './types'
-import { SCALE_OPTIONS } from './types'
+import { useBenchmark } from './composables/useBenchmark'
 
 const {
   loading,
@@ -43,7 +42,8 @@ async function handleRunBenchmark(selectedScales: number[], iterations: number) 
   await runBenchmark(selectedScales, iterations)
   if (!benchError.value) {
     message.success('Benchmark 完成！')
-  } else {
+  }
+  else {
     message.error(`Benchmark 失败: ${benchError.value}`)
   }
 }
@@ -60,7 +60,8 @@ async function handleSelectHistory(id: string) {
     results.value = data.results
     reportTimestamp.value = data.timestamp
     message.success(`已加载历史记录: ${id}`)
-  } else {
+  }
+  else {
     message.error('加载历史记录失败')
   }
 }
@@ -73,8 +74,12 @@ async function handleSelectHistory(id: string) {
       <div class="header-left">
         <ThunderboltOutlined class="logo-icon" />
         <div>
-          <h1 class="title">Worma Benchmark</h1>
-          <p class="subtitle">OpenAPI 代码生成工具性能对比</p>
+          <h1 class="title">
+            Worma Benchmark
+          </h1>
+          <p class="subtitle">
+            OpenAPI 代码生成工具性能对比
+          </p>
         </div>
       </div>
       <div class="header-right">
@@ -107,7 +112,7 @@ async function handleSelectHistory(id: string) {
 
     <!-- 主内容区 -->
     <div v-if="getScales().length > 0" class="content-area">
-      <a-tabs v-model:activeKey="currentTab" class="main-tabs">
+      <a-tabs v-model:active-key="currentTab" class="main-tabs">
         <a-tab-pane key="results" tab="对比表格">
           <ResultTable
             :results="results"
@@ -137,7 +142,9 @@ async function handleSelectHistory(id: string) {
               :loading="historyLoading"
               @click="handleLoadHistory"
             >
-              <template #icon><ReloadOutlined /></template>
+              <template #icon>
+                <ReloadOutlined />
+              </template>
               刷新历史记录
             </a-button>
             <a-divider />
@@ -175,7 +182,8 @@ async function handleSelectHistory(id: string) {
 
 <style>
 /* 全局样式 */
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   background: #f5f5f5;

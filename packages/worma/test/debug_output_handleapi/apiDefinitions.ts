@@ -1,5 +1,5 @@
 /* tslint:disable */
-/* eslint-disable */
+
 /**
  * Swagger Generator - version 3.0.57
  *
@@ -20,7 +20,7 @@ const apiDefinitions = {
   'clients.customClients': ['GET', '/clients/suffix'],
   'clients.generateBundle': ['POST', '/model'],
   'documentation.customClients': ['GET', '/clients/suffix'],
-  'documentation.documentationLanguages': ['GET', '/documentation']
-} as const;
+  'documentation.documentationLanguages': ['GET', '/documentation'],
+} as const
 
-export default apiDefinitions;
+export default apiDefinitions

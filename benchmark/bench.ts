@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Worma Benchmark — OpenAPI 代码生成工具性能对比
  *
@@ -8,7 +9,7 @@
  */
 
 import { execSync } from 'node:child_process'
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, rmSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { performance } from 'node:perf_hooks'
 
@@ -37,23 +38,26 @@ interface ToolResult {
 // ─── 工具函数 ────────────────────────────────────────
 
 /** 递归统计目录下所有文件的数量和大小 */
-function measureDir(dir: string): { fileCount: number; totalSize: number; files: string[] } {
+function measureDir(dir: string): { fileCount: number, totalSize: number, files: string[] } {
   const files: string[] = []
   let totalSize = 0
 
   function walk(d: string) {
-    if (!existsSync(d)) return
+    if (!existsSync(d))
+      return
     const entries = readdirSync(d, { withFileTypes: true })
     for (const entry of entries) {
       const fullPath = join(d, entry.name)
       if (entry.isDirectory()) {
         walk(fullPath)
-      } else if (entry.isFile()) {
+      }
+      else if (entry.isFile()) {
         const rel = fullPath.substring(dir.length + 1)
         files.push(rel)
         try {
           totalSize += statSync(fullPath).size
-        } catch {
+        }
+        catch {
           // ignore
         }
       }
@@ -64,7 +68,7 @@ function measureDir(dir: string): { fileCount: number; totalSize: number; files:
 }
 
 /** 安全执行命令，返回是否成功 */
-function runCmd(cmd: string, cwd?: string): { ok: boolean; stdout: string; stderr: string; timeMs: number } {
+function runCmd(cmd: string, cwd?: string): { ok: boolean, stdout: string, stderr: string, timeMs: number } {
   const start = performance.now()
   try {
     const stdout = execSync(cmd, {
@@ -75,7 +79,8 @@ function runCmd(cmd: string, cwd?: string): { ok: boolean; stdout: string; stder
     })
     const elapsed = performance.now() - start
     return { ok: true, stdout, stderr: '', timeMs: elapsed }
-  } catch (e: any) {
+  }
+  catch (e: any) {
     const elapsed = performance.now() - start
     return {
       ok: false,
@@ -92,7 +97,8 @@ function getPackageVersion(name: string): string {
     const pkgPath = resolve(process.cwd(), 'node_modules', name, 'package.json')
     const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'))
     return pkg.version || '?'
-  } catch {
+  }
+  catch {
     return '?'
   }
 }
@@ -108,7 +114,8 @@ const TOOLS: ToolConfig[] = [
       mkdirSync(outDir, { recursive: true })
       const outFile = join(outDir, 'schema.d.ts')
       const result = runCmd(`pnpm exec openapi-typescript petstore.json -o ${outFile}`)
-      if (!result.ok) throw new Error(result.stderr || 'openapi-typescript failed')
+      if (!result.ok)
+        throw new Error(result.stderr || 'openapi-typescript failed')
       return outDir
     },
   },
@@ -120,7 +127,8 @@ const TOOLS: ToolConfig[] = [
       // @hey-api/openapi-ts 会自动加载 cwd 下的 openapi-ts.config.ts
       // 注意：-c 是 client 参数而非配置文件参数，不能用于指定配置文件
       const result = runCmd('pnpm exec openapi-ts -f openapi-ts.config.ts')
-      if (!result.ok) throw new Error(result.stderr || '@hey-api/openapi-ts failed')
+      if (!result.ok)
+        throw new Error(result.stderr || '@hey-api/openapi-ts failed')
       return 'output/hey-api'
     },
   },
@@ -130,7 +138,8 @@ const TOOLS: ToolConfig[] = [
     run: () => {
       mkdirSync('output/worma', { recursive: true })
       const result = runCmd('pnpm exec worma gen -f')
-      if (!result.ok) throw new Error(result.stderr || 'worma generation failed')
+      if (!result.ok)
+        throw new Error(result.stderr || 'worma generation failed')
       return 'output/worma'
     },
   },
@@ -203,7 +212,8 @@ async function main() {
         totalSize,
         files,
       })
-    } catch (e: any) {
+    }
+    catch (e: any) {
       const after = performance.now()
       const timeMs = Math.round(after - before)
       process.stdout.write(`\r  ❌ 失败 (${timeMs}ms)\n`)
@@ -227,15 +237,20 @@ async function main() {
 }
 
 function formatBytes(bytes: number): string {
-  if (bytes < 0) return '-'
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  if (bytes < 0)
+    return '-'
+  if (bytes < 1024)
+    return `${bytes} B`
+  if (bytes < 1024 * 1024)
+    return `${(bytes / 1024).toFixed(1)} KB`
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
 }
 
 function formatTime(ms: number): string {
-  if (ms < 0) return '-'
-  if (ms < 1000) return `${ms}ms`
+  if (ms < 0)
+    return '-'
+  if (ms < 1000)
+    return `${ms}ms`
   return `${(ms / 1000).toFixed(2)}s`
 }
 
@@ -298,7 +313,7 @@ function printFeatureMatrix() {
   console.log()
 }
 
-main().catch(e => {
+main().catch((e) => {
   console.error('Benchmark failed:', e)
   process.exit(1)
 })

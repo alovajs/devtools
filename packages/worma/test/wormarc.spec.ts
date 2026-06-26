@@ -90,3 +90,55 @@ describe('readWormaRc', () => {
     expect(result).toBeNull()
   })
 })
+
+describe('resolveConfigFile with .wormarc', () => {
+  beforeEach(() => {
+    vol.reset()
+  })
+
+  it('should return .wormarc when it exists and no worma.config.* is present', async () => {
+    vol.fromJSON({ '/project/.wormarc': 'https://example.com/openapi.json\n' })
+    const { resolveConfigFile } = await import('@/utils')
+    const result = await resolveConfigFile('/project')
+    expect(result).toBe('/project/.wormarc')
+  })
+
+  it('should prioritize worma.config.ts over .wormarc', async () => {
+    vol.fromJSON({
+      '/project/worma.config.ts': '',
+      '/project/.wormarc': 'https://example.com/openapi.json\n',
+    })
+    const { resolveConfigFile } = await import('@/utils')
+    const result = await resolveConfigFile('/project')
+    expect(result).toBe('/project/worma.config.ts')
+  })
+
+  it('should prioritize worma.config.js over .wormarc', async () => {
+    vol.fromJSON({
+      '/project/worma.config.js': '',
+      '/project/.wormarc': 'https://example.com/openapi.json\n',
+    })
+    const { resolveConfigFile } = await import('@/utils')
+    const result = await resolveConfigFile('/project')
+    expect(result).toBe('/project/worma.config.js')
+  })
+
+  it('should return .wormarc when only .wormarc exists (no worma.config.*)', async () => {
+    vol.fromJSON({
+      '/project/package.json': '{}',
+      '/project/.wormarc': 'https://example.com/openapi.json\n',
+    })
+    const { resolveConfigFile } = await import('@/utils')
+    const result = await resolveConfigFile('/project')
+    expect(result).toBe('/project/.wormarc')
+  })
+
+  it('should return null when neither .wormarc nor worma.config.* exist', async () => {
+    vol.fromJSON({
+      '/project/package.json': '{}',
+    })
+    const { resolveConfigFile } = await import('@/utils')
+    const result = await resolveConfigFile('/project')
+    expect(result).toBeNull()
+  })
+})

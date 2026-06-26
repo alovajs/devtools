@@ -1,14 +1,14 @@
 {{> comment}}
-const { fetchClient } = require('../index');
-const { buildPayload } = require('../helper');
-const { {{currentTag.tagName}}DefaultConfig } = require('.');
+const { fetchClient } = require('../index.cjs');
+const { buildPayload } = require('../helper.cjs');
+const _index = require('./index.cjs');
 
 
 {{#each tagedApis}}
 {{#each apis}}
 {{> api-jsdoc}}
 async function {{{name}}}(config = {}) {
-  const { url, mergedConfig } = buildPayload('{{{path}}}', {{{tag}}}DefaultConfig, {{{name}}}.name, config);
+  const { url, mergedConfig } = buildPayload('{{{path}}}', _index.{{{tag}}}DefaultConfig, {{{name}}}.name, config);
   return fetchClient.request(url, { method: '{{method}}', ...mergedConfig{{#if (eq response "Blob")}}, blob: true{{/if}} });
 }
 

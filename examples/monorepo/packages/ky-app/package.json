@@ -1,0 +1,13 @@
+{
+  "name": "ky-app",
+  "type": "module",
+  "private": true,
+  "description": "Worma monorepo sub-package — ky template",
+  "scripts": {
+    "gen": "worma gen -f",
+    "start": "node src/main.js"
+  },
+  "dependencies": {
+    "ky": "catalog:default"
+  }
+}
