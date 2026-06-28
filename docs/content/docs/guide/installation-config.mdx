@@ -4,7 +4,6 @@ description: CLI 安装、init、worma.config.js 配置详解
 slug: guide/installation-config
 ---
 
-
 ## 安装
 
 <Tabs items={['npm', 'yarn', 'pnpm', 'bun']}>
@@ -47,15 +46,15 @@ npx worma init
 此命令在项目根目录创建 `worma.config.js`（也支持 `.cjs`、`.mjs` 或 `.ts` 扩展名），默认配置了 alova 模板和 `aiDoc` 插件：
 
 ```javascript
-import { defineConfig } from 'worma';
-import { alova } from 'worma/plugin';
-import { aiDoc } from 'worma/plugin';
+import { defineConfig } from "worma";
+import { alova } from "worma/plugin";
+import { aiDoc } from "worma/plugin";
 
 export default defineConfig({
   generator: [
     {
-      input: 'https://api.example.com/openapi.json',
-      output: 'src/api',
+      input: "https://api.example.com/openapi.json",
+      output: "src/api",
       plugins: [alova(), aiDoc()],
     },
   ],
@@ -73,24 +72,24 @@ npx worma init -T fetch -t typescript
 ## worma.config.js 完整配置
 
 ```javascript
-import { defineConfig } from 'worma';
-import { rename, aiDoc } from 'worma/plugin';
-import { alova, platform } from 'worma/plugin';
+import { defineConfig } from "worma";
+import { rename, aiDoc } from "worma/plugin";
+import { alova, platform } from "worma/plugin";
 
 export default defineConfig({
   generator: [
     {
-      input: 'https://api.example.com/openapi.json',
-      output: 'src/api',
+      input: "https://api.example.com/openapi.json",
+      output: "src/api",
       docComment: true,
-      responseMediaType: 'application/json',
-      bodyMediaType: 'application/json',
-      serverName: '用户服务',
+      responseMediaType: "application/json",
+      bodyMediaType: "application/json",
+      serverName: "用户服务",
       plugins: [
-        platform('swagger'),
-        alova({ framework: 'vue' }),
+        platform("swagger"),
+        alova(),
         aiDoc(),
-        rename({ getUserInfo: 'fetchUserProfile' }),
+        rename({ getUserInfo: "fetchUserProfile" }),
       ],
     },
   ],
@@ -99,38 +98,40 @@ export default defineConfig({
 
 ### 配置项速览
 
-| 字段 | 类型 | 必填 | 默认值 | 说明 |
-|------|------|------|--------|------|
-| `input` | `string \| string[]` | 是 | — | OpenAPI 文档地址，支持数组依次尝试 |
-| `output` | `string` | 否 | 由模板决定 | 输出目录 |
-| `docComment` | `boolean` | 否 | `true` | 是否生成文档注释，设为 `false` 可提高性能 |
-| `responseMediaType` | `string \| string[]` | 否 | `'application/json'` | 响应 MediaType，可设数组依次指向 |
-| `bodyMediaType` | `string \| string[]` | 否 | `'application/json'` | 请求体 MediaType，可设数组依次指向 |
-| `serverName` | `string` | 否 | 文档 `info.title` | 多文档时的自定义服务名称，用于侧边栏展示 |
-| `plugins` | `ApiPlugin[]` | 是 | — | 插件数组（模板也通过 plugin 的 getTemplate hook 设置） |
-| `performance` | `PerformanceConfig` | 否 | — | 性能配置 |
+| 字段                | 类型                 | 必填 | 默认值               | 说明                                                   |
+| ------------------- | -------------------- | ---- | -------------------- | ------------------------------------------------------ |
+| `input`             | `string \| string[]` | 是   | —                    | OpenAPI 文档地址，数组时同时请求所有 URL               |
+| `output`            | `string`             | 否   | 由模板决定           | 输出目录                                               |
+| `docComment`        | `boolean`            | 否   | `true`               | 是否生成文档注释，设为 `false` 可提高性能              |
+| `responseMediaType` | `string \| string[]` | 否   | `'application/json'` | 响应 MediaType，可设数组依次指向                       |
+| `bodyMediaType`     | `string \| string[]` | 否   | `'application/json'` | 请求体 MediaType，可设数组依次指向                     |
+| `serverName`        | `string`             | 否   | 文档 `info.title`    | 多文档时的自定义服务名称，用于侧边栏展示               |
+| `plugins`           | `ApiPlugin[]`        | 是   | —                    | 插件数组（模板也通过 plugin 的 getTemplate hook 设置） |
+| `performance`       | `PerformanceConfig`  | 否   | —                    | 性能配置                                               |
+
+更多插件配置请查看 [内置插件](/plugin-system/builtin-plugins)。
 
 ## 多数据源配置
 
 在 `generator` 数组中配置多个项，可以从不同 OpenAPI 文档生成到不同目录：
 
 ```javascript
-import { defineConfig } from 'worma';
-import { alova, axios } from 'worma/plugin';
-import { aiDoc } from 'worma/plugin';
+import { defineConfig } from "worma";
+import { alova, axios } from "worma/plugin";
+import { aiDoc } from "worma/plugin";
 
 export default defineConfig({
   generator: [
     {
-      input: 'https://user-service.example.com/openapi.json',
-      output: 'src/api/user-service',
-      serverName: '用户服务',
-      plugins: [alova({ framework: 'vue' }), aiDoc()],
+      input: "https://user-service.example.com/openapi.json",
+      output: "src/api/user-service",
+      serverName: "用户服务",
+      plugins: [alova(), aiDoc()],
     },
     {
-      input: 'https://order-service.example.com/openapi.json',
-      output: 'src/api/order-service',
-      serverName: '订单服务',
+      input: "https://order-service.example.com/openapi.json",
+      output: "src/api/order-service",
+      serverName: "订单服务",
       plugins: [axios(), aiDoc()],
     },
   ],
@@ -141,24 +142,53 @@ export default defineConfig({
 
 ### 多地址 fallback
 
-`input` 支持 `string[]` 数组，依次访问每个 URL，返回第一个成功的数据：
+`input` 支持 `string[]` 数组，同时访问每个 URL，返回第一个成功的数据：
 
 ```javascript
 defineConfig({
   generator: [
     {
       input: [
-        'https://primary-server.com/openapi.json',
-        'https://fallback-server.com/openapi.json',
+        "https://primary-server.com/openapi.json",
+        "https://fallback-server.com/openapi.json",
       ],
-      output: './src/api',
+      output: "./src/api",
       plugins: [alova()],
     },
   ],
 });
 ```
 
-## 简易配置 `.wormarc`
+### Apifox 数据源
+
+如果团队使用 Apifox 管理接口文档，可以直接从 Apifox 项目拉取 OpenAPI 数据，无需手动导出文件或填写 `input` 字段：
+
+```javascript
+import { defineConfig } from "worma";
+import { alova } from "worma/plugin";
+import { aiDoc, apifox } from "worma/plugin";
+
+export default defineConfig({
+  generator: [
+    {
+      output: "src/api",
+      serverName: "用户服务",
+      plugins: [
+        apifox({
+          projectId: "your-project-id",
+          apifoxToken: "your-api-token",
+        }),
+        alova(),
+        aiDoc(),
+      ],
+    },
+  ],
+});
+```
+
+> **使用 `apifox` 插件后不再需要设置 `input` 字段**，插件会自动从 Apifox 拉取最新的 OpenAPI 文档。更多用法（按标签筛选、指定版本等）请查看 [Apifox 拉取器](/plugin-system/builtin-plugins/apifox)。
+
+## 简易配置 [#wormarc]
 
 纯文本格式，每行一个 OpenAPI 文档地址：
 
@@ -172,5 +202,9 @@ admin=https://api.admin.com/openapi.json, axios
 # 文件服务，使用 fetch 模板
 public/files=https://api.files.com/openapi.json, fetch
 ```
+
+`.wormarc` 模式下会自动添加以下插件：
+
+- `aiDoc({ installSkill: true })` — 生成 AI Skill 文档并自动安装到编码助手中
 
 > 同时存在 `.wormarc` 和 `worma.config` 时，`worma.config` 优先级更高。

@@ -19,11 +19,10 @@ defineProps<{
 }>()
 
 const emit = defineEmits<{
-  run: [scales: number[], iterations: number]
+  run: [scales: number[]]
 }>()
 
-const selectedScales = ref<number[]>([200, 500, 1000, 5000])
-const iterations = ref(3)
+const selectedScales = ref<number[]>([500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000])
 
 const allScalesSelected = computed(() => selectedScales.value.length === SCALE_OPTIONS.length)
 
@@ -39,7 +38,7 @@ function toggleAllScales() {
 function onRun() {
   if (selectedScales.value.length === 0)
     return
-  emit('run', selectedScales.value, iterations.value)
+  emit('run', selectedScales.value)
 }
 </script>
 
@@ -57,19 +56,6 @@ function onRun() {
         <a-button size="small" type="link" :disabled="loading" @click="toggleAllScales">
           {{ allScalesSelected ? '取消全选' : '全选' }}
         </a-button>
-      </div>
-
-      <!-- 迭代次数 -->
-      <div class="iterations-selector">
-        <span class="label">迭代次数:</span>
-        <a-input-number
-          v-model:value="iterations"
-          :min="1"
-          :max="10"
-          :disabled="loading"
-          size="small"
-          style="width: 80px"
-        />
       </div>
 
       <!-- 操作按钮 -->
@@ -103,16 +89,15 @@ function onRun() {
       <div class="events-list">
         <div
           v-for="evt in currentEvents"
-          :key="`${evt.tool}-${evt.scale}-${evt.iteration}`"
+          :key="`${evt.template}-${evt.scale}`"
           class="event-item"
           :class="{ 'event-done': evt.status === 'done', 'event-error': evt.status === 'error' }"
         >
           <LoadingOutlined v-if="evt.status === 'running'" spin class="event-icon" />
           <CheckCircleOutlined v-else-if="evt.status === 'done'" class="event-icon event-success" />
           <CloseCircleOutlined v-else-if="evt.status === 'error'" class="event-icon event-error-icon" />
-          <span class="event-tool">{{ evt.tool }}</span>
+          <span class="event-tool">{{ evt.template }}</span>
           <span class="event-scale">({{ evt.scale }})</span>
-          <span class="event-iter">#{{ evt.iteration }}/{{ evt.totalIterations }}</span>
           <template v-if="evt.result">
             <span class="event-time">{{ evt.result.timeMs }}ms</span>
           </template>
@@ -151,12 +136,6 @@ function onRun() {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.iterations-selector {
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .label {
@@ -228,10 +207,6 @@ function onRun() {
 
 .event-scale {
   color: #888;
-}
-
-.event-iter {
-  color: #aaa;
 }
 
 .event-time {

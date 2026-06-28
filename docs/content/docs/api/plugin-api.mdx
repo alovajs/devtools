@@ -1,95 +1,189 @@
 ---
 title: 插件 API
-description: ApiPlugin 接口（v2 更新）
+description: ApiPlugin 接口与生命周期钩子
 ---
 
+> 关于插件系统概述和内置插件列表，请参阅 [插件系统](/docs/plugin-system)。
 
-## ApiPlugin 接口（v2）
+## createPlugin
 
-所有 hook 参数统一改为对象形式。`beforeCodeGenerate` 不再返回值，改为直接修改 `params.data`。`afterOpenapiParse` / `afterCodeGenerate` 已重命名为 `openapiParsed` / `codeGenerated`。新增 `getTemplate` 和 `beforeFileWrite` 钩子：
+创建类型安全的插件工厂函数。
 
 ```typescript
-type ReportProgress = (progress: number, message?: string) => void;
+import { createPlugin } from "worma";
 
-interface TemplateConfigResult {
-  /** 模板路径（相对或绝对，相对是相对于 process.cwd()） */
-  path: string;
-}
+const myPlugin = createPlugin((options: { key: string }) => ({
+  name: "my-plugin",
+  beforeCodeGenerate({ data }) {
+    data.config.customKey = options.key;
+  },
+}));
+
+// 使用
+defineConfig({
+  generator: [
+    {
+      plugins: [myPlugin({ key: "value" })],
+    },
+  ],
+});
+```
+
+## ApiPlugin
+
+```typescript
+type MaybePromise<T> = T | Promise<T>;
+
+type ReportProgress = (progress: number, message?: string) => void;
 
 interface ApiPlugin {
   name?: string;
 
   /** ① 配置阶段：可修改 config */
-  config?: (params: {
-    config: GeneratorConfig;
-    projectPath: string;
-    reportProgress: ReportProgress;
-  }) => MaybePromise<GeneratorConfig | undefined | null | void>;
+  config?: (
+    params: ConfigHookParams,
+  ) => MaybePromise<GeneratorConfig | undefined | null | void>;
 
   /** ② OpenAPI 解析前 */
-  beforeOpenapiParse?: (params: {
-    config: Readonly<GeneratorConfig>;
-    projectPath: string;
-    reportProgress: ReportProgress;
-  }) => void;
+  beforeOpenapiParse?: (params: BeforeOpenapiParseHookParams) => void;
 
   /** ③ OpenAPI 解析后：可修改 document */
-  openapiParsed?: (params: {
-    config: Readonly<GeneratorConfig>;
-    document: OpenAPIDocument;
-    projectPath: string;
-    reportProgress: ReportProgress;
-  }) => MaybePromise<OpenAPIDocument | undefined | null | void>;
+  openapiParsed?: (
+    params: OpenapiParsedHookParams,
+  ) => MaybePromise<OpenAPIDocument | undefined | null | void>;
 
   /** ④ 获取模板路径 */
-  getTemplate?: (params: {
-    config: Readonly<GeneratorConfig>;
-    projectPath: string;
-    reportProgress: ReportProgress;
-  }) => MaybePromise<TemplateConfigResult | undefined | null | void>;
+  getTemplate?: (
+    params: GetTemplateHookParams,
+  ) => MaybePromise<TemplateConfigResult | undefined | null | void>;
 
   /** ⑤ 渲染前：注入/修改 templateData */
-  beforeCodeGenerate?: (params: {
-    config: Readonly<GeneratorConfig>;
-    data: TemplateData;
-    projectPath: string;
-    reportProgress: ReportProgress;
-  }) => MaybePromise<void>;
+  beforeCodeGenerate?: (
+    params: BeforeCodeGenerateHookParams,
+  ) => MaybePromise<void>;
 
   /** ⑥ 每个文件写盘前：可修改单个文件内容 */
-  beforeFileWrite?: (params: {
-    filePath: string;
-    content: string;
-    fileName: string;
-    tag?: string;
-    api?: string;
-    config: Readonly<GeneratorConfig>;
-    data: TemplateData;
-    projectPath: string;
-    isNoOverwrite: boolean;
-  }) => MaybePromise<string | void>;
+  beforeFileWrite?: (params: BeforeFileWriteHookParams) => MaybePromise<string>;
 
   /** ⑦ 所有文件写盘完成后 */
-  codeGenerated?: (params: {
-    config: Readonly<GeneratorConfig>;
-    data: TemplateData;
-    filePaths: string[];
-    projectPath: string;
-    outputDir: string;
-    error?: Error;
-    reportProgress: ReportProgress;
-  }) => MaybePromise<void>;
+  codeGenerated?: (params: CodeGeneratedHookParams) => MaybePromise<void>;
+
+  /** ⑧ Handlebars 实例创建时：注册自定义 helper 或 partial */
+  onHandlebarsCreated?: (
+    params: OnHandlebarsCreatedHookParams,
+  ) => MaybePromise<void>;
 }
 ```
 
-### 钩子执行时序
+## 钩子参数类型
 
+### ConfigHookParams
+
+```typescript
+interface ConfigHookParams {
+  config: GeneratorConfig;
+  projectPath: string;
+  reportProgress: ReportProgress;
+}
 ```
-config() → beforeOpenapiParse() → 解析 OpenAPI → openapiParsed()
-→ getTemplate()                     ← 插件返回模板路径
-→ beforeCodeGenerate(data)          ← 插件注入配置数据
-→ loop 每个文件:
-    beforeFileWrite(filePath, content)  ← 逐个修改
-    writeFile(filePath)
-→ codeGenerated(filePaths)          ← 通知完成
+
+### BeforeOpenapiParseHookParams
+
+```typescript
+interface BeforeOpenapiParseHookParams {
+  config: Readonly<GeneratorConfig>;
+  projectPath: string;
+  reportProgress: ReportProgress;
+}
+```
+
+### OpenapiParsedHookParams
+
+```typescript
+interface OpenapiParsedHookParams {
+  config: Readonly<GeneratorConfig>;
+  document: OpenAPIDocument;
+  projectPath: string;
+  reportProgress: ReportProgress;
+}
+```
+
+### GetTemplateHookParams
+
+```typescript
+interface GetTemplateHookParams {
+  config: Readonly<GeneratorConfig>;
+  projectPath: string;
+  reportProgress: ReportProgress;
+}
+```
+
+返回 `TemplateConfigResult`：
+
+```typescript
+interface TemplateConfigResult {
+  /** 模板路径（相对或绝对，相对是相对于 process.cwd()） */
+  path: string;
+}
+```
+
+### BeforeCodeGenerateHookParams
+
+```typescript
+interface BeforeCodeGenerateHookParams {
+  config: Readonly<GeneratorConfig>;
+  data: TemplateData;
+  projectPath: string;
+  reportProgress: ReportProgress;
+}
+```
+
+直接修改 `params.data` 注入数据，不再返回值。
+
+### BeforeFileWriteHookParams
+
+```typescript
+interface BeforeFileWriteHookParams {
+  config: Readonly<GeneratorConfig>;
+  data: TemplateData;
+  filePath: string;
+  content: string;
+  projectPath: string;
+  reportProgress: ReportProgress;
+  /** 模板文件元数据 */
+  meta: {
+    templateType?: "tag" | "api";
+    tag?: string;
+    api?: string;
+  };
+}
+```
+
+返回修改后的文件内容字符串。
+
+### CodeGeneratedHookParams
+
+```typescript
+interface CodeGeneratedHookParams {
+  config: Readonly<GeneratorConfig>;
+  data: TemplateData;
+  /** 所有生成文件的路径（不含内容） */
+  filePaths: string[];
+  /** 绝对输出目录 */
+  outputDir: string;
+  projectPath: string;
+  error?: Error;
+  reportProgress: ReportProgress;
+}
+```
+
+### OnHandlebarsCreatedHookParams
+
+```typescript
+interface OnHandlebarsCreatedHookParams {
+  hbs: typeof import("handlebars");
+  config: Readonly<GeneratorConfig>;
+  projectPath: string;
+  reportProgress: ReportProgress;
+}
 ```

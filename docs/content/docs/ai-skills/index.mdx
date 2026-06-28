@@ -33,25 +33,7 @@ AI （读取 Skill）：
 
 ## 启用 AI Skills
 
-在 `worma.config` 中添加 `aiDoc` 插件：
-
-```javascript
-import { defineConfig } from 'worma';
-import { aiDoc } from 'worma/plugin';
-
-export default defineConfig({
-  generator: [
-    {
-      plugins: [
-        aiDoc({
-          // 可选：自定义 Skill 模板
-          template: './custom-ai-skills',
-        }),
-      ],
-    },
-  ],
-});
-```
+在 `worma.config` 中添加 [aiDoc](/docs/plugin-system/builtin-plugins/aiDoc) 插件即可，详细配置请参考插件文档。
 
 ## 生成产物
 
@@ -67,4 +49,88 @@ aidocs/
     └── ...
 ```
 
-> v2 中的 AI Skill 文档使用 `fileLocation`（文件实际位置）代替原来的 `importDescriptor`，由 aiDoc 插件在 `codeGenerated` 生命周期中自动计算并注入，不再依赖 jsconfig/tsconfig 的路径解析。
+## 使用示例
+
+### 单接口调用
+
+生成 Skill 文档后，在 AI 对话中直接描述需求，AI 会自动完成接口匹配与代码生成。
+
+<Steps>
+  <Step>
+    **描述需求**
+
+    在对话中直接告诉 AI 你想做什么：
+
+    ```text
+    你：查询用户列表，分页展示，每页 20 条
+    ```
+  </Step>
+  <Step>
+    **AI 读取技能文档**
+
+    AI 自动加载 `SKILL.md` 及 `references/` 下的接口文档，匹配到 `listUsers` 接口及其参数 `page`、`pageSize`。
+  </Step>
+  <Step>
+    **生成调用代码**
+
+    AI 输出可直接运行的代码：
+
+    ```ts
+    import { listUsers } from './api/user';
+
+    const res = await listUsers({
+      params: { page: 1, pageSize: 20 },
+    });
+    ```
+  </Step>
+</Steps>
+
+### 多接口组合
+
+当需要多个接口协作时，AI 会自动串联执行步骤。
+
+<Steps>
+  <Step>
+    **描述复合需求**
+
+    ```text
+    你：先创建一篇文章，然后为它添加评论
+    ```
+  </Step>
+  <Step>
+    **执行第一个接口**
+
+    AI 调用创建文章接口，并保留返回结果中的 `articleId`：
+
+    ```ts
+    import { createArticle } from './api/article';
+    const article = await createArticle({
+      data: { title: 'Hello', content: '...' },
+    });
+    // article.data.id 将用于下一步
+    ```
+  </Step>
+  <Step>
+    **链式调用第二个接口**
+
+    AI 使用上一步返回的 ID，继续调用评论接口：
+
+    ```ts
+    import { createComment } from './api/comment';
+    await createComment({
+      data: {
+        articleId: article.data.id,
+        content: 'Great article!',
+      },
+    });
+    ```
+  </Step>
+</Steps>
+
+### 使用约定
+
+AI 在生成代码前会强制复述使用约定，确保遵守规范。Skill 文档中的使用约定包括：
+
+1. **按需引入** — 每个 API 函数从对应的 tag 文件导入
+2. **正确的请求客户端** — 使用 alova / axios / fetch / ky（取决于模板）
+3. **参数传递规范** — `pathParams` / `params` / `data` 的正确位置

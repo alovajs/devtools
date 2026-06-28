@@ -20,7 +20,7 @@ export default defineConfig({
       serverName: 'Alova Functional',
       plugins: [
         platform('swagger'),
-        aiDoc({ outputDir: 'aidocs' }),
+        aiDoc({ installSkill: true }),
         alova(),
       ],
     },

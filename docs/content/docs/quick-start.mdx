@@ -3,7 +3,6 @@ title: 快速开始
 description: 5 分钟生成并体验 VSCode 悬停文档
 ---
 
-
 5 分钟，完成第一个 API 的代码生成，并体验 VSCode 悬停查看 API 文档的能力。
 
 ## 第一步：安装
@@ -50,22 +49,21 @@ npx worma init
 这会创建一个 `worma.config.js`（或 `.cjs`/`.mjs`/`.ts`）文件，并且默认配置了 alova 模板和 `aiDoc` 插件用于生成 AI Skill 文档：
 
 ```javascript
-import { defineConfig } from 'worma';
-import { alova } from 'worma/plugin';
-import { aiDoc } from 'worma/plugin';
+import { defineConfig } from "worma";
+import { alova, aiDoc, platform } from "worma/plugin";
 
 export default defineConfig({
   generator: [
     {
-      input: 'https://api.example.com/openapi.json',
-      output: 'src/api',
-      plugins: [alova(), aiDoc()],
+      input: "https://api.example.com",
+      output: "src/api",
+      plugins: [alova(), aiDoc(), platform("swagger")],
     },
   ],
 });
 ```
 
-如果已有 OpenAPI 文档地址，也可以编辑 `.wormarc` 快速配置：
+如果已有 OpenAPI 文档地址，也可以[编辑 `.wormarc` 快速配置](/docs/guide/installation-config#wormarc)：
 
 ```
 https://api.example.com/openapi.json
@@ -77,78 +75,33 @@ https://api.example.com/openapi.json
 npx worma gen
 ```
 
-## 生成结果
-
-`npx worma gen` 会在输出目录中生成以下内容：
-
-```text
-src/api/
-├── index.ts              # ① 入口文件：创建请求实例 + 重导出所有 API
-├── user.ts               # ② 调用函数：按 tag 拆分的 API 函数文件
-├── article.ts
-├── types.ts              # ③ 类型定义：请求参数和响应的 TypeScript 类型
-├── aidocs/               # ④ AI Skill 文档：让 Cursor / Copilot 读懂你的接口
-│   ├── SKILL.md          #    主文档
-│   └── references/       #    每个接口的详细文档
-│       ├── user.info.md
-│       └── user.login.md
-
-.worma-cache/             # ⑤ VSCode 扩展缓存（团队共享）
-├── index.json            #    元数据 + 聚合哈希
-└── data/                 #    按需加载的 API 数据
-    ├── user.json
-    └── article.json
-```
-
-各产出物说明：
-
-| 文件 | 作用 |
-|------|------|
-| `index.ts` | 请求客户端实例（如 alova/axios/fetch），重导出所有 tag 模块 |
-| `{tag}.ts` | 按 OpenAPI tag 拆分的函数文件，每个 API 对应一个导出函数 |
-| `types.ts` | 自动推导的请求参数和响应数据类型 |
-| `aidocs/SKILL.md` | AI Skill 主索引，AI 工具读取后了解所有接口概览 |
-| `aidocs/references/*.md` | 每个接口的详细参数、类型和调用示例 |
-| `.worma-cache/` | VSCode 扩展的接口缓存目录（取代之前的单文件 `.worma-cache.json`） |
-
 ## 选择模板
 
 worma 内置了多套预定义模板，覆盖主流的请求库：
 
-| 模板 | 请求库 | 特点 |
-|------|--------|------|
-| [alova（functional）](/docs/template-system/predefined-templates#alovafunctional) | alova@3 | 函数式调用，支持 Tree-shaking |
-| [alovaGlobals](/docs/template-system/predefined-templates#alovaglobals) | alova@3 | 全局挂载 `Apis.xxx` |
-| [axios](/docs/template-system/predefined-templates#axios) | axios | 最流行的 HTTP 客户端 |
-| [fetch](/docs/template-system/predefined-templates#fetch) | 原生 fetch | 零额外依赖 |
-| [ky](/docs/template-system/predefined-templates#ky) | ky | 轻量级 fetch 封装 |
+| 模板                                                                              | 请求库     | 特点                          |
+| --------------------------------------------------------------------------------- | ---------- | ----------------------------- |
+| [alova](/docs/template-system/predefined-templates#alova)                           | alova@3    | 函数式调用，支持 Tree-shaking |
+| [alovaGlobals](/docs/template-system/predefined-templates#alovaglobals)           | alova@3    | 全局挂载 `Apis.xxx`，原 `@alova/wormhole` 模板，可迁移 |
+| [axios](/docs/template-system/predefined-templates#axios)                         | axios      | 最流行的 HTTP 客户端          |
+| [fetch](/docs/template-system/predefined-templates#fetch)                         | 原生 fetch | 零额外依赖                    |
+| [ky](/docs/template-system/predefined-templates#ky)                               | ky         | 轻量级 fetch 封装             |
 
 如果以上都不满足你的需求，worma 支持[完全自定义模板](/docs/template-system/custom-templates)，使用 Handlebars 语法自由控制生成代码的结构和内容。
 
-## 第四步：体验 VSCode 悬停
+## 第四步：体验 VSCode 扩展
 
-安装 [VSCode 扩展](#todo-link)，然后将鼠标悬停在你项目中对生成函数的调用上：
+安装 [Worma VSCode 扩展](vscode:extension/worma.worma-vscode-extension)，或在扩展市场搜索 **"worma"**，即可获得以下能力：
 
-```typescript
-import { getUserInfo } from './api/user';
+- **悬停查看 API 详情** — 鼠标悬停在生成的 API 调用上，即可查看接口路径、参数表、响应结构等信息
+- **侧边栏 API 浏览器** — 在 VSCode 侧边栏按 tag 分组浏览所有 API，支持搜索
+- **自动检测变更** — 后端接口更新时自动触发重新生成
+- **JS 项目类型提示** — 即使使用纯 JavaScript，也能获得完整的类型提示和文档展示
 
-const user = await getUserInfo({
-  pathParams: { id: '123' },
-});
-//       ^ 悬停此处，即可看到接口详情
-```
-
-此时编辑器会弹出包含以下信息的气泡窗口：
-
-- 接口路径和 HTTP 方法
-- 完整参数表（路径参数、查询参数、请求体）
-- 响应结构示例
-- 接口描述
-
-> 无需切换窗口，无需打开浏览器，所有信息就在你的代码中。这就是 worma 要消除的"摩擦"。
+详细功能介绍请查看 [编辑器内文档](/docs/guide/editor-docs)。
 
 ## 下一步
 
 - 了解[安装与配置](/docs/guide/installation-config)的更多细节
-- 了解 [Monorepo 支持](/docs/guide/basic-usage)中的自动检测子包功能
+- 了解 [Monorepo 支持](/docs/guide/monorepo)中的自动检测子包功能
 - 了解[编辑器内文档](/docs/guide/editor-docs)的全部能力

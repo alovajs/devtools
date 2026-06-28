@@ -3,115 +3,154 @@ title: Skill 文档结构
 description: SKILL.md 主文档和 references/*.md 的详细格式
 ---
 
+## 整体结构
 
-## SKILL.md 主文档
+<Files>
+  <Folder name="aidocs" defaultOpen>
+    <File name="SKILL.md" />
+    <Folder name="references" defaultOpen>
+      <Folder name="pet" defaultOpen>
+        <File name="addPet.md" />
+        <File name="getPetById.md" />
+        <File name="findPetsByStatus.md" />
+      </Folder>
+      <Folder name="user">
+        <File name="loginUser.md" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
+## SKILL.md
+
+`SKILL.md` 是 AI 的入口文件，包含 frontmatter 元数据、概述和完整的 API 目录索引：
 
 ```markdown
 ---
-name: generated-APIs
-description: 项目中所有已生成的 API 接口
+name: petstore-openapi-3.0-api-reference
+description: >-
+  API reference documentation for Alova Functional (Petstore - OpenAPI 3.0 v1.0.0).
+  Contains specifications for all REST API endpoints, including HTTP request methods,
+  URL paths, path/query parameters, request body schemas, and response types.
+  Key domains covered: pet, store, user.
 ---
 
-# Skill for generated APIs
+> version 1.0.0
 
-**## 执行任务**
+## Overview
 
-根据当前的接口需求阅读对应接口的详细文档，
-以获知接口的详细参数信息和调用方式
+This skill provides complete API reference documentation for Alova Functional.
+When you need to call any endpoint in this service, consult the corresponding
+API document in the references directory for detailed parameter schemas,
+request/response formats, and usage examples.
 
-**## 接口目录（用户服务）**
+## API Directory (Alova Functional)
 
-- [获取用户信息](references/user.info.md)
-- [用户登录](references/user.login.md)
-- [管理员权限配置](references/admin.permissions.md)
-- [系统操作日志审计](references/admin.audit.md)
-- [文章内容管理](references/content/articles.md)
+- **pet**
+  - [Add a new pet to the store](./references/pet/addPet.md) `[POST] /pet`
+  - [Find pet by ID](./references/pet/getPetById.md) `[GET] /pet/{petId}`
+  - [Finds Pets by status](./references/pet/findPetsByStatus.md) `[GET] /pet/findByStatus`
+- **user**
+  - [Logs user into the system](./references/user/loginUser.md) `[GET] /user/login`
 ```
 
-## references/*.md 接口详情
+| 区域 | 说明 |
+|------|------|
+| frontmatter | `name` 格式为 `{title}-api-reference`，用于编码助手识别 Skill；`description` 包含服务名、版本、域名列表和触发时机 |
+| `> version` | 引用块标注 OpenAPI 文档版本号 |
+| `## Overview` | 概述该 Skill 的用途，引导 AI 查阅 `references/` 下的详细文档 |
+| `## API Directory` | 按 tag 分组列出所有端点，每组包含接口摘要链接 + `[METHOD] /path`，AI 通过此目录快速定位所需接口 |
+| Parameter | `{title}`、`{serverName}`、`{version}`、`{tagedApis}` 等由模板从 OpenAPI 文档和配置中提取渲染 |
 
-每个接口一个独立文档：
+## 接口详情
 
-```markdown
-**# 重要：在生成代码前强制执行（不得违反）！！！**
+每个 API 端点对应一个独立 Markdown 文档。以 `addPet` 为例：
 
-**## 使用约定**
+````markdown
+# IMPORTANT: Enforce before generating code (must not be violated)!!!
 
-1. 此文档所标记的接口均使用 alova 作为请求客户端，
-   需遵循 alova 的使用规范
-2. 需要按需引入对应的 API 函数，如：
-   `import { selectWarnSecurity } from './api/SwapAccountManageController'`
+Before executing the code generation task, recite the following usage
+conventions and ensure compliance when generating.
 
-**## 接口**
+## Usage Conventions
 
-管理员权限配置
+1. The API defined in this document is located at `src/api/alova/pet`
+2. Follow the calling method shown in the example below.
 
-**## Path Parameters**
+## API
 
-根据实际需要在 `pathParams` 中传入参数
+Add a new pet to the store
+
+`[POST] /pet`
+
+## Request Body
+
+Pass the required request body in `data`:
 
 ```typescript
-interface PathParameters {
-  // 账户编号
-  accountCode: string;
+{
+  id?: number
+  name: string
+  category?: {
+    id?: number
+    name?: string
+  }
+  photoUrls: string[]
+  tags?: Array<{
+    id?: number
+    name?: string
+  }>
+  // pet status in the store
+  status?: "available" | "pending" | "sold"
 }
 ```
 
-**## RequestBody**
+## Response
 
-根据实际需要在 `data` 中传入请求体
+Use the response data as needed:
 
 ```typescript
-interface RequestBody {
-  operatorTenantId?: string;
-  currPage?: number;
-  pageSize?: number;
-  accountCode?: string;
+{
+  id?: number
+  name: string
+  category?: {
+    id?: number
+    name?: string
+  }
+  photoUrls: string[]
+  tags?: Array<{
+    id?: number
+    name?: string
+  }>
+  // pet status in the store
+  status?: "available" | "pending" | "sold"
 }
 ```
 
-**## Response**
+## Usage Example
 
 ```typescript
-interface Response {
-  code: number;
+addPet({
   data: {
-    accountCode?: string;
-    securityDepositUnitPrice?: number;
-    securityDepositMax?: number;
-  };
-  message: string;
-}
+    name: '',
+    photoUrls: []
+  }
+})
 ```
+````
 
-**## 调用示例**
+### 文档结构说明
 
-```typescript
-import { selectWarnSecurity } from "./api/SwapAccountManageController";
+| 区域 | 说明 |
+|------|------|
+| 顶部强制声明 | `# IMPORTANT: Enforce before generating code` — 要求 AI 在生成代码前必须复述使用约定 |
+| `## Usage Conventions` | 强制规范：声明 API 所在文件位置（如 `src/api/alova/pet`），要求遵循下文示例的调用方式 |
+| `## API` | 接口摘要说明 + `` `[METHOD] /path` `` 格式的端点标识 |
+| `## Path Parameters` | 路径参数类型定义（如有），AI 通过 `pathParams` 传入 |
+| `## Query Parameters` | 查询参数类型定义（如有），AI 通过 `params` 传入 |
+| `## Request Body` | 请求体类型定义（如有），AI 通过 `data` 传入 |
+| `## Response` | 响应体类型定义，AI 据此推断返回数据结构 |
+| `## Usage Example` | 带参数值的完整调用示例，AI 可直接参考生成代码 |
+| Parameter | `{fileLocation}` 由 aiDoc 插件在 `codeGenerated` 生命周期自动注入；`{serverName}` 来自生成器配置；`{method}`、`{path}`、`{summary}` 等来自 OpenAPI 文档 |
 
-selectWarnSecurity({
-  pathParams: { accountCode: "" },
-  data: {},
-});
-```
-```
-
-## fileLocation（文件位置展示）
-
-在 v2 中，AI Skill 文档不再使用 `importDescriptor` 解析 jsconfig/tsconfig 的路径别名。改为在每个 API 文档中展示**文件所在位置**（`fileLocation`），由 aiDoc 插件在 `codeGenerated` 中计算并注入模板渲染数据中。这使得文档更清晰地告诉 AI 代码应该放在哪个文件中：
-
-```markdown
-**## 文件位置**
-
-src/api/user/userInfo.ts
-```
-
-## import 语句自适应
-
-Skill 文档根据模块类型自适应生成 import 语句：
-
-| type 值 | ESM（import） | CommonJS（require） |
-|---------|---------------|---------------------|
-| `typescript` | `import { getUser } from './user'` | — |
-| `module` | `import { getUser } from './user'` | — |
-| `commonjs` | — | `const { getUser } = require('./user')` |
+> 不同类型的接口只包含对应的参数段。只有路径参数的 GET 接口不含 Request Body，POST 接口通常包含 Request Body 和 Response。

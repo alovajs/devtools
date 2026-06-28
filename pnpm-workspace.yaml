@@ -20,6 +20,7 @@ catalog:
   ky: ^2.0.2
   log-update: ^6.1.0
   openapi-typescript: ^7.6.0
+  skills: ^1.5.13
   string-width: ^7.2.0
   vue-echarts: ^7.0.3
 

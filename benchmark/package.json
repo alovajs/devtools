@@ -6,11 +6,11 @@
   "scripts": {
     "generate-specs": "tsx scripts/generate-specs.ts",
     "bench": "tsx bench.ts",
-    "dev": "concurrently -n vite,hono -c blue,green \"cross-env NODE_OPTIONS=--expose-gc vite\" \"tsx server.ts\"",
+    "dev": "concurrently -n vite,hono -c blue,green \"cross-env NODE_OPTIONS=--expose-gc vite\" \"cross-env NODE_OPTIONS=--expose-gc tsx server.ts\"",
     "dev:vite": "cross-env NODE_OPTIONS=--expose-gc vite",
-    "dev:server": "tsx server.ts",
+    "dev:server": "cross-env NODE_OPTIONS=--expose-gc tsx server.ts",
     "build": "vite build",
-    "start": "tsx server.ts --prod",
+    "start": "cross-env NODE_OPTIONS=--expose-gc tsx server.ts --prod",
     "preview": "vite preview",
     "clean": "rm -rf output node_modules dist results"
   },

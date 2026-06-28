@@ -1,14 +1,14 @@
 import type { Ref } from 'vue'
-import type { AggregatedResult, BenchmarkReport, ProgressEvent } from '../types'
+import type { BenchmarkReport, BenchmarkResult, ProgressEvent } from '../types'
 import { ref } from 'vue'
-import { TOOL_CONFIGS } from '../types'
+import { TEMPLATE_CONFIGS } from '../types'
 
 export function useBenchmark() {
   const loading: Ref<boolean> = ref(false)
   const progress: Ref<number> = ref(0)
   const progressText: Ref<string> = ref('')
   const currentEvents: Ref<ProgressEvent[]> = ref([])
-  const results: Ref<AggregatedResult[]> = ref([])
+  const results: Ref<BenchmarkResult[]> = ref([])
   const reportTimestamp: Ref<string> = ref('')
   const error: Ref<string | null> = ref(null)
   const hasPreGenerated: Ref<boolean> = ref(false)
@@ -31,32 +31,8 @@ export function useBenchmark() {
     }
   }
 
-  /** 加载历史记录列表 */
-  async function loadHistory(): Promise<string[]> {
-    try {
-      const res = await fetch('/api/benchmark/history')
-      return await res.json()
-    }
-    catch {
-      return []
-    }
-  }
-
-  /** 加载特定历史记录 */
-  async function loadHistoryDetail(id: string): Promise<BenchmarkReport | null> {
-    try {
-      const res = await fetch(`/api/benchmark/history-detail?id=${encodeURIComponent(id)}`)
-      if (!res.ok)
-        return null
-      return await res.json()
-    }
-    catch {
-      return null
-    }
-  }
-
   /** 运行 benchmark */
-  async function runBenchmark(scales: number[], iterations: number = 1) {
+  async function runBenchmark(scales: number[]) {
     loading.value = true
     progress.value = 0
     error.value = null
@@ -66,7 +42,7 @@ export function useBenchmark() {
       const res = await fetch('/api/benchmark/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scales, iterations }),
+        body: JSON.stringify({ scales }),
       })
 
       if (!res.ok) {
@@ -79,8 +55,6 @@ export function useBenchmark() {
 
       const decoder = new TextDecoder()
       let buffer = ''
-      // currentEventType 必须跨 read chunk 持久化，否则当 SSE 的
-      // `event:` 行与 `data:` 行分属不同 chunk 时事件类型会丢失
       let currentEventType = ''
 
       while (true) {
@@ -102,15 +76,13 @@ export function useBenchmark() {
             if (currentEventType === 'progress') {
               const evt = data as ProgressEvent
               progress.value = evt.progress
-              progressText.value = `${evt.tool} (${evt.scale})`
+              progressText.value = `${evt.template} (${evt.scale})`
 
-              // 用 (tool, scale, iteration) 去重：running 添加，done/error 替换
-              const key = `${evt.tool}-${evt.scale}-${evt.iteration}`
+              const key = `${evt.template}-${evt.scale}`
               const idx = currentEvents.value.findIndex(
-                e => `${e.tool}-${e.scale}-${e.iteration}` === key,
+                e => `${e.template}-${e.scale}` === key,
               )
               if (idx >= 0) {
-                // 替换已有条目（running → done/error）
                 currentEvents.value = [
                   ...currentEvents.value.slice(0, idx),
                   evt,
@@ -118,7 +90,6 @@ export function useBenchmark() {
                 ]
               }
               else {
-                // 新任务，添加到头部
                 currentEvents.value = [evt, ...currentEvents.value].slice(0, 10)
               }
             }
@@ -142,9 +113,9 @@ export function useBenchmark() {
     }
   }
 
-  /** 获取某个工具在某个规模的结果 */
-  function getToolScaleResult(tool: string, scale: number): AggregatedResult | undefined {
-    return results.value.find(r => r.tool === tool && r.scale === scale)
+  /** 获取某个模板在某个规模的结果 */
+  function getTemplateScaleResult(template: string, scale: number): BenchmarkResult | undefined {
+    return results.value.find(r => r.template === template && r.scale === scale)
   }
 
   /** 获取所有唯一的规模列表 */
@@ -152,32 +123,32 @@ export function useBenchmark() {
     return [...new Set(results.value.map(r => r.scale))].sort((a, b) => a - b)
   }
 
-  /** 获取所有唯一的工具列表 */
-  function getTools(): string[] {
-    return TOOL_CONFIGS.map(t => t.key).filter(t => results.value.some(r => r.tool === t))
+  /** 获取所有唯一的模板列表 */
+  function getTemplates(): string[] {
+    return TEMPLATE_CONFIGS.map(t => t.key).filter(t => results.value.some(r => r.template === t))
   }
 
-  /** 获取表格数据（工具 x 规模） */
+  /** 获取表格数据（模板 x 规模） */
   function getTableData() {
-    const tools = getTools()
+    const templates = getTemplates()
     const scales = getScales()
     return scales.flatMap(scale =>
-      tools.map(tool => getToolScaleResult(tool, scale)).filter(Boolean),
-    ) as AggregatedResult[]
+      templates.map(template => getTemplateScaleResult(template, scale)).filter(Boolean),
+    ) as BenchmarkResult[]
   }
 
   /** 获取柱状图数据 */
   function getBarChartData() {
-    const tools = getTools()
+    const templates = getTemplates()
     const scales = getScales()
 
     return {
       scales,
-      series: tools.map(tool => ({
-        name: tool,
+      series: templates.map(template => ({
+        name: template,
         data: scales.map((scale) => {
-          const r = getToolScaleResult(tool, scale)
-          return r && !r.error ? r.avgTimeMs || r.timeMs : 0
+          const r = getTemplateScaleResult(template, scale)
+          return r && !r.error ? r.timeMs : 0
         }),
       })),
     }
@@ -185,16 +156,16 @@ export function useBenchmark() {
 
   /** 获取趋势图数据 */
   function getTrendChartData() {
-    const tools = getTools()
+    const templates = getTemplates()
     const scales = getScales()
 
     return {
       scales,
-      series: tools.map(tool => ({
-        name: tool,
+      series: templates.map(template => ({
+        name: template,
         data: scales.map((scale) => {
-          const r = getToolScaleResult(tool, scale)
-          return r && !r.error ? r.avgTimeMs || r.timeMs : null
+          const r = getTemplateScaleResult(template, scale)
+          return r && !r.error ? r.timeMs : null
         }),
       })),
     }
@@ -210,12 +181,10 @@ export function useBenchmark() {
     error,
     hasPreGenerated,
     loadPreGenerated,
-    loadHistory,
-    loadHistoryDetail,
     runBenchmark,
-    getToolScaleResult,
+    getTemplateScaleResult,
     getScales,
-    getTools,
+    getTemplates,
     getTableData,
     getBarChartData,
     getTrendChartData,

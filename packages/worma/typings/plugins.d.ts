@@ -398,6 +398,7 @@ export declare function createPlugin<T extends any[]>(plugin: (...args: T) => Ap
 export interface AiDocConfig {
 	template?: string;
 	outputDir?: string;
+	installSkill?: boolean;
 }
 export declare function aiDoc(config?: AiDocConfig): ApiPlugin;
 export type ScopeType = "ALL" | "SELECTED_ENDPOINTS" | "SELECTED_TAGS" | "SELECTED_FOLDERS";

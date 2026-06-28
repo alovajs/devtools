@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import type { BenchmarkReport } from './types'
-import { HistoryOutlined, ReloadOutlined, ThunderboltOutlined } from '@ant-design/icons-vue'
+import { ThunderboltOutlined } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
 import { onMounted, ref } from 'vue'
 import BarChart from './components/BarChart.vue'
@@ -19,16 +18,12 @@ const {
   error: benchError,
   hasPreGenerated,
   loadPreGenerated,
-  loadHistory,
-  loadHistoryDetail,
   runBenchmark,
-  getTools,
+  getTemplates,
   getScales,
 } = useBenchmark()
 
 const currentTab = ref('results')
-const historyList = ref<string[]>([])
-const historyLoading = ref(false)
 
 onMounted(async () => {
   await loadPreGenerated()
@@ -37,32 +32,14 @@ onMounted(async () => {
   }
 })
 
-async function handleRunBenchmark(selectedScales: number[], iterations: number) {
+async function handleRunBenchmark(selectedScales: number[]) {
   currentTab.value = 'results'
-  await runBenchmark(selectedScales, iterations)
+  await runBenchmark(selectedScales)
   if (!benchError.value) {
     message.success('Benchmark 完成！')
   }
   else {
     message.error(`Benchmark 失败: ${benchError.value}`)
-  }
-}
-
-async function handleLoadHistory() {
-  historyLoading.value = true
-  historyList.value = await loadHistory()
-  historyLoading.value = false
-}
-
-async function handleSelectHistory(id: string) {
-  const data: BenchmarkReport | null = await loadHistoryDetail(id)
-  if (data) {
-    results.value = data.results
-    reportTimestamp.value = data.timestamp
-    message.success(`已加载历史记录: ${id}`)
-  }
-  else {
-    message.error('加载历史记录失败')
   }
 }
 </script>
@@ -75,10 +52,10 @@ async function handleSelectHistory(id: string) {
         <ThunderboltOutlined class="logo-icon" />
         <div>
           <h1 class="title">
-            Worma Benchmark
+            Worma Template Benchmark
           </h1>
           <p class="subtitle">
-            OpenAPI 代码生成工具性能对比
+            alovaGlobals vs axios 模板性能对比
           </p>
         </div>
       </div>
@@ -116,55 +93,23 @@ async function handleSelectHistory(id: string) {
         <a-tab-pane key="results" tab="对比表格">
           <ResultTable
             :results="results"
-            :tools="getTools()"
+            :templates="getTemplates()"
             :scales="getScales()"
           />
         </a-tab-pane>
         <a-tab-pane key="bar" tab="柱状图">
           <BarChart
             :results="results"
-            :tools="getTools()"
+            :templates="getTemplates()"
             :scales="getScales()"
           />
         </a-tab-pane>
         <a-tab-pane key="trend" tab="趋势图">
           <TrendChart
             :results="results"
-            :tools="getTools()"
+            :templates="getTemplates()"
             :scales="getScales()"
           />
-        </a-tab-pane>
-        <a-tab-pane key="history" tab="历史记录">
-          <div class="history-panel">
-            <a-button
-              type="primary"
-              size="small"
-              :loading="historyLoading"
-              @click="handleLoadHistory"
-            >
-              <template #icon>
-                <ReloadOutlined />
-              </template>
-              刷新历史记录
-            </a-button>
-            <a-divider />
-            <div v-if="historyList.length === 0 && !historyLoading" class="empty-text">
-              暂无历史记录
-            </div>
-            <a-list
-              v-else
-              :data-source="historyList"
-              size="small"
-            >
-              <template #renderItem="{ item }">
-                <a-list-item>
-                  <a-button type="link" @click="handleSelectHistory(item)">
-                    <HistoryOutlined /> {{ item }}
-                  </a-button>
-                </a-list-item>
-              </template>
-            </a-list>
-          </div>
         </a-tab-pane>
       </a-tabs>
     </div>
@@ -259,13 +204,5 @@ body {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-.empty-text {
-  text-align: center;
-  color: #999;
-  padding: 24px;
-}
 
-.history-panel {
-  min-height: 200px;
-}
 </style>

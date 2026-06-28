@@ -4,7 +4,7 @@ description: 使用内置的五套预定义模板
 ---
 
 
-## alova（functional）
+## alova
 
 按需引入模式，每个 API 作为独立函数导出，支持 Tree-shaking。
 
@@ -16,19 +16,30 @@ plugins: [alova({ framework: 'vue' })]
 
 **模板结构：**
 
-```text
-alova-functional/typescript/
-├── index.ts.handlebars       # alovaInstance + 重导出
-├── {tag}.ts.handlebars       # 按 tag 生成 API 函数
-└── types.ts.handlebars       # 类型声明
-```
+<Files>
+  <Folder name="alova" defaultOpen>
+    <File name="components.d.ts" />
+    <File name="helper.ts" />
+    <File name="index.ts" />
+    <File name="typed.ts" />
+    <Folder name="services" defaultOpen>
+      <File name="index.ts" />
+      <File name="pet.ts" />
+      <File name="store.ts" />
+      <File name="user.ts" />
+    </Folder>
+  </Folder>
+</Files>
 
-**调用示例：**
+**使用方法：**
 
 ```typescript
-import { getUser } from './api/user';
-const user = await getUser({ params: { id: 1 } });
+import { getUserList } from './api/alova/services/user';
+
+const users = await getUserList({ params: { page: 1, size: 10 } });
 ```
+
+支持 `data`（请求体）、`params`（查询参数）、`pathParams`（路径参数），以及 alova method 的配置参数（如 `cacheFor`、`transform` 等）。
 
 ## alovaGlobals
 
@@ -58,11 +69,28 @@ interface TemplateAlovaGlobalsConfig {
 
 > `global` 参数会拼接在每个 API 的 `pathKey` 和 `defaultValue` 最前面（如 `Apis.pet.addPet`），确保全局引用路径正确。
 
-**调用示例：**
+**模板结构：**
+
+<Files>
+  <Folder name="alova-globals" defaultOpen>
+    <File name="apiDefinitions.ts" />
+    <File name="createApis.ts" />
+    <File name="globals.d.ts" />
+    <File name="index.ts" />
+  </Folder>
+</Files>
+
+**使用方法：**
 
 ```typescript
-const users = await Apis.user.getUserList({ params: { page: 1 } });
+// main.ts — 只需导入一次
+import './api/alova-globals';
+
+// 任意文件中直接使用
+const user = await Apis.user.getUserById({ pathParams: { userId: 123 } });
 ```
+
+支持 `data`、`params`、`pathParams`，以及 alova method 的配置参数。
 
 ## axios
 
@@ -75,19 +103,29 @@ plugins: [axios()];
 
 **模板结构：**
 
-```text
-axios/typescript/
-├── index.ts.handlebars       # axiosInstance + 重导出
-├── {tag}.ts.handlebars       # 按 tag 生成 API 函数
-└── types.ts.handlebars       # 类型声明
-```
+<Files>
+  <Folder name="axios" defaultOpen>
+    <File name="components.d.ts" />
+    <File name="helper.ts" />
+    <File name="index.ts" />
+    <Folder name="services" defaultOpen>
+      <File name="index.ts" />
+      <File name="pet.ts" />
+      <File name="store.ts" />
+      <File name="user.ts" />
+    </Folder>
+  </Folder>
+</Files>
 
-**调用示例：**
+**使用方法：**
 
 ```typescript
-import { getUser } from './api/user';
-const user = await getUser({ params: { id: 1 } });
+import { createUser } from './api/axios/services/user';
+
+const newUser = await createUser({ data: { name: 'Alice', email: 'alice@example.com' } });
 ```
+
+支持 `data`、`params`、`pathParams`，以及 axios 请求配置参数（如 `timeout`、`headers` 等）。
 
 ## fetch
 
@@ -100,19 +138,30 @@ plugins: [fetch()];
 
 **模板结构：**
 
-```text
-fetch/typescript/
-├── index.ts.handlebars       # BASE_URL + 重导出
-├── {tag}.ts.handlebars       # 按 tag 生成 API 函数
-└── types.ts.handlebars       # 类型声明
-```
+<Files>
+  <Folder name="fetch" defaultOpen>
+    <File name="FetchClient.ts" />
+    <File name="components.d.ts" />
+    <File name="helper.ts" />
+    <File name="index.ts" />
+    <Folder name="services" defaultOpen>
+      <File name="index.ts" />
+      <File name="pet.ts" />
+      <File name="store.ts" />
+      <File name="user.ts" />
+    </Folder>
+  </Folder>
+</Files>
 
-**调用示例：**
+**使用方法：**
 
 ```typescript
-import { getUser } from './api/user';
-const user = await getUser({ params: { id: 1 } });
+import { getUserList } from './api/fetch/services/user';
+
+const users = await getUserList({ params: { page: 1, size: 10 } });
 ```
+
+支持 `data`、`params`、`pathParams`，以及 fetch 请求配置参数。
 
 ## ky
 
@@ -125,16 +174,26 @@ plugins: [ky()];
 
 **模板结构：**
 
-```text
-ky/typescript/
-├── index.ts.handlebars       # kyInstance + 重导出
-├── {tag}.ts.handlebars       # 按 tag 生成 API 函数
-└── types.ts.handlebars       # 类型声明
-```
+<Files>
+  <Folder name="ky" defaultOpen>
+    <File name="components.d.ts" />
+    <File name="helper.ts" />
+    <File name="index.ts" />
+    <Folder name="services" defaultOpen>
+      <File name="index.ts" />
+      <File name="pet.ts" />
+      <File name="store.ts" />
+      <File name="user.ts" />
+    </Folder>
+  </Folder>
+</Files>
 
-**调用示例：**
+**使用方法：**
 
 ```typescript
-import { getUser } from './api/user';
-const user = await getUser({ searchParams: { id: 1 } });
+import { getUserById } from './api/ky/services/user';
+
+const user = await getUserById({ pathParams: { userId: 123 } });
 ```
+
+支持 `data`、`params`、`pathParams`，以及 ky 请求配置参数。

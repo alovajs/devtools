@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "skills": {
+    "Alova Functional": {
+      "source": "E:\\users\\EXT-HuZ01\\Downloads\\devtools-feat-v2.0\\examples\\typescript\\src\\api\\alova\\aidocs",
+      "sourceType": "local",
+      "computedHash": "a368daa698163309fd951ee03fa2867b15d282db38939e8e3bea57bf8dbb1b87"
+    },
+    "Petstore - OpenAPI 3.0-api-reference": {
+      "source": "E:\\users\\EXT-HuZ01\\Downloads\\devtools-feat-v2.0\\examples\\typescript\\src\\api\\alova\\aidocs",
+      "sourceType": "local",
+      "computedHash": "d6aef9b8502d39ce279e90e497670b62fe6b4a5d1ae8188ad7bb58414d16dd0f"
+    },
+    "Petstore apis skill": {
+      "source": "E:\\users\\EXT-HuZ01\\Downloads\\devtools-feat-v2.0\\examples\\typescript\\src\\api\\alova\\aidocs",
+      "sourceType": "local",
+      "computedHash": "0add5f6a71be810073944d4adac9e9239837b8964b239fa59269b8453e62bd51"
+    }
+  }
+}

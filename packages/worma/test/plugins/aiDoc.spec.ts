@@ -1,6 +1,6 @@
 /* eslint-disable ts/no-require-imports */
 import { resolve } from 'node:path'
-import { beforeAll, describe, expect, it, vi } from 'vitest'
+import { logger } from '@/helper/logger'
 import { aiDoc } from '@/plugins/presets/aiDoc'
 import { generateWithPlugin } from '../util'
 
@@ -21,6 +21,10 @@ vi.mock('node:fs/promises', async () => {
   const memFs = createFsFromVolume(testVol)
   return { default: memFs.promises, ...memFs.promises }
 })
+
+vi.mock('node:child_process', () => ({
+  execSync: vi.fn(),
+}))
 
 // Helper to read from the memfs volume used by the mocked fs
 function readVolFile(...args: Parameters<typeof testVol.readFileSync>) {
@@ -60,6 +64,10 @@ describe('plugins/aiDoc', () => {
   })
 
   describe('unit tests', () => {
+    beforeEach(() => {
+      vi.clearAllMocks()
+    })
+
     it('should return a plugin with correct name', () => {
       const plugin = aiDoc()
       expect(plugin.name).toBe('aiDoc')
@@ -405,6 +413,264 @@ describe('plugins/aiDoc', () => {
       expect(refContent).not.toContain('import { getUser }')
       expect(refContent).toContain('Path Parameters')
       expect(refContent).toContain('id: user ID')
+    })
+
+    it('should create .env.local and throw when installSkill is enabled without config', async () => {
+      const { execSync } = await import('node:child_process')
+      const plugin = aiDoc({ installSkill: true })
+      const outputPath = 'src/api-skill-missing'
+      plugin.config?.({ config: { output: outputPath } as any, projectPath: process.cwd(), reportProgress: vi.fn() })
+
+      const data: any = {
+        title: 'Skill Missing Test',
+        version: '1.0.0',
+        openapi: '3.0.1',
+        baseUrl: '/api',
+        allApis: [],
+        components: [],
+        componentNames: [],
+        type: 'typescript',
+        config: {},
+        tagedApis: [],
+      }
+
+      await expect(
+        plugin.codeGenerated?.({
+          config: {} as any,
+          data,
+          filePaths: [],
+          outputDir: resolve(process.cwd(), outputPath),
+          projectPath: process.cwd(),
+          reportProgress: vi.fn(),
+        }),
+      ).rejects.toThrow(/Created \.env\.local at project root/)
+
+      const envContent = readVolFile(resolve(process.cwd(), '.env.local'), 'utf-8')
+      expect(envContent).toContain('agent=')
+      expect(envContent).toContain('https://www.npmjs.com/package/skills#supported-agents')
+
+      const gitignoreContent = readVolFile(resolve(process.cwd(), '.gitignore'), 'utf-8')
+      expect(gitignoreContent).toContain('*.local')
+
+      expect(execSync).not.toHaveBeenCalled()
+    })
+
+    it('should install skill via skills CLI when installSkill is enabled and agent is configured', async () => {
+      const { execSync } = await import('node:child_process')
+      testVol.writeFileSync(resolve(process.cwd(), '.env.local'), 'agent=cursor\n', 'utf-8')
+
+      const plugin = aiDoc({ installSkill: true })
+      const outputPath = 'src/api-skill-install'
+      plugin.config?.({ config: { output: outputPath } as any, projectPath: process.cwd(), reportProgress: vi.fn() })
+
+      const apiTest = {
+        tag: 'test',
+        method: 'GET',
+        summary: 'Test',
+        path: '/test',
+        name: 'testApi',
+        response: 'void',
+        pathKey: 'test.testApi',
+        pathParameters: '',
+        queryParameters: '',
+        callingCode: '',
+      }
+      const data: any = {
+        title: 'Skill Install Test',
+        version: '1.0.0',
+        openapi: '3.0.1',
+        baseUrl: '/api',
+        allApis: [apiTest],
+        components: [],
+        componentNames: [],
+        type: 'typescript',
+        config: {},
+        tagedApis: [
+          {
+            tagName: 'test',
+            apis: [apiTest],
+          },
+        ],
+      }
+
+      await plugin.codeGenerated?.({
+        config: {} as any,
+        data,
+        filePaths: [],
+        outputDir: resolve(process.cwd(), outputPath),
+        projectPath: process.cwd(),
+        reportProgress: vi.fn(),
+      })
+
+      expect(execSync).toHaveBeenCalledWith(
+        expect.stringContaining('cli.mjs'),
+        expect.objectContaining({ cwd: process.cwd(), stdio: 'pipe' }),
+      )
+      expect(execSync).toHaveBeenCalledWith(
+        expect.stringContaining('add'),
+        expect.objectContaining({ cwd: process.cwd(), stdio: 'pipe' }),
+      )
+    })
+
+    it('should throw via logger when .env.local exists but agent is missing', async () => {
+      const { execSync } = await import('node:child_process')
+      const throwErrorSpy = vi.spyOn(logger, 'throwError').mockReturnValue(new Error('mock missing agent'))
+
+      testVol.writeFileSync(resolve(process.cwd(), '.env.local'), '# agent=\n', 'utf-8')
+
+      const plugin = aiDoc({ installSkill: true })
+      const outputPath = 'src/api-skill-empty-agent'
+      plugin.config?.({ config: { output: outputPath } as any, projectPath: process.cwd(), reportProgress: vi.fn() })
+
+      const data: any = {
+        title: 'Skill Empty Agent Test',
+        version: '1.0.0',
+        openapi: '3.0.1',
+        baseUrl: '/api',
+        allApis: [],
+        components: [],
+        componentNames: [],
+        type: 'typescript',
+        config: {},
+        tagedApis: [],
+      }
+
+      await expect(
+        plugin.codeGenerated?.({
+          config: {} as any,
+          data,
+          filePaths: [],
+          outputDir: resolve(process.cwd(), outputPath),
+          projectPath: process.cwd(),
+          reportProgress: vi.fn(),
+        }),
+      ).rejects.toThrow('mock missing agent')
+
+      expect(throwErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Please set the coding agent you are using'),
+      )
+      expect(throwErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('https://www.npmjs.com/package/skills#supported-agents'),
+      )
+      expect(execSync).not.toHaveBeenCalled()
+
+      throwErrorSpy.mockRestore()
+    })
+
+    it('should not validate agent support and pass any agent value to skills CLI', async () => {
+      const { execSync } = await import('node:child_process')
+      testVol.writeFileSync(resolve(process.cwd(), '.env.local'), 'agent=unknown-agent\n', 'utf-8')
+
+      const plugin = aiDoc({ installSkill: true })
+      const outputPath = 'src/api-skill-no-validate'
+      plugin.config?.({ config: { output: outputPath } as any, projectPath: process.cwd(), reportProgress: vi.fn() })
+
+      const apiTest = {
+        tag: 'test',
+        method: 'GET',
+        summary: 'Test',
+        path: '/test',
+        name: 'testApi',
+        response: 'void',
+        pathKey: 'test.testApi',
+        pathParameters: '',
+        queryParameters: '',
+        callingCode: '',
+      }
+      const data: any = {
+        title: 'Skill No Validate Test',
+        version: '1.0.0',
+        openapi: '3.0.1',
+        baseUrl: '/api',
+        allApis: [apiTest],
+        components: [],
+        componentNames: [],
+        type: 'typescript',
+        config: {},
+        tagedApis: [
+          {
+            tagName: 'test',
+            apis: [apiTest],
+          },
+        ],
+      }
+
+      await plugin.codeGenerated?.({
+        config: {} as any,
+        data,
+        filePaths: [],
+        outputDir: resolve(process.cwd(), outputPath),
+        projectPath: process.cwd(),
+        reportProgress: vi.fn(),
+      })
+
+      expect(execSync).toHaveBeenCalledWith(
+        expect.stringContaining('cli.mjs'),
+        expect.objectContaining({ cwd: process.cwd(), stdio: 'pipe' }),
+      )
+      const callArg = (execSync as ReturnType<typeof vi.fn>).mock.calls[0][0] as string
+      expect(callArg).toContain('-a "unknown-agent"')
+    })
+
+    it('should throw via logger when skills CLI fails', async () => {
+      const { execSync } = await import('node:child_process')
+      const throwErrorSpy = vi.spyOn(logger, 'throwError').mockReturnValue(new Error('mock install failed'))
+      ;(execSync as ReturnType<typeof vi.fn>).mockImplementationOnce(() => {
+        throw new Error('skills add failed')
+      })
+
+      testVol.writeFileSync(resolve(process.cwd(), '.env.local'), 'agent=cursor\n', 'utf-8')
+
+      const plugin = aiDoc({ installSkill: true })
+      const outputPath = 'src/api-skill-install-fail'
+      plugin.config?.({ config: { output: outputPath } as any, projectPath: process.cwd(), reportProgress: vi.fn() })
+
+      const apiTest = {
+        tag: 'test',
+        method: 'GET',
+        summary: 'Test',
+        path: '/test',
+        name: 'testApi',
+        response: 'void',
+        pathKey: 'test.testApi',
+        pathParameters: '',
+        queryParameters: '',
+        callingCode: '',
+      }
+      const data: any = {
+        title: 'Skill Install Fail Test',
+        version: '1.0.0',
+        openapi: '3.0.1',
+        baseUrl: '/api',
+        allApis: [apiTest],
+        components: [],
+        componentNames: [],
+        type: 'typescript',
+        config: {},
+        tagedApis: [
+          {
+            tagName: 'test',
+            apis: [apiTest],
+          },
+        ],
+      }
+
+      await expect(
+        plugin.codeGenerated?.({
+          config: {} as any,
+          data,
+          filePaths: [],
+          outputDir: resolve(process.cwd(), outputPath),
+          projectPath: process.cwd(),
+          reportProgress: vi.fn(),
+        }),
+      ).rejects.toThrow('mock install failed')
+
+      expect(throwErrorSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'skills add failed' }),
+      )
+
+      throwErrorSpy.mockRestore()
     })
   })
 

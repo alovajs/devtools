@@ -18,7 +18,7 @@ generator: [
       * platform plugin: auto-resolves OpenAPI file URLs from platform type.
       * Uses config.input as base URL to construct candidate OpenAPI endpoints.
       */
-    plugins: [platform('swagger'), {{{templateCall}}}],
+    plugins: [platform('swagger'), aiDoc({ installSkill: true }), {{{templateCall}}}],
 
     /**
       * the mediaType of the generated response data. default is `application/json`

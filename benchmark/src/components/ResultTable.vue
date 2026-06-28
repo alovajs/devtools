@@ -1,27 +1,27 @@
 <script setup lang="ts">
-import type { AggregatedResult } from '../types'
+import type { BenchmarkResult } from '../types'
 import { computed } from 'vue'
-import { formatBytes, formatMemory, formatTime, TOOL_CONFIGS, toolShortName } from '../types'
+import { formatBytes, formatMemory, formatTime, TEMPLATE_CONFIGS, templateShortName } from '../types'
 
 const props = defineProps<{
-  results: AggregatedResult[]
-  tools: string[]
+  results: BenchmarkResult[]
+  templates: string[]
   scales: number[]
 }>()
 
 const tableData = computed(() => {
   return props.scales.flatMap(scale =>
-    props.tools.map(tool =>
-      props.results.find(r => r.tool === tool && r.scale === scale),
+    props.templates.map(template =>
+      props.results.find(r => r.template === template && r.scale === scale),
     ).filter(Boolean),
-  ) as AggregatedResult[]
+  ) as BenchmarkResult[]
 })
 
 const columns = [
   {
-    title: '工具',
-    dataIndex: 'tool',
-    key: 'tool',
+    title: '模板',
+    dataIndex: 'template',
+    key: 'template',
     width: 160,
   },
   {
@@ -29,53 +29,35 @@ const columns = [
     dataIndex: 'scale',
     key: 'scale',
     width: 80,
-    sorter: (a: AggregatedResult, b: AggregatedResult) => a.scale - b.scale,
+    sorter: (a: BenchmarkResult, b: BenchmarkResult) => a.scale - b.scale,
   },
   {
-    title: '耗时(平均)',
-    dataIndex: 'avgTimeMs',
-    key: 'avgTimeMs',
+    title: '耗时',
+    dataIndex: 'timeMs',
+    key: 'timeMs',
     width: 130,
-    sorter: (a: AggregatedResult, b: AggregatedResult) => a.avgTimeMs - b.avgTimeMs,
-  },
-  {
-    title: '耗时(最快)',
-    dataIndex: 'minTimeMs',
-    key: 'minTimeMs',
-    width: 130,
-  },
-  {
-    title: '耗时(最慢)',
-    dataIndex: 'maxTimeMs',
-    key: 'maxTimeMs',
-    width: 130,
+    sorter: (a: BenchmarkResult, b: BenchmarkResult) => a.timeMs - b.timeMs,
   },
   {
     title: '内存峰值',
     dataIndex: 'memoryMB',
     key: 'memoryMB',
     width: 100,
-    sorter: (a: AggregatedResult, b: AggregatedResult) => a.memoryMB - b.memoryMB,
+    sorter: (a: BenchmarkResult, b: BenchmarkResult) => a.memoryMB - b.memoryMB,
   },
   {
     title: '文件数',
     dataIndex: 'fileCount',
     key: 'fileCount',
     width: 80,
-    sorter: (a: AggregatedResult, b: AggregatedResult) => a.fileCount - b.fileCount,
+    sorter: (a: BenchmarkResult, b: BenchmarkResult) => a.fileCount - b.fileCount,
   },
   {
     title: '总大小',
     dataIndex: 'totalSize',
     key: 'totalSize',
     width: 100,
-    sorter: (a: AggregatedResult, b: AggregatedResult) => a.totalSize - b.totalSize,
-  },
-  {
-    title: '迭代次数',
-    dataIndex: 'iterations',
-    key: 'iterations',
-    width: 80,
+    sorter: (a: BenchmarkResult, b: BenchmarkResult) => a.totalSize - b.totalSize,
   },
   {
     title: '状态',
@@ -85,8 +67,8 @@ const columns = [
   },
 ]
 
-function getToolColor(tool: string): string {
-  return TOOL_CONFIGS.find(t => t.key === tool)?.color || '#666'
+function getTemplateColor(template: string): string {
+  return TEMPLATE_CONFIGS.find(t => t.key === template)?.color || '#666'
 }
 </script>
 
@@ -96,37 +78,31 @@ function getToolColor(tool: string): string {
       :columns="columns"
       :data-source="tableData"
       :pagination="false"
-      :scroll="{ x: 1100 }"
+      :scroll="{ x: 800 }"
       size="middle"
       row-key="rowKey"
-      :row-class-name="(_record: AggregatedResult) => 'table-row'"
+      :row-class-name="(_record: BenchmarkResult) => 'table-row'"
     >
       <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'tool'">
-          <div class="tool-cell">
+        <template v-if="column.key === 'template'">
+          <div class="template-cell">
             <span
-              class="tool-dot"
-              :style="{ background: getToolColor(record.tool) }"
+              class="template-dot"
+              :style="{ background: getTemplateColor(record.template) }"
             />
-            <span class="tool-name">{{ toolShortName(record.tool) }}</span>
-            <span class="tool-version">{{ record.version }}</span>
+            <span class="template-name">{{ templateShortName(record.template) }}</span>
+            <span class="template-version">{{ record.version }}</span>
           </div>
         </template>
         <template v-else-if="column.key === 'scale'">
-          <a-tag :color="record.scale >= 1000 ? 'red' : record.scale >= 500 ? 'orange' : 'blue'">
+          <a-tag>
             {{ record.scale }}
           </a-tag>
         </template>
-        <template v-else-if="column.key === 'avgTimeMs'">
-          <span :class="{ fast: record.avgTimeMs < 1000, slow: record.avgTimeMs >= 5000 }">
-            {{ formatTime(record.avgTimeMs) }}
+        <template v-else-if="column.key === 'timeMs'">
+          <span>
+            {{ formatTime(record.timeMs) }}
           </span>
-        </template>
-        <template v-else-if="column.key === 'minTimeMs'">
-          {{ formatTime(record.minTimeMs) }}
-        </template>
-        <template v-else-if="column.key === 'maxTimeMs'">
-          {{ formatTime(record.maxTimeMs) }}
         </template>
         <template v-else-if="column.key === 'memoryMB'">
           {{ formatMemory(record.memoryMB) }}
@@ -147,33 +123,6 @@ function getToolColor(tool: string): string {
         </template>
       </template>
     </a-table>
-
-    <!-- 最佳表现 -->
-    <div v-if="tableData.length > 0" class="best-summary">
-      <a-divider>最佳表现</a-divider>
-      <div class="best-cards">
-        <div
-          v-for="scale in scales"
-          :key="scale"
-          class="best-card"
-        >
-          <div class="best-scale">
-            {{ scale }} 端点
-          </div>
-          <template v-for="tool in tools" :key="tool">
-            <div
-              v-if="results.find(r => r.tool === tool && r.scale === scale && !r.error)"
-              class="best-item"
-            >
-              <span class="best-tool">{{ toolShortName(tool) }}</span>
-              <span class="best-value">
-                {{ formatTime((results.find(r => r.tool === tool && r.scale === scale) as AggregatedResult).avgTimeMs) }}
-              </span>
-            </div>
-          </template>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -182,76 +131,25 @@ function getToolColor(tool: string): string {
   margin-top: 8px;
 }
 
-.tool-cell {
+.template-cell {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.tool-dot {
+.template-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-.tool-name {
+.template-name {
   font-weight: 600;
 }
 
-.tool-version {
+.template-version {
   font-size: 12px;
   color: #999;
-}
-
-.fast {
-  color: #52c41a;
-  font-weight: 600;
-}
-
-.slow {
-  color: #ff4d4f;
-  font-weight: 600;
-}
-
-.best-summary {
-  margin-top: 24px;
-}
-
-.best-cards {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.best-card {
-  flex: 1;
-  min-width: 200px;
-  background: #fafafa;
-  border-radius: 8px;
-  padding: 12px 16px;
-}
-
-.best-scale {
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 8px;
-  font-size: 14px;
-}
-
-.best-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 4px 0;
-  font-size: 13px;
-}
-
-.best-tool {
-  color: #666;
-}
-
-.best-value {
-  font-weight: 600;
-  font-family: monospace;
 }
 </style>

@@ -4,12 +4,13 @@
     "quick-start",
     "---",
     "guide",
-    "template-system",
     "plugin-system",
+    "template-system",
     "ai-skills",
     "cli-commands",
     "---",
     "api",
-    "changelog"
+    "performance",
+    "migration"
   ]
 }

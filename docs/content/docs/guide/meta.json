@@ -1,9 +1,8 @@
 {
   "pages": [
     "installation-config",
-    "basic-usage",
-    "editor-docs",
-    "api-usage"
+    "monorepo",
+    "editor-docs"
   ],
   "title": "指南"
 }

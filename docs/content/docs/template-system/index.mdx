@@ -3,57 +3,67 @@ title: 模板系统
 description: 了解模板系统的整体架构
 ---
 
-模板是 worma 灵活性的核心。它决定了生成代码的结构、风格和请求方式。worma 提供多套内置模板，同时支持完全自定义的 Handlebars 模板。
+模板决定了生成代码的结构、风格和请求方式。在 worma 中，模板通过插件的 `getTemplate` hook 获取，使用 Handlebars 语法渲染。
 
-```mermaid
-graph TD
-    A[模板系统] --> B[预定义模板]
-    A --> C[自定义模板]
-    B --> D[alova / alovaGlobals]
-    B --> E[axios]
-    B --> F[fetch]
-    B --> G[ky]
-    C --> H["Handlebars 语法"]
-    C --> I["{tag} / {api} 动态文件名"]
-    C --> J[partials]
-    C --> K[模块类型区分]
+## 工作原理
+
+模板系统基于插件的 `getTemplate` 生命周期 hook 实现。每个插件都可以在 `getTemplate` 中返回**模板配置**（`TemplateConfigResult`），指定模板路径：
+
+```typescript
+interface TemplateConfigResult {
+  // 模板路径，相对路径相对于 process.cwd()
+  path: string;
+}
 ```
 
-### 模板配置
+```javascript
+// 插件通过 getTemplate 返回模板配置
+{
+  name: 'my-template-plugin',
+  getTemplate({ config, projectPath }) {
+    return { path: './templates/my-api' };
+  },
+}
+```
 
-模板不再通过 `template` 配置项指定，而是通过**插件**（plugin）的 `getTemplate` hook 返回模板路径：
+多个插件都可以返回模板配置，以最后一个有效的返回值为准。内置模板插件（如 `alova`、`axios`）已预设了 `getTemplate` hook，直接配置到 `plugins` 即可使用：
 
 ```javascript
-import { defineConfig } from 'worma';
-import { alova, axios, fetch, ky, alovaGlobals } from 'worma/plugin';
+import { alova, axios } from 'worma/plugin';
 
 export default defineConfig({
   generator: [
     {
-      plugins: [alova({ framework: 'vue' })],
+      input: 'https://api.example.com/openapi.json',
+      output: 'src/api',
+      plugins: [alova()], // alova 插件自带 getTemplate，返回 alova 模板
     },
   ],
 });
 ```
 
-插件可在各自的 `beforeCodeGenerate` 生命周期中向 `templateData.config` 注入配置参数。多插件有返回 template 时以最后一个有效的 template 返回值为准。
+## Handlebars 模板
 
-### 模板机制
+模板使用 **Handlebars** 语法编写，在代码生成阶段，worma 将解析后的 OpenAPI 数据注入为模板变量，渲染出最终代码。核心变量包括：
 
-```typescript
-// 插件通过 getTemplate hook 返回模板路径
-interface TemplateConfigResult {
-  // 模板路径（相对或绝对，相对是相对于 process.cwd()）
-  path: string;
+- `apis` — 所有 API 接口数据
+- `config` — 生成器配置（插件可在 `beforeCodeGenerate` 中注入额外数据）
+- `tags` — API 分组标签
+
+```handlebars
+{{! 示例：遍历 API 生成函数 }}
+{{#each apis}}
+export function {{name}}(params: {{name}}Params) {
+  return request<{{name}}Response>('{{method}}', '{{path}}', params);
 }
-
-interface ApiPlugin {
-  getTemplate?: (params: {
-    config: Readonly<GeneratorConfig>;
-    projectPath: string;
-    reportProgress: ReportProgress;
-  }) => MaybePromise<TemplateConfigResult | undefined | null | void>;
-}
+{{/each}}
 ```
 
-接下来：[预定义模板](/docs/template-system/predefined-templates) | [自定义模板](/docs/template-system/custom-templates)
+模板支持动态文件名（`{tag}`、`{api}`）、partials 引用、以及按模块类型（index / api / types / ai-doc）区分不同模板文件。
+
+## 两种使用方式
+
+worma 提供了两种模板使用路径：
+
+- **[预定义模板](/docs/template-system/predefined-templates)** — 内置了 alova、alovaGlobals、axios、fetch、ky 等主流请求库模板，开箱即用
+- **[自定义模板](/docs/template-system/custom-templates)** — 使用 Handlebars 语法自由控制生成代码的结构和内容，满足定制化需求

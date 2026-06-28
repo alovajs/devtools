@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import type { AggregatedResult } from '../types'
+import type { BenchmarkResult } from '../types'
 import { BarChart as EBarChart } from 'echarts/charts'
 import { GridComponent, LegendComponent, TooltipComponent } from 'echarts/components'
 import * as echarts from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { formatTime, TOOL_CONFIGS, toolShortName } from '../types'
+import { formatTime, TEMPLATE_CONFIGS, templateShortName } from '../types'
 
 const props = defineProps<{
-  results: AggregatedResult[]
-  tools: string[]
+  results: BenchmarkResult[]
+  templates: string[]
   scales: number[]
 }>()
 
@@ -19,14 +19,14 @@ const chartRef = ref<HTMLDivElement>()
 let chartInstance: echarts.ECharts | null = null
 
 function buildOption() {
-  const series = props.tools.map((tool) => {
-    const config = TOOL_CONFIGS.find(t => t.key === tool)
+  const series = props.templates.map((template) => {
+    const config = TEMPLATE_CONFIGS.find(t => t.key === template)
     return {
-      name: toolShortName(tool),
+      name: templateShortName(template),
       type: 'bar' as const,
       data: props.scales.map((scale) => {
-        const r = props.results.find(_r => _r.tool === tool && _r.scale === scale)
-        return r && !r.error ? (r.avgTimeMs || r.timeMs) : null
+        const r = props.results.find(_r => _r.template === template && _r.scale === scale)
+        return r && !r.error ? r.timeMs : null
       }),
       itemStyle: { color: config?.color, borderRadius: [4, 4, 0, 0] },
       barMaxWidth: 60,
@@ -77,8 +77,6 @@ function buildOption() {
 function renderChart(retries = 0) {
   if (!chartRef.value)
     return
-  // tab 切换后容器可能尚未完成布局（display:none 时尺寸为 0），
-  // 用 rAF 有限重试，避免死循环
   if ((chartRef.value.clientWidth === 0 || chartRef.value.clientHeight === 0) && retries < 10) {
     requestAnimationFrame(() => renderChart(retries + 1))
     return
@@ -98,7 +96,7 @@ onMounted(() => {
   window.addEventListener('resize', handleResize)
 })
 
-watch(() => [props.results, props.tools, props.scales], () => {
+watch(() => [props.results, props.templates, props.scales], () => {
   renderChart()
 }, { deep: true })
 

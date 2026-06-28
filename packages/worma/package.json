@@ -68,6 +68,7 @@
     "openapi-types": "catalog:types",
     "ora": "catalog:dev",
     "prettier": "catalog:dev",
+    "skills": "catalog:",
     "string-width": "catalog:",
     "swagger2openapi": "catalog:frontend",
     "zod": "catalog:frontend",

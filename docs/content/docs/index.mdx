@@ -1,64 +1,99 @@
 ---
 title: 介绍
-description: alova/wormhole — 消除你和服务端之间的一切距离
+description: worma — 一份 OpenAPI，同时生成调用代码和 AI 知识
 ---
 
+> **让 worma 成为 AI 编程工作流中不可或缺的一环——一份 OpenAPI，同时生成开发者能直接调用的代码，和 AI 能读懂的接口知识。**
 
-**消除你和服务端之间的一切距离。**
+在 AI 编码工具（如 Cursor）中，当 AI 尝试调用后端接口时，常常会出现函数名错误、参数不匹配等问题。worma 正是为解决这一问题而生。
 
-`worma` 的命名源自"虫洞"（wormhole）的概念——就像在宇宙中瞬间拉近两个遥远节点的虫洞一样，它消除你和后端之间的所有距离。你不需要打开 Swagger，不需要在文档站和编辑器之间反复切换，你的 AI 也不需要靠猜。
+worma 是一款通用的 OpenAPI 代码生成工具，与后端语言和前端请求库无关。无论后端使用 Java、Go 还是 Python，前端使用 Alova、Axios、Fetch 还是 Ky，只需提供一份 OpenAPI 规范文件，即可同时生成调用代码、TypeScript 类型定义、接口文档和 AI Skill。
 
-## 两条并行主线
+名字取自"虫洞"（wormhole），寓意后端接口与前端代码之间的连接应当像虫洞一样直接，无需绕行。
 
-```mermaid
-flowchart LR
-    A[OpenAPI 文档] --> B[worma]
-    B --> C[为你生成]
-    B --> D[为你的 AI 生成]
-    C --> E[调用函数]
-    C --> F[TypeScript 类型]
-    C --> G[编辑器内嵌文档]
-    D --> H[AI Skill 文档]
-    E --> I[消除中间文档]
-    F --> I
-    G --> I
-    H --> J[Vibe Coding 时代标配]
-```
+## 工作流程
 
-**「消除中间文档」** —— 后端交付接口后，接口信息直接出现在你的编辑器里。不再需要打开 Swagger，不再需要复制参数，不再需要切换窗口。
+<Steps>
+  <Step>
+    **后端交付 OpenAPI 文件**
 
-**「AI Skill」** —— 你的 AI 也看不到接口文档？wormhole 为它生成专属的 Skill 文档，让 AI 直接读懂你的接口，精准生成调用代码。
+    Swagger、Knife4j、FastAPI、ApiFox 等均可，只需一份 OpenAPI 规范文件即可开始。
 
-## 从 v1 到 v2 的变化
+  </Step>
+  <Step>
+    **运行 `npx worma gen`**
 
-v2 是一次重大升级，主要体现在：
+    一条命令即可同时生成两种产出：
 
-| 维度 | v1 | v2 |
-|------|----|----|
-| 模板 | 仅 alova 全局模板 | 内置 alova / axios / fetch / ky + 自定义模板 |
-| 模板配置 | `template` 配置项 | 通过插件（plugin）的 `getTemplate` hook |
-| 插件系统 | — | 完整的生命周期 Hook 体系（含 `beforeFileWrite`、`getTemplate`） |
-| Hook 命名 | `afterOpenapiParse` / `afterCodeGenerate` | `openapiParsed` / `codeGenerated`（语义化过去式） |
-| AI Skill | — | 专为 AI 编码工具生成的接口文档（`aiDoc` 插件） |
-| 缓存 | `node_modules/.alova`（不可提交） | `.worma-cache/` 目录（团队共享） |
-| 模块类型 | 仅 TypeScript | typescript / module(ESM) / commonjs |
-| 生成进度 | spinner | 多行进度条，支持 `onProgress` 回调 + `reportProgress` 钩子 |
-| CLI 参数 | `-c` 指定 cwd，`-w` 开启 workspace | `-p, --project` 指定项目，workspace 为默认行为 |
-| `input` | `string` | `string \| string[]`（支持 fallback） |
-| `platform` | 配置项 | `platform` 插件 |
-| `fileNameCase` | 支持 | 已移除 |
-| `autoUpdate` | 支持 | 已移除 |
+    - **你用的**：调用函数、TypeScript 类型、编辑器内文档
+    - **AI 用的**：Skill 文档，供 AI 直接读取
 
-## 一次生成，四种产出
+    生成后项目中会新增以下内容：
+
+    <Files>
+      <Folder name=".skills" defaultOpen>
+        <File name="SKILL.md" />
+        <Folder name="references" defaultOpen>
+          <File name="user-info.md" />
+          <File name="user-login.md" />
+        </Folder>
+      </Folder>
+      <Folder name="src/api" defaultOpen>
+        <File name="user.ts" />
+        <File name="types.ts" />
+      </Folder>
+    </Files>
+
+    `.skills/` 为 AI 直接读取的知识库，`src/api/` 为开发者可直接 import 的调用代码。
+
+  </Step>
+  <Step>
+    **在编辑器中编写业务代码，AI 自动查询接口**
+
+    输入「获取用户列表」，AI 自动补全 `getUserList({ page: 1 })`，函数名、参数、请求路径均准确无误。
+
+    只需描述业务意图，无需查阅接口文档——AI 会根据 Skill 自动匹配合适的接口。
+
+  </Step>
+</Steps>
+
+## 核心特性
+
+### 🤖 AI Skill 一键生成
+
+自动生成符合 Skills 规范的接口文档，支持[绝大部分 coding agent](https://www.npmjs.com/package/skills#supported-agents)，安装即用。大模型可准确感知项目中的所有 API，避免对函数名和参数进行猜测。
+
+### 🧩 四合一信息输出
+
+一份 OpenAPI 规范同时产出调用函数、TypeScript 类型、可读文档和 AI Skill。开发者使用代码，AI 使用知识，各取所需。
+
+### 🔌 多请求库 + 自定义模板
+
+内置 Alova、Axios、Fetch、Ky 模板，可一键切换。团队可根据实际使用的请求库选择对应模板。如有定制需求，可通过 Handlebars 模板引擎自由修改。
+
+### 📝 编辑器内文档
+
+安装 VSCode 扩展后，悬停即可查看完整的参数表和返回示例，即使是纯 JavaScript 项目也能获得接近 TypeScript 级别的类型提示。开发者与 AI 共享同一份接口知识，代码补全更加精准。
+
+## 即刻体验
+
+无需本地安装，直接在浏览器中体验：
+
+- [TypeScript 示例](https://stackblitz.com/fork/github/alovajs/devtools/tree/main/examples/typescript)
+- [ESM 示例](https://stackblitz.com/fork/github/alovajs/devtools/tree/main/examples/esm)
+- [CommonJS 示例](https://stackblitz.com/fork/github/alovajs/devtools/tree/main/examples/commonjs)
+- [Monorepo 示例](https://stackblitz.com/fork/github/alovajs/devtools/tree/main/examples/monorepo)
+
+## 为 AI 安装 worma skill
+
+为 AI 添加 worma 的配置和使用知识：
 
 ```bash
-npx worma gen
-
-# 生成后你得到：
-# ✓ 调用函数      — 内置 alova / axios / fetch / ky
-# ✓ TypeScript 类型 — 请求/响应全自动推导
-# ✓ 编辑器内嵌文档   — VSCode 中悬停即看
-# ✓ AI Skill 文档   — Cursor / Copilot 直接读取
+npx skills add alovajs/skills --skill worma
 ```
 
-准备好体验了吗？从[快速开始](/docs/quick-start)开始，5 分钟就能上手。
+安装完成后，AI 即可理解 worma 的配置方式和使用命令。
+
+---
+
+[快速开始](/docs/quick-start)，5 分钟即可完成接入。

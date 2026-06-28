@@ -442,6 +442,27 @@ export declare function defineConfig(config: UserConfigExport): UserConfigExport
  * @returns An array that contains the result of `generator` items in configuration whether generation is successful.
  */
 export declare function generate(config: Config, options?: GenerateApiOptions): Promise<boolean[]>;
+export type LogLevel = "debug" | "info" | "warn" | "error";
+export interface LoggerOptions {
+	level: LogLevel;
+	prefix?: string;
+	timestamp?: boolean;
+	colors?: boolean;
+}
+declare class Logger$1 {
+	private options;
+	configure(options: Partial<LoggerOptions>): this;
+	private getTimestamp;
+	private formatMessage;
+	private shouldLog;
+	debug(message: string, details?: unknown): void;
+	info(message: string, details?: unknown): void;
+	warn(message: string, details?: unknown): void;
+	private errorMsg;
+	error(message: string, details?: unknown): void;
+	throwError(error: string | Error, details?: unknown): Error;
+}
+export declare const logger: Logger$1;
 /**
  * Read the worma.config configuration file and return the parsed configuration object.
  * @param projectPath The project path where the configuration file is located. The default value is `process.cwd()`.

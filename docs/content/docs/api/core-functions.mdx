@@ -1,12 +1,12 @@
 ---
 title: 核心函数
-description: defineConfig 和 generate 的编程 API
+description: defineConfig、generate、readConfig 等编程 API
 ---
 
 
 ## defineConfig
 
-定义 worma 配置。
+类型安全的配置辅助函数，接受配置对象或返回配置的函数。详细配置项请参阅 [配置对象](/docs/api/configuration)。
 
 ```typescript
 import { defineConfig } from 'worma';
@@ -20,9 +20,10 @@ export default defineConfig({
 
 ```typescript
 function defineConfig(config: Config): Config;
+function defineConfig(config: Promise<Config>): Promise<Config>;
+function defineConfig(config: () => Config): () => Config;
+function defineConfig(config: () => Promise<Config>): () => Promise<Config>;
 ```
-
-`Config` 包含一个必填的 `generator: GeneratorConfig[]` 数组。
 
 ## generate
 
@@ -31,106 +32,164 @@ function defineConfig(config: Config): Config;
 ```typescript
 import { generate } from 'worma';
 
-await generate(
-  {
-    generator: [
-      {
-        input: 'https://api.example.com/openapi.json',
-        output: 'src/api',
-        template: () => ({ path: './node_modules/...' }),
-      },
-    ],
-  },
-  {
-    force: true,
-    onProgress: (snapshot) => {
-      for (const [source, p] of Object.entries(snapshot)) {
-        console.log(`[${source}] ${p.progress}% - ${p.message}`);
-      }
-    },
-  }
-);
+const results = await generate(config, { force: true });
 ```
 
 **类型签名：**
 
 ```typescript
-async function generate(
+function generate(
   config: Config,
   options?: GenerateApiOptions
-): Promise<void>;
+): Promise<boolean[]>;
 ```
+
+返回 `boolean[]`，每个元素对应 `config.generator` 中一个生成器的执行结果（`true` 成功，`false` 失败）。
 
 ### GenerateApiOptions
 
 | 字段 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
-| `force` | `boolean` | `false` | 强制重新生成 |
+| `force` | `boolean` | `false` | 强制重新生成，忽略缓存 |
 | `projectPath` | `string` | `process.cwd()` | 项目根目录 |
-| `onProgress` | `function` | — | 进度回调 |
-| `progressInterval` | `number` | `500` | 进度推送间隔(ms) |
+| `onProgress` | `(event: GeneratorProgressEvent) => void` | — | 每个 generator 的生命周期回调 |
 
-### 使用场景
+### 进度回调用法
 
-**CI/CD 集成：**
+通过 `onProgress` 的 `phase` 字段区分阶段：
 
-```javascript
-const { generate } = require('worma');
-
+```typescript
 await generate(config, {
-  onProgress: (snapshot) => {
-    console.log(JSON.stringify(snapshot));
+  onProgress(event) {
+    switch (event.phase) {
+      case 'active':
+        console.log(`[${event.index}] 开始生成`);
+        break;
+      case 'progress':
+        console.log(`[${event.index}] ${event.progress}% - ${event.message}`);
+        break;
+      case 'done':
+        console.log(`[${event.index}] 完成`);
+        break;
+      case 'failed':
+        console.error(`[${event.index}] 失败: ${event.error}`);
+        break;
+    }
   },
 });
 ```
 
+### 使用场景
+
 **自定义脚本：**
 
 ```javascript
-import { generate, defineConfig } from 'worma';
+import { generate } from 'worma';
 
-const config = defineConfig({
-  generator: [
-    {
-      input: process.env.OPENAPI_URL,
-      output: 'src/api',
-      plugins: [axios()],
-    },
-  ],
-});
-
-await generate(config, { force: true });
+await generate({
+  generator: [{
+    input: process.env.OPENAPI_URL,
+    output: 'src/api',
+  }],
+}, { force: true });
 ```
 
-## WorkerPool API
+## readConfig
 
-worma 内部使用 `WorkerPool` 进行多线程 schema→TS 转换和 Swagger2→3 转换，通过 `performance.workerPool` 配置。
+读取项目中的 `worma.config` 并返回解析后的配置对象。
 
 ```typescript
-import { WorkerPool } from 'worma';
+import { readConfig } from 'worma';
 
-interface WorkerPoolOptions {
-  /** Worker 脚本路径 */
-  workerScript: string;
-  /** 共享上下文（通过 workerData 传递给每个 worker） */
-  sharedContext: Record<string, unknown>;
-  /** 线程数 */
-  poolSize: number;
-  /** 空闲回收超时 ms，默认 30000 */
-  idleTimeout?: number;
-}
+const config = await readConfig('/path/to/project');
+```
 
-class WorkerPool<Task, Result> {
-  constructor(options: WorkerPoolOptions);
-  get size(): number;
-  async processBatch(tasks: Task[]): Promise<Result[]>;
-  terminate(): void;
+**类型签名：**
+
+```typescript
+function readConfig(projectPath?: string): Promise<Readonly<Config>>;
+```
+
+## getApiDocs
+
+获取缓存的 API 文档数据，用于 VSCode 扩展侧边栏展示等场景。
+
+```typescript
+import { getApiDocs } from 'worma';
+
+const docs = await getApiDocs();
+```
+
+**类型签名：**
+
+```typescript
+function getApiDocs(
+  outputs?: string[],
+  projectPath?: string
+): Promise<CacheData[]>;
+```
+
+| 参数 | 说明 |
+|------|------|
+| `outputs` | 可选，过滤指定 output 路径的缓存数据；不传返回全部 |
+| `projectPath` | 项目根目录，默认 `process.cwd()` |
+
+返回 `CacheData[]`：
+
+```typescript
+interface CacheData {
+  path: string;
+  /** 侧边栏展示的服务名称 */
+  serverName?: string;
+  /** 扁平化的 API 列表 */
+  apis: Api[];
 }
 ```
 
-**特点：**
+## setGlobalConfig
 
-- 零依赖，全部使用 `node:worker_threads` 内置模块
-- 懒启动：首个任务到达时才 spawn worker
-- 30s 空闲自动回收
-- Round-Robin 负载均衡
+设置 worma 全局配置。
+
+```typescript
+import { setGlobalConfig } from 'worma';
+
+setGlobalConfig({
+  cacheDir: '.worma-cache',
+});
+```
+
+## createConfig
+
+在项目中创建 `worma.config` 文件。
+
+```typescript
+import { createConfig } from 'worma';
+
+await createConfig({
+  template: 'alova',
+  type: 'typescript',
+});
+```
+
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| `projectPath` | `string` | 项目根目录 |
+| `type` | `TemplateType` | 生成代码类型 |
+| `template` | `TemplatePreset` | 模板预设：`'alova'` \| `'alovaGlobals'` \| `'axios'` \| `'fetch'` \| `'ky'` |
+
+## resolveWorkspaces
+
+在 Monorepo 项目中搜索所有包含 `worma.config` 的子包目录。
+
+```typescript
+import { resolveWorkspaces } from 'worma';
+
+const dirs = await resolveWorkspaces('/path/to/monorepo');
+// → ['./packages/user-service', './packages/order-service']
+```
+
+**类型签名：**
+
+```typescript
+function resolveWorkspaces(projectPath?: string): Promise<string[]>;
+```

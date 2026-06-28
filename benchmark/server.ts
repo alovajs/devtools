@@ -9,7 +9,7 @@
  * Runner 使用 spawn 异步执行，事件循环不被阻塞。
  */
 
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { serve } from '@hono/node-server'
@@ -40,14 +40,14 @@ if (isProd) {
 
 // 设置 runner 的 baseDir
 // eslint-disable-next-line antfu/no-top-level-await
-const { setBaseDir, runSingleBenchmarkWithMem, aggregateResults, warmupVersionCache } = await import('./src/server/runner.js')
+const { setBaseDir, runSingleBenchmarkWithMem, warmupVersionCache } = await import('./src/server/runner.js')
 setBaseDir(__dirname)
 
 /** POST /api/benchmark/run — SSE 流式推送 benchmark 进度与结果 */
 app.post('/api/benchmark/run', async (c) => {
   const body = await c.req.json().catch(() => ({}))
-  const scales: number[] = body.scales || [200, 500, 1000, 5000]
-  const iterations: number = body.iterations || 1
+  const scales: number[] = body.scales || [500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000]
+  const templates: string[] = body.templates || ['alovaGlobals', 'axios']
 
   return streamSSE(c, async (stream) => {
     let aborted = false
@@ -55,12 +55,11 @@ app.post('/api/benchmark/run', async (c) => {
       aborted = true
     })
 
-    const rawResults: any[] = []
-    const totalSteps = scales.length * 3 * iterations // 3 tools
+    const results: any[] = []
+    const totalSteps = scales.length * templates.length
     let completedSteps = 0
 
-    // 预热版本缓存：在首个 SSE 事件前一次性查询所有工具版本，
-    // 避免后续 runSingleBenchmarkWithMem 中 getPackageVersion 阻塞计时
+    // 预热版本缓存
     warmupVersionCache()
 
     const writeEvent = async (event: string, data: any) => {
@@ -76,58 +75,43 @@ app.post('/api/benchmark/run', async (c) => {
 
     try {
       for (const scale of scales) {
-        for (const tool of ['worma', 'openapi-typescript', '@hey-api/openapi-ts']) {
-          for (let i = 0; i < iterations; i++) {
-            if (aborted)
-              return
+        for (const template of templates) {
+          if (aborted)
+            return
 
-            await writeEvent('progress', {
-              tool,
-              scale,
-              iteration: i + 1,
-              totalIterations: iterations,
-              progress: Math.round((completedSteps / totalSteps) * 100),
-              status: 'running',
-            })
+          await writeEvent('progress', {
+            template,
+            scale,
+            progress: Math.round((completedSteps / totalSteps) * 100),
+            status: 'running',
+          })
 
-            const result = await runSingleBenchmarkWithMem(scale, tool)
-            rawResults.push(result)
-            completedSteps++
+          const result = await runSingleBenchmarkWithMem(scale, template)
+          results.push(result)
+          completedSteps++
 
-            await writeEvent('progress', {
-              tool,
-              scale,
-              iteration: i + 1,
-              totalIterations: iterations,
-              progress: Math.round((completedSteps / totalSteps) * 100),
-              status: result.error ? 'error' : 'done',
-              result,
-            })
-          }
+          await writeEvent('progress', {
+            template,
+            scale,
+            progress: Math.round((completedSteps / totalSteps) * 100),
+            status: result.error ? 'error' : 'done',
+            result,
+          })
         }
       }
 
       if (aborted)
         return
 
-      // 聚合结果
-      const aggregated = aggregateResults(rawResults)
-
-      // 保存到 results/
+      // 保存到 results/latest.json（仅保存一份）
       const resultsDir = resolve(__dirname, 'results')
       mkdirSync(resultsDir, { recursive: true })
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
       const reportData = {
-        results: aggregated,
-        rawResults,
+        results,
         timestamp: new Date().toISOString(),
       }
       writeFileSync(
         resolve(resultsDir, 'latest.json'),
-        JSON.stringify(reportData, null, 2),
-      )
-      writeFileSync(
-        resolve(resultsDir, `${timestamp}.json`),
         JSON.stringify(reportData, null, 2),
       )
 
@@ -153,49 +137,6 @@ app.get('/api/benchmark/pre-generated', (c) => {
   }
   catch (e: any) {
     return c.json({ error: e.message || 'Internal error' }, 500)
-  }
-})
-
-/** GET /api/benchmark/history */
-app.get('/api/benchmark/history', (c) => {
-  try {
-    const resultsDir = resolve(__dirname, 'results')
-    const files: string[] = []
-
-    if (existsSync(resultsDir)) {
-      const entries = readdirSync(resultsDir, { withFileTypes: true })
-      for (const entry of entries) {
-        if (entry.isFile() && entry.name.endsWith('.json') && entry.name !== 'latest.json') {
-          files.push(entry.name.replace('.json', ''))
-        }
-      }
-      files.sort().reverse()
-    }
-
-    return c.json(files)
-  }
-  catch (e: any) {
-    return c.json({ error: e.message }, 500)
-  }
-})
-
-/** GET /api/benchmark/history-detail?id=xxx */
-app.get('/api/benchmark/history-detail', (c) => {
-  try {
-    const id = c.req.query('id')
-    if (!id) {
-      return c.json({ error: 'Missing id parameter' }, 400)
-    }
-
-    const filePath = resolve(__dirname, 'results', `${id}.json`)
-    if (existsSync(filePath)) {
-      const data = JSON.parse(readFileSync(filePath, 'utf-8'))
-      return c.json(data)
-    }
-    return c.json({ error: 'History not found' }, 404)
-  }
-  catch (e: any) {
-    return c.json({ error: e.message }, 500)
   }
 })
 

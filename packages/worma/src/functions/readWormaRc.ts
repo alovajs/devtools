@@ -3,6 +3,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { PresetTemplateName } from '@/constant'
 import { logger } from '@/helper/logger'
+import { aiDoc } from '@/plugins'
 import { alovaGlobals, axios, fetch, ky, alova as templateAlova } from '@/template'
 
 /**
@@ -143,7 +144,7 @@ export async function readWormaRc(projectPath: string): Promise<Config | null> {
       const generatorConfig: GeneratorConfig = {
         input: url,
         output,
-        plugins: [PRESET_TEMPLATES[template]()],
+        plugins: [PRESET_TEMPLATES[template](), aiDoc({ installSkill: true })],
       }
 
       generators.push(generatorConfig)
