@@ -1142,6 +1142,97 @@ describe('generate API', () => {
     )
   })
 
+  it('should generate literal types for `const` discriminators in oneOf/anyOf unions', async () => {
+    const outputDir = resolve(__dirname, `./mock_output/const_discriminator${getSalt()}`)
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, './openapis/const_discriminator_openapi.json'),
+          output: outputDir,
+          type: 'ts',
+        },
+      ],
+    })
+
+    const globalsFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8')
+
+    // forgetPassword request body should be a discriminated union with literal `channel` (issue #824).
+    // (response is not specified in the fixture, so the response type defaults to null)
+    expect(globalsFile).toMatch(
+      createStrReg(`forgetPassword<
+        Config extends Alova2MethodConfig<null> & {
+          data:
+            | {
+                channel: 'email';
+                email: string;
+                password: string;
+                code: string;
+              }
+            | {
+                channel: 'phone';
+                phone: string;
+                password: string;
+                code: string;
+              };
+        }
+      >`),
+    )
+
+    // toggleIntegration request body uses a boolean `const` discriminator (issue #824).
+    expect(globalsFile).toMatch(
+      createStrReg(`toggleIntegration<
+        Config extends Alova2MethodConfig<null> & {
+          data:
+            | {
+                enabled: false;
+              }
+            | {
+                enabled: true;
+                url: string;
+                apiKey: string;
+              };
+        }
+      >`),
+    )
+
+    // oauthToken request body should be a discriminated union — branches with different
+    // `const`/`enum` discriminators must NOT be merged by `mergeAnyOf` (issue #802).
+    expect(globalsFile).toMatch(
+      createStrReg(`oauthToken<
+        Config extends Alova2MethodConfig<null> & {
+          data:
+            | {
+                grant_type: 'password';
+                username: string;
+                password: string;
+                scope?: string;
+              }
+            | {
+                grant_type: 'authorization_code';
+                code: string;
+                redirect_uri: string;
+                client_id: string;
+                client_secret: string;
+              }
+            | {
+                grant_type: 'refresh_token';
+                refresh_token: string;
+              }
+            | {
+                grant_type: 'client_credentials' | 'device_code';
+                scope?: string;
+              };
+        }
+      >`),
+    )
+
+    // No literal `string` should leak for the `channel` / `grant_type` discriminators
+    // (issue #824's primary symptom: `channel: string` instead of the literal value).
+    expect(globalsFile).not.toMatch(/channel:\s*string/)
+    expect(globalsFile).not.toMatch(/grant_type:\s*string/)
+    expect(globalsFile).not.toMatch(/enabled:\s*boolean/)
+  })
+
   it('should generate api files according to the fileNameCase config', async () => {
     const outputDir = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`)
     await generate({

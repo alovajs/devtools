@@ -4,8 +4,8 @@ import { forward, forwarders } from '@/core/loader/astLoader/parsers/forward'
 describe('forward function and forwarders', () => {
   describe('forwarders array', () => {
     it('should have correct order and length', () => {
-      expect(forwarders).toHaveLength(5)
-      expect(forwarders.map(f => f.to)).toEqual(['object', 'enum', 'tuple', 'array', 'group'])
+      expect(forwarders).toHaveLength(6)
+      expect(forwarders.map(f => f.to)).toEqual(['object', 'enum', 'tuple', 'array', 'const', 'group'])
     })
 
     it('should have all forwarders with correct interface', () => {
@@ -79,6 +79,27 @@ describe('forward function and forwarders', () => {
       const result = forward(schema)
 
       expect(result).toBe('group')
+    })
+
+    it('should return "const" for schema with const keyword', () => {
+      const schema: SchemaObject = {
+        type: 'string',
+        const: 'email',
+      }
+
+      const result = forward(schema)
+
+      expect(result).toBe('const')
+    })
+
+    it('should return "const" for schema with const keyword without explicit type', () => {
+      const schema: SchemaObject = {
+        const: 1,
+      }
+
+      const result = forward(schema)
+
+      expect(result).toBe('const')
     })
 
     it('should return "group" for group schema with anyOf', () => {
