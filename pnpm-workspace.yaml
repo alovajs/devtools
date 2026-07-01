@@ -13,12 +13,14 @@ catalog:
   ant-design-vue: ^4.2.6
   axios: ^1.17.0
   cli-truncate: ^4.0.0
+  clsx: ^2.1.1
   concurrently: ^9.1.0
   cross-env: ^7.0.3
   echarts: ^5.6.0
   hono: ^4.7.0
   ky: ^2.0.2
   log-update: ^6.1.0
+  motion: ^12.42.0
   openapi-typescript: ^7.6.0
   skills: ^1.5.13
   string-width: ^7.2.0
