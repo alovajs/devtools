@@ -2,30 +2,36 @@ export default function PluginCard({
   icon,
   title,
   desc,
+  large = false,
+  highlighted = false,
 }: {
   icon: React.ReactNode
   title: string
   desc: string
+  large?: boolean
+  highlighted?: boolean
 }) {
   return (
-    <div className="relative flex flex-col gap-4 border border-gray-300 bg-white p-5 transition hover:border-[#0500ff] hover:bg-[#fafaff]">
-      <div className="absolute right-3 top-3 font-mono text-xs text-gray-300 select-none">
-        +
-      </div>
-      {/* Bottom-left corner tick */}
-      <span className="absolute -left-px -bottom-px h-2 w-2 border-b border-l border-gray-300" />
+    <div
+      className={`group relative flex h-full flex-col rounded-2xl border border-gray-200/80 p-6 shadow-sm transition-all duration-300 hover:border-brand-blue/30 hover:shadow-lg hover:shadow-brand-blue/5 ${
+        highlighted ? 'gap-5 bg-gradient-to-br from-brand-blue/[0.03] to-transparent' : 'gap-4 bg-white'
+      } ${large ? 'p-8' : ''}`}
+    >
+      {/* Top accent line */}
+      <div className="absolute inset-x-4 top-0 h-[2px] origin-left scale-x-0 bg-gradient-to-r from-brand-blue to-brand-blue/40 transition-transform duration-300 group-hover:scale-x-100" />
       <div className="flex items-center gap-3">
         <div
-          className="flex h-[30px] w-[30px] items-center justify-center"
-          style={{ backgroundColor: '#eef0ff' }}
+          className={`flex shrink-0 items-center justify-center rounded-lg bg-gray-50 text-brand-blue ring-1 ring-gray-100 transition-colors group-hover:bg-brand-blue/5 ${
+            large ? 'h-12 w-12' : 'h-10 w-10'
+          }`}
         >
-          <div className="text-[#0500ff]">{icon}</div>
+          {icon}
         </div>
-        <span className="font-mono text-sm font-bold uppercase tracking-wider text-gray-900">
+        <h3 className={`font-bold font-mono tracking-tight text-gray-900 ${large ? 'text-lg' : 'text-base'}`}>
           {title}
-        </span>
+        </h3>
       </div>
-      <p className="text-xs leading-relaxed text-gray-500">{desc}</p>
+      <p className={`leading-relaxed text-gray-500 ${large ? 'mt-1 text-base' : 'mt-1 text-sm'}`}>{desc}</p>
     </div>
   )
 }

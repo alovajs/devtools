@@ -40,11 +40,11 @@ html.dark {
 
 /* API Detail header card */
 .api-header-card {
-  padding: 12px;
+  padding: 14px 16px;
   border-radius: 6px;
   background: var(--vscode-editorWidget-background, var(--vscode-editor-background));
-  border: 1px solid var(--vscode-editorWidget-border, var(--vscode-panel-border));
-  margin-bottom: 4px;
+  border: 1px solid var(--vscode-editorWidget-border, var(--vscode-panel-border, transparent));
+  margin-bottom: 6px;
 }
 
 .api-path {
@@ -53,24 +53,52 @@ html.dark {
   font-weight: 500;
   color: var(--vscode-foreground);
   word-break: break-all;
+  letter-spacing: -0.01em;
 }
 
 .api-meta {
-  margin-top: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--vscode-editorWidget-border, var(--vscode-panel-border, transparent));
+  opacity: 0.92;
 }
 
 .api-name {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--vscode-foreground);
+  letter-spacing: -0.01em;
+  line-height: 1.4;
 }
 
 .api-summary {
-  margin-top: 4px;
-  font-size: 11px;
+  margin-top: 6px;
+  font-size: 12px;
   color: var(--vscode-descriptionForeground);
-  line-height: 1.5;
+  line-height: 1.6;
   word-break: break-all;
+}
+
+/* API field count badge in collapse headers */
+.api-field-count {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--vscode-descriptionForeground);
+  background: var(--vscode-badge-background, var(--vscode-input-background));
+  padding: 1px 7px;
+  border-radius: 10px;
+  line-height: 1.6;
+  font-feature-settings: 'tnum';
+  letter-spacing: 0.01em;
+}
+
+/* Tab panel content wrapper */
+.api-tab-content {
+  margin-top: 12px;
+  padding: 0 2px;
 }
 
 /* Search bar in API SERVER */
@@ -86,8 +114,8 @@ html.dark {
   line-height: 1;
   padding: 1px 5px;
   border-radius: 8px;
-  color: var(--vscode-descriptionForeground);
-  background: var(--vscode-badge-background, var(--vscode-input-background));
+  color: var(--vscode-editor-background);
+  background: var(--vscode-foreground);
   font-feature-settings: 'tnum';
 }
 

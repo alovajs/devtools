@@ -243,11 +243,6 @@ function renderLabel({ option }: { option: TreeOption }) {
       data-key={option.key}
       title={tooltip}
     >
-      {nodeType && nodeType !== 'api'
-        ? (
-            <span class={`tree-dot tree-dot--${nodeType}`} />
-          )
-        : null}
       {strRender(getLabel(option as TreeOption), option)}
     </div>
   )

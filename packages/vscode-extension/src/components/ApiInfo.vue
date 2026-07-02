@@ -44,22 +44,6 @@ function resolveInitialTab(): string {
   return 'params'
 }
 const tabValue = ref(resolveInitialTab())
-
-// Count fields from type comment (lines after the = sign minus 2 for { } wrapper)
-function countFields(code: string): number {
-  if (!code)
-    return 0
-  const body = code.replace(/^type \w+ = /, '').trim()
-  if (body === '{}' || body === '')
-    return 0
-  // Count semicolons which separate fields in TS type definitions
-  const lines = body.split('\n').filter(l => l.trim() && !l.trim().startsWith('//'))
-  return lines.length
-}
-
-const pathParamsCount = computed(() => countFields(typeCode('PathParams', props.api.pathParametersComment)))
-const queryParamsCount = computed(() => countFields(typeCode('QueryParams', props.api.queryParametersComment)))
-const requestBodyCount = computed(() => countFields(typeCode('RequestBody', props.api.requestBodyComment)))
 </script>
 
 <template>
@@ -112,14 +96,13 @@ const requestBodyCount = computed(() => countFields(typeCode('RequestBody', prop
         </template>
       </n-tab>
     </n-tabs>
-    <DynamicSlots :show="tabValue" class="mt-3">
+    <DynamicSlots :show="tabValue" class="api-tab-content">
       <template v-if="hasAnyParam" #params>
         <n-collapse :default-expanded-names="['PathParams']">
           <n-collapse-item v-if="hasPathParams" name="PathParams">
             <template #header>
               <span class="text-sm font-500">
                 {{ $t('api-info.path-params') }}
-                <span class="ml-1 text-sm opacity-65">({{ pathParamsCount }} fields)</span>
               </span>
             </template>
             <ApiCodeCard
@@ -131,7 +114,6 @@ const requestBodyCount = computed(() => countFields(typeCode('RequestBody', prop
             <template #header>
               <span class="text-sm font-500">
                 {{ $t('api-info.query-params') }}
-                <span class="ml-1 text-sm opacity-65">({{ queryParamsCount }} fields)</span>
               </span>
             </template>
             <ApiCodeCard
@@ -143,7 +125,6 @@ const requestBodyCount = computed(() => countFields(typeCode('RequestBody', prop
             <template #header>
               <span class="text-sm font-500">
                 {{ $t('api-info.request-body') }}
-                <span class="ml-1 text-sm opacity-65">({{ requestBodyCount }} fields)</span>
               </span>
             </template>
             <ApiCodeCard
