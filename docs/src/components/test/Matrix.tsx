@@ -1,9 +1,21 @@
+import Image from 'next/image'
 import Icon from './Icon'
 import SectionHeader from './SectionHeader'
 import SectionLabel from './SectionLabel'
 
-const sourceLangs = ['Java', 'Go', 'Python', 'Node.js']
-const outputLibs = ['alova', 'axios', 'ky', 'fetch']
+const sourceLangs = [
+  { name: 'Java', icon: '/img/java.svg' },
+  { name: 'Go', icon: '/img/golang.svg' },
+  { name: 'Python', icon: '/img/Python.svg' },
+  { name: 'Node.js', icon: '/img/nodejs_alt.svg' },
+]
+
+const outputLibs = [
+  { name: 'alova', icon: '/img/alova.svg' },
+  { name: 'axios', icon: '/img/axios.svg' },
+  { name: 'ky', icon: '/img/ky.svg' },
+  { name: 'fetch', icon: '/img/fetch.svg' },
+]
 
 export default function Matrix() {
   return (
@@ -18,29 +30,39 @@ export default function Matrix() {
         </div>
         <div className="lg:col-span-8 p-8 lg:p-12 bg-surface/30 flex items-center justify-center">
           <div className="flex flex-col md:flex-row items-center justify-between w-full max-w-3xl gap-8">
-            <div className="flex flex-col gap-2 w-32">
+            <div className="flex flex-col gap-2 w-40">
               {sourceLangs.map(lang => (
-                <div key={lang} className="p-2 tech-border bg-background text-center font-data-mono text-[10px] text-on-surface-variant">{lang}</div>
+                <div key={lang.name} className="flex items-center gap-3 p-2 tech-border bg-background font-data-mono text-[10px] text-on-surface-variant">
+                  <div className="w-8 h-8 shrink-0 flex items-center justify-center">
+                    <Image src={lang.icon} alt={lang.name} width={26} height={26} className="object-contain size-auto" />
+                  </div>
+                  <span>{lang.name}</span>
+                </div>
               ))}
             </div>
             <div className="relative flex items-center justify-center">
               <div className="hidden md:block absolute -left-12 w-12 h-[1px] bg-outline" />
               <div className="w-20 h-20 tech-border border-primary flex flex-col items-center justify-center bg-background relative group">
-                <Icon name="sync_alt" className="text-primary text-2xl" />
-                <span className="text-[8px] text-primary font-data-mono mt-1">CORE</span>
+                <Image src="/img/logo.svg" alt="worma" width={20} height={20} className="w-5 h-5 mt-0.5" />
               </div>
               <div className="hidden md:block absolute -right-12 w-12 h-[1px] bg-outline" />
             </div>
-            <div className="grid grid-cols-2 gap-2 w-48">
+            <div className="grid grid-cols-2 gap-2 w-56">
               {outputLibs.map((lib, index) => (
                 <div
-                  key={lib}
-                  className={`p-2 tech-border bg-background text-center font-data-mono text-[10px] ${index === 0 ? 'text-primary' : 'text-on-surface-variant'}`}
+                  key={lib.name}
+                  className={`flex items-center gap-2 p-2 tech-border bg-background font-data-mono text-[10px] ${index === 0 ? 'text-primary' : 'text-on-surface-variant'}`}
                 >
-                  {lib}
+                  <div className="w-7 h-7 shrink-0 flex items-center justify-center">
+                    <Image src={lib.icon} alt={lib.name} width={24} height={24} className="object-contain size-auto" />
+                  </div>
+                  <span>{lib.name}</span>
                 </div>
               ))}
-              <div className="col-span-2 p-2 tech-border bg-primary/10 border-primary/30 text-center font-data-mono text-[10px] text-primary">自定义模板</div>
+              <div className="col-span-2 flex items-center justify-center gap-2 p-2 tech-border bg-primary/10 border-primary/30 font-data-mono text-[10px] text-primary">
+                <Icon name="extension" className="text-xs" />
+                <span>自定义模板</span>
+              </div>
             </div>
           </div>
         </div>

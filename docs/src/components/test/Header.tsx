@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Container from './Container'
 
 export default function Header() {
@@ -6,7 +7,7 @@ export default function Header() {
       <Container border="all" className="flex justify-between items-center w-full px-6 py-4">
         <div className="absolute -top-1 -left-1 text-[10px] text-on-surface-variant font-data-mono">ROOT_NODE</div>
         <div className="font-headline-lg text-2xl text-primary font-bold tracking-tighter uppercase flex items-center gap-2">
-          <span className="w-2 h-6 bg-primary" />
+          <Image src="/img/logo.svg" alt="worma" width={24} height={24} className="w-6 h-6" />
           worma
         </div>
         <nav className="hidden md:flex items-center gap-12">

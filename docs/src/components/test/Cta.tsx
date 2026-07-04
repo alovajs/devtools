@@ -15,9 +15,9 @@ export default function Cta() {
           「开始使用」
         </h2>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-          <Button variant="primary" size="lg" icon="rocket_launch" className="w-full sm:w-auto">免费开始</Button>
-          <Button variant="outline" size="lg" className="px-10 w-full sm:w-auto">查看文档</Button>
-          <Button variant="outline" size="lg" icon="code" className="px-10 w-full sm:w-auto">GitHub</Button>
+          <Button variant="primary" size="lg" icon="rocket_launch" className="w-full sm:w-auto" href="/docs/quick-start">免费开始</Button>
+          <Button variant="outline" size="lg" className="px-10 w-full sm:w-auto" href="/docs">查看文档</Button>
+          <Button variant="outline" size="lg" icon="code" className="px-10 w-full sm:w-auto" href="https://github.com/alovajs/devtools">GitHub</Button>
         </div>
         <p className="font-data-mono text-xs text-on-surface-variant tracking-widest uppercase">
           从 OpenAPI 到生产代码，一步到位
