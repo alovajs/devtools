@@ -1,13 +1,41 @@
-@import 'tailwindcss';
-@import 'fumadocs-ui/css/neutral.css';
-@import 'fumadocs-ui/css/preset.css';
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+@import "tailwindcss";
+@import "fumadocs-ui/css/neutral.css";
+@import "fumadocs-ui/css/preset.css";
 
 @theme {
   --color-brand-blue: #0500ff;
   --color-brand-lime: #d4ff00;
+
+  --color-primary: #FF701E;
+  --color-on-primary: #000000;
+  --color-primary-container: #FF701E;
+  --color-primary-light: #FFB695;
+  --color-accent-blue: #88CEFF;
+  --color-background: #0D0D0D;
+  --color-surface: #111111;
+  --color-surface-variant: #1A1A1A;
+  --color-outline: #2A2A2A;
+  --color-outline-variant: #222222;
+  --color-on-background: #FFFFFF;
+  --color-on-surface: #E5E2E1;
+  --color-on-surface-variant: #888888;
+  --color-text-muted: #555555;
+  --color-editor-bg: #050505;
+  --color-editor-sidebar: #0a0a0a;
+  --color-editor-titlebar: #121212;
+  --color-cta-bg: #080808;
+  --color-tooltip-bg: #181818;
+  --color-window-control: #333333;
+
+  --font-headline-lg: "Space Grotesk", sans-serif;
+  --font-body-md: "Space Mono", monospace;
+  --font-label-sm: "Space Mono", monospace;
+  --font-display-lg: "Space Grotesk", sans-serif;
+  --font-data-mono: "Space Mono", monospace;
 }
 
-::root {
+:root {
   color-scheme: light;
 }
 
@@ -15,14 +43,14 @@ body {
   background: #ffffff;
   color: #0a0a0a;
   font-family:
-    'Inter',
+    "Inter",
     ui-sans-serif,
     system-ui,
     -apple-system,
     BlinkMacSystemFont,
-    'Segoe UI',
+    "Segoe UI",
     Roboto,
-    'Helvetica Neue',
+    "Helvetica Neue",
     Arial,
     sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -34,26 +62,21 @@ a {
   text-decoration: none;
 }
 
-/* Selection */
 ::selection {
   background: rgba(5, 0, 255, 0.12);
   color: #0500ff;
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
 }
-
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
   background: #d1d5db;
   border-radius: 3px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
   background: #9ca3af;
 }
@@ -67,4 +90,206 @@ a {
 html > body[data-scroll-locked] {
   margin-right: 0px !important;
   --removed-body-scroll-bar-size: 0px !important;
+}
+
+/* ─── Shared keyframes used by Tailwind arbitrary animation values ─── */
+@keyframes char-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float-plus {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.1;
+  }
+  50% {
+    transform: translateY(-8px);
+    opacity: 0.3;
+  }
+}
+
+@keyframes float-block {
+  0%,
+  100% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-12px) translateX(6px) rotate(10deg);
+  }
+}
+
+@keyframes hero-float-a {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes tab-in {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ─── Universal Adapter particle flow ─── */
+@keyframes particle-left {
+  0% {
+    cx: 4;
+    opacity: 0;
+  }
+  6% {
+    opacity: 1;
+  }
+  46% {
+    cx: 292;
+    opacity: 0.7;
+  }
+  52% {
+    cx: 292;
+    opacity: 0;
+  }
+  100% {
+    cx: 292;
+    opacity: 0;
+  }
+}
+
+@keyframes particle-right {
+  0% {
+    cx: 308;
+    opacity: 0;
+  }
+  52% {
+    cx: 308;
+    opacity: 0;
+  }
+  58% {
+    opacity: 1;
+  }
+  94% {
+    cx: 594;
+    opacity: 0.7;
+  }
+  100% {
+    cx: 594;
+    opacity: 0;
+  }
+}
+
+@keyframes hub-pulse {
+  0%, 100% {
+    r: 4;
+    opacity: 1;
+  }
+  50% {
+    r: 6;
+    opacity: 0.4;
+  }
+}
+
+/* ─── Tilt card hover ─── */
+.tilt-hover {
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.tilt-hover:hover {
+  transform: perspective(800px) rotateX(-1deg) rotateY(2deg) scale(1.02);
+}
+
+@keyframes scan {
+  0% { top: 0%; }
+  100% { top: 100%; }
+}
+
+@utility tech-border {
+  border: 1px solid var(--color-outline) !important;
+}
+@utility tech-border-b {
+  border-bottom: 1px solid var(--color-outline) !important;
+}
+@utility tech-border-r {
+  border-right: 1px solid var(--color-outline) !important;
+}
+@utility tech-border-l {
+  border-left: 1px solid var(--color-outline) !important;
+}
+@utility tech-border-t {
+  border-top: 1px solid var(--color-outline) !important;
+}
+@utility tech-border-x {
+  border-left: 1px solid var(--color-outline) !important;
+  border-right: 1px solid var(--color-outline) !important;
+}
+@utility tech-border-y {
+  border-top: 1px solid var(--color-outline) !important;
+  border-bottom: 1px solid var(--color-outline) !important;
+}
+
+@utility tech-border-0 {
+  border: 0 !important;
+}
+@utility tech-border-b-0 {
+  border-bottom: 0 !important;
+}
+@utility tech-border-r-0 {
+  border-right: 0 !important;
+}
+@utility tech-border-l-0 {
+  border-left: 0 !important;
+}
+@utility tech-border-t-0 {
+  border-top: 0 !important;
+}
+
+.corner-plus::before {
+  content: '+';
+  position: absolute;
+  top: -6px;
+  left: -5px;
+  color: var(--color-text-muted);
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+}
+
+.syntax-keyword { color: var(--color-primary); }
+.syntax-string { color: var(--color-accent-blue); }
+.syntax-comment { color: var(--color-text-muted); }
+.syntax-type { color: var(--color-primary-light); }
+
+.scan-line {
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, transparent, var(--color-primary), transparent);
+  position: absolute;
+  opacity: 0.2;
+  animation: scan 4s linear infinite;
+}
+
+.worma-bg {
+  background-color: var(--color-background);
+  background-image: radial-gradient(var(--color-surface-variant) 1px, transparent 1px);
+  background-size: 40px 40px;
 }

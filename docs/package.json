@@ -11,13 +11,14 @@
     "lint": "oxlint"
   },
   "dependencies": {
-    "@gsap/react": "^2.1.2",
+    "@gsap/react": "catalog:",
     "@orama/orama": "^3.1.18",
+    "@shikijs/twoslash": "catalog:",
     "clsx": "catalog:",
     "fumadocs-core": "16.9.3",
     "fumadocs-mdx": "15.0.11",
     "fumadocs-ui": "16.9.3",
-    "gsap": "^3.15.0",
+    "gsap": "catalog:",
     "lucide-react": "^1.17.0",
     "mermaid": "^11.15.0",
     "motion": "catalog:",
@@ -26,6 +27,7 @@
     "playwright": "^1.60.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "shiki": "catalog:",
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {

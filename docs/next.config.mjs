@@ -7,6 +7,8 @@ const config = {
   output: 'export',
   reactStrictMode: true,
   images: { unoptimized: true },
+  // Shiki uses native ESM modules that need to stay external to Webpack bundling
+  serverExternalPackages: ['shiki', '@shikijs/twoslash'],
 }
 
 export default withMDX(config)
