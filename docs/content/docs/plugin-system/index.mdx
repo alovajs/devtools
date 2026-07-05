@@ -29,7 +29,7 @@ config() → beforeOpenapiParse() → 解析 OpenAPI → openapiParsed()
     loop 每个文件:
        beforeFileWrite(filePath, content)  ← 插件修改单文件内容
        writeFile(filePath)
-→ codeGenerated(filePaths)     ← 通知 / 生成额外文件（aiDoc 等）
+→ codeGenerated(filePaths, renderTemplate)     ← 通知 / 生成额外文件（aiDoc 等）
 ```
 
 ## 钩子概览
@@ -43,7 +43,7 @@ config() → beforeOpenapiParse() → 解析 OpenAPI → openapiParsed()
 | `beforeCodeGenerate`   | 代码生成前       | TemplateData     | 已冻结      |
 | `onHandlebarsCreated`  | Handlebars 实例创建后 | hbs 实例 / partials / helpers | 已冻结 |
 | `beforeFileWrite`      | 每个文件写盘前   | 单个文件内容     | 已冻结      |
-| `codeGenerated`        | 全部文件写盘后   | filePaths        | 已冻结      |
+| `codeGenerated`        | 全部文件写盘后   | filePaths / 通过 renderTemplate 渲染额外模板 | 已冻结      |
 
 ## 进度报告
 

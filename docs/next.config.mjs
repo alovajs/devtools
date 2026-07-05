@@ -7,6 +7,7 @@ const config = {
   output: 'export',
   reactStrictMode: true,
   images: { unoptimized: true },
+  basePath: process.env.NEXT_BASE_PATH || '',
   // Shiki uses native ESM modules that need to stay external to Webpack bundling
   serverExternalPackages: ['shiki', '@shikijs/twoslash'],
 }

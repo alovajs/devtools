@@ -48,33 +48,36 @@ const tabValue = ref(resolveInitialTab())
 
 <template>
   <div>
-    <!-- Card-style header -->
-    <div class="api-header-card">
-      <div class="flex items-center gap-2">
+    <!-- Breadcrumb: tag > api.name -->
+    <div v-if="api.tag" class="api-breadcrumb">
+      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="api-breadcrumb-icon">
+        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+      </svg>
+      <span>{{ api.tag }}</span>
+      <i class="api-breadcrumb-sep">&gt;</i>
+      <span class="api-breadcrumb-current">{{ api.name }}</span>
+    </div>
+
+    <!-- Flat header (no card) -->
+    <div class="api-header-flat">
+      <div class="api-header-top">
         <ApiMethod :method="api.method as MethodType" />
-        <span class="api-path">{{ api.path }}</span>
+        <span class="api-header-title">{{ api.path }}</span>
       </div>
-      <div class="api-meta">
-        <div class="api-name">
-          {{ api.name }}
-        </div>
-        <div v-if="api.summary" class="api-summary">
-          {{ api.summary }}
-        </div>
+      <div v-if="api.summary" class="api-header-desc">
+        {{ api.summary }}
       </div>
     </div>
 
     <n-tabs
       v-model:value="tabValue"
-      type="segment"
+      class="api-tabs-modern"
       :class="tabsClass"
       animated
-      justify-content="space-evenly"
     >
       <n-tab name="params" :disabled="!hasAnyParam">
         <template #default>
           <span class="flex items-center gap-1.5 fw-500">
-            <i class="i-carbon-list text-base" />
             {{ $t('api-info.params') }}
           </span>
         </template>
@@ -82,7 +85,6 @@ const tabValue = ref(resolveInitialTab())
       <n-tab name="response" :disabled="!hasResponseBody">
         <template #default>
           <span class="flex items-center gap-1.5 fw-500">
-            <i class="i-carbon-result text-base" />
             {{ $t('api-info.response') }}
           </span>
         </template>
@@ -90,7 +92,6 @@ const tabValue = ref(resolveInitialTab())
       <n-tab name="demo" :disabled="!hasDemoCode">
         <template #default>
           <span class="flex items-center gap-1.5 fw-500">
-            <i class="i-carbon-terminal text-base" />
             {{ $t('api-info.demo') }}
           </span>
         </template>

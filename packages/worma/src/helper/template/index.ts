@@ -408,6 +408,32 @@ export class TemplateHelper {
     })
   }
 
+  /** Convenience: load template and render to directory in one call */
+  static async renderToDir(params: {
+    templatePath: string
+    type: TemplateType
+    outputDir: string
+    data: TemplateData
+    options?: {
+      changedTags?: Set<string>
+      beforeFileWrite?: (params: {
+        filePath: string
+        content: string
+        meta: { templateType?: 'tag' | 'api', tag?: string, api?: string }
+      }) => MaybePromise<string>
+      writeConcurrency?: number
+      formatFile?: boolean
+    }
+  }): Promise<{ filePaths: string[] }> {
+    const helper = TemplateHelper.load({ type: params.type, templatePath: params.templatePath })
+    return helper.generateFromTemplateDir(
+      params.templatePath,
+      params.outputDir,
+      params.data,
+      params.options,
+    )
+  }
+
   // ============ generateFromTemplateDir (unified streaming pipeline) ============
 
   /**

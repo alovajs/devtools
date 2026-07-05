@@ -1,4 +1,6 @@
 <script setup lang="tsx">
+import { NIcon } from 'naive-ui'
+import hljs from '~/utils/hljs'
 import { handleCopy } from '~/utils/web'
 
 defineOptions({
@@ -20,6 +22,7 @@ function ShowCode({ code, empty }: {
   if (!code) {
     return <n-empty description={empty || t('api-info.no-data')} />
   }
+  const highlighted = hljs.highlight(code, { language: 'typescript' }).value
   return (
     <div class="api-code-wrapper">
       <div class="api-code-toolbar">
@@ -29,17 +32,17 @@ function ShowCode({ code, empty }: {
           size="tiny"
           onClick={() => handleCopy(code)}
         >
-          {{
-            icon: () => <i class="i-carbon-copy text-xs" />,
-          }}
+          <NIcon>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
+          </NIcon>
         </n-button>
       </div>
-      <n-code
-        class="api-code-block"
-        word-wrap={true}
-        code={code}
-        language="typescript"
-      />
+      <pre class="api-code-block hljs">
+        <code v-html={highlighted} />
+      </pre>
     </div>
   )
 }

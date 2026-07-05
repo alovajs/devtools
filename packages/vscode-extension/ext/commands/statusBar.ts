@@ -27,7 +27,7 @@ export function endLoading() {
 export function enable() {
   Global.setEnabled(true)
   if (!Global.loading) {
-    statusBarItem.text = `$(alova-icon-id) Worma`
+    statusBarItem.text = `$(worma-icon-id) Worma`
     statusBarItem.tooltip = 'Generate APIs'
     statusBarItem.command = Commands.status_bar_show_actions
     statusBarItem.color = undefined
@@ -35,7 +35,7 @@ export function enable() {
 }
 export function disable() {
   Global.setEnabled(false)
-  statusBarItem.text = `$(alova-icon-id) Worma`
+  statusBarItem.text = `$(worma-icon-id) Worma`
   statusBarItem.tooltip = 'module `worma` not found'
   statusBarItem.color = '#FFFFFF80'
   statusBarItem.command = undefined

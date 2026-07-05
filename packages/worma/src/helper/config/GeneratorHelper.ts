@@ -9,6 +9,7 @@ import getAutoTemplateType from '@/functions/getAutoTemplateType'
 import { computePerTagHashes, diffChangedTags, getCacheEntry } from '@/functions/wormaJson'
 import { logger, PluginDriver, TemplateHelper } from '@/helper'
 import { CORE_PROGRESS_SOURCE, noopReportProgress } from '@/helper/progress'
+import type { RenderTemplateParams } from './type'
 import { zGeneratorConfig } from './zType'
 
 export class GeneratorHelper {
@@ -378,6 +379,7 @@ export class GeneratorHelper {
       outputDir: output,
       projectPath,
       error: codeGenError,
+      renderTemplate: (params: RenderTemplateParams) => TemplateHelper.renderToDir(params),
     }))
 
     if (!codeGenError) {

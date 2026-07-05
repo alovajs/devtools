@@ -26,6 +26,7 @@ declare module 'vue' {
     NEmpty: typeof import('naive-ui')['NEmpty']
     NFloatButton: typeof import('naive-ui')['NFloatButton']
     NH4: typeof import('naive-ui')['NH4']
+    NIcon: typeof import('naive-ui')['NIcon']
     NInput: typeof import('naive-ui')['NInput']
     NLoadingBarProvider: typeof import('naive-ui')['NLoadingBarProvider']
     NMessageProvider: typeof import('naive-ui')['NMessageProvider']

@@ -29,7 +29,7 @@
 ```diff
  export function disable() {
    Global.setEnabled(false)
-   statusBarItem.text = `$(alova-icon-id) Alova`
+   statusBarItem.text = `$(worma-icon-id) Alova`
    statusBarItem.tooltip = 'module `worma` not found'
 -  statusBarItem.color = '#808080'
 +  statusBarItem.color = '#FFFFFF80'

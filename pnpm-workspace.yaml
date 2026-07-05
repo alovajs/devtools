@@ -35,16 +35,16 @@ catalogs:
     "@czhlin/vite-plugin-vscode": ^4.3.0
     "@intlify/unplugin-vue-i18n": ^6.0.8
     "@shikijs/markdown-it": ^3.8.1
-    "@unocss/eslint-config": ^66.7.3
-    "@unocss/preset-web-fonts": ^66.7.3
+    "@tailwindcss/typography": ^0.5.20
+    "@tailwindcss/vite": ^4.3.0
     "@vitejs/plugin-vue": ^6.0.0
     "@vitejs/plugin-vue-jsx": ^5.0.1
     dts-bundle-generator: ^9.5.1
     esbuild: ^0.25.6
     markdown-it-link-attributes: ^4.0.1
     ncp: ^2.0.0
+    tailwindcss: ^4.3.0
     tsc-alias: ^1.8.16
-    unocss: ^66.7.3
     unplugin: ^2.3.5
     unplugin-auto-import: ^19.3.0
     unplugin-vue-components: ^28.8.0
@@ -108,7 +108,6 @@ catalogs:
     "@jsonrpc-rx/server": ^0.2.1
     "@tomjs/vscode-webview": ^2.0.2
     "@unhead/vue": ^2.0.12
-    "@unocss/reset": ^66.3.3
     "@vicons/ionicons5": ^0.13.0
     "@vueuse/core": ^13.9.0
     alova: ^3.3.4

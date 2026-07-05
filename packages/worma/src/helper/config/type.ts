@@ -83,6 +83,24 @@ export interface BeforeFileWriteHookParams {
   }
 }
 
+/** Parameters for the convenience renderTemplate function passed to codeGenerated hook */
+export interface RenderTemplateParams {
+  templatePath: string
+  type: import('@/type').TemplateType
+  outputDir: string
+  data: import('@/type').TemplateData
+  options?: {
+    changedTags?: Set<string>
+    beforeFileWrite?: (params: {
+      filePath: string
+      content: string
+      meta: { templateType?: 'tag' | 'api', tag?: string, api?: string }
+    }) => import('./type').MaybePromise<string>
+    writeConcurrency?: number
+    formatFile?: boolean
+  }
+}
+
 export interface CodeGeneratedHookParams {
   config: Readonly<GeneratorConfig>
   data: TemplateData
@@ -93,6 +111,8 @@ export interface CodeGeneratedHookParams {
   projectPath: string
   error?: Error
   reportProgress: ReportProgress
+  /** Convenience: render a template to a directory in one call */
+  renderTemplate: (params: RenderTemplateParams) => Promise<{ filePaths: string[] }>
 }
 
 export interface GetTemplateHookParams {

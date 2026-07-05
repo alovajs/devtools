@@ -59,28 +59,33 @@ onMounted(() => {
 </script>
 
 <template>
-  <n-scrollbar class="pos-relative h-full overflow-hidden pt-2" content-class="px-3">
-    <div class="search-bar sticky top-0 z-1">
+  <n-scrollbar class="pos-relative h-full overflow-hidden">
+    <div class="search-bar sticky top-0 z-1 pt-2">
       <n-input
         v-model:value="search"
         :placeholder="t('api-server.search-placeholder')"
         size="small"
         clearable
-        round
+        class="api-search-input"
       >
         <template #prefix>
-          <i class="i-carbon-search text-xs opacity-50" />
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-xs opacity-50">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
         </template>
       </n-input>
     </div>
-    <api-tree
-      ref="treeRef"
-      v-model:selected="selectdKeys"
-      :loading
-      :pattern
-      :projects="treeData"
-      @select="handleDetail"
-    />
+    <div class="px-3">
+      <api-tree
+        ref="treeRef"
+        v-model:selected="selectdKeys"
+        :loading
+        :pattern
+        :projects="treeData"
+        @select="handleDetail"
+      />
+    </div>
   </n-scrollbar>
 </template>
 

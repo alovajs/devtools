@@ -1,6 +1,8 @@
 /* eslint-disable ts/no-require-imports */
+import type { RenderTemplateParams } from '@/helper/config/type'
 import { resolve } from 'node:path'
 import { logger } from '@/helper/logger'
+import { TemplateHelper } from '@/helper/template'
 import { aiDoc } from '@/plugins/presets/aiDoc'
 import { generateWithPlugin } from '../util'
 
@@ -64,6 +66,8 @@ describe('plugins/aiDoc', () => {
   })
 
   describe('unit tests', () => {
+    const renderTemplateFn = (params: RenderTemplateParams) => TemplateHelper.renderToDir(params)
+
     beforeEach(() => {
       vi.clearAllMocks()
     })
@@ -124,6 +128,7 @@ describe('plugins/aiDoc', () => {
         outputDir: process.cwd(),
         projectPath: process.cwd(),
         reportProgress: vi.fn(),
+        renderTemplate: renderTemplateFn,
         error: new Error('generation failed'),
       })
     })
@@ -145,6 +150,7 @@ describe('plugins/aiDoc', () => {
         outputDir: process.cwd(),
         projectPath: process.cwd(),
         reportProgress: vi.fn(),
+        renderTemplate: renderTemplateFn,
       })
     })
 
@@ -212,6 +218,7 @@ describe('plugins/aiDoc', () => {
         outputDir: resolve(process.cwd(), outputPath),
         projectPath: process.cwd(),
         reportProgress: vi.fn(),
+        renderTemplate: renderTemplateFn,
       })
 
       const aidocsDir = resolve(process.cwd(), outputPath, 'aidocs')
@@ -295,6 +302,7 @@ describe('plugins/aiDoc', () => {
         outputDir: resolve(process.cwd(), outputPath),
         projectPath: process.cwd(),
         reportProgress: vi.fn(),
+        renderTemplate: renderTemplateFn,
       })
 
       const customDir = resolve(process.cwd(), outputPath, 'custom-docs')
@@ -347,6 +355,7 @@ describe('plugins/aiDoc', () => {
         outputDir: resolve(process.cwd(), outputPath),
         projectPath: process.cwd(),
         reportProgress: vi.fn(),
+        renderTemplate: renderTemplateFn,
       })
 
       const aidocsDir = resolve(process.cwd(), outputPath, 'aidocs')
@@ -401,6 +410,7 @@ describe('plugins/aiDoc', () => {
         outputDir: resolve(process.cwd(), outputPath),
         projectPath: process.cwd(),
         reportProgress: vi.fn(),
+        renderTemplate: renderTemplateFn,
       })
 
       const aidocsDir = resolve(process.cwd(), outputPath, 'aidocs')
@@ -442,6 +452,7 @@ describe('plugins/aiDoc', () => {
           outputDir: resolve(process.cwd(), outputPath),
           projectPath: process.cwd(),
           reportProgress: vi.fn(),
+          renderTemplate: renderTemplateFn,
         }),
       ).rejects.toThrow(/Created \.env\.local at project root/)
 
@@ -500,6 +511,7 @@ describe('plugins/aiDoc', () => {
         outputDir: resolve(process.cwd(), outputPath),
         projectPath: process.cwd(),
         reportProgress: vi.fn(),
+        renderTemplate: renderTemplateFn,
       })
 
       expect(execSync).toHaveBeenCalledWith(
@@ -543,6 +555,7 @@ describe('plugins/aiDoc', () => {
           outputDir: resolve(process.cwd(), outputPath),
           projectPath: process.cwd(),
           reportProgress: vi.fn(),
+          renderTemplate: renderTemplateFn,
         }),
       ).rejects.toThrow('mock missing agent')
 
@@ -602,6 +615,7 @@ describe('plugins/aiDoc', () => {
         outputDir: resolve(process.cwd(), outputPath),
         projectPath: process.cwd(),
         reportProgress: vi.fn(),
+        renderTemplate: renderTemplateFn,
       })
 
       expect(execSync).toHaveBeenCalledWith(
@@ -663,6 +677,7 @@ describe('plugins/aiDoc', () => {
           outputDir: resolve(process.cwd(), outputPath),
           projectPath: process.cwd(),
           reportProgress: vi.fn(),
+          renderTemplate: renderTemplateFn,
         }),
       ).rejects.toThrow('mock install failed')
 

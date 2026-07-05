@@ -38,6 +38,7 @@ export declare function getHandlers(context: ExtensionContext): {
   showInformation: import('@jsonrpc-rx/server').Notifiable<(message: string) => void>
   getApiDocs: () => Promise<ApiProject[]>
   getTheme: () => string
+  getThemeSyntaxColors: () => string
   setTheme: (theme: string) => Promise<void>
   getLanguage: () => Promise<string>
   onThemeChange: import('@jsonrpc-rx/server').Observable<({ next }: Publisher<any>) => () => any>

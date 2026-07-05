@@ -27,7 +27,7 @@ config() → beforeOpenapiParse() → 解析 OpenAPI → openapiParsed()
     loop 每个文件:
        beforeFileWrite(filePath, content)  ← 插件修改单文件内容
        writeFile(filePath)
-→ codeGenerated(filePaths)     ← 通知 / 生成额外文件（aiDoc 等）
+→ codeGenerated(filePaths, renderTemplate)     ← 通知 / 生成额外文件（aiDoc 等）
 ```
 
 ## 基本结构
@@ -90,11 +90,19 @@ export default defineConfig({
             }
           },
 
-          // 阶段 8：代码生成后，通知完成
-          codeGenerated({ filePaths, data, reportProgress }) {
+          // 阶段 8：代码生成后，通知完成 / 渲染额外模板
+          codeGenerated({ filePaths, data, reportProgress, renderTemplate }) {
             reportProgress(100, 'completed');
             // filePaths 是已写入的文件路径列表
             console.log('Generated files:', filePaths);
+
+            // 可使用 renderTemplate 渲染额外模板到目录
+            await renderTemplate({
+              templatePath: './my-extra-template',
+              type: 'typescript',
+              outputDir: './output/extra',
+              data: extraTemplateData,
+            });
           },
         },
       ],
@@ -306,6 +314,23 @@ interface ApiPlugin {
     outputDir: string;
     error?: Error;
     reportProgress: ReportProgress;
+    /** 便捷方法：一键渲染模板到目录，参数同 TemplateHelper.renderToDir */
+    renderTemplate: (params: {
+      templatePath: string;
+      type: TemplateType;
+      outputDir: string;
+      data: TemplateData;
+      options?: {
+        changedTags?: Set<string>;
+        beforeFileWrite?: (params: {
+          filePath: string;
+          content: string;
+          meta: { templateType?: 'tag' | 'api'; tag?: string; api?: string };
+        }) => MaybePromise<string>;
+        writeConcurrency?: number;
+        formatFile?: boolean;
+      };
+    }) => Promise<{ filePaths: string[] }>;
   }) => MaybePromise<void>;
 }
 ```

@@ -48,8 +48,6 @@
     "@types/js-yaml": "catalog:types",
     "@types/lodash": "catalog:types",
     "@types/node": "catalog:types",
-    "@unocss/eslint-config": "catalog:build",
-    "@unocss/preset-web-fonts": "catalog:build",
     "@vitest/coverage-v8": "catalog:dev",
     "@vueuse/core": "catalog:frontend",
     "commitizen": "catalog:dev",
@@ -72,7 +70,6 @@
     "tsx": "catalog:dev",
     "type-fest": "catalog:types",
     "typescript": "catalog:dev",
-    "unocss": "catalog:build",
     "vitest": "catalog:dev",
     "worma": "workspace:*"
   },

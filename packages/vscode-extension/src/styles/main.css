@@ -1,3 +1,4 @@
+@import './tailwind.css';
 @import './markdown.css';
 @import './vscode.css';
 html,
@@ -103,9 +104,14 @@ html.dark {
 
 /* Search bar in API SERVER */
 .search-bar {
-  padding: 4px 0 8px;
-  border-bottom: 1px solid var(--vscode-panel-border, var(--vscode-editorWidget-border, transparent));
-  margin-bottom: 4px;
+  padding: 12px;
+  background: var(--vscode-editor-background);
+}
+.api-search-input {
+  --n-border-radius: 6px !important;
+  --n-color: var(--vscode-input-background) !important;
+  --n-color-focus: var(--vscode-input-background) !important;
+  --n-box-shadow-focus: none !important;
 }
 
 /* API count badge in tree */
@@ -168,4 +174,241 @@ html.dark {
   border-radius: 0 !important;
   border: none !important;
   padding: 8px 12px !important;
+}
+
+/* ══════════════════════════════════════════
+   API Method Pill Badge (modern rounded)
+   ══════════════════════════════════════════ */
+.api-method-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  font-family: var(--vscode-editor-font-family, monospace);
+  border: 1px solid transparent;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.api-method-badge.GET {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.25);
+}
+.api-method-badge.POST {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.25);
+}
+.api-method-badge.PUT {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+  border-color: rgba(59, 130, 246, 0.25);
+}
+.api-method-badge.DELETE {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.25);
+}
+.api-method-badge.PATCH {
+  background: rgba(139, 92, 246, 0.15);
+  color: #8b5cf6;
+  border-color: rgba(139, 92, 246, 0.25);
+}
+.api-method-badge.TRACE,
+.api-method-badge.HEAD,
+.api-method-badge.OPTIONS {
+  background: rgba(156, 163, 175, 0.15);
+  color: #9ca3af;
+  border-color: rgba(156, 163, 175, 0.25);
+}
+
+/* ══════════════════════════════════════════
+   API Breadcrumb (tag > api.name)
+   ══════════════════════════════════════════ */
+.api-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--vscode-descriptionForeground);
+  margin-bottom: 10px;
+  font-family: var(--vscode-font-family);
+}
+.api-breadcrumb-icon {
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+.api-breadcrumb-sep {
+  font-style: normal;
+  opacity: 0.35;
+  font-size: 10px;
+}
+.api-breadcrumb-current {
+  color: var(--vscode-foreground);
+  font-weight: 500;
+}
+
+/* ══════════════════════════════════════════
+   API Detail Header (flat, no card)
+   ══════════════════════════════════════════ */
+.api-header-flat {
+  padding: 4px 0 12px;
+  margin-bottom: 4px;
+}
+.api-header-flat .api-header-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.api-header-flat .api-header-title {
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--vscode-foreground);
+  word-break: break-all;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+.api-header-flat .api-header-desc {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--vscode-descriptionForeground);
+  line-height: 1.5;
+  word-break: break-all;
+}
+
+/* ══════════════════════════════════════════
+   Code Block with VS Code theme syntax colors
+   ══════════════════════════════════════════ */
+
+.api-code-block.hljs {
+  background: var(--vscode-editor-background) !important;
+  color: var(--vscode-editor-foreground) !important;
+  margin: 0;
+  padding: 8px 12px;
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: 13px;
+  line-height: 1.6;
+  display: block;
+  overflow-x: auto;
+}
+.api-code-block.hljs code {
+  color: var(--vscode-editor-foreground);
+  font-family: var(--vscode-editor-font-family, monospace);
+  background: transparent !important;
+}
+/* keyword: type, interface, enum etc */
+.api-code-block.hljs .hljs-keyword {
+  color: var(--api-code-keyword, #c586c0) !important;
+}
+/* type/class: RequestBody, Array, User etc */
+.api-code-block.hljs .hljs-title.class_,
+.api-code-block.hljs .hljs-class .hljs-title,
+.api-code-block.hljs .hljs-type {
+  color: var(--api-code-type, #4ec9b0) !important;
+}
+/* built-in type: number, string, boolean */
+.api-code-block.hljs .hljs-built_in {
+  color: var(--api-code-type, #4ec9b0) !important;
+}
+/* string: "available", "pending" */
+.api-code-block.hljs .hljs-string,
+.api-code-block.hljs .hljs-addition,
+.api-code-block.hljs .hljs-attribute,
+.api-code-block.hljs .hljs-symbol,
+.api-code-block.hljs .hljs-bullet,
+.api-code-block.hljs .hljs-variable,
+.api-code-block.hljs .hljs-template-tag,
+.api-code-block.hljs .hljs-template-variable {
+  color: var(--api-code-string, #ce9178) !important;
+}
+/* property/attr: id, name, status, photoUrls, tags */
+.api-code-block.hljs .hljs-attr,
+.api-code-block.hljs .hljs-property,
+.api-code-block.hljs .hljs-variable.constant_ {
+  color: var(--api-code-property, #9cdcfe) !important;
+}
+/* function */
+.api-code-block.hljs .hljs-function .hljs-title {
+  color: var(--api-code-function, #dcdcaa) !important;
+}
+/* number */
+.api-code-block.hljs .hljs-number,
+.api-code-block.hljs .hljs-regexp,
+.api-code-block.hljs .hljs-literal,
+.api-code-block.hljs .hljs-params {
+  color: var(--api-code-number, #b5cea8) !important;
+}
+/* comment: // pet status in the store */
+.api-code-block.hljs .hljs-comment,
+.api-code-block.hljs .hljs-quote,
+.api-code-block.hljs .hljs-deletion,
+.api-code-block.hljs .hljs-meta {
+  color: var(--api-code-comment, #6a9955) !important;
+}
+/* tag */
+.api-code-block.hljs .hljs-tag {
+  color: var(--api-code-type, #4ec9b0) !important;
+}
+/* operator & punctuation */
+.api-code-block.hljs .hljs-operator,
+.api-code-block.hljs .hljs-punctuation {
+  color: var(--api-code-operator, #d4d4d4) !important;
+}
+/* link, section, name */
+.api-code-block.hljs .hljs-selector-tag,
+.api-code-block.hljs .hljs-section,
+.api-code-block.hljs .hljs-link,
+.api-code-block.hljs .hljs-name {
+  color: var(--api-code-keyword, #c586c0) !important;
+}
+
+/* ══════════════════════════════════════════
+   Modern Tabs (replacing segment style)
+   ══════════════════════════════════════════ */
+.api-tabs-modern {
+  background: var(--vscode-editor-background, var(--vscode-sideBar-background));
+}
+.api-tabs-modern .n-tabs-nav {
+  border-bottom: 1px solid var(--vscode-panel-border, transparent) !important;
+  padding: 0 4px;
+}
+.api-tabs-modern .n-tabs-tab {
+  border-radius: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  padding: 10px 12px 8px !important;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--vscode-descriptionForeground) !important;
+  transition:
+    color 0.15s,
+    border-color 0.15s !important;
+}
+.api-tabs-modern .n-tabs-tab--active {
+  color: var(--vscode-foreground) !important;
+  border-bottom-color: var(--vscode-focusBorder, #007acc) !important;
+  background: transparent !important;
+}
+.api-tabs-modern .n-tabs-tab:hover {
+  color: var(--vscode-foreground) !important;
+  background: transparent !important;
+}
+.api-tabs-modern .n-tabs-bar {
+  display: none !important;
+}
+
+/* ══════════════════════════════════════════
+   Filter highlight (replace text-green-5)
+   ══════════════════════════════════════════ */
+.filter-match-highlight {
+  color: #10b981;
+  font-weight: 500;
 }

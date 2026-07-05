@@ -24,7 +24,7 @@
     "Other"
   ],
   "main": "./dist/extension/index.js",
-  "icon": "res/icon.png",
+  "icon": "res/logo.svg",
   "files": [
     "LICENSE",
     "dist/**",
@@ -127,11 +127,11 @@
       }
     ],
     "icons": {
-      "alova-icon-id": {
+      "worma-icon-id": {
         "description": "alova icon",
         "default": {
           "fontPath": "./res/logo.ttf",
-          "fontCharacter": "\\E64B"
+          "fontCharacter": "\\E64E"
         }
       }
     },
@@ -140,20 +140,20 @@
         {
           "id": "api-docs-sidebar",
           "title": "Worma",
-          "icon": "res/icon.png"
+          "icon": "res/logo.svg"
         }
       ]
     },
     "views": {
       "api-docs-sidebar": [
         {
-          "icon": "res/icon.png",
+          "icon": "res/logo.svg",
           "id": "api-docs-server-view",
           "name": "Api Server",
           "type": "webview"
         },
         {
-          "icon": "res/icon.png",
+          "icon": "res/logo.svg",
           "id": "api-docs-detail-view",
           "name": "Api Detail",
           "type": "webview"
@@ -186,7 +186,6 @@
   },
   "dependencies": {
     "@unhead/vue": "catalog:frontend",
-    "@unocss/reset": "catalog:frontend",
     "@vicons/ionicons5": "catalog:frontend",
     "@vueuse/core": "catalog:frontend",
     "glob": "catalog:dev",
@@ -206,6 +205,8 @@
     "@jsonrpc-rx/client": "catalog:frontend",
     "@jsonrpc-rx/server": "catalog:frontend",
     "@shikijs/markdown-it": "catalog:build",
+    "@tailwindcss/typography": "catalog:build",
+    "@tailwindcss/vite": "catalog:build",
     "@tomjs/tsconfig": "catalog:dev",
     "@tomjs/vscode-webview": "catalog:frontend",
     "@types/chai": "catalog:types",
@@ -234,7 +235,7 @@
     "pino": "catalog:dev",
     "reactive-vscode": "catalog:frontend",
     "sinon": "catalog:dev",
-    "unocss": "catalog:build",
+    "tailwindcss": "catalog:build",
     "unplugin-auto-import": "catalog:build",
     "unplugin-vue-components": "catalog:build",
     "unplugin-vue-markdown": "catalog:build",

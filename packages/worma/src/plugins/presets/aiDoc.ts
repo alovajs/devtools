@@ -5,7 +5,6 @@ import { createRequire } from 'node:module'
 import path from 'node:path'
 import { PluginName, PresetTemplateName } from '@/constant'
 import { logger } from '@/helper/logger'
-import { TemplateHelper } from '@/helper/template'
 import { getPresetTemplatePath } from '@/template'
 
 const nodeRequire = createRequire(__filename)
@@ -35,8 +34,7 @@ export function aiDoc(config?: AiDocConfig): ApiPlugin {
       capturedServerName = generatorConfig.serverName ?? ''
       return generatorConfig
     },
-    // codeGenerated now receives outputDir directly, called after all files are written
-    async codeGenerated({ error, data: templateData, projectPath, outputDir }) {
+    async codeGenerated({ error, data: templateData, projectPath, outputDir, renderTemplate }) {
       if (error)
         return
 
@@ -72,17 +70,15 @@ export function aiDoc(config?: AiDocConfig): ApiPlugin {
         })),
       }
 
-      const templateHelper = TemplateHelper.load({
-        type: templateData.type,
+      await renderTemplate?.({
         templatePath,
+        type: templateData.type,
+        outputDir: aidocsDir,
+        data: {
+          ...enrichedData,
+          serverName,
+        } as TemplateData,
       })
-
-      const renderData: Record<string, any> = {
-        ...enrichedData,
-        serverName,
-      }
-
-      await templateHelper.generateFromTemplateDir(templatePath, aidocsDir, renderData as TemplateData)
 
       if (installSkillEnabled) {
         const { agent } = resolveAgent(projectPath)

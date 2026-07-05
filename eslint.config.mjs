@@ -19,7 +19,6 @@ export default antfu({
     "**/.source"
   ],
   markdown: false,
-  unocss: true,
   formatters: true,
   pnpm: true,
   vue: true,
