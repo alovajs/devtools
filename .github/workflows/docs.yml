@@ -40,9 +40,13 @@ jobs:
 
       - name: Build docs
         run: pnpm --filter worma-docs build
+        env:
+          NEXT_BASE_PATH: /devtools
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
+        with:
+          enablement: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
