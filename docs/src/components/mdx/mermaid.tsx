@@ -42,7 +42,7 @@ function MermaidContent({ chart }: { chart: string }) {
 
   return (
     <div
-      ref={container => container && bindFunctions?.(container)}
+      ref={(container) => { container && bindFunctions?.(container) }}
       dangerouslySetInnerHTML={{ __html: svg }}
     />
   )
