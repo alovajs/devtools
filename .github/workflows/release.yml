@@ -109,4 +109,4 @@ jobs:
       - name: Publish to npm
         run: pnpm --filter "${{ inputs.package }}" publish --tag "${{ inputs.tag }}" --no-git-checks
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_ALOVA_PUBLISH_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_ALOVA_PUBLISH_TOKEN }}
