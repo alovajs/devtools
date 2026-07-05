@@ -1,13 +1,28 @@
 name: Release
 
-# trigger condition: pull_request to any branch
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      package:
+        description: 'Package name for manual publish (e.g., worma)'
+        required: true
+        type: string
+      tag:
+        description: npm dist-tag
+        required: true
+        type: choice
+        default: beta
+        options:
+          - beta
+          - alpha
+          - next
 
 jobs:
   quality:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -15,7 +30,6 @@ jobs:
         with:
           persist-credentials: false
 
-      # install pnpm version by `packageManager` in package.json
       - name: Setup PNPM
         uses: pnpm/action-setup@v4.0.0
 
@@ -33,6 +47,7 @@ jobs:
         run: pnpm run lint
 
   release:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     needs: [quality]
     steps:
@@ -41,7 +56,6 @@ jobs:
         with:
           persist-credentials: false
 
-      # install pnpm version by `packageManager` in package.json
       - name: Setup PNPM
         uses: pnpm/action-setup@v4.0.0
 
@@ -59,17 +73,40 @@ jobs:
         id: changesets
         uses: changesets/action@v1.4.7
         with:
-          # Note: pnpm install after versioning is necessary to refresh lockfile
           version: pnpm run changeset:version
           publish: pnpm run release
           commit: 'ci: release'
           title: 'ci: release'
         env:
-          # Needs access to push to main
           GITHUB_TOKEN: ${{ secrets.ALOVA_GITHUB_TOKEN }}
-          # Needs access to publish to npm
           NPM_TOKEN: ${{ secrets.NPM_ALOVA_PUBLISH_TOKEN }}
-          # publish vscode extension to marketplace
           VSCE_PAT: ${{ secrets.VSCODE_EXTENSION_TOKEN }}
-          # publish vscode extension to open-vsc
           OVSX_PAT: ${{ secrets.OVSX_TOKEN }}
+
+  beta-publish:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4.0.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build package
+        run: pnpm --filter "${{ inputs.package }}" build
+
+      - name: Publish to npm
+        run: pnpm --filter "${{ inputs.package }}" publish --tag "${{ inputs.tag }}" --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_ALOVA_PUBLISH_TOKEN }}
