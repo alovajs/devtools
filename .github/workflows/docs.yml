@@ -4,9 +4,10 @@ on:
   push:
     branches:
       - main
+      - feat/v2.0
     paths:
       - 'docs/**'
-      - '.github/workflows/docs.yml'
+      - .github/workflows/docs.yml
   workflow_dispatch:
 
 permissions:
