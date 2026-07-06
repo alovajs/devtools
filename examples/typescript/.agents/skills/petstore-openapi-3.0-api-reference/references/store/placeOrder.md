@@ -13,7 +13,6 @@ Place an order for a pet
 
 `[POST] /store/order`
 
-
 ## Request Body
 
 Pass the required request body in `data`:

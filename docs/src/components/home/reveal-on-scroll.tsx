@@ -18,7 +18,8 @@ export function RevealOnScroll({ children, className = '', delay = 0 }: Props) {
 
   useEffect(() => {
     const el = ref.current
-    if (!el) return
+    if (!el)
+      return
     const obs = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -49,7 +50,7 @@ export function RevealStagger({
   className = '',
   baseDelay = 0.05,
 }: {
-  items: { key: string; content: React.ReactNode }[]
+  items: { key: string, content: React.ReactNode }[]
   className?: string
   baseDelay?: number
 }) {

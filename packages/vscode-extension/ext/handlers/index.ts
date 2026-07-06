@@ -3,9 +3,9 @@ import type { ExtensionContext, TextDocument } from 'vscode'
 import { asBehaviorSubject, asNotify, asSubject } from '@jsonrpc-rx/server'
 import { commands, env, window, workspace } from 'vscode'
 import { getApiDocs } from '@/functions/getApis'
-import { getSyntaxHighlightCss } from '@/webview/theme-colors'
 import { messageService } from '@/utils/message'
 import { toPromise } from '@/utils/to-promise'
+import { getSyntaxHighlightCss } from '@/webview/theme-colors'
 
 export type HandlersType = ReturnType<typeof getHandlers>
 export type { DataType, MessageType } from '@/utils/message'

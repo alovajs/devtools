@@ -63,4 +63,3 @@ export class WebviewHelper {
     return `${styleTag}${html}`
   }
 }
-

@@ -25,7 +25,11 @@ export default function SystemStatusBar() {
             // WORMA v2.0.0
           </span>
           <span className="font-mono text-[10px] tracking-wider text-gray-500">
-            SYS.TIME {time} UTC+8
+            SYS.TIME
+            {' '}
+            {time}
+            {' '}
+            UTC+8
           </span>
         </div>
         <div className="flex items-center gap-5">

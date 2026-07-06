@@ -13,8 +13,6 @@ Finds Pets by status
 
 `[GET] /pet/findByStatus`
 
-
-
 ## Response
 
 Use the response data as needed:

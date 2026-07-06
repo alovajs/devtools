@@ -38,8 +38,17 @@ export default function Features() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
         {features.map((feature, index) => (
           <div key={feature.num} className={featureClasses[index]}>
-            <div className="absolute top-0 right-0 p-2 text-[9px] text-outline font-data-mono group-hover:text-primary">0x0{feature.num}</div>
-            <div className="font-data-mono text-[10px] text-primary mb-6 uppercase tracking-[0.3em]">{feature.num} // {feature.tag}</div>
+            <div className="absolute top-0 right-0 p-2 text-[9px] text-outline font-data-mono group-hover:text-primary">
+              0x0
+              {feature.num}
+            </div>
+            <div className="font-data-mono text-[10px] text-primary mb-6 uppercase tracking-[0.3em]">
+              {feature.num}
+              {' '}
+              //
+              {' '}
+              {feature.tag}
+            </div>
             <h3 className="font-headline-lg text-2xl text-on-background mb-4 uppercase font-bold tracking-tight">{feature.title}</h3>
             <p className="font-body-md text-xs text-on-surface-variant leading-relaxed">{feature.desc}</p>
           </div>

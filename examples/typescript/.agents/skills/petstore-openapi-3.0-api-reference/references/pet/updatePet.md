@@ -13,7 +13,6 @@ Update an existing pet
 
 `[PUT] /pet`
 
-
 ## Request Body
 
 Pass the required request body in `data`:

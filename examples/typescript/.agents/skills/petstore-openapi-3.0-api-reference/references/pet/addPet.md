@@ -13,7 +13,6 @@ Add a new pet to the store
 
 `[POST] /pet`
 
-
 ## Request Body
 
 Pass the required request body in `data`:

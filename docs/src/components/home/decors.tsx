@@ -58,7 +58,7 @@ export function CoordDisplay({ className = '' }: { className?: string }) {
 }
 
 /* ─── Scene tag ─── */
-export function SceneTag({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+export function SceneTag({ children, className = '' }: { children: React.ReactNode, className?: string }) {
   return (
     <span className={`inline-flex items-center gap-1.5 text-[10px] text-gray-400 tracking-[0.2em] font-mono uppercase ${className}`}>
       {children}
@@ -67,10 +67,11 @@ export function SceneTag({ children, className = '' }: { children: React.ReactNo
 }
 
 /* ─── Section label ─── */
-export function SectionLabel({ num, className = '' }: { num: string; className?: string }) {
+export function SectionLabel({ num, className = '' }: { num: string, className?: string }) {
   return (
     <span className={`text-brand-blue text-sm font-medium font-mono ${className}`}>
-      /{num}
+      /
+      {num}
     </span>
   )
 }
