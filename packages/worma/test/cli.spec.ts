@@ -1,4 +1,3 @@
-import { join } from 'node:path'
 import { actionGen, actionInit } from '@/bin/actions'
 import { createConfig, readConfig, resolveWorkspaces } from '@/index'
 
@@ -38,7 +37,7 @@ vi.mock('@/generate', () => ({
   default: mockGenerate,
 }))
 
-vi.mock(join(__dirname, '../src/bin/renderer'), async (importOriginal) => {
+vi.mock('../src/bin/renderer', async (importOriginal) => {
   const actual = await importOriginal<{ InitRenderer: any, INIT_TEMPLATE_CHOICES: any, MultiGeneratorRenderer: any, MultiProjectRenderer: any }>()
   return {
     ...actual,

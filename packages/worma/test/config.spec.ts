@@ -1,4 +1,4 @@
-import type { Config } from '@/type'
+好的，请提交吧。import type { Config } from '@/type'
 import fs from 'node:fs/promises'
 import { Module } from 'node:module'
 import { dirname, resolve } from 'node:path'
@@ -260,10 +260,10 @@ describe('config', () => {
       encoding: 'utf-8',
     })
     expect(initialTsConfig).toMatch(`import { defineConfig } from 'worma';`)
-    expect(initialTsConfig).toMatch(`import { platform, alova } from 'worma/plugin';`)
+    expect(initialTsConfig).toMatch(`import { platform, aiDoc, alova } from 'worma/plugin';`)
     expect(initialTsConfig).toMatch(`export default defineConfig({`)
     expect(initialTsConfig).toMatch(`input: 'http://localhost:3000',`)
-    expect(initialTsConfig).toMatch(`[platform('swagger'), alova()]`)
+    expect(initialTsConfig).toMatch(`[platform('swagger'), aiDoc({ installSkill: true }), alova()]`)
 
     // generate commonjs file
     await fs.writeFile(resolve(process.cwd(), './package.json'), JSON.stringify({
@@ -284,9 +284,9 @@ describe('config', () => {
       encoding: 'utf-8',
     })
     expect(initialCjsConfig).toMatch(`const { defineConfig } = require('worma');`)
-    expect(initialCjsConfig).toMatch(`const { platform, alova } = require('worma/plugin');`)
+    expect(initialCjsConfig).toMatch(`const { platform, aiDoc, alova } = require('worma/plugin');`)
     expect(initialCjsConfig).toMatch(`module.exports = defineConfig({`)
-    expect(initialCjsConfig).toMatch(`plugins: [platform('swagger'), alova()]`)
+    expect(initialCjsConfig).toMatch(`plugins: [platform('swagger'), aiDoc({ installSkill: true }), alova()]`)
 
     // generate module file
     await fs.writeFile(resolve(process.cwd(), './package.json'), JSON.stringify({
@@ -305,9 +305,9 @@ describe('config', () => {
       encoding: 'utf-8',
     })
     expect(initialEsmoduleConfig).toMatch(`import { defineConfig } from 'worma';`)
-    expect(initialEsmoduleConfig).toMatch(`import { platform, alova } from 'worma/plugin';`)
+    expect(initialEsmoduleConfig).toMatch(`import { platform, aiDoc, alova } from 'worma/plugin';`)
     expect(initialEsmoduleConfig).toMatch(`export default defineConfig({`)
-    expect(initialEsmoduleConfig).toMatch(`plugins: [platform('swagger'), alova()]`)
+    expect(initialEsmoduleConfig).toMatch(`plugins: [platform('swagger'), aiDoc({ installSkill: true }), alova()]`)
 
     // generate file with target type
     await createConfig({ type: 'typescript' })
@@ -315,10 +315,10 @@ describe('config', () => {
       encoding: 'utf-8',
     })
     expect(initialTypedConfig).toMatch(`import { defineConfig } from 'worma';`)
-    expect(initialTypedConfig).toMatch(`import { platform, alova } from 'worma/plugin';`)
+    expect(initialTypedConfig).toMatch(`import { platform, aiDoc, alova } from 'worma/plugin';`)
     expect(initialTypedConfig).toMatch(`export default defineConfig({`)
     expect(initialTypedConfig).toMatch(`input: 'http://localhost:3000',`)
-    expect(initialTypedConfig).toMatch(`plugins: [platform('swagger'), alova()]`)
+    expect(initialTypedConfig).toMatch(`plugins: [platform('swagger'), aiDoc({ installSkill: true }), alova()]`)
   })
 
   it('should create config file with specified template preset', async () => {
@@ -336,15 +336,15 @@ describe('config', () => {
     const axiosConfig = await fs.readFile(resolve(process.cwd(), 'worma.config.ts'), {
       encoding: 'utf-8',
     })
-    expect(axiosConfig).toMatch(`import { platform, axios } from 'worma/plugin';`)
-    expect(axiosConfig).toMatch(`plugins: [platform('swagger'), axios()]`)
+    expect(axiosConfig).toMatch(`import { platform, aiDoc, axios } from 'worma/plugin';`)
+    expect(axiosConfig).toMatch(`plugins: [platform('swagger'), aiDoc({ installSkill: true }), axios()]`)
 
     await createConfig({ template: 'fetch' })
     const fetchConfig = await fs.readFile(resolve(process.cwd(), 'worma.config.ts'), {
       encoding: 'utf-8',
     })
-    expect(fetchConfig).toMatch(`import { platform, fetch } from 'worma/plugin';`)
-    expect(fetchConfig).toMatch(`plugins: [platform('swagger'), fetch()]`)
+    expect(fetchConfig).toMatch(`import { platform, aiDoc, fetch } from 'worma/plugin';`)
+    expect(fetchConfig).toMatch(`plugins: [platform('swagger'), aiDoc({ installSkill: true }), fetch()]`)
   })
 
   it('should create config file under a custom absolute path', async () => {
