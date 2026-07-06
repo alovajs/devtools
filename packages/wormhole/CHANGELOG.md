@@ -1,5 +1,11 @@
 # @alova/wormhole
 
+## 1.5.2
+
+### Patch Changes
+
+- [#145](https://github.com/alovajs/devtools/pull/145) [`20022eb`](https://github.com/alovajs/devtools/commit/20022eb5313b3d7e3ecb2152cd4b74236ad9c241) Thanks [@seepine](https://github.com/seepine)! - fix(wormhole): preserve const discriminators and stop merging discriminated unions
+
 ## 1.5.1
 
 ### Patch Changes
