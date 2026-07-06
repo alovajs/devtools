@@ -110,11 +110,16 @@ function APITreeExplorer({ targetEndpointId }: { targetEndpointId?: string | nul
   const [selectedEndpoint, setSelectedEndpoint] = useState<APIEndpoint>(mockAPIData[0].endpoints[0])
 
   useEffect(() => {
-    if (!targetEndpointId) return
+    if (!targetEndpointId)
+      return
     for (const tag of mockAPIData) {
       const ep = tag.endpoints.find(e => e.id === targetEndpointId)
       if (ep) {
-        setExpandedTags((prev) => { const next = new Set(prev); next.add(tag.id); return next })
+        setExpandedTags((prev) => {
+          const next = new Set(prev)
+          next.add(tag.id)
+          return next
+        })
         setSelectedEndpoint(ep)
         break
       }
@@ -122,7 +127,11 @@ function APITreeExplorer({ targetEndpointId }: { targetEndpointId?: string | nul
   }, [targetEndpointId])
 
   const toggleTag = (tagId: string) => {
-    setExpandedTags((prev) => { const next = new Set(prev); next.has(tagId) ? next.delete(tagId) : next.add(tagId); return next })
+    setExpandedTags((prev) => {
+      const next = new Set(prev)
+      next.has(tagId) ? next.delete(tagId) : next.add(tagId)
+      return next
+    })
   }
 
   return (
@@ -256,20 +265,60 @@ function HoverDocsDemo() {
         <div className="w-40 tech-border-r bg-editor-sidebar hidden sm:flex flex-col p-3 gap-2">
           <div className="text-[9px] font-data-mono text-on-surface-variant uppercase mb-2">Explorer</div>
           <div className="flex items-center gap-2 text-on-surface-variant text-[10px] font-data-mono">
-            <Icon name="folder" className="text-sm opacity-50" /> src
+            <Icon name="folder" className="text-sm opacity-50" />
+            {' '}
+            src
           </div>
           <div className="flex items-center gap-2 text-on-surface-variant text-[10px] font-data-mono pl-2">
-            <Icon name="folder" className="text-sm opacity-50" /> services
+            <Icon name="folder" className="text-sm opacity-50" />
+            {' '}
+            services
           </div>
           <div className="flex items-center gap-2 text-primary text-[10px] font-data-mono pl-4 bg-primary/10 -mx-3 px-3 py-0.5 border-l border-primary">
-            <Icon name="javascript" className="text-sm" /> pet.service.ts
+            <Icon name="javascript" className="text-sm" />
+            {' '}
+            pet.service.ts
           </div>
         </div>
         <div className="flex-1 p-6 font-data-mono text-xs leading-relaxed relative overflow-auto">
-          <div><span className="syntax-keyword">import</span> {'{'} <span className="syntax-type">getPetById</span> {'}'} <span className="syntax-keyword">from</span> <span className="syntax-string">&apos;@/api/services/pet&apos;</span>;</div>
+          <div>
+            <span className="syntax-keyword">import</span>
+            {' '}
+            {'{'}
+            {' '}
+            <span className="syntax-type">getPetById</span>
+            {' '}
+            {'}'}
+            {' '}
+            <span className="syntax-keyword">from</span>
+            {' '}
+            <span className="syntax-string">&apos;@/api/services/pet&apos;</span>
+            ;
+          </div>
           <div className="mt-4" />
           <div className="group relative">
-            <span className="syntax-keyword">const</span> pet = <span className="syntax-keyword">await</span> <span className="bg-primary/20 text-primary px-0.5 cursor-help border-b border-dotted border-primary/75 relative">getPetById</span>({'{'} <span className="text-on-surface">pathParams</span>: {'{'} petId: <span className="text-accent-blue">1</span> {'}'} {'}'});
+            <span className="syntax-keyword">const</span>
+            {' '}
+            pet =
+            <span className="syntax-keyword">await</span>
+            {' '}
+            <span className="bg-primary/20 text-primary px-0.5 cursor-help border-b border-dotted border-primary/75 relative">getPetById</span>
+            (
+            {'{'}
+            {' '}
+            <span className="text-on-surface">pathParams</span>
+            :
+            {' '}
+            {'{'}
+            {' '}
+            petId:
+            {' '}
+            <span className="text-accent-blue">1</span>
+            {' '}
+            {'}'}
+            {' '}
+            {'}'}
+            );
             {/* Hover Tooltip — matching original renderJsDoc content */}
             <div className="absolute top-full left-0 mt-2 w-96 max-w-[calc(100vw-2rem)] tech-border bg-tooltip-bg p-4 shadow-2xl z-20 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200">
               {/* [GET] Find pet by ID */}
@@ -279,27 +328,35 @@ function HoverDocsDemo() {
               </div>
               {/* path: /pet/{petId} */}
               <div className="text-[12px] text-on-surface-variant mb-3">
-                path:<span className="ml-1 text-on-surface font-data-mono">/pet/{'{petId}'}</span>
+                path:
+                <span className="ml-1 text-on-surface font-data-mono">
+                  /pet/
+                  {'{petId}'}
+                </span>
               </div>
               {/* Path Parameters */}
               <div className="text-[12px] text-on-surface font-headline-lg font-semibold mb-1">Path Parameters</div>
               <pre className="mb-3 tech-border bg-surface p-3 text-[12px] text-on-surface leading-[1.35] font-data-mono overflow-x-auto">
-                <code>{`type PathParameters = {
+                <code>
+                  {`type PathParameters = {
   // ID of pet to return
   petId: number
-}`}</code>
+}`}
+                </code>
               </pre>
               {/* Response */}
               <div className="text-[12px] text-on-surface font-headline-lg font-semibold mb-1">Response</div>
               <pre className="tech-border bg-surface p-3 text-[12px] text-on-surface leading-[1.35] font-data-mono overflow-x-auto">
-                <code>{`type Response = {
+                <code>
+                  {`type Response = {
   id?: number
   name: string
   category?: { id?: number; name?: string }
   photoUrls: string[]
   tags?: Array<{ id?: number; name?: string }>
   status?: "available" | "pending" | "sold"
-}`}</code>
+}`}
+                </code>
               </pre>
               <div className="mt-3 pt-2 border-t border-outline flex justify-between items-center">
                 <span className="text-[9px] text-on-surface-variant italic">Generated by worma</span>
@@ -327,18 +384,47 @@ function QuickInsertDemo() {
     ? allEndpoints.filter(ep => ep.path.toLowerCase().includes(search.toLowerCase()) || ep.summary.toLowerCase().includes(search.toLowerCase()) || ep.method.toLowerCase().includes(search.toLowerCase()))
     : allEndpoints
 
-  useEffect(() => { setSelectedIndex(0) }, [search])
+  useEffect(() => {
+    setSelectedIndex(0)
+  }, [search])
 
   return (
     <div className="h-full min-h-[420px] flex tech-border bg-editor-bg overflow-hidden relative">
       <div className="flex flex-1 flex-col overflow-hidden">
         <EditorHeader filename="src/main.js — Visual Studio Code" />
         <div className="flex-1 overflow-auto p-6 font-data-mono text-xs leading-relaxed">
-          <div><span className="syntax-keyword">import</span> {'{'} <span className="syntax-type">getPetById</span> {'}'} <span className="syntax-keyword">from</span> <span className="syntax-string">&apos;@/api/services/pet&apos;</span>;</div>
+          <div>
+            <span className="syntax-keyword">import</span>
+            {' '}
+            {'{'}
+            {' '}
+            <span className="syntax-type">getPetById</span>
+            {' '}
+            {'}'}
+            {' '}
+            <span className="syntax-keyword">from</span>
+            {' '}
+            <span className="syntax-string">&apos;@/api/services/pet&apos;</span>
+            ;
+          </div>
           <div className="mt-4" />
-          <div><span className="syntax-type">getPetById</span>({'{'}</div>
-          <div className="pl-4"><span className="text-on-surface">pathParams</span>: {'{'}</div>
-          <div className="pl-8"><span className="text-on-surface">petId</span>: <span className="text-accent-blue">1</span></div>
+          <div>
+            <span className="syntax-type">getPetById</span>
+            (
+            {'{'}
+          </div>
+          <div className="pl-4">
+            <span className="text-on-surface">pathParams</span>
+            :
+            {' '}
+            {'{'}
+          </div>
+          <div className="pl-8">
+            <span className="text-on-surface">petId</span>
+            :
+            {' '}
+            <span className="text-accent-blue">1</span>
+          </div>
           <div className="pl-4">{'}'}</div>
           <div className="mt-3">{'})'}</div>
           <div className="mt-6 flex items-center gap-2">
@@ -391,7 +477,20 @@ function PortalDemo({ onViewApi }: { onViewApi: () => void }) {
     <div className="h-full min-h-[420px] flex flex-col tech-border bg-editor-bg overflow-hidden">
       <EditorHeader filename="src/services/pet.service.ts — Visual Studio Code" />
       <div className="flex-1 overflow-auto p-6 font-data-mono text-xs leading-relaxed">
-        <div><span className="syntax-keyword">import</span> {'{'} <span className="syntax-type">getPetById</span> {'}'} <span className="syntax-keyword">from</span> <span className="syntax-string">&apos;@/api/services/pet&apos;</span>;</div>
+        <div>
+          <span className="syntax-keyword">import</span>
+          {' '}
+          {'{'}
+          {' '}
+          <span className="syntax-type">getPetById</span>
+          {' '}
+          {'}'}
+          {' '}
+          <span className="syntax-keyword">from</span>
+          {' '}
+          <span className="syntax-string">&apos;@/api/services/pet&apos;</span>
+          ;
+        </div>
         <div className="mt-4" />
         <div className="text-on-surface-variant">// 点击下方按钮跳转到 API Explorer</div>
         <div className="my-3 flex">
@@ -404,7 +503,31 @@ function PortalDemo({ onViewApi }: { onViewApi: () => void }) {
           </button>
         </div>
         <div className="mt-4" />
-        <div><span className="syntax-keyword">const</span> pet = <span className="syntax-keyword">await</span> <span className="syntax-type">getPetById</span>({'{'} <span className="text-on-surface">pathParams</span>: {'{'} petId: <span className="text-accent-blue">1</span> {'}'} {'}'});</div>
+        <div>
+          <span className="syntax-keyword">const</span>
+          {' '}
+          pet =
+          {' '}
+          <span className="syntax-keyword">await</span>
+          {' '}
+          <span className="syntax-type">getPetById</span>
+          (
+          {'{'}
+          {' '}
+          <span className="text-on-surface">pathParams</span>
+          :
+          {' '}
+          {'{'}
+          {' '}
+          petId:
+          {' '}
+          <span className="text-accent-blue">1</span>
+          {' '}
+          {'}'}
+          {' '}
+          {'}'}
+          );
+        </div>
         <div className="mt-6" />
         <div className="text-on-surface-variant">// View Api 按钮上方跳转到 API Explorer 标签页</div>
       </div>
@@ -424,7 +547,10 @@ function AutoDetectDemo() {
     const interval = setInterval(() => {
       msgIndex = (msgIndex + 1) % toastMessages.length
       setToastVisible(false)
-      setTimeout(() => { setToastMsg(toastMessages[msgIndex]); setToastVisible(true) }, 300)
+      setTimeout(() => {
+        setToastMsg(toastMessages[msgIndex])
+        setToastVisible(true)
+      }, 300)
     }, 5000)
     return () => clearInterval(interval)
   }, [])
@@ -481,8 +607,14 @@ function JSIntelliSenseDemo() {
       <EditorHeader filename="src/api/alova/services — Visual Studio Code" />
       <div className="flex-1 overflow-auto p-5 font-data-mono">
         <p className="mb-4 text-[12px] text-on-surface-variant">
-          每个 <code className="bg-outline px-1.5 py-0.5 text-primary-light">.js</code> 文件都配有
-          <code className="bg-outline px-1.5 py-0.5 text-primary-light"> .d.ts</code> 声明文件，确保完整的类型安全。
+          每个
+          {' '}
+          <code className="bg-outline px-1.5 py-0.5 text-primary-light">.js</code>
+          {' '}
+          文件都配有
+          <code className="bg-outline px-1.5 py-0.5 text-primary-light"> .d.ts</code>
+          {' '}
+          声明文件，确保完整的类型安全。
         </p>
 
         {/* File tree */}
@@ -566,7 +698,8 @@ export default function IdeEditor() {
 
   // Clear portal target when switching away from api-explorer
   const handleTabChange = (tabId: string) => {
-    if (tabId !== 'api-explorer') setPortalTargetEP(null)
+    if (tabId !== 'api-explorer')
+      setPortalTargetEP(null)
     setActive(tabId)
   }
 

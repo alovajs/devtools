@@ -72,9 +72,9 @@ npx worma gen --project ./packages/user-service
 
 ```javascript
 // packages/user-service/worma.config.js
-import { defineConfig } from 'worma';
-import { axios } from 'worma/plugin';
-import { aiDoc } from 'worma/plugin';
+import { defineConfig } from 'wormajs';
+import { axios } from 'wormajs/plugin';
+import { aiDoc } from 'wormajs/plugin';
 
 export default defineConfig({
   generator: [
@@ -93,8 +93,8 @@ export default defineConfig({
 也可以在 Monorepo 根目录的 `worma.config` 中统一配置所有子服务：
 
 ```javascript
-import { defineConfig } from 'worma';
-import { axios } from 'worma/plugin';
+import { defineConfig } from 'wormajs';
+import { axios } from 'wormajs/plugin';
 
 export default defineConfig({
   generator: [

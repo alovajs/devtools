@@ -35,7 +35,7 @@ config() → beforeOpenapiParse() → 解析 OpenAPI → openapiParsed()
 一个自定义插件就是一个实现了 `ApiPlugin` 接口的对象：
 
 ```javascript
-import { defineConfig } from 'worma';
+import { defineConfig } from 'wormajs';
 
 export default defineConfig({
   generator: [
@@ -148,8 +148,8 @@ export default defineConfig({
 为了方便插件接受用户参数，推荐使用 `createPlugin` 工厂函数来定义插件。它可以让你将传入的配置与生命周期的钩子关联起来。
 
 ```typescript
-import type { ApiPlugin } from 'worma';
-import { createPlugin } from 'worma/plugin';
+import type { ApiPlugin } from 'wormajs';
+import { createPlugin } from 'wormajs/plugin';
 
 interface Config {
   match: (tag: string) => boolean;
@@ -179,7 +179,7 @@ const createTagModifierPlugin = createPlugin((config: Config): Partial<ApiPlugin
 ### 使用
 
 ```javascript
-import { defineConfig } from 'worma';
+import { defineConfig } from 'wormajs';
 import { createTagModifierPlugin } from './my-plugins';
 
 export default defineConfig({
@@ -211,7 +211,7 @@ function createPlugin<T>(
 结合多个生命周期钩子的自定义插件：
 
 ```javascript
-import { createPlugin } from 'worma/plugin';
+import { createPlugin } from 'wormajs/plugin';
 
 const createCustomPlugin = createPlugin((options) => ({
   name: 'custom-plugin',

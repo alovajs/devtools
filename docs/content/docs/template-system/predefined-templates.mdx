@@ -9,7 +9,7 @@ description: 使用内置的五套预定义模板
 按需引入模式，每个 API 作为独立函数导出，支持 Tree-shaking。
 
 ```javascript
-import { alova } from 'worma/plugin';
+import { alova } from 'wormajs/plugin';
 
 plugins: [alova({ framework: 'vue' })]
 ```
@@ -46,7 +46,7 @@ const users = await getUserList({ params: { page: 1, size: 10 } });
 全局挂载模式，兼容 alova@3（仅 v3，不再支持 v2）。
 
 ```javascript
-import { alovaGlobals } from 'worma/plugin';
+import { alovaGlobals } from 'wormajs/plugin';
 
 plugins: [alovaGlobals({
   global: 'Apis',
@@ -97,7 +97,7 @@ const user = await Apis.user.getUserById({ pathParams: { userId: 123 } });
 生成基于 axios 的调用函数，采用按需引入模式。
 
 ```javascript
-import { axios } from 'worma/plugin';
+import { axios } from 'wormajs/plugin';
 plugins: [axios()];
 ```
 
@@ -132,7 +132,7 @@ const newUser = await createUser({ data: { name: 'Alice', email: 'alice@example.
 生成基于原生 fetch 的调用函数，零额外依赖，采用按需引入模式。
 
 ```javascript
-import { fetch } from 'worma/plugin';
+import { fetch } from 'wormajs/plugin';
 plugins: [fetch()];
 ```
 
@@ -168,7 +168,7 @@ const users = await getUserList({ params: { page: 1, size: 10 } });
 生成基于 [ky](https://github.com/sindresorhus/ky) 的调用函数，采用按需引入模式。
 
 ```javascript
-import { ky } from 'worma/plugin';
+import { ky } from 'wormajs/plugin';
 plugins: [ky()];
 ```
 

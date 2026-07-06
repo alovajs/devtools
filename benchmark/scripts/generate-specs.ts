@@ -771,7 +771,19 @@ if (!existsSync(SPECS_DIR)) {
   mkdirSync(SPECS_DIR, { recursive: true })
 }
 
+// 跳过已存在的 spec 文件，避免重复生成
+const allExist = SCALES.every(s => existsSync(resolve(SPECS_DIR, `petstore-${s}.json`)))
+if (allExist) {
+  console.log('All spec files already exist, skipping generation.')
+  process.exit(0)
+}
+
 for (const scale of SCALES) {
+  const filePath = resolve(SPECS_DIR, `petstore-${scale}.json`)
+  if (existsSync(filePath)) {
+    console.log(`Skipping petstore-${scale}.json (already exists)`)
+    continue
+  }
   console.log(`Generating spec with ~${scale} endpoints...`)
   const spec = generateSpec(scale)
 
@@ -784,7 +796,6 @@ for (const scale of SCALES) {
   }
   console.log(`  Actual endpoints: ${actualCount}`)
 
-  const filePath = resolve(SPECS_DIR, `petstore-${scale}.json`)
   writeFileSync(filePath, JSON.stringify(spec, null, 2))
   console.log(`  Written to: ${filePath} (${(JSON.stringify(spec).length / 1024 / 1024).toFixed(2)} MB)`)
   console.log()

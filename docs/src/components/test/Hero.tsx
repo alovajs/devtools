@@ -1,6 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { AGENT_PROMPT, COPY_TOAST_MESSAGE } from './agentPrompt'
 import Button from './Button'
 import CornerPlus from './CornerPlus'
 
@@ -170,6 +171,19 @@ void main() {
 }
 
 export default function Hero() {
+  const [toast, setToast] = useState(false)
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(AGENT_PROMPT)
+      setToast(true)
+      setTimeout(() => setToast(false), 2500)
+    }
+    catch {
+      // ignore clipboard errors
+    }
+  }
+
   return (
     <section className="tech-border-b relative grid grid-cols-1 overflow-hidden lg:grid-cols-2">
       <DotShader />
@@ -188,9 +202,27 @@ export default function Hero() {
         <p className="font-body-md text-on-surface-variant mb-12 max-w-md text-sm leading-relaxed">
           为你生成类型安全的接口代码，为AI生成易理解的接口知识。统一规范，加速协同。
         </p>
-        <div className="flex flex-wrap gap-0">
-          <Button variant="primary" target="_blank" icon="arrow_forward" href="https://stackblitz.com/fork/github/alovajs/devtools/tree/main/examples/typescript">即刻体验</Button>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+          <div className="relative">
+            <Button variant="primary" onClick={handleCopy}>
+              agent安装
+            </Button>
+            {toast && (
+              <div className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-black px-3 py-1.5 text-xs text-white shadow-lg transition-opacity">
+                {COPY_TOAST_MESSAGE}
+              </div>
+            )}
+          </div>
           <Button variant="outline" href="/docs/quick-start">快速开始</Button>
+        </div>
+        <div className="mt-4">
+          <a
+            href="https://stackblitz.com/fork/github/alovajs/devtools/tree/main/examples/typescript"
+            className="inline-flex items-center gap-1 text-sm font-body-md text-on-background underline decoration-primary/30 underline-offset-4 transition-colors hover:text-primary hover:decoration-primary"
+          >
+            即刻体验
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17l9.2-9.2M17 17V7H7" /></svg>
+          </a>
         </div>
         <div className="font-data-mono text-primary absolute bottom-4 left-8 text-[10px]">LATENCY: 14MS // SECTOR: 0x4F</div>
       </div>

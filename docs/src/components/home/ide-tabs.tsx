@@ -132,7 +132,11 @@ function APITreeExplorer({ targetEndpointId }: { targetEndpointId?: string | nul
     for (const tag of mockAPIData) {
       const ep = tag.endpoints.find(e => e.id === targetEndpointId)
       if (ep) {
-        setExpandedTags((prev) => { const next = new Set(prev); next.add(tag.id); return next })
+        setExpandedTags((prev) => {
+          const next = new Set(prev)
+          next.add(tag.id)
+          return next
+        })
         setSelectedEndpoint(ep)
         break
       }
@@ -140,7 +144,11 @@ function APITreeExplorer({ targetEndpointId }: { targetEndpointId?: string | nul
   }, [targetEndpointId])
 
   const toggleTag = (tagId: string) => {
-    setExpandedTags((prev) => { const next = new Set(prev); next.has(tagId) ? next.delete(tagId) : next.add(tagId); return next })
+    setExpandedTags((prev) => {
+      const next = new Set(prev)
+      next.has(tagId) ? next.delete(tagId) : next.add(tagId)
+      return next
+    })
   }
 
   const activityIcons = [
@@ -333,11 +341,13 @@ function JSIntelliSenseDemo() {
         <div className="mt-4 rounded-lg border border-[#30363d] bg-[#161b22] p-3">
           <p className="mb-2 text-[11px] text-[#6e7681] font-semibold tracking-[0.1em] uppercase">pet.d.ts</p>
           <pre className="overflow-x-auto text-[12px] leading-relaxed text-[#c9d1d9]">
-            <code>{`declare function getPetById(config: Config): Response;
+            <code>
+              {`declare function getPetById(config: Config): Response;
 declare function addPet(config: Config): Response;
 declare function updatePet(config: Config): Response;
 declare function findPetsByStatus(config: Config): Response;
-declare function deletePet(config: Config): Response;`}</code>
+declare function deletePet(config: Config): Response;`}
+            </code>
           </pre>
           <p className="mt-2 text-[11px] text-[#6e7681]">
             Full type inference for path params, query, body, and response.
@@ -347,16 +357,18 @@ declare function deletePet(config: Config): Response;`}</code>
         <div className="mt-3 rounded-lg border border-[#30363d] bg-[#161b22] p-3">
           <p className="mb-2 text-[11px] text-[#6e7681] font-semibold tracking-[0.1em] uppercase">store.d.ts</p>
           <pre className="overflow-x-auto text-[12px] leading-relaxed text-[#c9d1d9]">
-            <code>{`declare function getInventory(config: Config): Response;
+            <code>
+              {`declare function getInventory(config: Config): Response;
 declare function placeOrder(config: Config): Response;
-declare function getOrderById(config: Config): Response;`}</code>
+declare function getOrderById(config: Config): Response;`}
+            </code>
           </pre>
         </div>
 
         <div className="mt-3 rounded-lg border border-[#30363d] bg-[#161b22] p-3">
           <p className="mb-2 text-[11px] text-[#6e7681] font-semibold tracking-[0.1em] uppercase">user.d.ts</p>
           <pre className="overflow-x-auto text-[12px] leading-relaxed text-[#c9d1d9]">
-            <code>{`declare function loginUser(config: Config): Response;`}</code>
+            <code>declare function loginUser(config: Config): Response;</code>
           </pre>
         </div>
       </div>
@@ -412,7 +424,9 @@ function QuickInsertDemo({ codeHtml, hoverDocs }: { codeHtml: string, hoverDocs?
     ? allEndpoints.filter(ep => ep.path.toLowerCase().includes(search.toLowerCase()) || ep.summary.toLowerCase().includes(search.toLowerCase()) || ep.method.toLowerCase().includes(search.toLowerCase()))
     : allEndpoints
 
-  useEffect(() => { setSelectedIndex(0) }, [search])
+  useEffect(() => {
+    setSelectedIndex(0)
+  }, [search])
 
   return (
     <div className="relative h-full min-h-[360px] flex overflow-hidden border border-gray-200 rounded-xl bg-white shadow-sm">
@@ -486,7 +500,10 @@ function AutoDetectDemo() {
     const interval = setInterval(() => {
       msgIndex = (msgIndex + 1) % toastMessages.length
       setToastVisible(false)
-      setTimeout(() => { setToastMsg(toastMessages[msgIndex]); setToastVisible(true) }, 300)
+      setTimeout(() => {
+        setToastMsg(toastMessages[msgIndex])
+        setToastVisible(true)
+      }, 300)
     }, 5000)
     return () => clearInterval(interval)
   }, [])
@@ -521,7 +538,10 @@ export function IDEExperienceTabs({ hoverCodeHtml, portalTopHtml, portalBottomHt
   const [active, setActive] = useState('api-explorer')
   const [portalTargetEP, setPortalTargetEP] = useState<string | null>(null)
 
-  const handlePortalViewApi = () => { setPortalTargetEP('getPetById'); setActive('api-explorer') }
+  const handlePortalViewApi = () => {
+    setPortalTargetEP('getPetById')
+    setActive('api-explorer')
+  }
 
   const renderContent = () => {
     switch (active) {

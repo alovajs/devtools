@@ -67,26 +67,27 @@ function renderJsDoc(rawDoc: string): ReactNode {
       return
 
     // [METHOD] Title line
-    const method = text.match(/^\[(GET|POST|PUT|DELETE|PATCH)\]\s+(.+)$/)
-    if (method) {
+    const methodMatch = text.match(/^\[(GET|POST|PUT|DELETE|PATCH)\]/u)
+    if (methodMatch) {
+      const title = text.slice(methodMatch[0].length).trimStart()
       blocks.push(
         <p key={key++} className="flex items-center gap-2 text-[15px]">
-          <span className={`rounded-md px-2 py-0.5 text-[11px] font-bold ${methodColors[method[1]]}`}>
-            {method[1]}
+          <span className={`rounded-md px-2 py-0.5 text-[11px] font-bold ${methodColors[methodMatch[1]]}`}>
+            {methodMatch[1]}
           </span>
-          <span className="text-[#e6edf3]">{renderInline(method[2])}</span>
+          <span className="text-[#e6edf3]">{renderInline(title)}</span>
         </p>,
       )
       return
     }
 
     // path: /pet/{petId}
-    const pathLine = text.match(/^path:\s+(.+)$/i)
-    if (pathLine) {
+    if (text.toLowerCase().startsWith('path:')) {
+      const pathValue = text.slice(5).trimStart()
       blocks.push(
         <p key={key++} className="text-[13px] text-[#8b949e]">
           path:
-          <span className="ml-1 text-[#c9d1d9] font-mono">{pathLine[1]}</span>
+          <span className="ml-1 text-[#c9d1d9] font-mono">{pathValue}</span>
         </p>,
       )
       return
@@ -250,7 +251,10 @@ export function CodeBlock({ html, hoverDocs, className }: CodeBlockProps) {
     [clearShow, clearHide],
   )
 
-  useEffect(() => () => { clearShow(); clearHide() }, [clearShow, clearHide])
+  useEffect(() => () => {
+    clearShow()
+    clearHide()
+  }, [clearShow, clearHide])
 
   return (
     <div className={`relative ${className ?? ''}`} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>

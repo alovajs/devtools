@@ -10,6 +10,7 @@ export interface ButtonProps {
   className?: string
   target?: string
   href?: string
+  onClick?: React.MouseEventHandler<HTMLButtonElement>
 }
 
 const sizeMap = {
@@ -28,6 +29,7 @@ export default function Button({
   className = '',
   target,
   href,
+  onClick,
 }: ButtonProps) {
   const base = 'font-headline-lg font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-3 cursor-pointer'
   const variantClass = variant === 'primary'
@@ -56,7 +58,7 @@ export default function Button({
   }
 
   return (
-    <button className={mergedClass}>
+    <button className={mergedClass} onClick={onClick}>
       {content}
     </button>
   )

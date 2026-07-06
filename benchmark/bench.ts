@@ -35,8 +35,12 @@ function measureDir(dir: string): { fileCount: number, totalSize: number, files:
       else if (entry.isFile()) {
         const rel = fullPath.substring(dir.length + 1)
         files.push(rel)
-        try { totalSize += statSync(fullPath).size }
-        catch { /* ignore */ }
+        try {
+          totalSize += statSync(fullPath).size
+        }
+        catch {
+          /* ignore */
+        }
       }
     }
   }

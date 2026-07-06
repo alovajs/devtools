@@ -10,8 +10,8 @@ description: 使用 Handlebars 创建自定义代码生成模板
 自定义模板通过插件的 `getTemplate` hook 返回模板路径。也可以在 `plugins` 中使用直接返回模板路径的插件函数：
 
 ```javascript
-import { defineConfig } from "worma";
-import { functional } from "worma/plugin";
+import { defineConfig } from "wormajs";
+import { functional } from "wormajs/plugin";
 
 export default defineConfig({
   generator: [

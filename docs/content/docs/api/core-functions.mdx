@@ -9,7 +9,7 @@ description: defineConfig、generate、readConfig 等编程 API
 类型安全的配置辅助函数，接受配置对象或返回配置的函数。详细配置项请参阅 [配置对象](/docs/api/configuration)。
 
 ```typescript
-import { defineConfig } from 'worma';
+import { defineConfig } from 'wormajs';
 
 export default defineConfig({
   generator: [...],
@@ -30,7 +30,7 @@ function defineConfig(config: () => Promise<Config>): () => Promise<Config>;
 编程方式调用代码生成，适用于 CI/CD 或自定义脚本集成。
 
 ```typescript
-import { generate } from 'worma';
+import { generate } from 'wormajs';
 
 const results = await generate(config, { force: true });
 ```
@@ -84,7 +84,7 @@ await generate(config, {
 **自定义脚本：**
 
 ```javascript
-import { generate } from 'worma';
+import { generate } from 'wormajs';
 
 await generate({
   generator: [{
@@ -99,7 +99,7 @@ await generate({
 读取项目中的 `worma.config` 并返回解析后的配置对象。
 
 ```typescript
-import { readConfig } from 'worma';
+import { readConfig } from 'wormajs';
 
 const config = await readConfig('/path/to/project');
 ```
@@ -115,7 +115,7 @@ function readConfig(projectPath?: string): Promise<Readonly<Config>>;
 获取缓存的 API 文档数据，用于 VSCode 扩展侧边栏展示等场景。
 
 ```typescript
-import { getApiDocs } from 'worma';
+import { getApiDocs } from 'wormajs';
 
 const docs = await getApiDocs();
 ```
@@ -151,7 +151,7 @@ interface CacheData {
 设置 worma 全局配置。
 
 ```typescript
-import { setGlobalConfig } from 'worma';
+import { setGlobalConfig } from 'wormajs';
 
 setGlobalConfig({
   cacheDir: '.worma-cache',
@@ -163,7 +163,7 @@ setGlobalConfig({
 在项目中创建 `worma.config` 文件。
 
 ```typescript
-import { createConfig } from 'worma';
+import { createConfig } from 'wormajs';
 
 await createConfig({
   template: 'alova',
@@ -182,7 +182,7 @@ await createConfig({
 在 Monorepo 项目中搜索所有包含 `worma.config` 的子包目录。
 
 ```typescript
-import { resolveWorkspaces } from 'worma';
+import { resolveWorkspaces } from 'wormajs';
 
 const dirs = await resolveWorkspaces('/path/to/monorepo');
 // → ['./packages/user-service', './packages/order-service']

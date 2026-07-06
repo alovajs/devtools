@@ -1,7 +1,24 @@
+'use client'
+
+import { useState } from 'react'
+import { AGENT_PROMPT, COPY_TOAST_MESSAGE } from './agentPrompt'
 import Button from './Button'
 import CornerPlus from './CornerPlus'
 
 export default function Cta() {
+  const [toast, setToast] = useState(false)
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(AGENT_PROMPT)
+      setToast(true)
+      setTimeout(() => setToast(false), 2500)
+    }
+    catch {
+      // ignore clipboard errors
+    }
+  }
+
   return (
     <section className="p-12 lg:p-32 bg-cta-bg relative overflow-hidden tech-border-b">
       <div
@@ -15,12 +32,26 @@ export default function Cta() {
           「开始使用」
         </h2>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-          <Button variant="primary" size="lg" icon="rocket_launch" className="w-full sm:w-auto" href="/docs/quick-start">免费开始</Button>
-          <Button variant="outline" size="lg" className="px-10 w-full sm:w-auto" href="/docs">查看文档</Button>
+          <div className="relative w-full sm:w-auto">
+            <Button
+              variant="primary"
+              size="lg"
+              className="w-full sm:w-auto"
+              onClick={handleCopy}
+            >
+              agent安装
+            </Button>
+            {toast && (
+              <div className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-black px-3 py-1.5 text-xs text-white shadow-lg transition-opacity">
+                {COPY_TOAST_MESSAGE}
+              </div>
+            )}
+          </div>
+          <Button variant="outline" size="lg" className="px-10 w-full sm:w-auto" href="/docs/quick-start">免费开始</Button>
           <Button variant="outline" size="lg" icon="code" className="px-10 w-full sm:w-auto" href="https://github.com/alovajs/devtools">GitHub</Button>
         </div>
         <p className="font-data-mono text-xs text-on-surface-variant tracking-widest uppercase">
-          从 OpenAPI 到生产代码，一步到位
+          将上方 Prompts 发送给你的 Coding Agent，快速完成 worma 安装与配置
         </p>
         <div className="mt-16 flex justify-center">
           <div className="w-px h-12 bg-gradient-to-b from-primary to-transparent" />
