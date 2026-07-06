@@ -2,6 +2,7 @@ import type { ParserCtx, ParserOptions } from './type'
 import type { MaybeSchemaObject, TUnknown } from '@/type'
 import { ASTType } from '@/type'
 import arrayParser from './array'
+import constParser from './const'
 import enumParser from './enum'
 import groupParser from './group'
 import objectParser from './object'
@@ -17,7 +18,7 @@ export function astParse(schema: MaybeSchemaObject, options: ParserOptions) {
     const value = parse(schema, {
       type: getParserSchemaType(schema),
       ctx,
-      parsers: [arrayParser, objectParser, enumParser, simpleParser, referenceParser, tupleParser, groupParser],
+      parsers: [arrayParser, objectParser, enumParser, constParser, simpleParser, referenceParser, tupleParser, groupParser],
     })
     if (!value) {
       return {

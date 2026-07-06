@@ -1,0 +1,186 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Const & Discriminated Union",
+    "version": "1.0.0",
+    "description": "covers `oneOf`/`anyOf` discriminated unions where the discriminator is a `const` string (and boolean)."
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "tags": [
+    {
+      "name": "auth"
+    }
+  ],
+  "paths": {
+    "/forget/password": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Forget password (issue #824)",
+        "description": "Discriminated union using oneOf + const channel",
+        "operationId": "forgetPassword",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "channel": { "type": "string", "const": "email" },
+                      "email": { "type": "string" },
+                      "password": { "type": "string" },
+                      "code": { "type": "string" }
+                    },
+                    "required": ["channel", "email", "password", "code"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "channel": { "type": "string", "const": "phone" },
+                      "phone": { "type": "string" },
+                      "password": { "type": "string" },
+                      "code": { "type": "string" }
+                    },
+                    "required": ["channel", "phone", "password", "code"]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
+      }
+    },
+    "/oauth/token": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "OAuth token",
+        "description": "Discriminated union using anyOf + const grant_type",
+        "operationId": "oauthToken",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "grant_type": { "type": "string", "const": "password" },
+                      "username": { "type": "string" },
+                      "password": { "type": "string" },
+                      "scope": { "type": "string" }
+                    },
+                    "required": ["grant_type", "username", "password"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "grant_type": { "type": "string", "const": "authorization_code" },
+                      "code": { "type": "string" },
+                      "redirect_uri": { "type": "string", "format": "uri" },
+                      "client_id": { "type": "string" },
+                      "client_secret": { "type": "string" }
+                    },
+                    "required": ["grant_type", "code", "redirect_uri", "client_id", "client_secret"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "grant_type": { "type": "string", "const": "refresh_token" },
+                      "refresh_token": { "type": "string" }
+                    },
+                    "required": ["grant_type", "refresh_token"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "grant_type": {
+                        "type": "string",
+                        "enum": ["client_credentials", "device_code"]
+                      },
+                      "scope": { "type": "string" }
+                    },
+                    "required": ["grant_type"]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
+      }
+    },
+    "/integrations/toggle": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Toggle integration (boolean const discriminator)",
+        "description": "Discriminated union using oneOf + boolean const `enabled`",
+        "operationId": "toggleIntegration",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "enabled": {
+                        "type": "boolean",
+                        "const": false
+                      }
+                    },
+                    "required": [
+                      "enabled"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "enabled": {
+                        "type": "boolean",
+                        "const": true
+                      },
+                      "url": {
+                        "type": "string",
+                        "format": "uri"
+                      },
+                      "apiKey": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "enabled",
+                      "url",
+                      "apiKey"
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
+      }
+    }
+  }
+}

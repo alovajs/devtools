@@ -242,6 +242,101 @@ describe('schema Normalizer', () => {
       expect(result.anyOf).toBeDefined()
       expect(result.anyOf).toHaveLength(2)
     })
+
+    it('should not merge object branches that have different const discriminators', () => {
+      // OAuth-style fixture: 4 object branches that differ only in the value of one
+      // const/enum field. Merging them would drop the discriminator.  (issue #824)
+      const schema: SchemaObject = {
+        anyOf: [
+          {
+            type: 'object',
+            properties: {
+              grant_type: { type: 'string', const: 'password' },
+              username: { type: 'string' },
+              password: { type: 'string' },
+            },
+            required: ['grant_type', 'username', 'password'],
+          },
+          {
+            type: 'object',
+            properties: {
+              grant_type: { type: 'string', const: 'authorization_code' },
+              code: { type: 'string' },
+            },
+            required: ['grant_type', 'code'],
+          },
+          {
+            type: 'object',
+            properties: {
+              grant_type: { type: 'string', const: 'refresh_token' },
+              refresh_token: { type: 'string' },
+            },
+            required: ['grant_type', 'refresh_token'],
+          },
+          {
+            type: 'object',
+            properties: {
+              grant_type: { type: 'string', enum: ['client_credentials', 'device_code'] },
+              scope: { type: 'string' },
+            },
+            required: ['grant_type'],
+          },
+        ],
+      }
+
+      const result = normalizer.normalize(schema) as SchemaObject
+      expect(result.anyOf).toBeDefined()
+      expect(result.anyOf).toHaveLength(4)
+    })
+
+    it('should still merge branches when no const/enum discriminator conflict exists', () => {
+      const schema: SchemaObject = {
+        anyOf: [
+          { type: 'object', properties: { a: { type: 'string' } }, required: ['a'] },
+          { type: 'object', properties: { a: { type: 'string' }, b: { type: 'number' } }, required: ['a', 'b'] },
+        ],
+      }
+
+      const result = normalizer.normalize(schema) as SchemaObject
+      expect(result.anyOf).toBeDefined()
+      // 同一 type 的两个对象，且无判别式冲突 → 合并为 1 个
+      expect(result.anyOf).toHaveLength(1)
+      const merged = result.anyOf![0] as SchemaObject
+      expect(merged.properties).toBeDefined()
+      expect(merged.properties!.a).toBeDefined()
+      expect(merged.properties!.b).toBeDefined()
+    })
+
+    it('should not merge object branches that have different boolean const discriminators (issue #824)', () => {
+      // Toggle-style fixture: two object branches that differ only in the boolean
+      // const on the `enabled` field. Merging would collapse the union to a single
+      // object and lose the discriminator.
+      const schema: SchemaObject = {
+        oneOf: [
+          {
+            type: 'object',
+            properties: {
+              enabled: { type: 'boolean', const: false },
+            },
+            required: ['enabled'],
+          },
+          {
+            type: 'object',
+            properties: {
+              enabled: { type: 'boolean', const: true },
+              url: { type: 'string', format: 'uri' },
+              apiKey: { type: 'string', minLength: 1 },
+            },
+            required: ['enabled', 'url', 'apiKey'],
+          },
+        ],
+      }
+
+      const result = normalizer.normalize(schema) as SchemaObject
+      // oneOf 也走 mergeAnyOf（保持原 oneOf 数组），分支数应保持为 2
+      expect(result.oneOf).toBeDefined()
+      expect(result.oneOf).toHaveLength(2)
+    })
   })
 
   describe('normalizeEnum rule', () => {
