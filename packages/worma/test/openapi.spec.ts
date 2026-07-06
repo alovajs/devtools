@@ -1,12 +1,19 @@
 import type { Config, SchemaObject } from '@/type'
 import fs from 'node:fs/promises'
 import { resolve } from 'node:path'
+import { vol } from 'memfs'
 import { createConfig, generate } from '@/index'
 import { alovaGlobals, platform } from '@/plugins'
 import { createStrReg, getSalt } from './util'
 
 vi.mock('node:fs')
 vi.mock('node:fs/promises')
+
+beforeEach(() => {
+  vol.reset()
+  vol.mkdirSync(process.cwd(), { recursive: true })
+})
+
 describe('generate with OpenAPI file', () => {
   it('should return false when generating from a file that does not exist (runtime error caught)', async () => {
     const result = await generate({
