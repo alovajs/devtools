@@ -49,7 +49,8 @@ describe('generate with OpenAPI file', () => {
     expect(await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8')).toMatchSnapshot()
 
     const outputDir2 = resolve(__dirname, './mock_output/swagger_2')
-    await generate({
+    vol.mkdirSync(outputDir2, { recursive: true })
+    const results2 = await generate({
       generator: [
         {
           input: resolve(__dirname, './openapis/swagger_2.json'),
@@ -59,13 +60,15 @@ describe('generate with OpenAPI file', () => {
         },
       ],
     })
+    expect(results2).toStrictEqual([true])
     expect(await fs.readFile(resolve(outputDir2, 'apiDefinitions.ts'), 'utf-8')).toMatchSnapshot()
     expect(await fs.readFile(resolve(outputDir2, 'index.ts'), 'utf-8')).toMatchSnapshot()
     expect(await fs.readFile(resolve(outputDir2, 'createApis.ts'), 'utf-8')).toMatchSnapshot()
     expect(await fs.readFile(resolve(outputDir2, 'globals.d.ts'), 'utf-8')).toMatchSnapshot()
 
     const outputDir3 = resolve(__dirname, './mock_output/openapi_300')
-    await generate({
+    vol.mkdirSync(outputDir3, { recursive: true })
+    const results3 = await generate({
       generator: [
         {
           input: resolve(__dirname, './openapis/openapi_300.yaml'),
@@ -75,6 +78,7 @@ describe('generate with OpenAPI file', () => {
         },
       ],
     })
+    expect(results3).toStrictEqual([true])
     expect(await fs.readFile(resolve(outputDir3, 'apiDefinitions.ts'), 'utf-8')).toMatchSnapshot()
     expect(await fs.readFile(resolve(outputDir3, 'index.ts'), 'utf-8')).toMatchSnapshot()
     expect(await fs.readFile(resolve(outputDir3, 'createApis.ts'), 'utf-8')).toMatchSnapshot()
@@ -130,6 +134,7 @@ describe('generate with OpenAPI file', () => {
 
   it('should generate code from an url', async () => {
     const outputDir = resolve(__dirname, `./mock_output/swagger_petstore${getSalt()}`)
+    vol.mkdirSync(outputDir, { recursive: true })
     await generate({
       generator: [
         {
