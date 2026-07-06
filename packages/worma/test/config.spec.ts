@@ -1,4 +1,4 @@
-好的，请提交吧。import type { Config } from '@/type'
+import type { Config } from '@/type'
 import fs from 'node:fs/promises'
 import { Module } from 'node:module'
 import { dirname, resolve } from 'node:path'
