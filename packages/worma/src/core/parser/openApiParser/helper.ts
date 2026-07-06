@@ -4,6 +4,7 @@ import { existsSync } from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import YAML from 'js-yaml'
+import swagger2openapi from 'swagger2openapi'
 import { PoolManager } from '@/core/workerPool/poolManager'
 import { logger } from '@/helper'
 import { fetchData } from '@/utils'
@@ -13,29 +14,51 @@ function isSwagger2(data: any): data is OpenAPIV2Document {
   return !!data?.swagger
 }
 
-/** 9.3.4: Run CPU-heavy Swagger2→OpenAPI3 conversion via PoolManager */
-function convertSwagger2Async(data: OpenAPIV2Document): Promise<OpenAPIDocument> {
-  return new Promise((resolve, reject) => {
-    // Resolve worker path: .js for production, .ts for vitest/dev
-    // In mocked filesystem envs, existsSync may return false — fall back to trying both paths
-    const jsPath = path.resolve(__dirname, '../../workerPool/swagger2Worker.js')
-    const tsPath = path.resolve(__dirname, '../../workerPool/swagger2Worker.ts')
-    const workerScript = existsSync(jsPath) ? jsPath : tsPath
+/** Main-thread Swagger2→OpenAPI3 conversion — used as a fallback when the worker pool is unavailable. */
+function convertSwagger2OnMainThread(data: OpenAPIV2Document): Promise<OpenAPIDocument> {
+  return swagger2openapi
+    .convertObj(data, { warnOnly: true })
+    .then(result => result.openapi as OpenAPIDocument)
+}
 
-    const pool = PoolManager.getInstance().get<OpenAPIV2Document, { openapi: OpenAPIDocument }>({
+/**
+ * 9.3.4: Run CPU-heavy Swagger2→OpenAPI3 conversion via PoolManager (worker thread).
+ * If the worker pool cannot be created or fails at runtime (e.g. test/CI environments
+ * where the `.ts` worker cannot be loaded as a worker, or worker_threads is unavailable),
+ * gracefully fall back to the main-thread conversion so generation still succeeds.
+ */
+function convertSwagger2Async(data: OpenAPIV2Document): Promise<OpenAPIDocument> {
+  // Resolve worker path: .js for production, .ts for vitest/dev
+  // In mocked filesystem envs, existsSync may return false — fall back to trying both paths
+  const jsPath = path.resolve(__dirname, '../../workerPool/swagger2Worker.js')
+  const tsPath = path.resolve(__dirname, '../../workerPool/swagger2Worker.ts')
+  const workerScript = existsSync(jsPath) ? jsPath : tsPath
+
+  let pool: ReturnType<PoolManager['get']>
+  try {
+    pool = PoolManager.getInstance().get<OpenAPIV2Document, { openapi: OpenAPIDocument }>({
       key: 'swagger2Worker',
       workerScript,
       sharedContext: {},
       poolSize: 1,
     })
+  }
+  catch {
+    return convertSwagger2OnMainThread(data)
+  }
+
+  return new Promise((resolve, reject) => {
     pool.processBatch([data]).then((results) => {
       if (results.length > 0 && results[0].openapi) {
         resolve(results[0].openapi)
       }
       else {
-        reject(new Error('Empty result from swagger2 conversion'))
+        convertSwagger2OnMainThread(data).then(resolve, reject)
       }
-    }).catch(reject)
+    }).catch(() => {
+      // Worker failed (script load error, thread crash, etc.) — fall back to main thread
+      convertSwagger2OnMainThread(data).then(resolve, reject)
+    })
   })
 }
 
