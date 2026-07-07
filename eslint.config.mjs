@@ -17,8 +17,6 @@ export default antfu({
     ".agents",
     ".codebuddy",
     ".codebuddy/**",
-    ".codebuddy",
-    ".codebuddy/**",
     ".next",
     "**/.source",
     "**/*.tsbuildinfo"

@@ -92,13 +92,13 @@ worma gen
 
 worma 内置了多套预定义模板，覆盖主流的请求库：
 
-| 模板                                                                    | 请求库     | 特点                                                   |
-| ----------------------------------------------------------------------- | ---------- | ------------------------------------------------------ |
-| [alova](/docs/template-system/predefined-templates#alova)               | alova@3    | 函数式调用，支持 Tree-shaking                          |
-| [alovaGlobals](/docs/template-system/predefined-templates#alovaglobals) | alova@3    | 全局挂载 `Apis.xxx`，原 `@alova/wormhole` 模板，可迁移 |
-| [axios](/docs/template-system/predefined-templates#axios)               | axios      | 最流行的 HTTP 客户端                                   |
-| [fetch](/docs/template-system/predefined-templates#fetch)               | 原生 fetch | 零额外依赖                                             |
-| [ky](/docs/template-system/predefined-templates#ky)                     | ky         | 轻量级 fetch 封装                                      |
+| 模板                                                                              | 请求库     | 特点                          |
+| --------------------------------------------------------------------------------- | ---------- | ----------------------------- |
+| [alova](/docs/template-system/predefined-templates#alova)                           | alova@3    | 函数式调用，支持 Tree-shaking |
+| [alovaGlobals](/docs/template-system/predefined-templates#alovaglobals)           | alova@3    | 全局挂载 `Apis.xxx`，原 `@alova/wormhole` 模板，可迁移 |
+| [axios](/docs/template-system/predefined-templates#axios)                         | axios      | 最流行的 HTTP 客户端          |
+| [fetch](/docs/template-system/predefined-templates#fetch)                         | 原生 fetch | 零额外依赖                    |
+| [ky](/docs/template-system/predefined-templates#ky)                               | ky         | 轻量级 fetch 封装             |
 
 如果以上都不满足你的需求，worma 支持[完全自定义模板](/docs/template-system/custom-templates)，使用 Handlebars 语法自由控制生成代码的结构和内容。
 

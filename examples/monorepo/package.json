@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 {
   "name": "worma-demo-esm-monorepo",
   "type": "module",
@@ -16,20 +15,3 @@
     "wormajs": "workspace:*"
   }
 }
-=======
-{
-  "name": "worma-demo-esm-monorepo",
-  "private": true,
-  "description": "Worma ESM monorepo example — each sub-package tests a single generator template",
-  "scripts": {
-    "gen:all": "pnpm -r exec worma gen -f",
-    "start:alova": "pnpm --filter alova-app start",
-    "start:axios": "pnpm --filter axios-app start",
-    "start:fetch": "pnpm --filter fetch-app start",
-    "start:ky": "pnpm --filter ky-app start"
-  },
-  "devDependencies": {
-    "wormajs": "workspace:*"
-  }
-}
->>>>>>> 34d1b7a6dd824d678058d9aefd1074dd8f01226b

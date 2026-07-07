@@ -4,6 +4,7 @@ description: 在 Monorepo 项目中自动识别子包并生成 API 代码
 slug: guide/monorepo
 ---
 
+
 如果项目是一个 Monorepo 项目，worma 会自动在根目录读取 `package.json` 中的 `workspaces` 字段或 `pnpm-workspace.yaml`，自动识别子包并在各个包含 `worma.config.[j|ts]` 的子包中运行生成命令。
 
 ## 工作原理
@@ -71,16 +72,16 @@ worma gen --project ./packages/user-service
 
 ```javascript
 // packages/user-service/worma.config.js
-import { defineConfig } from "wormajs";
-import { axios } from "wormajs/plugin";
-import { aiDoc } from "wormajs/plugin";
+import { defineConfig } from 'wormajs';
+import { axios } from 'wormajs/plugin';
+import { aiDoc } from 'wormajs/plugin';
 
 export default defineConfig({
   generator: [
     {
-      input: "https://user-service.example.com/openapi.json",
-      output: "src/api",
-      serverName: "用户服务",
+      input: 'https://user-service.example.com/openapi.json',
+      output: 'src/api',
+      serverName: '用户服务',
       plugins: [axios(), aiDoc()],
     },
   ],
@@ -92,21 +93,21 @@ export default defineConfig({
 也可以在 Monorepo 根目录的 `worma.config` 中统一配置所有子服务：
 
 ```javascript
-import { defineConfig } from "wormajs";
-import { axios } from "wormajs/plugin";
+import { defineConfig } from 'wormajs';
+import { axios } from 'wormajs/plugin';
 
 export default defineConfig({
   generator: [
     {
-      input: "https://user-service.example.com/openapi.json",
-      output: "packages/user-service/src/api",
-      serverName: "用户服务",
+      input: 'https://user-service.example.com/openapi.json',
+      output: 'packages/user-service/src/api',
+      serverName: '用户服务',
       plugins: [axios()],
     },
     {
-      input: "https://order-service.example.com/openapi.json",
-      output: "packages/order-service/src/api",
-      serverName: "订单服务",
+      input: 'https://order-service.example.com/openapi.json',
+      output: 'packages/order-service/src/api',
+      serverName: '订单服务',
       plugins: [axios()],
     },
   ],

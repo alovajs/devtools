@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 {
   "name": "worma-demo-commonjs",
   "type": "commonjs",
@@ -16,22 +15,3 @@
     "wormajs": "workspace:*"
   }
 }
-=======
-{
-  "name": "worma-demo-commonjs",
-  "type": "commonjs",
-  "private": true,
-  "description": "Worma CommonJS example - all templates for CJS projects",
-  "scripts": {
-    "gen": "worma gen -f",
-    "start": "node src/main.cjs"
-  },
-  "dependencies": {
-    "alova": "^3.0.0",
-    "axios": "catalog:default"
-  },
-  "devDependencies": {
-    "wormajs": "workspace:*"
-  }
-}
->>>>>>> 34d1b7a6dd824d678058d9aefd1074dd8f01226b

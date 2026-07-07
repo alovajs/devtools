@@ -20,11 +20,11 @@ export default function Plugins() {
           <p className="font-body-md text-sm text-on-surface-variant mb-10 leading-relaxed">
             强大的插件。更智能的生成。
           </p>
-          <a className="inline-flex items-center gap-3 text-primary hover:text-white transition-colors font-data-mono text-xs uppercase tracking-widest" href="/docs/plugin-system">
+          <Link className="inline-flex items-center gap-3 text-primary hover:text-white transition-colors font-data-mono text-xs uppercase tracking-widest" href="/docs/plugin-system">
             查看全部插件
             {' '}
             <Icon name="arrow_forward" className="text-sm" />
-          </a>
+          </Link>
         </div>
         <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-3">
           {plugins.map((plugin, index) => {
