@@ -5,8 +5,8 @@
       "path": "../",
     },
     {
-      "name": "wormhole",
-      "path": "../packages/wormhole"
+      "name": "worma",
+      "path": "../packages/worma"
     },
     {
       "name": "vscode-extension",
