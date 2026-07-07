@@ -40,8 +40,6 @@ jobs:
 
       - name: Build docs
         run: pnpm --filter worma-docs build
-        env:
-          NEXT_BASE_PATH: /devtools
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
