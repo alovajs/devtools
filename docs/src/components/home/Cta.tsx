@@ -47,7 +47,7 @@ export default function Cta() {
               </div>
             )}
           </div>
-          <Button variant="outline" size="lg" className="px-10 w-full sm:w-auto" href="/docs/quick-start">免费开始</Button>
+          <Button variant="outline" size="lg" className="px-10 w-full sm:w-auto" href="/docs">快速开始</Button>
           <Button variant="outline" size="lg" icon="code" className="px-10 w-full sm:w-auto" href="https://github.com/alovajs/devtools">GitHub</Button>
         </div>
         <p className="font-data-mono text-xs text-on-surface-variant tracking-widest uppercase">

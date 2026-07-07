@@ -4,21 +4,10 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
-    inputs:
-      package:
-        description: 'Package name for manual publish (e.g., worma)'
-        required: true
-        type: string
-      tag:
-        description: npm dist-tag
-        required: true
-        type: choice
-        default: beta
-        options:
-          - beta
-          - alpha
-          - next
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   quality:
@@ -82,31 +71,3 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_ALOVA_PUBLISH_TOKEN }}
           VSCE_PAT: ${{ secrets.VSCODE_EXTENSION_TOKEN }}
           OVSX_PAT: ${{ secrets.OVSX_TOKEN }}
-
-  beta-publish:
-    if: github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup PNPM
-        uses: pnpm/action-setup@v4.0.0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          registry-url: 'https://registry.npmjs.org'
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Build package
-        run: pnpm --filter "${{ inputs.package }}" build
-
-      - name: Publish to npm
-        run: pnpm --filter "${{ inputs.package }}" publish --tag "${{ inputs.tag }}" --no-git-checks
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_ALOVA_PUBLISH_TOKEN }}

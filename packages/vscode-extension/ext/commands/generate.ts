@@ -44,9 +44,9 @@ export const refresh: CommandType = {
   },
 }
 
-export const generateApi: CommandType<[string]> = {
+export const generateApi: CommandType<[string, boolean?]> = {
   commandId: Commands.generate_api,
-  handler: () => (projectPath: string) => callGenerateApi(projectPath, false),
+  handler: () => (projectPath: string, isAuto?: boolean) => callGenerateApi(projectPath, false, isAuto),
 }
 
 export const generateApiForce: CommandType<[string]> = {
@@ -54,10 +54,10 @@ export const generateApiForce: CommandType<[string]> = {
   handler: () => (projectPath: string) => callGenerateApi(projectPath, true),
 }
 
-async function callGenerateApi(projectPath: string, force: boolean) {
+async function callGenerateApi(projectPath: string, force: boolean, isAuto?: boolean) {
   try {
     await ApiGenerate.readConfig(projectPath)
-    await ApiGenerate.generate({ projectPath, force })
+    await ApiGenerate.generate({ projectPath, force, isAuto })
     ApiGenerate.showError()
   }
   catch (error) {

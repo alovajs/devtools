@@ -36,7 +36,7 @@ export async function refeshAutoUpdate(path: string, _config: Config) {
       path,
       highPrecisionInterval(
         () => {
-          commands.executeCommand(Commands.generate_api, path)
+          commands.executeCommand(Commands.generate_api, path, true)
         },
         time,
         immediate,

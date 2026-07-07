@@ -202,7 +202,7 @@ export default function Hero() {
         <p className="font-body-md text-on-surface-variant mb-12 max-w-md text-sm leading-relaxed">
           为你生成类型安全的接口代码，为AI生成易理解的接口知识。统一规范，加速协同。
         </p>
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+        <div className="flex gap-4 lg:flex-row lg:items-center">
           <div className="relative">
             <Button variant="primary" onClick={handleCopy}>
               agent安装
@@ -213,7 +213,7 @@ export default function Hero() {
               </div>
             )}
           </div>
-          <Button variant="outline" href="/docs/quick-start">快速开始</Button>
+          <Button variant="outline" href="/docs">快速开始</Button>
         </div>
         <div className="mt-4">
           <a

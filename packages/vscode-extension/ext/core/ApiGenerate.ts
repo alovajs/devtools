@@ -58,6 +58,13 @@ export default class ApiGenerate {
       totalFailed += stats.failed
     }
 
+    // Auto-update triggered: when everything is up to date, stay silent.
+    if (optins?.isAuto && totalDone === 0 && totalFailed === 0 && totalSkipped > 0) {
+      VscodeClient.refreshDocs()
+      this.generateErrorArr.push(...generateInfo.errorArr)
+      return
+    }
+
     // Build per-project detail lines
     const lines: string[] = []
     for (const [workspaceRootDir] of generateInfo.resultArr) {

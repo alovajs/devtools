@@ -186,7 +186,7 @@
     "test:unit": "vitest",
     "typecheck": "vue-tsc --noEmit",
     "sizecheck": "npx vite-bundle-visualizer",
-    "release:pre": "vsce publish --no-dependencies --pre-release",
+    "release:pre": "vsce publish --no-dependencies --pre-release && ovsx publish --no-dependencies --pre-release",
     "release": "vsce publish --no-dependencies && ovsx publish --no-dependencies"
   },
   "dependencies": {

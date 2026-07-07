@@ -1,0 +1,10 @@
+{
+  "mode": "pre",
+  "tag": "beta",
+  "initialVersions": {
+    "worma-docs": "0.0.0",
+    "worma-vscode": "0.0.1",
+    "wormajs": "0.0.1"
+  },
+  "changesets": []
+}
