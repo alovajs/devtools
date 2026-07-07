@@ -11,7 +11,7 @@ slug: guide/monorepo
 
 ```mermaid
 flowchart TD
-    A[npx worma gen] --> B{检测 Monorepo 配置}
+    A[worma gen] --> B{检测 Monorepo 配置}
     B -->|package.json workspaces| C[读取子包列表]
     B -->|pnpm-workspace.yaml| C
     C --> D[遍历子包目录]
@@ -46,7 +46,7 @@ flowchart TD
 在 Monorepo 根目录执行：
 
 ```bash
-npx worma gen
+worma gen
 ```
 
 worma 会自动：
@@ -61,7 +61,7 @@ worma 会自动：
 如果只需要生成某个子包的 API 代码，可以使用 `--project` 参数指定子包路径：
 
 ```bash
-npx worma gen --project ./packages/user-service
+worma gen --project ./packages/user-service
 ```
 
 这会跳过 Monorepo 扫描，仅在指定的子包目录中执行生成。
@@ -72,9 +72,9 @@ npx worma gen --project ./packages/user-service
 
 ```javascript
 // packages/user-service/worma.config.js
-import { defineConfig } from 'worma';
-import { axios } from 'worma/plugin';
-import { aiDoc } from 'worma/plugin';
+import { defineConfig } from 'wormajs';
+import { axios } from 'wormajs/plugin';
+import { aiDoc } from 'wormajs/plugin';
 
 export default defineConfig({
   generator: [
@@ -93,8 +93,8 @@ export default defineConfig({
 也可以在 Monorepo 根目录的 `worma.config` 中统一配置所有子服务：
 
 ```javascript
-import { defineConfig } from 'worma';
-import { axios } from 'worma/plugin';
+import { defineConfig } from 'wormajs';
+import { axios } from 'wormajs/plugin';
 
 export default defineConfig({
   generator: [

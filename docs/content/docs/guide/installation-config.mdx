@@ -10,28 +10,28 @@ slug: guide/installation-config
   <Tab value="npm">
 
 ```bash
-npm i worma -D
+npm i wormajs -D
 ```
 
   </Tab>
   <Tab value="yarn">
 
 ```bash
-yarn add worma -D
+yarn add wormajs -D
 ```
 
   </Tab>
   <Tab value="pnpm">
 
 ```bash
-pnpm add worma -D
+pnpm add wormajs -D
 ```
 
   </Tab>
   <Tab value="bun">
 
 ```bash
-bun add worma -D
+bun add wormajs -D
 ```
 
   </Tab>
@@ -40,15 +40,15 @@ bun add worma -D
 ## 初始化
 
 ```bash
-npx worma init
+worma init
 ```
 
 此命令在项目根目录创建 `worma.config.js`（也支持 `.cjs`、`.mjs` 或 `.ts` 扩展名），默认配置了 alova 模板和 `aiDoc` 插件：
 
 ```javascript
-import { defineConfig } from "worma";
-import { alova } from "worma/plugin";
-import { aiDoc } from "worma/plugin";
+import { defineConfig } from "wormajs";
+import { alova } from "wormajs/plugin";
+import { aiDoc } from "wormajs/plugin";
 
 export default defineConfig({
   generator: [
@@ -64,17 +64,17 @@ export default defineConfig({
 `init` 也可通过 `-T, --template` 参数指定其他初始模板：
 
 ```bash
-npx worma init -T axios
-npx worma init --template ky
-npx worma init -T fetch -t typescript
+worma init -T axios
+worma init --template ky
+worma init -T fetch -t typescript
 ```
 
 ## worma.config.js 完整配置
 
 ```javascript
-import { defineConfig } from "worma";
-import { rename, aiDoc } from "worma/plugin";
-import { alova, platform } from "worma/plugin";
+import { defineConfig } from "wormajs";
+import { rename, aiDoc } from "wormajs/plugin";
+import { alova, platform } from "wormajs/plugin";
 
 export default defineConfig({
   generator: [
@@ -116,9 +116,9 @@ export default defineConfig({
 在 `generator` 数组中配置多个项，可以从不同 OpenAPI 文档生成到不同目录：
 
 ```javascript
-import { defineConfig } from "worma";
-import { alova, axios } from "worma/plugin";
-import { aiDoc } from "worma/plugin";
+import { defineConfig } from "wormajs";
+import { alova, axios } from "wormajs/plugin";
+import { aiDoc } from "wormajs/plugin";
 
 export default defineConfig({
   generator: [
@@ -164,9 +164,9 @@ defineConfig({
 如果团队使用 Apifox 管理接口文档，可以直接从 Apifox 项目拉取 OpenAPI 数据，无需手动导出文件或填写 `input` 字段：
 
 ```javascript
-import { defineConfig } from "worma";
-import { alova } from "worma/plugin";
-import { aiDoc, apifox } from "worma/plugin";
+import { defineConfig } from "wormajs";
+import { alova } from "wormajs/plugin";
+import { aiDoc, apifox } from "wormajs/plugin";
 
 export default defineConfig({
   generator: [

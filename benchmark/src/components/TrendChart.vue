@@ -151,11 +151,13 @@ function renderChart(chartRef: HTMLDivElement, buildOption: () => any, retries =
 
 function renderAll() {
   if (timeChartRef.value) {
-    if (timeChart) timeChart.dispose()
+    if (timeChart)
+      timeChart.dispose()
     timeChart = renderChart(timeChartRef.value, buildTimeOption)
   }
   if (memChartRef.value) {
-    if (memChart) memChart.dispose()
+    if (memChart)
+      memChart.dispose()
     memChart = renderChart(memChartRef.value, buildMemOption)
   }
 }

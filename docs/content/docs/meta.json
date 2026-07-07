@@ -2,6 +2,7 @@
   "pages": [
     "index",
     "quick-start",
+    "contributing",
     "---",
     "guide",
     "plugin-system",

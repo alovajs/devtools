@@ -40,8 +40,6 @@ jobs:
 
       - name: Build docs
         run: pnpm --filter worma-docs build
-        env:
-          NEXT_BASE_PATH: /devtools
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -51,8 +49,11 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
+          name: github-pages-${{ github.run_attempt }}
           path: docs/out
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
+        with:
+          artifact_name: github-pages-${{ github.run_attempt }}

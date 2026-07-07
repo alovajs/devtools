@@ -8,7 +8,7 @@ import Global from '@/core/Global'
 import { Log } from '@/utils'
 import { getWorkspacePaths } from '@/utils/vscode'
 
-type Worma = typeof import('worma')
+type Worma = typeof import('wormajs')
 // 用于mock测试
 export const MockWorma = {
 
@@ -28,7 +28,7 @@ export function getWorma() {
         absolute: true,
       }).concat(path.join(workspaceRootPath, './worma.config.js'))
       for (const configPath of configPaths) {
-        const wormaPath = path.join(path.dirname(configPath), './node_modules/worma')
+        const wormaPath = path.join(path.dirname(configPath), './node_modules/wormajs')
         if (existsSync(wormaPath)) {
           worma = importFresh(wormaPath)
           wormaRoot = workspaceRootPath
@@ -72,7 +72,7 @@ export default () =>
         }
         return () => {
           Global.deleteConfig()
-          throw new Error('module `worma` is not found, please install via `npm i worma`')
+          throw new Error('module `wormajs` is not found, please install via `npm i wormajs -D`')
         }
       },
     },

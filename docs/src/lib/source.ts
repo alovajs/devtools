@@ -22,7 +22,15 @@ export function getPageImage(page: (typeof source)['$inferPage']) {
 }
 
 export function getPageMarkdownUrl(page: (typeof source)['$inferPage']) {
-  const segments = [...page.slugs, 'content.md']
+  const slugs = page.slugs
+  const last = slugs.at(-1)
+
+  // Static export route: /llms.mdx/quick-start.md
+  // Root docs page maps to /llms.mdx/index.md
+  const segments
+    = last === undefined
+      ? ['index.md']
+      : [...slugs.slice(0, -1), `${last}.md`]
 
   return {
     segments,

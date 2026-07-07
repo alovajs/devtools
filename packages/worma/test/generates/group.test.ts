@@ -36,7 +36,6 @@ describe('group Type Generator', () => {
       comment: `
       /**
        * Status type
-       * Status type
        */`,
       type: 'type',
       code: 'string | number',

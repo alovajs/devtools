@@ -4,8 +4,10 @@ export function buildPayload(url, defaultConfig, apiName, config) {
 }
 
 /**
- * @param {Record<string, any>} _ - tagged api map (unused at runtime)
- * @param {Record<string, any>} configMap - default config per api name
- * @returns {Record<string, any>}
+ * @template {Record<string, (config: any) => any>} TagedMap
+ * @template \{{ [K in keyof TagedMap]?: Partial<Parameters<TagedMap[K]>[0]> }} ConfigMap
+ * @param {TagedMap} _ - tagged api map (unused at runtime)
+ * @param {ConfigMap} configMap - default config per api name
+ * @returns {ConfigMap}
  */
 export const setMethodDefaultConfig = (_, configMap) => configMap;

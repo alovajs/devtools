@@ -31,7 +31,7 @@
       "put": {
         "tags": ["pet"],
         "summary": "Update an existing pet",
-        "operationId": "updatePet",
+        "operationId": "updatePet2",
         "requestBody": {
           "description": "Update an existent pet in the store",
           "required": true,

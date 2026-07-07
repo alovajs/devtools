@@ -1,7 +1,7 @@
 /// <reference types="node" />
 
-import { defineConfig } from 'worma'
-import { alovaGlobals, axios } from 'worma/plugin'
+import { defineConfig } from 'wormajs'
+import { alovaGlobals, axios } from 'wormajs/plugin'
 
 /**
  * Worma 配置 — benchmark 用

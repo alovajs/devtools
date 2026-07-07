@@ -114,7 +114,7 @@ interface CacheData {
 **`src/types.ts`**：
 
 ```ts
-import type { CacheData } from 'worma'
+import type { CacheData } from 'wormajs'
 export interface ApiProject {
   name: string
   servers: CacheData[]  // 原来的 apiDocs: ApiDoc[][]

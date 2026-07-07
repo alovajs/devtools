@@ -1,12 +1,19 @@
 import type { Config, SchemaObject } from '@/type'
 import fs from 'node:fs/promises'
 import { resolve } from 'node:path'
+import { vol } from 'memfs'
 import { createConfig, generate } from '@/index'
 import { alovaGlobals, platform } from '@/plugins'
 import { createStrReg } from '../util'
 
 vi.mock('node:fs')
 vi.mock('node:fs/promises')
+
+beforeEach(() => {
+  vol.reset()
+  vol.mkdirSync(process.cwd(), { recursive: true })
+})
+
 const getSalt = () => `_${Math.random().toString(36).slice(2)}`
 describe('generate API', () => {
   it('should return false when generating from a file that does not exist (runtime error caught)', async () => {
@@ -43,6 +50,7 @@ describe('generate API', () => {
     expect(await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8')).toMatchSnapshot()
 
     const outputDir2 = resolve(__dirname, './mock_output/swagger_2')
+    vol.mkdirSync(outputDir2, { recursive: true })
     await generate({
       generator: [
         {
@@ -59,6 +67,7 @@ describe('generate API', () => {
     expect(await fs.readFile(resolve(outputDir2, 'globals.d.ts'), 'utf-8')).toMatchSnapshot()
 
     const outputDir3 = resolve(__dirname, './mock_output/openapi_300')
+    vol.mkdirSync(outputDir3, { recursive: true })
     await generate({
       generator: [
         {
@@ -124,6 +133,7 @@ describe('generate API', () => {
 
   it('should generate code from an url', async () => {
     const outputDir = resolve(__dirname, `./mock_output/swagger_petstore${getSalt()}`)
+    vol.mkdirSync(outputDir, { recursive: true })
     await generate({
       generator: [
         {

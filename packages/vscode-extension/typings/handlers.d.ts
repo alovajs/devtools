@@ -1,7 +1,7 @@
 import type { Publisher } from '@jsonrpc-rx/server'
 import type { ExtensionContext, TextDocument } from 'vscode'
 
-export type { Api, ApiDoc, CacheData } from 'worma'
+export type { Api, ApiDoc, CacheData } from 'wormajs'
 
 export interface ApiWithSource extends Api {
   serverName: string

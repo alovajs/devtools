@@ -2,6 +2,7 @@ export enum Commands {
   autocomplete = 'worma.autocomplete',
   create_config = 'worma.create.config',
   generate_api = 'worma.generateApi',
+  generate_api_force = 'worma.generateApi.force',
   refresh = 'worma.refresh',
   show_status_bar_icon = 'worma.showStatusBarIcon',
   api_docs_refresh = 'worma.apiDocs.refresh',

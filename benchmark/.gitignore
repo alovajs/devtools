@@ -7,8 +7,8 @@ results/
 alova_tmp_*.cjs
 openapi-ts-error-*.log
 
-# Specs are generated, but we track them for convenience
-# specs/ is git tracked
+# Specs are generated at runtime (npm pre hooks)
+specs/
 
 # Dependencies
 node_modules/

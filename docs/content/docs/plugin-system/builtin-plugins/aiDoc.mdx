@@ -16,8 +16,8 @@ description: 生成 AI 可读的接口知识文档，让编码助手准确感知
 ## 基本使用
 
 ```javascript
-import { defineConfig } from "worma";
-import { alova, aiDoc } from "worma/plugin";
+import { defineConfig } from "wormajs";
+import { alova, aiDoc } from "wormajs/plugin";
 
 export default defineConfig({
   generator: [
@@ -79,7 +79,7 @@ function aiDoc(config?: AiDocConfig): ApiPlugin;
 
 ## 自动安装 Skill
 
-启用 `installSkill: true` 后，执行 `npx worma gen` 时会自动将生成的 Skill 安装到编码助手中。
+启用 `installSkill: true` 后，执行 `worma gen` 时会自动将生成的 Skill 安装到编码助手中。
 
 ### 配置步骤
 
@@ -95,7 +95,7 @@ agent=cursor
 2. **运行生成命令**：
 
 ```bash
-npx worma gen
+worma gen
 ```
 
 worma 会读取 `.env.local` 中的 `agent` 配置，自动将生成的 Skill 安装到对应助手中。支持的主流编码助手列表请参考 [skills 文档](https://www.npmjs.com/package/skills#supported-agents)。

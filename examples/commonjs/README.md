@@ -1,30 +1,30 @@
-# 🧩 Worma CommonJS 示例
+# 🧩 Worma CommonJS Example
 
-使用 **CommonJS** (`require/module.exports`) 格式的 worma JavaScript 项目，涵盖 4 套预设模板（ky 模板不支持 CJS）。
+A worma JavaScript project using the **CommonJS** (`require`/`module.exports`) format. It covers 4 preset templates (the `ky` template does not support CJS).
 
-## 📋 包含的模板
+## 📋 Included Templates
 
-| #   | 模板             | 输出目录                 | 说明                                       |
-| --- | ---------------- | ------------------------ | ------------------------------------------ |
-| ①   | `alova()`        | `src/api/alova/`         | 函数式模板 — `require/module.exports` 规范 |
-| ②   | `alovaGlobals()` | `src/api/alova-globals/` | 全局式模板 — 注册到 `MyApis`               |
-| ③   | `axios()`        | `src/api/axios/`         | Axios 模板 — CJS 风格的 axios              |
-| ④   | `fetch()`        | `src/api/fetch/`         | Fetch 模板 — 无第三方依赖                  |
+| #   | Template         | Output Directory         | Description                                                   |
+| --- | ---------------- | ------------------------ | ------------------------------------------------------------- |
+| ①   | `alova()`        | `src/api/alova/`         | Functional template — follows `require`/`module.exports` spec |
+| ②   | `alovaGlobals()` | `src/api/alova-globals/` | Global template — registered under `MyApis`                   |
+| ③   | `axios()`        | `src/api/axios/`         | Axios template — CJS-style axios                              |
+| ④   | `fetch()`        | `src/api/fetch/`         | Fetch template — no third-party dependencies                  |
 
-> ⚠️ **注意：** `ky` 为纯 ESM 包，不支持 CommonJS，因此本示例不包含 ky 模板。如果你需要使用 ky，请移步 [ESM 示例](../esm/)。
+> ⚠️ **Note:** `ky` is a pure ESM package and does not support CommonJS, so this example does not include the `ky` template. If you need to use `ky`, please refer to the [ESM Example](../esm/).
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
 ```bash
-npm install      # 安装依赖（StackBlitz 中全自动）
-npm run gen      # 生成 API 客户端
-npm start        # 运行 Demo
+npm install      # Install dependencies
+npm run gen      # Generate the API client
+npm start        # Run the demo
 ```
 
-## 💡 与 ESM 示例的区别
+## 💡 Differences from the ESM Example
 
-- 使用 `require()` / `module.exports` 而非 `import` / `export`
-- 不支持 `ky` 模板（ky 为纯 ESM 包）
-- 配置文件中使用 CJS 模块导出
+- Uses `require()` / `module.exports` instead of `import` / `export`
+- Does not support the `ky` template (`ky` is a pure ESM package)
+- Uses CJS module exports in the configuration file
 
 [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/alovajs/devtools/tree/main/examples/commonjs)

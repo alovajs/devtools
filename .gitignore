@@ -21,7 +21,7 @@ alova_tmp_*
 .worma-cache
 .idea/
 *.log
-examples/**/src
+examples/**/src/api
 examples/**/*openapi.*
 examples/**/*swagger.*
 # test files

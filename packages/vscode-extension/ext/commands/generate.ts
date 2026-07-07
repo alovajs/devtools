@@ -1,4 +1,4 @@
-import type { GeneratorProgressEvent } from 'worma'
+import type { GeneratorProgressEvent } from 'wormajs'
 import { ProgressLocation, window } from 'vscode'
 import { endLoading, loading } from '@/commands/statusBar'
 import { showError } from '@/components/event'
@@ -46,20 +46,26 @@ export const refresh: CommandType = {
 
 export const generateApi: CommandType<[string]> = {
   commandId: Commands.generate_api,
-  handler: () => async (projectPath) => {
-    try {
-      await ApiGenerate.readConfig(projectPath)
-      // Generate api file
-      await ApiGenerate.generate({ projectPath })
-      ApiGenerate.showError()
-    }
-    catch (error) {
-      showError(error)
-    }
-    finally {
-      ApiGenerate.clear()
-    }
-  },
+  handler: () => (projectPath: string) => callGenerateApi(projectPath, false),
+}
+
+export const generateApiForce: CommandType<[string]> = {
+  commandId: Commands.generate_api_force,
+  handler: () => (projectPath: string) => callGenerateApi(projectPath, true),
+}
+
+async function callGenerateApi(projectPath: string, force: boolean) {
+  try {
+    await ApiGenerate.readConfig(projectPath)
+    await ApiGenerate.generate({ projectPath, force })
+    ApiGenerate.showError()
+  }
+  catch (error) {
+    showError(error)
+  }
+  finally {
+    ApiGenerate.clear()
+  }
 }
 
 export const createConfig: CommandType = {
@@ -68,5 +74,5 @@ export const createConfig: CommandType = {
 }
 
 export default <ExtensionModule> function (ctx) {
-  return [registerCommand(refresh, ctx), registerCommand(generateApi, ctx), registerCommand(createConfig, ctx)]
+  return [registerCommand(refresh, ctx), registerCommand(generateApi, ctx), registerCommand(generateApiForce, ctx), registerCommand(createConfig, ctx)]
 }

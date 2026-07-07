@@ -1,5 +1,5 @@
-import { defineConfig } from 'worma'
-import { alova, alovaGlobals, axios, fetch, ky, platform } from 'worma/plugin'
+import { defineConfig } from 'wormajs'
+import { alova, alovaGlobals, axios, fetch, ky, platform } from 'wormajs/plugin'
 
 // ─── Worma ESM example ───────────────────────────────────
 // This project demonstrates how to use worma in a "type": "module"

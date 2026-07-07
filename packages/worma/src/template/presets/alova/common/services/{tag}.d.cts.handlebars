@@ -1,8 +1,8 @@
-import type { Alova2Method, Alova2MethodConfig } from '../typed';
+import type { Alova2Method, Alova2MethodConfig } from '../typed.d.cts';
 {{#each tagedApis}}
 import type { {{{tagName}}}DefaultConfig } from '.';
 {{/each}}
-import type * as ComponentTypes from '../components';
+import type * as ComponentTypes from '../components.d.cts';
 
 {{#each tagedApis}}
 {{> extract-responded}}

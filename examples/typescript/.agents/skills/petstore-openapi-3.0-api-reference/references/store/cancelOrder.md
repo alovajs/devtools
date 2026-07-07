@@ -23,7 +23,6 @@ Pass the required parameters in `pathParams`:
 }
 ```
 
-
 ## Response
 
 Use the response data as needed:

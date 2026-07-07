@@ -113,13 +113,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-@layer base {
-  a {
-    color: var(--color-primary);
-    text-decoration: none;
-  }
-}
-
 /* ══════════════════════════════════════════
    Fumadocs 文档页面样式适配
    ══════════════════════════════════════════ */

@@ -1,4 +1,4 @@
-import type { GeneratorProgressEvent } from 'worma'
+import type { GeneratorProgressEvent } from 'wormajs'
 import path from 'node:path'
 import { ProgressLocation, window } from 'vscode'
 import { showError } from '@/components/event'
@@ -10,7 +10,7 @@ import { endLoading, loading } from './statusBar'
 
 interface ActionItem {
   label: string
-  action: 'createConfig' | 'generateApis'
+  action: 'createConfig' | 'generateApis' | 'generateApisForce'
 }
 
 interface ProjectItem {
@@ -64,6 +64,7 @@ export const showStatusBarActions: CommandType = {
   handler: () => async () => {
     const actions: ActionItem[] = [
       { label: '$(zap) Generate APIs', action: 'generateApis' },
+      { label: '$(sync) Force Generate APIs', action: 'generateApisForce' },
       { label: '$(new-file) Create config file', action: 'createConfig' },
     ]
 
@@ -92,6 +93,7 @@ export const showStatusBarActions: CommandType = {
       }
     }
     else {
+      const isForce = picked.action === 'generateApisForce'
       try {
         loading()
         await ApiGenerate.readConfig(targetProjects.length === allProjects.length ? undefined : targetProjects)
@@ -100,12 +102,12 @@ export const showStatusBarActions: CommandType = {
         await window.withProgress(
           {
             location: ProgressLocation.Notification,
-            title: 'Generating APIs',
+            title: isForce ? 'Force Generating APIs' : 'Generating APIs',
             cancellable: false,
           },
           async (progress) => {
             await ApiGenerate.generate({
-              force: false,
+              force: isForce,
               projectPath,
               onProgress(event: GeneratorProgressEvent) {
                 if (event.phase !== 'progress')

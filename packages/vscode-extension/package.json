@@ -1,6 +1,6 @@
 {
-  "publisher": "Worma",
-  "name": "worma-vscode-extension",
+  "publisher": "worma",
+  "name": "worma-vscode",
   "displayName": "Worma",
   "version": "0.0.1",
   "private": true,
@@ -24,7 +24,7 @@
     "Other"
   ],
   "main": "./dist/extension/index.js",
-  "icon": "res/logo.svg",
+  "icon": "res/icon.png",
   "files": [
     "LICENSE",
     "dist/**",
@@ -76,6 +76,11 @@
         "command": "worma.refresh",
         "category": "Worma",
         "title": "Generate APIs"
+      },
+      {
+        "command": "worma.generateApi.force",
+        "category": "Worma",
+        "title": "Force Generate APIs"
       },
       {
         "command": "worma.create.config",
@@ -147,13 +152,13 @@
     "views": {
       "api-docs-sidebar": [
         {
-          "icon": "res/logo.svg",
+          "icon": "res/icon.png",
           "id": "api-docs-server-view",
           "name": "Api Server",
           "type": "webview"
         },
         {
-          "icon": "res/logo.svg",
+          "icon": "res/icon.png",
           "id": "api-docs-detail-view",
           "name": "Api Detail",
           "type": "webview"
@@ -164,7 +169,7 @@
   "scripts": {
     "dev": "vite -m vscode",
     "dev:web": "vite",
-    "build": "vite build -m vscode && nr build:dts",
+    "build": "vite build -m vscode && (pnpm run build:dts || true)",
     "build:dts": "dts-bundle-generator -o dist/extension/index.d.ts ext/index.ts --no-check --no-banner --project tsconfig.node.json",
     "build:handlers": "dts-bundle-generator -o typings/handlers.d.ts ext/handlers/index.ts --no-check --no-banner --project tsconfig.node.json",
     "buld:meta": "vscode-ext-gen --output ext/meta/generated.ts && eslint ext/meta/generated.ts --fix",
@@ -247,6 +252,6 @@
     "vite-plugin-vue-layouts": "catalog:build",
     "vscode-ext-gen": "catalog:build",
     "vue-tsc": "catalog:dev",
-    "worma": "workspace:*"
+    "wormajs": "workspace:*"
   }
 }

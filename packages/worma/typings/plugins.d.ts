@@ -73,6 +73,7 @@ export interface BeforeFileWriteHookParams {
 		api?: string;
 	};
 }
+/** Parameters for the convenience renderTemplate function passed to codeGenerated hook */
 export interface RenderTemplateParams {
 	templatePath: string;
 	type: TemplateType;
@@ -83,13 +84,16 @@ export interface RenderTemplateParams {
 		beforeFileWrite?: (params: {
 			filePath: string;
 			content: string;
-			meta: { templateType?: "tag" | "api"; tag?: string; api?: string };
-		}) => string | Promise<string>;
+			meta: {
+				templateType?: "tag" | "api";
+				tag?: string;
+				api?: string;
+			};
+		}) => MaybePromise<string>;
 		writeConcurrency?: number;
 		formatFile?: boolean;
 	};
 }
-
 export interface CodeGeneratedHookParams {
 	config: Readonly<GeneratorConfig>;
 	data: TemplateData;
@@ -101,7 +105,9 @@ export interface CodeGeneratedHookParams {
 	error?: Error;
 	reportProgress: ReportProgress;
 	/** Convenience: render a template to a directory in one call */
-	renderTemplate: (params: RenderTemplateParams) => Promise<{ filePaths: string[] }>;
+	renderTemplate: (params: RenderTemplateParams) => Promise<{
+		filePaths: string[];
+	}>;
 }
 export interface GetTemplateHookParams {
 	config: Readonly<GeneratorConfig>;
@@ -598,7 +604,7 @@ export type PlatformType = "swagger" | "knife4j" | "fastapi" | "yapi";
  *
  * @example
  * ```ts
- * import { platform, alovaGlobals } from 'worma/plugin';
+ * import { platform, alovaGlobals } from 'wormajs/plugin';
  *
  * defineConfig({
  *   generator: [{

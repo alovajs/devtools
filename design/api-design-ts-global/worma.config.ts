@@ -1,5 +1,5 @@
-import { defineConfig } from "worma";
-import { alovaGlobals } from "worma/plugin";
+import { defineConfig } from "wormajs";
+import { alovaGlobals } from "wormajs/plugin";
 
 // worma.config.js
 export default defineConfig({

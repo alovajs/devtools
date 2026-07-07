@@ -35,8 +35,12 @@ function measureDir(dir: string): { fileCount: number, totalSize: number, files:
       else if (entry.isFile()) {
         const rel = fullPath.substring(dir.length + 1)
         files.push(rel)
-        try { totalSize += statSync(fullPath).size }
-        catch { /* ignore */ }
+        try {
+          totalSize += statSync(fullPath).size
+        }
+        catch {
+          /* ignore */
+        }
       }
     }
   }
@@ -81,8 +85,8 @@ async function main() {
   console.log(`  📦 worma 版本: ${version}\n`)
 
   const [{ generate }, { alovaGlobals, axios }] = await Promise.all([
-    import('worma'),
-    import('worma/plugin'),
+    import('wormajs'),
+    import('wormajs/plugin'),
   ])
 
   // 清理输出

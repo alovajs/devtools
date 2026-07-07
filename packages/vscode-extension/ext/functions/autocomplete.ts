@@ -1,4 +1,4 @@
-import type { Api } from 'worma'
+import type { Api } from 'wormajs'
 import { match } from 'sdm2'
 import { getApis } from './getApis'
 
@@ -12,7 +12,7 @@ interface AutoCompleteItem {
 
 function filterAutoCompleteItem(text: string, apiArr: Api[]): AutoCompleteItem[] {
   const autoCompleteArr: AutoCompleteItem[] = []
-  const filter = (text: string, otherText: string) => !!match(otherText, text)
+  const filter = (text: string, otherText: string) => !!match(otherText, text, { ignoreCase: true })
   apiArr.forEach((api) => {
     const replaceText = api.callingCode ?? ''
     if (filter(text, api.path)) {

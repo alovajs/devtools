@@ -1,4 +1,4 @@
-import type { Api, CacheData } from 'worma'
+import type { Api, CacheData } from 'wormajs'
 import type { ApiWithSource } from '~/types'
 import path from 'node:path'
 import Global from '@/core/Global'

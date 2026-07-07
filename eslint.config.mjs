@@ -15,8 +15,11 @@ export default antfu({
     "test/**/src/*",
     "test/**/{*openapi*.*,*swagger*.*,alova_tmp*.*}",
     ".agents",
+    ".codebuddy",
+    ".codebuddy/**",
     ".next",
-    "**/.source"
+    "**/.source",
+    "**/*.tsbuildinfo"
   ],
   markdown: false,
   formatters: true,

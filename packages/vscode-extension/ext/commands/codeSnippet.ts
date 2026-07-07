@@ -96,8 +96,7 @@ class SnippetManager {
     this.quickPick.items = filtered.map(snippet => ({
       label: snippet.name,
       description: snippet.description,
-      detail: `语言: ${snippet.language === '*' ? '所有' : snippet.language}`,
-      snippet, // 存储原始片段对象
+      snippet, // store original snippet object
     }))
   }
 

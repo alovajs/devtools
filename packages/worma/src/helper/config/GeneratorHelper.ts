@@ -1,3 +1,4 @@
+import type { RenderTemplateParams } from './type'
 import type { ProgressTracker } from '@/helper/progress'
 import type { ApiPlugin, GeneratorConfig, TemplateType } from '@/type'
 import path from 'node:path'
@@ -9,7 +10,6 @@ import getAutoTemplateType from '@/functions/getAutoTemplateType'
 import { computePerTagHashes, diffChangedTags, getCacheEntry } from '@/functions/wormaJson'
 import { logger, PluginDriver, TemplateHelper } from '@/helper'
 import { CORE_PROGRESS_SOURCE, noopReportProgress } from '@/helper/progress'
-import type { RenderTemplateParams } from './type'
 import { zGeneratorConfig } from './zType'
 
 export class GeneratorHelper {

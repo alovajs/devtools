@@ -1,5 +1,5 @@
-import { defineConfig } from 'worma'
-import { axios } from 'worma/plugin'
+import { defineConfig } from 'wormajs'
+import { axios } from 'wormajs/plugin'
 
 export default defineConfig({
   generator: [

@@ -1,12 +1,12 @@
 import type { Metadata } from 'next'
-import Cta from '@/components/test/Cta'
-import Features from '@/components/test/Features'
-import Footer from '@/components/test/Footer'
-import Hero from '@/components/test/Hero'
-import IdeEditor from '@/components/test/IdeEditor'
-import Matrix from '@/components/test/Matrix'
-import Plugins from '@/components/test/Plugins'
-import ProcessFlow from '@/components/test/ProcessFlow'
+import Cta from '@/components/home/Cta'
+import Features from '@/components/home/Features'
+import Footer from '@/components/home/Footer'
+import Hero from '@/components/home/Hero'
+import IdeEditor from '@/components/home/IdeEditor'
+import Matrix from '@/components/home/Matrix'
+import Plugins from '@/components/home/Plugins'
+import ProcessFlow from '@/components/home/ProcessFlow'
 
 export const metadata: Metadata = {
   title: 'worma - 一份 OpenAPI，从人类到AI',

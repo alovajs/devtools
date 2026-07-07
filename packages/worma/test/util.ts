@@ -2,6 +2,7 @@ import type { ApiPlugin, GeneratorConfig } from '@/type'
 import fs from 'node:fs/promises'
 import { resolve } from 'node:path'
 import isEqualWith from 'lodash/isEqualWith'
+import { vol } from 'memfs'
 import { expect } from 'vitest'
 import { generate } from '@/index'
 import { alovaGlobals } from '@/plugins'
@@ -47,6 +48,7 @@ export const getSalt = () => `_${Math.random().toString(36).slice(2)}`
 
 export async function generateWithPlugin(inputFile: string, plugins: ApiPlugin[], config?: Partial<Omit<GeneratorConfig, 'input' | 'plugins' | 'type'>>) {
   const outputDir = config?.output ?? resolve(__dirname, `./mock_output/plugin_test${getSalt()}`)
+  vol.mkdirSync(outputDir, { recursive: true })
   await generate({
     generator: [{ ...config, input: inputFile, output: outputDir, type: 'ts', plugins: [alovaGlobals(), ...plugins] }],
   }, { force: true })

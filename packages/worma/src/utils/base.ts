@@ -90,13 +90,13 @@ export async function resolveConfigFile(projectPath: string) {
   for (const ext of extensions) {
     const configFile = path.join(projectPath, `worma.config.${ext}`)
     if (await existsPromise(configFile)) {
-      return configFile
+      return configFile.replace(/\\/g, '/')
     }
   }
   // Fallback to .wormarc if no worma.config.* found
   const rcFile = path.join(projectPath, '.wormarc')
   if (await existsPromise(rcFile)) {
-    return rcFile
+    return rcFile.replace(/\\/g, '/')
   }
   return null
 }

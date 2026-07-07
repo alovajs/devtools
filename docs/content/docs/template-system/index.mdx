@@ -29,7 +29,7 @@ interface TemplateConfigResult {
 多个插件都可以返回模板配置，以最后一个有效的返回值为准。内置模板插件（如 `alova`、`axios`）已预设了 `getTemplate` hook，直接配置到 `plugins` 即可使用：
 
 ```javascript
-import { alova, axios } from 'worma/plugin';
+import { alova, axios } from 'wormajs/plugin';
 
 export default defineConfig({
   generator: [

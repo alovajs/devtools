@@ -10,18 +10,18 @@ description: worma init / gen 命令参数详解
 
 ```bash
 # 在当前目录创建 worma.config.js
-npx worma init
+worma init
 
 # 指定配置文件类型
-npx worma init -t typescript
-npx worma init --type commonjs
+worma init -t typescript
+worma init --type commonjs
 
 # 指定模板预设
-npx worma init -T axios
-npx worma init --template ky
+worma init -T axios
+worma init --template ky
 
 # 指定项目目录
-npx worma init -p ./packages/app
+worma init -p ./packages/app
 ```
 
 ### 参数详解
@@ -38,15 +38,15 @@ npx worma init -p ./packages/app
 
 ```bash
 # 基本用法（默认 workspace 模式，扫描所有子项目）
-npx worma gen
+worma gen
 
 # 强制重新生成所有文件（忽略缓存）
-npx worma gen -f
-npx worma gen --force
+worma gen -f
+worma gen --force
 
 # 指定项目路径（单项目模式）
-npx worma gen -p ./packages/app
-npx worma gen --project ./packages/app
+worma gen -p ./packages/app
+worma gen --project ./packages/app
 ```
 
 ### 参数详解

@@ -1,4 +1,4 @@
-import type { alovaInstance } from './index';
+import type { alovaInstance } from './index{{#if (eq type "commonjs")}}.cjs{{/if}}';
 import type { Alova, AlovaGenerics, AlovaMethodCreateConfig, Method } from 'alova';
 
 type CollapsedAlova = typeof alovaInstance;

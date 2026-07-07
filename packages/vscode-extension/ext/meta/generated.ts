@@ -14,6 +14,7 @@ export const extensionId = `${publisher}.${name}`
  */
 export type CommandKey
   = | 'worma.refresh'
+    | 'worma.generateApi.force'
     | 'worma.create.config'
     | 'worma.apiDocs.refresh'
     | 'worma.snippetSearch.open'
@@ -29,6 +30,11 @@ export const commands = {
    * @value `worma.refresh`
    */
   wormaRefresh: 'worma.refresh',
+  /**
+   * Force Generate APIs
+   * @value `worma.generateApi.force`
+   */
+  wormaGenerateApiForce: 'worma.generateApi.force',
   /**
    * Create worma config
    * @value `worma.create.config`

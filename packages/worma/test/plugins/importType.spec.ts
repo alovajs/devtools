@@ -1,10 +1,16 @@
 import { resolve } from 'node:path'
+import { vol } from 'memfs'
 import { describe, expect, it, vi } from 'vitest'
 import { importType } from '@/plugins/presets/importType'
 import { generateWithPlugin } from '../util'
 
 vi.mock('node:fs')
 vi.mock('node:fs/promises')
+
+beforeEach(() => {
+  vol.reset()
+  vol.mkdirSync(process.cwd(), { recursive: true })
+})
 
 describe('plugins/importType', () => {
   it('merges identifiers into externalTypes and dedupes', () => {

@@ -1,5 +1,6 @@
 {
   "name": "worma-docs",
+  "type": "module",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -8,7 +9,8 @@
     "start": "serve out",
     "types:check": "fumadocs-mdx && next typegen && tsc --noEmit",
     "postinstall": "fumadocs-mdx",
-    "lint": "oxlint"
+    "lint": "oxlint",
+    "lint:links": "tsx scripts/lint.ts"
   },
   "dependencies": {
     "@gsap/react": "catalog:",
@@ -36,10 +38,12 @@
     "@types/node": "^25.9.1",
     "@types/react": "^19.2.16",
     "@types/react-dom": "^19.2.3",
+    "next-validate-link": "catalog:",
     "oxlint": "^1.68.0",
     "postcss": "^8.5.15",
     "serve": "^14.2.6",
     "tailwindcss": "^4.3.0",
+    "tsx": "catalog:dev",
     "typescript": "^6.0.3"
   }
 }

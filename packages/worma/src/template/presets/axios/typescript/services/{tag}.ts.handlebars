@@ -24,7 +24,7 @@ export function {{{name}}}(config: {{{name}}}ExtraConfig): Promise<{{{name}}}Res
     url,
     ...mergedConfig,{{#if (eq response "Blob")}}
     responseType: 'blob',{{/if}}
-  }){{#if (eq response "Blob")}}.then((data: any) => data instanceof Blob ? data : new Blob([data])){{/if}} as Promise<{{{name}}}Response>;
+  }){{#if (eq response "Blob")}}.then((data: any) => data instanceof Blob ? data : new Blob([data])){{/if}};
 }
 
 {{/each}}

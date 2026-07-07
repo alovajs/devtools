@@ -13,8 +13,6 @@ Logs user into the system
 
 `[GET] /user/login`
 
-
-
 ## Response
 
 Use the response data as needed:

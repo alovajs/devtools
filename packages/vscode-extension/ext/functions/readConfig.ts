@@ -1,4 +1,4 @@
-import type { Config } from 'worma'
+import type { Config } from 'wormajs'
 import type Error from '@/components/error'
 import Global from '@/core/Global'
 import { refeshAutoUpdate } from '@/helper/autoUpdate'

@@ -13,8 +13,6 @@ Returns pet inventories by status
 
 `[GET] /store/inventory`
 
-
-
 ## Response
 
 Use the response data as needed:

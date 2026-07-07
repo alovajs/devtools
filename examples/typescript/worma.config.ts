@@ -1,5 +1,5 @@
-import { defineConfig } from 'worma'
-import { aiDoc, alova, alovaGlobals, axios, fetch, ky, platform } from 'worma/plugin'
+import { defineConfig } from 'wormajs'
+import { aiDoc, alova, alovaGlobals, axios, fetch, ky, platform } from 'wormajs/plugin'
 
 // ─── Worma TypeScript 示例 ──────────────────────────
 // 本文件展示了单项目中配置 5 个 generator 的方式，
@@ -20,7 +20,7 @@ export default defineConfig({
       serverName: 'Alova Functional',
       plugins: [
         platform('swagger'),
-        aiDoc({ installSkill: true }),
+        aiDoc(),
         alova(),
       ],
     },

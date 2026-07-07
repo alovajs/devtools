@@ -1,6 +1,6 @@
 import type { Alova, AlovaMethodCreateConfig, AlovaGenerics, Method } from 'alova';
-import type { alovaInstance, $$userConfigMap } from './index';
-import type apiDefinitions from './apiDefinitions';
+import type { alovaInstance, $$userConfigMap } from './index{{#if (eq type "commonjs")}}.cjs{{/if}}';
+import type apiDefinitions from './apiDefinitions{{#if (eq type "commonjs")}}.cjs{{/if}}';
 
 type CollapsedAlova = typeof alovaInstance;
 type UserMethodConfigMap = typeof $$userConfigMap;

@@ -1,27 +1,27 @@
-# 🧩 Worma ESM 示例
+# 🧩 Worma ESM Example
 
-使用 **ES Module** (`"type": "module"`) 格式的 worma JavaScript 项目，涵盖全部 5 套预设模板。
+A worma JavaScript project using the **ES Module** (`"type": "module"`) format. It covers all 5 preset templates.
 
-## 📋 包含的模板
+## 📋 Included Templates
 
-| #   | 模板             | 输出目录                 | 说明                                  |
-| --- | ---------------- | ------------------------ | ------------------------------------- |
-| ①   | `alova()`        | `src/api/alova/`         | 函数式模板 — 每个 API 独立 `export`   |
-| ②   | `alovaGlobals()` | `src/api/alova-globals/` | 全局式模板 — API 挂载到 `MyApis` 对象 |
-| ③   | `axios()`        | `src/api/axios/`         | Axios 模板 — 基于 axios 实例          |
-| ④   | `fetch()`        | `src/api/fetch/`         | Fetch 模板 — 零依赖，原生 fetch       |
-| ⑤   | `ky()`           | `src/api/ky/`            | Ky 模板 — 现代化 ky 请求库            |
+| #   | Template         | Output Directory         | Description                                               |
+| --- | ---------------- | ------------------------ | --------------------------------------------------------- |
+| ①   | `alova()`        | `src/api/alova/`         | Functional template — each API is exported independently  |
+| ②   | `alovaGlobals()` | `src/api/alova-globals/` | Global template — APIs are mounted on the `MyApis` object |
+| ③   | `axios()`        | `src/api/axios/`         | Axios template — based on an axios instance               |
+| ④   | `fetch()`        | `src/api/fetch/`         | Fetch template — zero dependencies, native fetch          |
+| ⑤   | `ky()`           | `src/api/ky/`            | Ky template — modern `ky` request library                 |
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
 ```bash
-npm install      # 安装依赖（StackBlitz 中全自动）
-npm run gen      # 生成 API 客户端
-npm start        # 运行 Demo
+npm install      # Install dependencies
+npm run gen      # Generate the API client
+npm start        # Run the demo
 ```
 
-## 💡 与 TypeScript 示例的区别
+## 💡 Differences from the TypeScript Example
 
-ESM 项目使用 `.js` 扩展名，不需要 `tsconfig.json`，适合纯 JavaScript 项目。生成代码同样支持 JSDoc 注释，在 VSCode 中可获得类型提示。
+ESM projects use `.js` file extensions and do not require a `tsconfig.json`, making them suitable for pure JavaScript projects. The generated code also supports JSDoc comments, so you can get type hints in VSCode.
 
 [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/alovajs/devtools/tree/main/examples/esm)

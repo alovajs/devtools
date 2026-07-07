@@ -114,9 +114,14 @@ function withMemoryTracking<T>(fn: () => Promise<T>): {
 
   const interval = setInterval(() => {
     // 手动触发 GC（需 --expose-gc）
-    try { if (typeof globalThis.gc === 'function') globalThis.gc() } catch { /* ignore */ }
+    try {
+      if (typeof globalThis.gc === 'function')
+        globalThis.gc()
+    }
+    catch { /* ignore */ }
     const rss = process.memoryUsage().rss
-    if (rss > peak) peak = rss
+    if (rss > peak)
+      peak = rss
   }, 100)
 
   const cleanup = () => clearInterval(interval)
@@ -126,7 +131,8 @@ function withMemoryTracking<T>(fn: () => Promise<T>): {
       cleanup()
       // 最后一次采样
       const rss = process.memoryUsage().rss
-      if (rss > peak) peak = rss
+      if (rss > peak)
+        peak = rss
       return result
     },
     (err) => {
@@ -170,8 +176,8 @@ export async function runSingleBenchmarkWithMem(scale: number, template: string)
   try {
     // 动态导入 worma
     const [{ generate }, { alovaGlobals, axios }] = await Promise.all([
-      import('worma'),
-      import('worma/plugin'),
+      import('wormajs'),
+      import('wormajs/plugin'),
     ])
 
     const config = {

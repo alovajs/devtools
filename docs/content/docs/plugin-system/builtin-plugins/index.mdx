@@ -23,8 +23,8 @@ worma 内置了以下预设插件，可在 `plugins` 数组中按顺序配置使
 预定义的五套模板（alova、alovaGlobals、axios、fetch、ky）现在以插件方式提供。每个模板插件通过 `getTemplate` hook 返回模板路径：
 
 ```javascript
-import { defineConfig } from 'worma';
-import { alova, alovaGlobals, axios, fetch, ky } from 'worma/plugin';
+import { defineConfig } from 'wormajs';
+import { alova, alovaGlobals, axios, fetch, ky } from 'wormajs/plugin';
 
 export default defineConfig({
   generator: [
@@ -43,12 +43,12 @@ export default defineConfig({
 插件将按照在 `plugins` 数组中的顺序依次执行：
 
 ```javascript
-import { defineConfig } from 'worma';
+import { defineConfig } from 'wormajs';
 import {
   rename, tagModifier, payloadModifier, filterApi, apifox, importType,
   alova, platform
-} from 'worma/plugin';
-import { aiDoc } from 'worma/plugin';
+} from 'wormajs/plugin';
+import { aiDoc } from 'wormajs/plugin';
 
 export default defineConfig({
   generator: [

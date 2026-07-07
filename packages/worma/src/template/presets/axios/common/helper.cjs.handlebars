@@ -22,6 +22,13 @@ function buildPayload(url, defaultConfig, apiName, config) {
   return { url: resolvedUrl, mergedConfig };
 }
 
+/**
+ * @template {Record<string, (config: any) => any>} TagedMap
+ * @template \{{ [K in keyof TagedMap]?: Partial<Parameters<TagedMap[K]>[0]> }} ConfigMap
+ * @param {TagedMap} _ - tagged api map (unused at runtime)
+ * @param {ConfigMap} configMap - default config per api name
+ * @returns {ConfigMap}
+ */
 const setDefaultConfig = (_, configMap) => configMap;
 
 module.exports = { buildPayload, setDefaultConfig };

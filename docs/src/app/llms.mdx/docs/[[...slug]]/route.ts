@@ -5,8 +5,17 @@ export const revalidate = false
 
 export async function GET(_req: Request, { params }: RouteContext<'/llms.mdx/docs/[[...slug]]'>) {
   const { slug } = await params
-  // remove the appended "content.md"
-  const page = source.getPage(slug?.slice(0, -1))
+  const segments = slug ?? []
+  const last = segments.at(-1) ?? 'index.md'
+  const rest = segments.slice(0, -1)
+
+  // The public URL ends with `.md` (e.g. /llms.mdx/docs/quick-start.md).
+  // Convert it back to the page slugs used by the docs source.
+  const pageSlugs = last === 'index.md'
+    ? rest
+    : [...rest, last.replace(/\.md$/, '')]
+
+  const page = source.getPage(pageSlugs)
   if (!page)
     notFound()
 
