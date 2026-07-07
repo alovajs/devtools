@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
   "name": "wormajs",
   "version": "0.0.1",
@@ -87,3 +88,93 @@
     "tsc-alias": "catalog:build"
   }
 }
+=======
+{
+  "name": "wormajs",
+  "version": "0.0.1",
+  "description": "A modern OpenAPI code generator - Generate type-safe API clients from OpenAPI specs",
+  "author": "worma",
+  "license": "MIT",
+  "homepage": "https://github.com/alovajs/devtools",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alovajs/devtools.git"
+  },
+  "bugs": {
+    "url": "https://github.com/alovajs/devtools/issues"
+  },
+  "keywords": [
+    "openapi",
+    "auto-generating",
+    "api",
+    "apis",
+    "fetch",
+    "axios",
+    "request",
+    "fetch-api",
+    "superagent",
+    "worma"
+  ],
+  "exports": {
+    ".": {
+      "types": "./typings/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./plugin": {
+      "types": "./typings/plugins.d.ts",
+      "default": "./dist/plugins/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./typings/index.d.ts",
+  "bin": {
+    "worma": "dist/bin/cli.js"
+  },
+  "files": [
+    "dist",
+    "typings"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "build": "run-s build:*",
+    "build:ts": "tsc --build tsconfig.build.json && tsc-alias -p tsconfig.build.json",
+    "build:dts": "dts-bundle-generator -o typings/index.d.ts src/index.ts --no-check --no-banner --project tsconfig.dts.json",
+    "build:plugin-dts": "dts-bundle-generator -o typings/plugins.d.ts src/plugins/index.ts --no-check --no-banner --project tsconfig.dts.json",
+    "build:copy": "ncp ./src/template/presets ./dist/template/presets"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "alova": "catalog:frontend",
+    "chalk": "catalog:dev",
+    "cli-truncate": "catalog:",
+    "commander": "catalog:dev",
+    "esbuild": "catalog:build",
+    "glob": "catalog:dev",
+    "handlebars": "catalog:frontend",
+    "js-yaml": "catalog:dev",
+    "lodash": "catalog:frontend",
+    "log-update": "catalog:",
+    "openapi-types": "catalog:types",
+    "ora": "catalog:dev",
+    "prettier": "catalog:dev",
+    "skills": "catalog:",
+    "string-width": "catalog:",
+    "swagger2openapi": "catalog:frontend",
+    "zod": "catalog:frontend",
+    "zod-validation-error": "catalog:frontend"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "catalog:types",
+    "@types/js-yaml": "catalog:types",
+    "@types/lodash": "catalog:types",
+    "@types/swagger2openapi": "catalog:types",
+    "axios": "catalog:",
+    "fs-extra": "catalog:dev",
+    "ky": "catalog:",
+    "memfs": "catalog:dev",
+    "tsc-alias": "catalog:build"
+  }
+}
+>>>>>>> 34d1b7a6dd824d678058d9aefd1074dd8f01226b

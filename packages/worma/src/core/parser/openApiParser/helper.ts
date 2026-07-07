@@ -35,7 +35,11 @@ function convertSwagger2Async(data: OpenAPIV2Document): Promise<OpenAPIDocument>
   const tsPath = path.resolve(__dirname, '../../workerPool/swagger2Worker.ts')
   const workerScript = existsSync(jsPath) ? jsPath : tsPath
 
+<<<<<<< HEAD
   let pool: WorkerPool<OpenAPIV2Document, { openapi: OpenAPIDocument }>
+=======
+  let pool: ReturnType<PoolManager['get']>
+>>>>>>> 34d1b7a6dd824d678058d9aefd1074dd8f01226b
   try {
     pool = PoolManager.getInstance().get<OpenAPIV2Document, { openapi: OpenAPIDocument }>({
       key: 'swagger2Worker',
