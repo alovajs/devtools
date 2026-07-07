@@ -1,4 +1,4 @@
-import type { GeneratorProgressEvent } from 'worma'
+import type { GeneratorProgressEvent } from 'wormajs'
 import type Error from '@/components/error'
 import { updateLoadingProgress } from '@/commands/statusBar'
 import Global from '@/core/Global'

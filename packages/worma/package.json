@@ -2,7 +2,7 @@
   "name": "wormajs",
   "version": "0.0.1",
   "description": "A modern OpenAPI code generator - Generate type-safe API clients from OpenAPI specs",
-  "author": "alova",
+  "author": "worma",
   "license": "MIT",
   "homepage": "https://github.com/alovajs/devtools",
   "repository": {

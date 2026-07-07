@@ -598,7 +598,7 @@ export type PlatformType = "swagger" | "knife4j" | "fastapi" | "yapi";
  *
  * @example
  * ```ts
- * import { platform, alovaGlobals } from 'worma/plugin';
+ * import { platform, alovaGlobals } from 'wormajs/plugin';
  *
  * defineConfig({
  *   generator: [{

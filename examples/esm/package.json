@@ -13,6 +13,6 @@
     "ky": "catalog:default"
   },
   "devDependencies": {
-    "worma": "workspace:*"
+    "wormajs": "workspace:*"
   }
 }

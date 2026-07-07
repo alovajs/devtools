@@ -85,8 +85,8 @@ async function main() {
   console.log(`  📦 worma 版本: ${version}\n`)
 
   const [{ generate }, { alovaGlobals, axios }] = await Promise.all([
-    import('worma'),
-    import('worma/plugin'),
+    import('wormajs'),
+    import('wormajs/plugin'),
   ])
 
   // 清理输出

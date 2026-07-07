@@ -1,4 +1,4 @@
-import type { Config } from 'worma'
+import type { Config } from 'wormajs'
 import { commands, workspace } from 'vscode'
 import { Commands } from '@/commands'
 import Global from '@/core/Global'

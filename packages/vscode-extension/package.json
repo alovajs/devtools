@@ -247,6 +247,6 @@
     "vite-plugin-vue-layouts": "catalog:build",
     "vscode-ext-gen": "catalog:build",
     "vue-tsc": "catalog:dev",
-    "worma": "workspace:*"
+    "wormajs": "workspace:*"
   }
 }

@@ -71,7 +71,7 @@
     "type-fest": "catalog:types",
     "typescript": "catalog:dev",
     "vitest": "catalog:dev",
-    "worma": "workspace:*"
+    "wormajs": "workspace:*"
   },
   "resolutions": {
     "unplugin": "catalog:build",

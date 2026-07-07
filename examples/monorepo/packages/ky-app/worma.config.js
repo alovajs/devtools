@@ -1,5 +1,5 @@
-import { defineConfig } from 'worma'
-import { ky } from 'worma/plugin'
+import { defineConfig } from 'wormajs'
+import { ky } from 'wormajs/plugin'
 
 export default defineConfig({
   generator: [

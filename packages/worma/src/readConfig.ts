@@ -37,8 +37,8 @@ export async function readConfig(projectPath = process.cwd()) {
   const userDependencies = await getUserInstalledDependencies(projectPath)
   // 始终将 worma 自身作为外部依赖，防止 esbuild 打包 worma 源码进入临时文件
   // 否则 __dirname 会指向用户项目目录，导致预设模板路径解析失败
-  // monorepo 子包可能不直接依赖 worma，但 config 文件会 import from 'worma'
-  const allExternals = [...new Set([...userDependencies, 'worma', 'worma/plugin'])]
+  // monorepo 子包可能不直接依赖 wormajs，但 config 文件会 import from 'wormajs'
+  const allExternals = [...new Set([...userDependencies, 'worma', 'wormajs/plugin'])]
   const configTmpFileName = `alova_tmp_${Date.now()}.cjs`
   // 使用绝对路径：esbuild 写入相对 outfile 时按 cwd 解析，
   // 而 require() 解析相对路径时基于调用模块所在目录，二者不一致会导致 require 失败。

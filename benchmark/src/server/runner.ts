@@ -176,8 +176,8 @@ export async function runSingleBenchmarkWithMem(scale: number, template: string)
   try {
     // 动态导入 worma
     const [{ generate }, { alovaGlobals, axios }] = await Promise.all([
-      import('worma'),
-      import('worma/plugin'),
+      import('wormajs'),
+      import('wormajs/plugin'),
     ])
 
     const config = {

@@ -31,6 +31,6 @@
     "vite": "catalog:build",
     "vue": "catalog:frontend",
     "vue-echarts": "catalog:",
-    "worma": "workspace:*"
+    "wormajs": "workspace:*"
   }
 }

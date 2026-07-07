@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`js-commonjs createConfig content 1`] = `
-"const { defineConfig } = require('worma');
+"const { defineConfig } = require('wormajs');
 
 // For more config detailed visit:
 // https://alova.js.org/tutorial/getting-started/extension-integration

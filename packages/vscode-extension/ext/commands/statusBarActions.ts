@@ -1,4 +1,4 @@
-import type { GeneratorProgressEvent } from 'worma'
+import type { GeneratorProgressEvent } from 'wormajs'
 import path from 'node:path'
 import { ProgressLocation, window } from 'vscode'
 import { showError } from '@/components/event'

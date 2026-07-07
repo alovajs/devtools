@@ -10,6 +10,6 @@
     "start:ky": "pnpm --filter ky-app start"
   },
   "devDependencies": {
-    "worma": "workspace:*"
+    "wormajs": "workspace:*"
   }
 }

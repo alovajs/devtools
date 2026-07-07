@@ -50,7 +50,7 @@ function resolvePlatformUrls(baseUrl: string, platformType: PlatformType): strin
  *
  * @example
  * ```ts
- * import { platform, alovaGlobals } from 'worma/plugin';
+ * import { platform, alovaGlobals } from 'wormajs/plugin';
  *
  * defineConfig({
  *   generator: [{

@@ -1,5 +1,5 @@
-import { defineConfig } from 'worma'
-import { fetch } from 'worma/plugin'
+import { defineConfig } from 'wormajs'
+import { fetch } from 'wormajs/plugin'
 
 export default defineConfig({
   generator: [

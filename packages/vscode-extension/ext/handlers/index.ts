@@ -9,7 +9,7 @@ import { getSyntaxHighlightCss } from '@/webview/theme-colors'
 
 export type HandlersType = ReturnType<typeof getHandlers>
 export type { DataType, MessageType } from '@/utils/message'
-export type { Api, ApiDoc, CacheData } from 'worma'
+export type { Api, ApiDoc, CacheData } from 'wormajs'
 export type ApiProject = Awaited<ReturnType<typeof getApiDocs>>[number]
 
 export function getHandlers(context: ExtensionContext) {

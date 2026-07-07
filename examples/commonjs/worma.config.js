@@ -1,5 +1,5 @@
-const { defineConfig } = require('worma')
-const { alova, alovaGlobals, axios, fetch, platform } = require('worma/plugin')
+const { defineConfig } = require('wormajs')
+const { alova, alovaGlobals, axios, fetch, platform } = require('wormajs/plugin')
 
 // ─── Worma CommonJS example ─────────────────────────────
 // This project demonstrates how to use worma in a CommonJS

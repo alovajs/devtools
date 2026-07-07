@@ -8,7 +8,7 @@ import Global from '@/core/Global'
 import { Log } from '@/utils'
 import { getWorkspacePaths } from '@/utils/vscode'
 
-type Worma = typeof import('worma')
+type Worma = typeof import('wormajs')
 // 用于mock测试
 export const MockWorma = {
 

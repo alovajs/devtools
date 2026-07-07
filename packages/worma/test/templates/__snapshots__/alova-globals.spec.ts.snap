@@ -1,8 +1,8 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`createConfig API > should create worma.config 1`] = `
-"import { defineConfig } from 'worma';
-import { platform, aiDoc, alova } from 'worma/plugin';
+"import { defineConfig } from 'wormajs';
+import { platform, aiDoc, alova } from 'wormajs/plugin';
 
 // For more config detailed visit:
 // https://github.com/alovajs/devtools

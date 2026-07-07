@@ -1,5 +1,5 @@
 import type { ExtensionContext } from 'vscode'
-import type { Api } from 'worma'
+import type { Api } from 'wormajs'
 import { MType } from '#/constant'
 import { isApiExists } from '@/functions/getApis'
 import { Log } from '@/utils'

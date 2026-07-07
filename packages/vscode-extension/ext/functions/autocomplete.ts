@@ -1,4 +1,4 @@
-import type { Api } from 'worma'
+import type { Api } from 'wormajs'
 import { match } from 'sdm2'
 import { getApis } from './getApis'
 

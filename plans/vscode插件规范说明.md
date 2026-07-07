@@ -164,7 +164,7 @@ export function updateLoadingProgress(percent: number) {
 在 `worma.generate` 调用时传入 `onProgress` 回调，通过节流（500ms）更新 `updateLoadingProgress`：
 
 ```ts
-import type { GenerateProgress } from 'worma'
+import type { GenerateProgress } from 'wormajs'
 
 export default async (option?: GenerateOption) => {
   // ...
