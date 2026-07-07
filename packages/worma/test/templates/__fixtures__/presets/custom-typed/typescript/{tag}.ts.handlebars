@@ -1,0 +1,6 @@
+// {tag} module
+{{#each tagedApis}}
+{{#each apis}}
+export const {{name}} = '{{method}} {{path}}';
+{{/each}}
+{{/each}}

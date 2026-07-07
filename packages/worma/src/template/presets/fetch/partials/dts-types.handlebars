@@ -1,0 +1,7 @@
+type {{{name}}}Response = {{processType response @root.componentNames}};
+type {{{name}}}ExtraConfig = Omit<RequestInit, 'body'> & {
+  {{#if pathParameters}}pathParams: {{processType pathParameters @root.componentNames}};
+  {{/if}}{{#if queryParameters}}params?: {{processType queryParameters @root.componentNames}};
+  {{/if}}{{#if requestBody}}body?: {{processType requestBody @root.componentNames}} | BodyInit;
+  {{/if}}
+};

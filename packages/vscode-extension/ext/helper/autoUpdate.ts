@@ -1,32 +1,49 @@
-import type { Config } from '@alova/wormhole'
-import { commands } from 'vscode'
+import type { Config } from 'wormajs'
+import { commands, workspace } from 'vscode'
 import { Commands } from '@/commands'
 import Global from '@/core/Global'
-import wormhole from '@/helper/wormhole'
 import { highPrecisionInterval } from '@/utils'
 
-export async function refeshAutoUpdate(path: string, config: Config) {
-  const { time, immediate, isStop } = await wormhole.getAutoUpdateConfig(config)
+interface AutoUpdateConfig {
+  isStop: boolean
+  immediate: boolean
+  time: number
+}
+
+function getAutoUpdateConfig(): AutoUpdateConfig {
+  const raw = workspace.getConfiguration().get<boolean | { launchEditor?: boolean, interval?: number }>('worma.autoUpdate', true)
+  if (raw === false) {
+    return { isStop: true, immediate: false, time: 300000 }
+  }
+  if (raw === true || raw == null) {
+    return { isStop: false, immediate: false, time: 300000 }
+  }
+  return {
+    isStop: false,
+    immediate: raw.launchEditor ?? false,
+    time: raw.interval ?? 300000,
+  }
+}
+
+export async function refeshAutoUpdate(path: string, _config: Config) {
+  const { time, immediate, isStop } = getAutoUpdateConfig()
   const timer = Global.getTimer(path)
-  const timerTime = time * 1000
-  if (timer?.immediate === immediate && timer?.time === timerTime && timer?.isRunning()) {
+  if (timer?.immediate === immediate && timer?.time === time && timer?.isRunning()) {
     return
   }
   if (!isStop) {
-    // Set timer
     Global.setTimer(
       path,
       highPrecisionInterval(
         () => {
-          commands.executeCommand(Commands.generate_api, path)
+          commands.executeCommand(Commands.generate_api, path, true)
         },
-        timerTime,
+        time,
         immediate,
       ),
     )
   }
   else {
-    // Remove timer
     Global.deleteTimer(path)
   }
 }

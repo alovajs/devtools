@@ -1,0 +1,20 @@
+{{> comment}}
+import axios from 'axios';
+
+export const axiosInstance = axios.create({
+  baseURL: '{{{baseUrl}}}',
+});
+
+axiosInstance.interceptors.request.use(
+  config => {
+    return config;
+  },
+  error => Promise.reject(error),
+);
+
+axiosInstance.interceptors.response.use(
+  response => {
+    return response.data;
+  },
+  error => Promise.reject(error),
+);

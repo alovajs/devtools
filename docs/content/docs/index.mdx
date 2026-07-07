@@ -1,0 +1,99 @@
+---
+title: 介绍
+description: worma — 一份 OpenAPI，同时生成调用代码和 AI 知识
+---
+
+> **让 worma 成为 AI 编程工作流中不可或缺的一环——一份 OpenAPI，同时生成开发者能直接调用的代码，和 AI 能读懂的接口知识。**
+
+在 AI 编码工具（如 Cursor）中，当 AI 尝试调用后端接口时，常常会出现函数名错误、参数不匹配等问题。worma 正是为解决这一问题而生。
+
+worma 是一款通用的 OpenAPI 代码生成工具，与后端语言和前端请求库无关。无论后端使用 Java、Go 还是 Python，前端使用 Alova、Axios、Fetch 还是 Ky，只需提供一份 OpenAPI 规范文件，即可同时生成调用代码、TypeScript 类型定义、接口文档和 AI Skill。
+
+名字取自"虫洞"（wormhole），寓意后端接口与前端代码之间的连接应当像虫洞一样直接，无需绕行。worma 在 `@alova/wormhole` 基础上进行了大量重新设计和性能优化，扩展为通用 OpenAPI 代码生成工具，原有 `@alova/wormhole` 用户可通过 `alovaGlobals` 模板平滑迁移。
+
+## 工作流程
+
+<Steps>
+  <Step>
+    **后端交付 OpenAPI 文件**
+
+    Swagger、Knife4j、FastAPI、ApiFox 等均可，只需一份 OpenAPI 规范文件即可开始。
+
+  </Step>
+  <Step>
+    **运行 `worma gen`**
+
+    一条命令即可同时生成两种产出：
+
+    - **你用的**：调用函数、TypeScript 类型、编辑器内文档
+    - **AI 用的**：Skill 文档，供 AI 直接读取
+
+    生成后项目中会新增以下内容：
+
+    <Files>
+      <Folder name=".skills" defaultOpen>
+        <File name="SKILL.md" />
+        <Folder name="references" defaultOpen>
+          <File name="user-info.md" />
+          <File name="user-login.md" />
+        </Folder>
+      </Folder>
+      <Folder name="src/api" defaultOpen>
+        <File name="user.ts" />
+        <File name="types.ts" />
+      </Folder>
+    </Files>
+
+    `.skills/` 为 AI 直接读取的知识库，`src/api/` 为开发者可直接 import 的调用代码。
+
+  </Step>
+  <Step>
+    **在编辑器中编写业务代码，AI 自动查询接口**
+
+    输入「获取用户列表」，AI 自动补全 `getUserList({ page: 1 })`，函数名、参数、请求路径均准确无误。
+
+    只需描述业务意图，无需查阅接口文档——AI 会根据 Skill 自动匹配合适的接口。
+
+  </Step>
+</Steps>
+
+## 核心特性
+
+### 🤖 AI Skill 一键生成
+
+自动生成符合 Skills 规范的接口文档，支持[绝大部分 coding agent](https://www.npmjs.com/package/skills#supported-agents)，安装即用。大模型可准确感知项目中的所有 API，避免对函数名和参数进行猜测。
+
+### 🧩 四合一信息输出
+
+一份 OpenAPI 规范同时产出调用函数、TypeScript 类型、可读文档和 AI Skill。开发者使用代码，AI 使用知识，各取所需。
+
+### 🔌 多请求库 + 自定义模板
+
+内置 Alova、Axios、Fetch、Ky 模板，可一键切换。团队可根据实际使用的请求库选择对应模板。如有定制需求，可通过 Handlebars 模板引擎自由修改。
+
+### 📝 编辑器内文档
+
+安装 VSCode 扩展后，悬停即可查看完整的参数表和返回示例，即使是纯 JavaScript 项目也能获得接近 TypeScript 级别的类型提示。开发者与 AI 共享同一份接口知识，代码补全更加精准。
+
+## 即刻体验
+
+无需本地安装，直接在浏览器中体验：
+
+- [TypeScript 示例](https://stackblitz.com/fork/github/alovajs/devtools/tree/main/examples/typescript)
+- [ESM 示例](https://stackblitz.com/fork/github/alovajs/devtools/tree/main/examples/esm)
+- [CommonJS 示例](https://stackblitz.com/fork/github/alovajs/devtools/tree/main/examples/commonjs)
+- [Monorepo 示例](https://stackblitz.com/fork/github/alovajs/devtools/tree/main/examples/monorepo)
+
+## 为 AI 安装 worma skill
+
+为 AI 添加 worma 的配置和使用知识：
+
+```bash
+skills add alovajs/skills --skill worma-guidelines
+```
+
+安装完成后，AI 即可理解 worma 的配置方式和使用命令。
+
+---
+
+[快速开始](/docs/quick-start)，5 分钟即可完成接入。

@@ -2,10 +2,10 @@
 // @see https://github.com/antfu/vscode-ext-gen
 
 // Meta info
-export const publisher = 'Alova'
-export const name = 'alova-vscode-extension'
-export const version = '2.0.2'
-export const displayName = 'Alova'
+export const publisher = 'Worma'
+export const name = 'worma-vscode-extension'
+export const version = '0.0.1'
+export const displayName = 'Worma'
 export const description = 'Generate and search APIs without API documentation any more'
 export const extensionId = `${publisher}.${name}`
 
@@ -13,61 +13,70 @@ export const extensionId = `${publisher}.${name}`
  * Type union of all commands
  */
 export type CommandKey
-  = | 'alova.refresh'
-    | 'alova.create.config'
-    | 'alova.apiDocs.refresh'
-    | 'alova.snippetSearch.open'
-    | 'alova.snippetSearch.insert'
-    | 'alova.snippetSearch.showHelp'
+  = | 'worma.refresh'
+    | 'worma.generateApi.force'
+    | 'worma.create.config'
+    | 'worma.apiDocs.refresh'
+    | 'worma.snippetSearch.open'
+    | 'worma.snippetSearch.insert'
+    | 'worma.snippetSearch.showHelp'
 
 /**
- * Commands map registed by `Alova.alova-vscode-extension`
+ * Commands map registed by `Worma.worma-vscode-extension`
  */
 export const commands = {
   /**
    * Generate APIs
-   * @value `alova.refresh`
+   * @value `worma.refresh`
    */
-  alovaRefresh: 'alova.refresh',
+  wormaRefresh: 'worma.refresh',
   /**
-   * Create alova config
-   * @value `alova.create.config`
+   * Force Generate APIs
+   * @value `worma.generateApi.force`
    */
-  alovaCreateConfig: 'alova.create.config',
+  wormaGenerateApiForce: 'worma.generateApi.force',
+  /**
+   * Create worma config
+   * @value `worma.create.config`
+   */
+  wormaCreateConfig: 'worma.create.config',
   /**
    * Refresh View
-   * @value `alova.apiDocs.refresh`
+   * @value `worma.apiDocs.refresh`
    */
-  alovaApiDocsRefresh: 'alova.apiDocs.refresh',
+  wormaApiDocsRefresh: 'worma.apiDocs.refresh',
   /**
    * 打开代码片段搜索
-   * @value `alova.snippetSearch.open`
+   * @value `worma.snippetSearch.open`
    */
-  alovaSnippetSearchOpen: 'alova.snippetSearch.open',
+  wormaSnippetSearchOpen: 'worma.snippetSearch.open',
   /**
    * 插入代码片段
-   * @value `alova.snippetSearch.insert`
+   * @value `worma.snippetSearch.insert`
    */
-  alovaSnippetSearchInsert: 'alova.snippetSearch.insert',
+  wormaSnippetSearchInsert: 'worma.snippetSearch.insert',
   /**
    * 显示快捷键帮助
-   * @value `alova.snippetSearch.showHelp`
+   * @value `worma.snippetSearch.showHelp`
    */
-  alovaSnippetSearchShowHelp: 'alova.snippetSearch.showHelp',
+  wormaSnippetSearchShowHelp: 'worma.snippetSearch.showHelp',
 } satisfies Record<string, CommandKey>
 
 /**
  * Type union of all configs
  */
-export type ConfigKey = never
+export type ConfigKey = 'worma.autoUpdate'
 
 export interface ConfigKeyTypeMap {
+  'worma.autoUpdate': boolean | { launchEditor?: boolean, interval?: number }
 }
 
 export interface ConfigShorthandMap {
+  autoUpdate: 'worma.autoUpdate'
 }
 
 export interface ConfigShorthandTypeMap {
+  autoUpdate: boolean | { launchEditor?: boolean, interval?: number }
 }
 
 export interface ConfigItem<T extends keyof ConfigKeyTypeMap> {
@@ -76,22 +85,34 @@ export interface ConfigItem<T extends keyof ConfigKeyTypeMap> {
 }
 
 /**
- * Configs map registered by `Alova.alova-vscode-extension`
+ * Configs map registered by `Worma.worma-vscode-extension`
  */
 export const configs = {
-}
+  /**
+   * Whether to automatically update APIs.
+   * @key `worma.autoUpdate`
+   * @default `true`
+   */
+  autoUpdate: 'worma.autoUpdate',
+} satisfies Record<string, ConfigKey>
 
 export interface ScopedConfigKeyTypeMap {
+  autoUpdate: boolean | { launchEditor?: boolean, interval?: number }
 }
 
 export const scopedConfigs = {
-  scope: 'alova-vscode-extension',
+  scope: 'worma-vscode-extension',
   defaults: {
+    autoUpdate: true,
   } satisfies ScopedConfigKeyTypeMap,
 }
 
 export interface NestedConfigs {
+  worma: {
+    autoUpdate: boolean | { launchEditor?: boolean, interval?: number }
+  }
 }
 
 export interface NestedScopedConfigs {
+  autoUpdate: boolean | { launchEditor?: boolean, interval?: number }
 }

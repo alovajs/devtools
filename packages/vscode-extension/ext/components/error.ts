@@ -5,7 +5,7 @@ export default class AlovaError extends Error {
   private path?: string
   constructor(message?: string, path?: string) {
     super(message)
-    this.name = 'wormhole'
+    this.name = 'worma'
     this.path = path
   }
 

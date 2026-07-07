@@ -1,0 +1,65 @@
+---
+title: 示例：修改函数名/响应类型的插件
+description: 通过实际示例学习插件开发
+---
+
+
+## 示例 1：统一修改函数名前缀
+
+为所有自动生成的 API 函数添加统一前缀。注意 `beforeCodeGenerate` 现在直接修改 `data` 对象，无需返回值：
+
+```javascript
+import { defineConfig } from 'wormajs';
+
+export default defineConfig({
+  generator: [
+    {
+      plugins: [
+        {
+          name: 'prefix-api',
+          beforeCodeGenerate({ data }) {
+            data.apis = data.apis.map(api => ({
+              ...api,
+              name: `api_${api.name}`,
+              responseName: `Api${api.responseName}`,
+            }));
+          },
+        },
+      ],
+    },
+  ],
+});
+```
+
+## 示例 2：包装响应类型
+
+将所有响应类型包装在统一的 `ApiResponse<T>` 泛型中。使用 `beforeFileWrite` 在 types 文件中追加包装类型：
+
+```javascript
+{
+  name: 'wrap-response',
+  beforeCodeGenerate({ data, reportProgress }) {
+    reportProgress(50, 'wrapping response types');
+
+    data.apis = data.apis.map(api => ({
+      ...api,
+      responseName: `AutoWrapped${api.responseName}`,
+    }));
+  },
+  beforeFileWrite({ fileName, content }) {
+    if (fileName.includes('types')) {
+      return content + `
+
+// 自动包装的响应类型
+type ApiResponse<T> = {
+  code: number;
+  message: string;
+  data: T;
+};
+`;
+    }
+  },
+}
+```
+
+

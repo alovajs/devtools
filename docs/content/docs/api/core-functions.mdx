@@ -1,0 +1,195 @@
+---
+title: 核心函数
+description: defineConfig、generate、readConfig 等编程 API
+---
+
+
+## defineConfig
+
+类型安全的配置辅助函数，接受配置对象或返回配置的函数。详细配置项请参阅 [配置对象](/docs/api/configuration)。
+
+```typescript
+import { defineConfig } from 'wormajs';
+
+export default defineConfig({
+  generator: [...],
+});
+```
+
+**类型签名：**
+
+```typescript
+function defineConfig(config: Config): Config;
+function defineConfig(config: Promise<Config>): Promise<Config>;
+function defineConfig(config: () => Config): () => Config;
+function defineConfig(config: () => Promise<Config>): () => Promise<Config>;
+```
+
+## generate
+
+编程方式调用代码生成，适用于 CI/CD 或自定义脚本集成。
+
+```typescript
+import { generate } from 'wormajs';
+
+const results = await generate(config, { force: true });
+```
+
+**类型签名：**
+
+```typescript
+function generate(
+  config: Config,
+  options?: GenerateApiOptions
+): Promise<boolean[]>;
+```
+
+返回 `boolean[]`，每个元素对应 `config.generator` 中一个生成器的执行结果（`true` 成功，`false` 失败）。
+
+### GenerateApiOptions
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `force` | `boolean` | `false` | 强制重新生成，忽略缓存 |
+| `projectPath` | `string` | `process.cwd()` | 项目根目录 |
+| `onProgress` | `(event: GeneratorProgressEvent) => void` | — | 每个 generator 的生命周期回调 |
+
+### 进度回调用法
+
+通过 `onProgress` 的 `phase` 字段区分阶段：
+
+```typescript
+await generate(config, {
+  onProgress(event) {
+    switch (event.phase) {
+      case 'active':
+        console.log(`[${event.index}] 开始生成`);
+        break;
+      case 'progress':
+        console.log(`[${event.index}] ${event.progress}% - ${event.message}`);
+        break;
+      case 'done':
+        console.log(`[${event.index}] 完成`);
+        break;
+      case 'failed':
+        console.error(`[${event.index}] 失败: ${event.error}`);
+        break;
+    }
+  },
+});
+```
+
+### 使用场景
+
+**自定义脚本：**
+
+```javascript
+import { generate } from 'wormajs';
+
+await generate({
+  generator: [{
+    input: process.env.OPENAPI_URL,
+    output: 'src/api',
+  }],
+}, { force: true });
+```
+
+## readConfig
+
+读取项目中的 `worma.config` 并返回解析后的配置对象。
+
+```typescript
+import { readConfig } from 'wormajs';
+
+const config = await readConfig('/path/to/project');
+```
+
+**类型签名：**
+
+```typescript
+function readConfig(projectPath?: string): Promise<Readonly<Config>>;
+```
+
+## getApiDocs
+
+获取缓存的 API 文档数据，用于 VSCode 扩展侧边栏展示等场景。
+
+```typescript
+import { getApiDocs } from 'wormajs';
+
+const docs = await getApiDocs();
+```
+
+**类型签名：**
+
+```typescript
+function getApiDocs(
+  outputs?: string[],
+  projectPath?: string
+): Promise<CacheData[]>;
+```
+
+| 参数 | 说明 |
+|------|------|
+| `outputs` | 可选，过滤指定 output 路径的缓存数据；不传返回全部 |
+| `projectPath` | 项目根目录，默认 `process.cwd()` |
+
+返回 `CacheData[]`：
+
+```typescript
+interface CacheData {
+  path: string;
+  /** 侧边栏展示的服务名称 */
+  serverName?: string;
+  /** 扁平化的 API 列表 */
+  apis: Api[];
+}
+```
+
+## setGlobalConfig
+
+设置 worma 全局配置。
+
+```typescript
+import { setGlobalConfig } from 'wormajs';
+
+setGlobalConfig({
+  cacheDir: '.worma-cache',
+});
+```
+
+## createConfig
+
+在项目中创建 `worma.config` 文件。
+
+```typescript
+import { createConfig } from 'wormajs';
+
+await createConfig({
+  template: 'alova',
+  type: 'typescript',
+});
+```
+
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| `projectPath` | `string` | 项目根目录 |
+| `type` | `TemplateType` | 生成代码类型 |
+| `template` | `TemplatePreset` | 模板预设：`'alova'` \| `'alovaGlobals'` \| `'axios'` \| `'fetch'` \| `'ky'` |
+
+## resolveWorkspaces
+
+在 Monorepo 项目中搜索所有包含 `worma.config` 的子包目录。
+
+```typescript
+import { resolveWorkspaces } from 'wormajs';
+
+const dirs = await resolveWorkspaces('/path/to/monorepo');
+// → ['./packages/user-service', './packages/order-service']
+```
+
+**类型签名：**
+
+```typescript
+function resolveWorkspaces(projectPath?: string): Promise<string[]>;
+```

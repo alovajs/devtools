@@ -1,8 +1,8 @@
 {
-  "publisher": "Alova",
-  "name": "alova-vscode-extension",
-  "displayName": "Alova",
-  "version": "2.0.13",
+  "publisher": "worma",
+  "name": "worma-vscode",
+  "displayName": "Worma",
+  "version": "0.0.1",
   "private": true,
   "packageManager": "pnpm@10.13.1",
   "description": "Generate and search APIs without API documentation any more",
@@ -40,34 +40,70 @@
     "onView:myTreeView"
   ],
   "contributes": {
+    "configuration": {
+      "title": "Worma",
+      "properties": {
+        "worma.autoUpdate": {
+          "markdownDescription": "Whether to automatically update APIs. Set to `false` to disable, `true` for default (every 5 minutes), or an object for detailed configuration.",
+          "oneOf": [
+            {
+              "type": "boolean",
+              "default": true
+            },
+            {
+              "type": "object",
+              "properties": {
+                "launchEditor": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Update immediately when the editor launches."
+                },
+                "interval": {
+                  "type": "number",
+                  "default": 300000,
+                  "description": "Auto-update interval in milliseconds."
+                }
+              },
+              "additionalProperties": false
+            }
+          ],
+          "default": true
+        }
+      }
+    },
     "commands": [
       {
-        "command": "alova.refresh",
-        "category": "Alova",
+        "command": "worma.refresh",
+        "category": "Worma",
         "title": "Generate APIs"
       },
       {
-        "command": "alova.create.config",
-        "category": "Alova",
-        "title": "Create alova config"
+        "command": "worma.generateApi.force",
+        "category": "Worma",
+        "title": "Force Generate APIs"
       },
       {
-        "command": "alova.apiDocs.refresh",
+        "command": "worma.create.config",
+        "category": "Worma",
+        "title": "Create worma config"
+      },
+      {
+        "command": "worma.apiDocs.refresh",
         "title": "Refresh View",
         "icon": "$(refresh)"
       },
       {
-        "command": "alova.snippetSearch.open",
+        "command": "worma.snippetSearch.open",
         "title": "打开代码片段搜索",
         "category": "Snippet Search"
       },
       {
-        "command": "alova.snippetSearch.insert",
+        "command": "worma.snippetSearch.insert",
         "title": "插入代码片段",
         "category": "Snippet Search"
       },
       {
-        "command": "alova.snippetSearch.showHelp",
+        "command": "worma.snippetSearch.showHelp",
         "title": "显示快捷键帮助",
         "category": "Snippet Search"
       }
@@ -75,32 +111,32 @@
     "menus": {
       "view/title": [
         {
-          "command": "alova.apiDocs.refresh",
+          "command": "worma.apiDocs.refresh",
           "group": "navigation",
           "when": "view == api-docs-server-view"
         }
       ],
       "commandPalette": [
         {
-          "command": "alova.snippetSearch.insert",
+          "command": "worma.snippetSearch.insert",
           "when": "editorTextFocus"
         }
       ]
     },
     "keybindings": [
       {
-        "command": "alova.snippetSearch.open",
+        "command": "worma.snippetSearch.open",
         "key": "ctrl+alt+p",
         "mac": "cmd+alt+p",
         "when": "editorTextFocus"
       }
     ],
     "icons": {
-      "alova-icon-id": {
+      "worma-icon-id": {
         "description": "alova icon",
         "default": {
           "fontPath": "./res/logo.ttf",
-          "fontCharacter": "\\E64B"
+          "fontCharacter": "\\E64E"
         }
       }
     },
@@ -108,21 +144,21 @@
       "activitybar": [
         {
           "id": "api-docs-sidebar",
-          "title": "Api docs",
-          "icon": "res/icon.png"
+          "title": "Worma",
+          "icon": "res/logo.svg"
         }
       ]
     },
     "views": {
       "api-docs-sidebar": [
         {
-          "icon": "server-process",
+          "icon": "res/icon.png",
           "id": "api-docs-server-view",
           "name": "Api Server",
           "type": "webview"
         },
         {
-          "icon": "symbol-constant",
+          "icon": "res/icon.png",
           "id": "api-docs-detail-view",
           "name": "Api Detail",
           "type": "webview"
@@ -133,7 +169,7 @@
   "scripts": {
     "dev": "vite -m vscode",
     "dev:web": "vite",
-    "build": "vite build -m vscode && nr build:dts",
+    "build": "vite build -m vscode && (pnpm run build:dts || true)",
     "build:dts": "dts-bundle-generator -o dist/extension/index.d.ts ext/index.ts --no-check --no-banner --project tsconfig.node.json",
     "build:handlers": "dts-bundle-generator -o typings/handlers.d.ts ext/handlers/index.ts --no-check --no-banner --project tsconfig.node.json",
     "buld:meta": "vscode-ext-gen --output ext/meta/generated.ts && eslint ext/meta/generated.ts --fix",
@@ -150,12 +186,11 @@
     "test:unit": "vitest",
     "typecheck": "vue-tsc --noEmit",
     "sizecheck": "npx vite-bundle-visualizer",
-    "release:pre": "vsce publish --no-dependencies --pre-release",
+    "release:pre": "vsce publish --no-dependencies --pre-release && ovsx publish --no-dependencies --pre-release",
     "release": "vsce publish --no-dependencies && ovsx publish --no-dependencies"
   },
   "dependencies": {
     "@unhead/vue": "catalog:frontend",
-    "@unocss/reset": "catalog:frontend",
     "@vicons/ionicons5": "catalog:frontend",
     "@vueuse/core": "catalog:frontend",
     "glob": "catalog:dev",
@@ -169,13 +204,14 @@
     "vue-router": "catalog:frontend"
   },
   "devDependencies": {
-    "@alova/wormhole": "workspace:*",
     "@czhlin/vite-plugin-vscode": "catalog:build",
     "@iconify-json/carbon": "catalog:dev",
     "@intlify/unplugin-vue-i18n": "catalog:build",
     "@jsonrpc-rx/client": "catalog:frontend",
     "@jsonrpc-rx/server": "catalog:frontend",
     "@shikijs/markdown-it": "catalog:build",
+    "@tailwindcss/typography": "catalog:build",
+    "@tailwindcss/vite": "catalog:build",
     "@tomjs/tsconfig": "catalog:dev",
     "@tomjs/vscode-webview": "catalog:frontend",
     "@types/chai": "catalog:types",
@@ -204,7 +240,7 @@
     "pino": "catalog:dev",
     "reactive-vscode": "catalog:frontend",
     "sinon": "catalog:dev",
-    "unocss": "catalog:build",
+    "tailwindcss": "catalog:build",
     "unplugin-auto-import": "catalog:build",
     "unplugin-vue-components": "catalog:build",
     "unplugin-vue-markdown": "catalog:build",
@@ -215,6 +251,7 @@
     "vite-plugin-vue-devtools": "catalog:build",
     "vite-plugin-vue-layouts": "catalog:build",
     "vscode-ext-gen": "catalog:build",
-    "vue-tsc": "catalog:dev"
+    "vue-tsc": "catalog:dev",
+    "wormajs": "workspace:*"
   }
 }

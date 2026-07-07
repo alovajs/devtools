@@ -1,0 +1,31 @@
+{{> comment}}
+import type { AxiosRequestConfig } from 'axios';
+import { axiosInstance } from '../index';
+import { buildPayload } from '../helper';
+import type * as ComponentTypes from '../components';
+{{#each tagedApis}}
+import { {{{tagName}}}DefaultConfig } from '.';
+{{/each}}
+
+{{#each tagedApis}}
+{{#each apis}}
+type {{{name}}}Response = {{processType response @root.componentNames}};
+type {{{name}}}ExtraConfig = Omit<AxiosRequestConfig, 'data' | 'params'> & {
+  {{#if pathParameters}}pathParams: {{processType pathParameters @root.componentNames}};
+  {{/if}}{{#if queryParameters}}params: {{processType queryParameters @root.componentNames}};
+  {{/if}}{{#if requestBody}}data: {{processType requestBody @root.componentNames}};
+  {{/if}}
+};
+{{> api-jsdoc}}
+export function {{{name}}}(config: {{{name}}}ExtraConfig): Promise<{{{name}}}Response> {
+  const { url, mergedConfig } = buildPayload('{{{path}}}', {{{tag}}}DefaultConfig, {{{name}}}.name, config);
+  return axiosInstance<{{{name}}}Response>({
+    method: '{{method}}',
+    url,
+    ...mergedConfig,{{#if (eq response "Blob")}}
+    responseType: 'blob',{{/if}}
+  }){{#if (eq response "Blob")}}.then((data: any) => data instanceof Blob ? data : new Blob([data])){{/if}};
+}
+
+{{/each}}
+{{/each}}

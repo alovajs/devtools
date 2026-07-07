@@ -1,0 +1,131 @@
+---
+title: 重命名插件
+description: 对 API 接口的 URL 和参数进行重命名转换，支持多种命名风格和自定义转换规则
+---
+
+# 重命名插件
+
+本插件用于对 API 接口的 URL 和参数进行重命名转换，支持多种命名风格和自定义转换规则。
+
+## 主要功能
+
+- 支持 URL、查询参数、路径参数、请求体、响应数据、引用类型名的重命名
+- 内置小驼峰式（camelCase）、大驼峰式（PascalCase）、中划线式（kebabCase）和下划线式（snakeCase）命名转换
+- 支持自定义匹配规则和转换函数
+- 支持多规则配置
+
+## 基本使用
+
+```javascript
+import { defineConfig } from 'wormajs';
+import { rename } from 'wormajs/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      // ...
+      plugins: [
+        // 将 URL 中的下划线转为驼峰命名
+        rename({ style: 'camelCase' }),
+      ],
+    },
+  ],
+});
+```
+
+## 配置参数
+
+```typescript
+interface RenameConfig {
+  /**
+   * 生效范围，默认为 'url'
+   * - url: 接口路径
+   * - params: 查询参数
+   * - pathParams: 路径参数
+   * - data: 请求体数据
+   * - response: 响应数据
+   * - refName: 引用类型名
+   */
+  scope?: 'url' | 'params' | 'pathParams' | 'data' | 'response' | 'refName';
+
+  /**
+   * 匹配规则，不指定则转换全部
+   * - string: 包含此字符串
+   * - RegExp: 匹配此正则
+   * - function: 自定义匹配函数
+   */
+  match?: string | RegExp | ((key: string) => boolean);
+
+  /**
+   * 命名风格
+   * - camelCase: 小驼峰命名 (userName)
+   * - PascalCase: 大驼峰命名 (UserName)
+   * - kebabCase: 中划线命名 (user-name)
+   * - snakeCase: 下划线命名 (user_name)
+   */
+  style?: 'camelCase' | 'PascalCase' | 'kebabCase' | 'snakeCase';
+
+  /**
+   * 自定义转换函数，会在 style 转换前执行
+   */
+  transform?: (apiDescriptor: any) => string;
+}
+
+function rename(config: RenameConfig | RenameConfig[]): ApiPlugin;
+```
+
+> **注意：**
+> 1. `refName` 和 `kebabCase` 不能同时配置，因为类型名不能设置为中划线形式。
+> 2. `params`、`pathParams`、`data` 和 `response` 只转换第一层的名称。
+
+## 多规则配置
+
+同时配置多个转换规则：
+
+```javascript
+// 转换前: /api/get_data/{item_id}
+// 转换后: /api/getData/{itemId}
+rename([
+  {
+    scope: 'url',
+    style: 'camelCase',
+    match: /_/, // 只转换包含下划线的部分
+  },
+  {
+    scope: 'pathParams',
+    style: 'camelCase',
+  },
+]);
+```
+
+## 自定义匹配规则
+
+只转换长度超过 5 的参数名：
+
+```javascript
+rename({
+  scope: 'params',
+  match: key => key.length > 5,
+  style: 'camelCase',
+});
+```
+
+## 自定义转换函数
+
+将特定参数重命名：
+
+```javascript
+rename({
+  scope: 'data',
+  match: ['user_info', 'order_list'],
+  transform: api => {
+    const map = {
+      user_info: 'user',
+      order_list: 'orders',
+    };
+    return map[api.key] || api.key;
+  },
+});
+```
+
+> 转换完成后建议检查命名是否符合规范，特别是使用自定义转换时。

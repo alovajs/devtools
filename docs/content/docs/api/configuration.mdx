@@ -1,0 +1,126 @@
+---
+title: 配置对象
+description: defineConfig 和 GeneratorConfig 的完整类型
+---
+
+
+## defineConfig
+
+```typescript
+function defineConfig(config: Config): Config;
+function defineConfig(config: Promise<Config>): Promise<Config>;
+function defineConfig(config: () => Config | Promise<Config>): Config | Promise<Config>;
+```
+
+## Config
+
+```typescript
+interface Config {
+  /** 生成规则数组 */
+  generator: GeneratorConfig[];
+}
+```
+
+## GeneratorConfig
+
+```typescript
+interface GeneratorConfig {
+  /** OpenAPI 文档地址（URL 或本地路径），支持 string[] 依次尝试 */
+  input?: string | string[];
+
+  /** 拉取 OpenAPI 文档时的请求选项 */
+  fetchOptions?: FetchOptions;
+
+  /** 排除生成的类型标识符列表，匹配的类型将直接引用而不生成 */
+  externalTypes?: string[];
+
+  /** 输出目录 */
+  output?: string;
+
+  /** 是否生成文档注释，默认 true */
+  docComment?: boolean;
+
+  /** 响应 MediaType，可设数组依次指向 */
+  responseMediaType?: string | string[];
+
+  /** 请求体 MediaType，可设数组依次指向 */
+  bodyMediaType?: string | string[];
+
+  /** 多文档时的自定义服务名称 */
+  serverName?: string;
+
+  /** 生成代码类型：'auto' | 'ts' | 'typescript' | 'module' | 'commonjs'，默认 'auto' */
+  type?: 'auto' | 'ts' | 'typescript' | 'module' | 'commonjs';
+
+  /** 无 require 时默认设为 require，仅 nullable 字段生效 */
+  defaultRequire?: boolean;
+
+  /** 插件数组 */
+  plugins?: ApiPlugin[];
+
+  /** 性能配置 */
+  performance?: PerformanceConfig;
+
+  /** 过滤或转换生成的 API，返回修改后的 apiDescriptor */
+  handleApi?: (apiDescriptor: ApiDescriptor) => ApiDescriptor | void | null | undefined;
+}
+```
+
+### FetchOptions
+
+```typescript
+interface FetchOptions {
+  headers?: Record<string, string>;
+  /** 超时时间（毫秒） */
+  timeout?: number;
+  method?: MethodType;
+  data?: RequestBody;
+  params?: Record<string, any>;
+  /** 为 true 时遇到非 2xx 不抛错，仍返回文本 */
+  insecure?: boolean;
+}
+```
+
+## PerformanceConfig
+
+> 性能设计详情请参阅 [性能](/docs/performance)。
+
+```typescript
+interface PerformanceConfig {
+  /** schema→TS worker 池策略：'auto' | number | false，默认 'auto' */
+  workerPool?: 'auto' | number | false;
+  /** transform 阶段并发上限，默认 auto */
+  transformConcurrency?: number;
+  /** 写盘并发数，默认 32 */
+  writeConcurrency?: number;
+  /** 是否对最终文件做 prettier 格式化，默认 true */
+  formatFile?: boolean;
+  /** 是否对输出做确定性排序，默认 true */
+  deterministicSort?: boolean;
+}
+```
+
+## GenerateApiOptions
+
+```typescript
+interface GenerateApiOptions {
+  /** 强制重新生成，忽略缓存 */
+  force?: boolean;
+  /** 项目根目录 */
+  projectPath?: string;
+  /** 每个 generator 的生命周期进度回调 */
+  onProgress?: (event: GeneratorProgressEvent) => void;
+}
+```
+
+`GeneratorProgressEvent` 是一个区分联合类型，通过 `phase` 字段区分阶段：
+
+| phase | 说明 | 附加字段 |
+|-------|------|---------|
+| `active` | 开始处理 | `index` |
+| `progress` | 处理中 | `progress: number`（0-100）、`message`、`source?` |
+| `done` | 生成成功 | `resolvedInput?` |
+| `skipped` | 跳过（缓存命中） | `resolvedInput?` |
+| `failed` | 生成失败 | `error: string` |
+
+

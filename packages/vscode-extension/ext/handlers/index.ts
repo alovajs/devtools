@@ -5,10 +5,11 @@ import { commands, env, window, workspace } from 'vscode'
 import { getApiDocs } from '@/functions/getApis'
 import { messageService } from '@/utils/message'
 import { toPromise } from '@/utils/to-promise'
+import { getSyntaxHighlightCss } from '@/webview/theme-colors'
 
 export type HandlersType = ReturnType<typeof getHandlers>
 export type { DataType, MessageType } from '@/utils/message'
-export type { Api, ApiDoc } from '@alova/wormhole'
+export type { Api, ApiDoc, CacheData } from 'wormajs'
 export type ApiProject = Awaited<ReturnType<typeof getApiDocs>>[number]
 
 export function getHandlers(context: ExtensionContext) {
@@ -22,6 +23,9 @@ export function getHandlers(context: ExtensionContext) {
     },
     getTheme: () => {
       return workspace.getConfiguration().get('workbench.colorTheme') as string
+    },
+    getThemeSyntaxColors: () => {
+      return getSyntaxHighlightCss()
     },
     setTheme: (theme: string) => {
       const then = workspace

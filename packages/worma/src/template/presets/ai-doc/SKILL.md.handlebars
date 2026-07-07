@@ -1,0 +1,29 @@
+---
+name: {{{title}}}-api-reference
+description: >-
+  API reference documentation for {{{serverName}}} ({{{title}}} v{{{version}}}).
+  Contains specifications for all REST API endpoints, including HTTP request methods,
+  URL paths, path/query parameters, request body schemas, and response types.
+  Use this skill whenever you need to: call {{{serverName}}} backend APIs,
+  look up endpoint details and parameter requirements, understand request/response
+  data structures, or integrate frontend code with {{{serverName}}} services.
+  Key domains covered: {{#each tagedApis}}{{{tagName}}}{{#unless @last}}, {{/unless}}{{/each}}.
+---
+
+> version {{{version}}}
+
+## Overview
+
+This skill provides complete API reference documentation for {{{serverName}}}.
+When you need to call any endpoint in this service, consult the corresponding
+API document in the references directory for detailed parameter schemas,
+request/response formats, and usage examples.
+
+## API Directory ({{{serverName}}})
+
+{{#each tagedApis}}
+- **{{{tagName}}}**
+{{#each apis}}
+  - [{{{summary}}}](./references/{{{../tagName}}}/{{{name}}}.md) `[{{{method}}}] {{{path}}}`
+{{/each}}
+{{/each}}

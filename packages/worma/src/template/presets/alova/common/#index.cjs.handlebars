@@ -1,0 +1,12 @@
+{{> comment}}
+const { createAlova } = require('alova');
+const adapterFetch = require('alova/fetch');
+
+const alovaInstance = createAlova({
+  baseURL: '{{{baseUrl}}}',
+  requestAdapter: adapterFetch(),
+  beforeRequest: method => { },
+  responded: (res, method) => method.config?.blob ? res.blob() : res.json(),
+});
+
+module.exports = { alovaInstance };

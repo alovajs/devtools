@@ -1,0 +1,43 @@
+import type { alovaInstance } from './index{{#if (eq type "commonjs")}}.cjs{{/if}}';
+import type { Alova, AlovaGenerics, AlovaMethodCreateConfig, Method } from 'alova';
+
+type CollapsedAlova = typeof alovaInstance;
+
+export type Alova2MethodConfig<Responded> = CollapsedAlova extends Alova<
+  AlovaGenerics<
+    any,
+    any,
+    infer RequestConfig,
+    infer Response,
+    infer ResponseHeader,
+    infer L1Cache,
+    infer L2Cache,
+    infer SE
+  >
+>
+  ? Omit<
+      AlovaMethodCreateConfig<
+        AlovaGenerics<Responded, any, RequestConfig, Response, ResponseHeader, L1Cache, L2Cache, SE>,
+        any,
+        Responded
+      >,
+      'params'
+    >
+  : never;
+
+export type Alova2Method<Responded> = CollapsedAlova extends Alova<
+  AlovaGenerics<
+    any,
+    any,
+    infer RequestConfig,
+    infer Response,
+    infer ResponseHeader,
+    infer L1Cache,
+    infer L2Cache,
+    infer SE
+  >
+>
+  ? Method<
+      AlovaGenerics<Responded, any, RequestConfig, Response, ResponseHeader, L1Cache, L2Cache, SE>
+    >
+  : never;

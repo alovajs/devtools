@@ -1,0 +1,48 @@
+{{> comment}}
+class FetchClient {
+  #requestInterceptors = [];
+  #responseInterceptors = [];
+
+  constructor(config) {
+    this.config = config;
+  }
+
+  get baseURL() {
+    return this.config.baseURL;
+  }
+
+  addRequestInterceptor(fn) {
+    this.#requestInterceptors.push(fn);
+    return this;
+  }
+
+  addResponseInterceptor(fn) {
+    this.#responseInterceptors.push(fn);
+    return this;
+  }
+
+  async request(path, init = {}) {
+    const { params, ...rest } = init;
+    const base = this.config.baseURL + path;
+    let url = base;
+    if (params) {
+      url += (base.includes('?') ? '&' : '?') + new URLSearchParams(params).toString();
+    }
+    if (rest.body && Object.prototype.toString.call(rest.body) === '[object Object]') {
+      rest.body = JSON.stringify(rest.body);
+      rest.headers = { 'Content-Type': 'application/json', ...rest.headers };
+    }
+    let config = { ...rest, url, params };
+    for (const interceptor of this.#requestInterceptors) {
+      config = await interceptor(config);
+    }
+    const { url: resolvedUrl, params: _params, ...fetchInit } = config;
+    let response = await fetch(resolvedUrl, fetchInit);
+    for (const interceptor of this.#responseInterceptors) {
+      response = await interceptor(response, config);
+    }
+    return response;
+  }
+}
+
+module.exports = { FetchClient };

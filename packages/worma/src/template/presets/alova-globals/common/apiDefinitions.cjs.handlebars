@@ -1,0 +1,12 @@
+{{> comment}}
+{{#if config.useImportType}}/// <reference types='./globals.d.cts' />{{else}}/// <reference types='./globals.d.cts' />{{/if}}
+
+const apiDefinitions = {
+{{#each tagedApis}}
+  {{#apis}}
+  '{{{tag}}}.{{{name}}}': ['{{method}}', '{{{path}}}'],
+  {{/apis}}
+{{/each}}
+};
+
+module.exports = apiDefinitions;

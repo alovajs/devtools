@@ -1,0 +1,35 @@
+{{> comment}}
+import { alovaInstance } from '../index';
+import { buildPayload } from '../helper';
+import type { Alova2Method, Alova2MethodConfig } from '../typed';
+{{#each tagedApis}}
+import { {{{tagName}}}DefaultConfig } from '.';
+{{/each}}
+import type * as ComponentTypes from '../components';
+
+{{#each tagedApis}}
+{{> extract-responded}}
+{{#each apis}}
+
+interface {{{name}}}ExtraConfig {
+  {{#if pathParameters}}pathParams: {{processType pathParameters @root.componentNames}};
+  {{/if}}{{#if queryParameters}}params: {{processType queryParameters @root.componentNames}};
+  {{/if}}{{#if requestBody}}data: {{processType requestBody @root.componentNames}};
+  {{/if}}
+}
+{{> api-jsdoc}}
+export function {{{name}}}<Config extends Alova2MethodConfig<{{processType response @root.componentNames}}> & {{{name}}}ExtraConfig>(config: Config): Alova2Method<ExtractResponded<Config, '{{{name}}}', {{processType response @root.componentNames}}>> {
+  const { url, data, mergedConfig } = buildPayload('{{{path}}}', {{{tag}}}DefaultConfig, {{{name}}}.name, config);
+  return alovaInstance.Request<ExtractResponded<Config, '{{{name}}}', {{processType response @root.componentNames}}>>({
+    ...mergedConfig,
+    url,
+    data,
+    method: '{{method}}',{{#if (eq response "Blob")}}
+    meta: {
+      blob: true
+    }{{/if}}
+  });
+}
+
+{{/each}}
+{{/each}}

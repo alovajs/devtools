@@ -1,0 +1,13 @@
+// Generated for {{title}} v{{version}}
+// Template type: {{type}}
+{{#if config.framework}}
+// Framework: {{config.framework}}
+{{/if}}
+
+{{> header}}
+
+export const baseUrl = '{{{baseUrl}}}';
+
+{{#each tagedApis}}
+export * from './{{tag}}';
+{{/each}}

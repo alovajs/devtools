@@ -1,5 +1,5 @@
 {
-  "cSpell.words": ["Vitesse", "Vite", "unocss", "vitest", "vueuse", "pinia", "demi", "antfu", "iconify", "intlify", "vitejs", "unplugin", "pnpm"],
+  "cSpell.words": ["Vitesse", "Vite", "tailwindcss", "vitest", "vueuse", "pinia", "demi", "antfu", "iconify", "intlify", "vitejs", "unplugin", "pnpm"],
   // I18n Ally
   "i18n-ally.sourceLanguage": "en",
   "i18n-ally.keystyle": "nested",

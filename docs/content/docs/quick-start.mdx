@@ -1,0 +1,120 @@
+---
+title: 快速开始
+description: 5 分钟生成并体验 VSCode 悬停文档
+---
+
+5 分钟，完成第一个 API 的代码生成，并体验 VSCode 悬停查看 API 文档的能力。
+
+## 第一步：安装
+
+<Tabs items={['npm', 'yarn', 'pnpm', 'bun']}>
+  <Tab value="npm">
+
+```bash
+npm i wormajs -D
+```
+
+  </Tab>
+  <Tab value="yarn">
+
+```bash
+yarn add wormajs -D
+```
+
+  </Tab>
+  <Tab value="pnpm">
+
+```bash
+pnpm add wormajs -D
+```
+
+  </Tab>
+  <Tab value="bun">
+
+```bash
+bun add wormajs -D
+```
+
+  </Tab>
+</Tabs>
+
+为了方便后续使用，建议在 `package.json` 中添加如下 script 配置：
+
+```json
+{
+  "scripts": {
+    "worma:init": "worma init",
+    "worma:gen": "worma gen"
+  }
+}
+```
+
+配置后，即可通过 `npm run worma:init` 初始化、通过 `npm run worma:gen` 生成代码。
+
+## 第二步：初始化
+
+在项目根目录运行：
+
+```bash
+worma init
+```
+
+这会创建一个 `worma.config.js`（或 `.cjs`/`.mjs`/`.ts`）文件，并且默认配置了 alova 模板和 `aiDoc` 插件用于生成 AI Skill 文档：
+
+```javascript
+import { defineConfig } from "wormajs";
+import { alova, aiDoc, platform } from "wormajs/plugin";
+
+export default defineConfig({
+  generator: [
+    {
+      input: "https://api.example.com",
+      output: "src/api",
+      plugins: [alova(), aiDoc(), platform("swagger")],
+    },
+  ],
+});
+```
+
+如果已有 OpenAPI 文档地址，也可以[编辑 `.wormarc` 快速配置](/docs/guide/installation-config#wormarc)：
+
+```
+https://api.example.com/openapi.json
+```
+
+## 第三步：生成
+
+```bash
+worma gen
+```
+
+## 选择模板
+
+worma 内置了多套预定义模板，覆盖主流的请求库：
+
+| 模板                                                                              | 请求库     | 特点                          |
+| --------------------------------------------------------------------------------- | ---------- | ----------------------------- |
+| [alova](/docs/template-system/predefined-templates#alova)                           | alova@3    | 函数式调用，支持 Tree-shaking |
+| [alovaGlobals](/docs/template-system/predefined-templates#alovaglobals)           | alova@3    | 全局挂载 `Apis.xxx`，原 `@alova/wormhole` 模板，可迁移 |
+| [axios](/docs/template-system/predefined-templates#axios)                         | axios      | 最流行的 HTTP 客户端          |
+| [fetch](/docs/template-system/predefined-templates#fetch)                         | 原生 fetch | 零额外依赖                    |
+| [ky](/docs/template-system/predefined-templates#ky)                               | ky         | 轻量级 fetch 封装             |
+
+如果以上都不满足你的需求，worma 支持[完全自定义模板](/docs/template-system/custom-templates)，使用 Handlebars 语法自由控制生成代码的结构和内容。
+
+## 第四步：体验 VSCode 扩展
+
+安装 [Worma VSCode 扩展](vscode:extension/worma.worma-vscode-extension)，或在扩展市场搜索 **"worma"**，即可获得以下能力：
+
+- **悬停查看 API 详情** — 鼠标悬停在生成的 API 调用上，即可查看接口路径、参数表、响应结构等信息
+- **侧边栏 API 浏览器** — 在 VSCode 侧边栏按 tag 分组浏览所有 API，支持搜索
+- **自动检测变更** — 后端接口更新时自动触发重新生成
+- **JS 项目类型提示** — 即使使用纯 JavaScript，也能获得完整的类型提示和文档展示
+
+详细功能介绍请查看 [编辑器内文档](/docs/guide/editor-docs)。
+
+## 下一步
+
+- 了解[安装与配置](/docs/guide/installation-config)的更多细节
+- 了解 [Monorepo 支持](/docs/guide/monorepo)中的自动检测子包功能
+- 了解[编辑器内文档](/docs/guide/editor-docs)的全部能力

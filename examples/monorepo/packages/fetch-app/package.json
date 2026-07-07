@@ -1,0 +1,10 @@
+{
+  "name": "fetch-app",
+  "type": "module",
+  "private": true,
+  "description": "Worma monorepo sub-package — fetch template",
+  "scripts": {
+    "gen": "worma gen -f",
+    "start": "node src/main.js"
+  }
+}

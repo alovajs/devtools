@@ -1,0 +1,11 @@
+export type ExtractResponded<
+  UserDefinedConfig extends Alova2MethodConfig<any>,
+  UnifiedConfigKey extends string,
+  Default,
+> = UserDefinedConfig extends { transform: (...args: any[]) => any }
+  ? Awaited<ReturnType<UserDefinedConfig['transform']>>
+  : UnifiedConfigKey extends keyof typeof {{{tagName}}}DefaultConfig
+    ? typeof {{{tagName}}}DefaultConfig[UnifiedConfigKey] extends { transform: (...args: any[]) => any }
+      ? Awaited<ReturnType<typeof {{{tagName}}}DefaultConfig[UnifiedConfigKey]['transform']>>
+      : Default
+    : Default;

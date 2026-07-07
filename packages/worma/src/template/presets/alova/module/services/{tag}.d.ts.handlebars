@@ -1,0 +1,15 @@
+import type { Alova2Method, Alova2MethodConfig } from '../typed';
+{{#each tagedApis}}
+import type { {{{tagName}}}DefaultConfig } from '.';
+{{/each}}
+import type * as ComponentTypes from '../components';
+
+{{#each tagedApis}}
+{{> extract-responded}}
+{{#each apis}}
+{{> dts-extra-config}}
+{{> api-jsdoc}}
+{{> dts-fn-declare}}
+
+{{/each}}
+{{/each}}

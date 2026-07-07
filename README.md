@@ -1,42 +1,54 @@
-# Devtools for alova.js
+# worma - Universal OpenAPI Code Generator
 
-## features
+[![npm version](https://img.shields.io/npm/v/wormajs)](https://www.npmjs.com/package/wormajs)
+[![license](https://img.shields.io/github/license/alovajs/devtools)](https://github.com/alovajs/devtools/blob/main/LICENSE)
 
-1. Automatically generate request code and response data types, and experience IntelliSense for response in js projects.
-2. Embed API documents in the code to experience the effect of checking and using APIs.
-3. Update APIs regularly and actively notify front-end developers, no longer relying on server-side developers to notify.
+> **One OpenAPI spec. Code for developers, knowledge for AI.**
 
-![image](https://github.com/user-attachments/assets/4e72912d-dd77-47d6-a9be-5f1a3bce6a2b)
+worma is a universal OpenAPI code generator that simultaneously produces API calling code, TypeScript types, documentation, and AI Skills — for both humans and coding agents.
 
-In the past, when the backend developer delivered the API to you, you had to open the intermediate API docs to query and copy the key information into your project, and you had to constantly switch between the intermediate API docs and your editor. But now, alova's devtools can eliminate the intermediate API docs for you, shortening the collaboration distance between the frontend and the backend like a wormhole. Through it, you can quickly find the required API in the editor and display the comprehensive document of this API, and quickly comprehensive parameter transfer by referring to the API parameter table, giving you a different API integration experience.
+## Key Features
 
-![image](https://github.com/user-attachments/assets/2c7d7fd7-7998-4995-b777-f37c22dd3742)
+### 🤖 AI Skill Generation
 
-> Visit [Detailed documentation](https://alova.js.org/tutorial/getting-started/extension-integration) for more information.
+Auto-generate Skills-compliant API documentation that enables coding agents (Cursor, Copilot, Claude Code, Windsurf, etc.) to call your APIs accurately — correct function names, parameters, and import paths every time.
 
-## View API completed information
+### 🧩 Four Outputs from One Source
 
-You can view the complted API information in the Editor with the IntelliSense feature.
+One OpenAPI spec generates:
 
-![](https://alova.js.org/img/vscode-api-doc.png)
+- **API calling functions** for developers to import directly
+- **TypeScript type definitions** for type safety
+- **In-editor documentation** via VSCode extension
+- **AI Skills** for coding agents to read
 
-## Quick access to API
+### 🔌 Multi-Request-Library + Custom Templates
 
-Using the trigger word `a->` to trigger apis quick positioning.
+Built-in templates for Alova, Axios, Fetch, and Ky. Switch request libraries with a single config change. Full Handlebars-based custom template support.
 
-### Search by url
+### 📝 In-Editor API Docs
 
-![](https://alova.js.org/img/vscode-query-with-url.png)
+Install the VSCode extension to view complete API documentation on hover — parameter tables, response structures, and examples — even in plain JavaScript projects.
 
-### Search by description
+## Quick Start
 
-![](https://alova.js.org/img/vscode-query-with-description.png)
+```bash
+# Install worma for your coding agent
+npx skills add alovajs/skills --skill worma-guidelines
 
-## Welcome to contribute
+# Or install the CLI package directly
+npm i wormajs -D
+npx worma init
+# Edit worma.config.js with your OpenAPI URL, then:
+npx worma gen
+```
 
-We are honored to receive active participation from developers around the world in Issues and Discussions.
+## Documentation
 
-We hope to make alova a common project for everyone who is willing to participate, rather than the alova team. We encourage everyone to become a contributor to the alova community with an open and inclusive attitude. Even if you are a junior developer, as long as your ideas meet the development guidelines of alova, please participate generously.
+- [Full Documentation](https://worma.js.org)
+- [Quick Start Guide](https://worma.js.org/docs/quick-start)
+- [Migration from @alova/wormhole](https://worma.js.org/docs/migration)
+- [Plugin System](https://worma.js.org/docs/plugin-system)
 
 ## Changelog
 

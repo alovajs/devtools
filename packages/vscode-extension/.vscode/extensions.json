@@ -1,7 +1,7 @@
 {
   "recommendations": [
     "antfu.iconify",
-    "antfu.unocss",
+    "bradlc.vscode-tailwindcss",
     "antfu.vite",
     "antfu.goto-alias",
     "csstools.postcss",

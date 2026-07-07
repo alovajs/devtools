@@ -1,0 +1,59 @@
+{{> comment}}
+export interface FetchClientConfig {
+  baseURL: string;
+}
+
+export type RequestConfig<E extends Record<string, any> = Record<string, any>> = RequestInit & {
+  url: string;
+  params?: Record<string, any>;
+} & E;
+
+type RequestInterceptor<E extends Record<string, any>> = (config: RequestConfig<E>) => RequestConfig<E> | Promise<RequestConfig<E>>;
+type ResponseInterceptor<E extends Record<string, any>> = (response: Response, config: RequestConfig<E>) => Response | Promise<Response>;
+
+export class FetchClient<E extends Record<string, any> = Record<string, any>> {
+  private config: FetchClientConfig;
+  private requestInterceptors: RequestInterceptor<E>[] = [];
+  private responseInterceptors: ResponseInterceptor<E>[] = [];
+
+  constructor(config: FetchClientConfig) {
+    this.config = config;
+  }
+
+  get baseURL(): string {
+    return this.config.baseURL;
+  }
+
+  addRequestInterceptor(fn: RequestInterceptor<E>): this {
+    this.requestInterceptors.push(fn);
+    return this;
+  }
+
+  addResponseInterceptor(fn: ResponseInterceptor<E>): this {
+    this.responseInterceptors.push(fn);
+    return this;
+  }
+
+  async request(path: string, init: Omit<RequestConfig<E>, 'url'> = {} as Omit<RequestConfig<E>, 'url'>): Promise<any> {
+    const { params, ...rest } = init as any;
+    const base = this.config.baseURL + path;
+    let url = base;
+    if (params) {
+      url += (base.includes('?') ? '&' : '?') + new URLSearchParams(params as Record<string, string>).toString();
+    }
+    if (rest.body && Object.prototype.toString.call(rest.body) === '[object Object]') {
+      rest.body = JSON.stringify(rest.body);
+      rest.headers = { 'Content-Type': 'application/json', ...rest.headers };
+    }
+    let config: RequestConfig<E> = { ...rest, url, params } as RequestConfig<E>;
+    for (const interceptor of this.requestInterceptors) {
+      config = await interceptor(config);
+    }
+    const { url: resolvedUrl, params: _params, ...fetchInit } = config as any;
+    let response = await fetch(resolvedUrl, fetchInit);
+    for (const interceptor of this.responseInterceptors) {
+      response = await interceptor(response, config);
+    }
+    return response;
+  }
+}

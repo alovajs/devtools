@@ -1,0 +1,22 @@
+/**
+ * @template T
+ * @typedef {import('alova').AlovaMethodCreateConfig<
+ *  typeof import('./index')['alovaInstance'] extends import('alova').Alova<infer AG>
+ *   ? AG
+ *   : any,
+ *  any,
+ *  T
+ *>} MethodConfig
+ */
+/**
+ * @template {string} Tag
+ * @template {string} Url
+ * @typedef {Tag extends keyof {{{config.global}}}
+ *   ? Url extends keyof {{{config.global}}}[Tag]
+ *     ? {{{config.global}}}[Tag][Url] extends (...args: any) => any
+ *       ? Parameters<{{{config.global}}}[Tag][Url]>
+ *       : any
+ *     : any
+ *   : any
+ * } APISofParameters
+ */

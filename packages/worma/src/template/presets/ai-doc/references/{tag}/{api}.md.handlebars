@@ -1,0 +1,54 @@
+# IMPORTANT: Enforce before generating code (must not be violated)!!!
+
+Before executing the code generation task, recite the following usage conventions and ensure compliance when generating.
+
+## Usage Conventions
+
+{{#if currentApi.fileLocation}}
+1. The API defined in this document is located at `{{{currentApi.fileLocation}}}`
+2. Follow the calling method shown in the example below.
+{{else}}
+1. Follow the calling method shown in the example below.
+{{/if}}
+
+## API
+
+{{{currentApi.summary}}}
+
+`[{{{currentApi.method}}}] {{{currentApi.path}}}`
+
+{{#if currentApi.pathParametersComment}}
+## Path Parameters
+
+Pass the required parameters in `pathParams`:
+
+```typescript
+{{{stripStarPrefix currentApi.pathParametersComment}}}
+```
+{{/if}}
+
+{{#if currentApi.requestBodyComment}}
+## Request Body
+
+Pass the required request body in `data`:
+
+```typescript
+{{{stripStarPrefix currentApi.requestBodyComment}}}
+```
+{{/if}}
+
+{{#if currentApi.responseComment}}
+## Response
+
+Use the response data as needed:
+
+```typescript
+{{{stripStarPrefix currentApi.responseComment}}}
+```
+{{/if}}
+
+## Usage Example
+
+```typescript
+{{{currentApi.callingCode}}}
+```

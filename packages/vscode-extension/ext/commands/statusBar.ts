@@ -10,6 +10,11 @@ export function loading(text: string = '') {
   statusBarItem.tooltip = 'loading'
   statusBarItem.command = undefined
 }
+export function updateLoadingProgress(percent: number) {
+  if (Global.loading) {
+    statusBarItem.text = `$(sync~spin) ${Math.round(percent)}%`
+  }
+}
 export function endLoading() {
   Global.setLoading(false)
   if (Global.enabled) {
@@ -22,17 +27,17 @@ export function endLoading() {
 export function enable() {
   Global.setEnabled(true)
   if (!Global.loading) {
-    statusBarItem.text = `$(alova-icon-id) Alova`
+    statusBarItem.text = `$(worma-icon-id) Worma`
     statusBarItem.tooltip = 'Generate APIs'
-    statusBarItem.command = Commands.refresh
+    statusBarItem.command = Commands.status_bar_show_actions
     statusBarItem.color = undefined
   }
 }
 export function disable() {
   Global.setEnabled(false)
-  statusBarItem.text = `$(alova-icon-id) Alova`
-  statusBarItem.tooltip = 'module `@alova/wormhole` not found'
-  statusBarItem.color = '#808080' // Set color to gray
+  statusBarItem.text = `$(worma-icon-id) Worma`
+  statusBarItem.tooltip = 'module `worma` not found'
+  statusBarItem.color = '#FFFFFF80'
   statusBarItem.command = undefined
 }
 // Show status bar items

@@ -2,7 +2,7 @@ import { defineExtension, onDeactivate } from 'reactive-vscode'
 import { Commands } from '@/commands'
 import Global from '@/core/Global'
 import Setup from '@/core/Setup'
-import { MockWormhole } from '@/functions/getWormhole'
+import { MockWorma } from '@/functions/getWorma'
 import * as Meta from '@/meta'
 import { Log } from '@/utils'
 import { version } from '../package.json'
@@ -27,5 +27,5 @@ export {
   Global,
   Log,
   Meta,
-  MockWormhole,
+  MockWorma,
 }

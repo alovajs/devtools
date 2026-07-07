@@ -1,0 +1,9 @@
+type {{{name}}}Response = {{processType response @root.componentNames}};
+{{#or pathParameters queryParameters requestBody}}
+type {{{name}}}ExtraConfig = Options & {
+  {{#if pathParameters}}pathParams: {{processType pathParameters @root.componentNames}};
+  {{/if}}{{#if queryParameters}}searchParams: {{processType queryParameters @root.componentNames}};
+  {{/if}}{{#if requestBody}}json: {{processType requestBody @root.componentNames}};
+  {{/if}}
+};
+{{/or}}

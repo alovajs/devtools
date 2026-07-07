@@ -1,0 +1,21 @@
+{
+  "name": "worma-demo-typescript",
+  "type": "module",
+  "private": true,
+  "description": "Worma TypeScript example - all templates in one project",
+  "scripts": {
+    "gen": "worma gen -f",
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "alova": "^3.0.0",
+    "axios": "catalog:default",
+    "ky": "catalog:default"
+  },
+  "devDependencies": {
+    "tsx": "catalog:dev",
+    "typescript": "catalog:dev",
+    "wormajs": "workspace:*"
+  }
+}

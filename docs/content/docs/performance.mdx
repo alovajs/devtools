@@ -1,0 +1,64 @@
+---
+title: 性能
+description: worma 针对大规模 OpenAPI 生成的性能优化设计
+---
+
+
+worma 经过多轮性能优化，可稳定支撑 **5000+ API** 量级的 OpenAPI 文档生成，10000 API 场景端到端耗时控制在十秒级。
+
+## 多线程 Schema → TS 转换
+
+Schema 到 TypeScript 类型的转换是纯 CPU 计算、无外部副作用，天然适合并行化。worma 使用 `WorkerPool` 泛型线程池将转换任务分发到多个 Worker 线程。
+
+### 自适应池大小
+
+Worker 线程数根据接口数量自动调整：
+
+| 接口数 | Worker 数 |
+|--------|----------|
+| ≤ 200 | 0（主线程） |
+| ≤ 1000 | 2 |
+| ≤ 3000 | 4 |
+| ≤ 8000 | CPU 核心数 × 0.75 |
+| > 8000 | CPU 核心数 − 1 |
+
+- 小项目零额外开销，大项目充分利用多核
+- 懒启动（首批任务到达才 spawn）+ 30s 空闲自动回收
+- 零依赖，全部基于 `node:worker_threads` 内置模块
+
+## 流式渲染管线
+
+传统方案先全量渲染到内存再写盘，峰值内存 O(n·s)。worma 采用流式管线：
+
+```
+解析 OpenAPI → Schema 并行转换 → 按 tag 聚合 → 逐 tag 渲染 → 立即写盘
+```
+
+- 逐 tag 渲染后立即写盘并释放内存，峰值降为 O(max_tag·s)
+- 并发写盘，默认 32 并发
+- 支持 `beforeFileWrite` 钩子在写盘前逐文件修改
+
+## 增量生成
+
+通过哈希比对实现 tag 级增量渲染，二次生成显著提速：
+
+- 为每个 API 计算 SHA256 指纹（16 字符）
+- 缓存 `index.json`（KB 级元数据） + `data/{slug}.json`（按需加载）
+- 增量判断只需读取 `index.json`，无需加载全量 API 数据
+- 仅重渲 hash 变化的 tag，全局模板（index.ts、types.ts 等）始终渲染
+- CLI `-f, --force` 触发全量重建
+
+## 并发节流
+
+- `transform` 阶段并发上限自动计算：`min(64, max(8, cpus*4))`，避免一次性铺开 n 个 Promise 导致内存峰值
+- 写盘并发固定 32，批量 mkdir 后并行写入
+
+## 其他优化
+
+- **单次 AST 遍历**：Schema 转换时单次递归同时产出 TypeScript 类型和 JSDoc 注释，避免两次独立遍历
+- **Handlebars 编译缓存**：模板编译结果和 partials 注册缓存，同进程多次生成零重复开销
+- **确定性输出排序**：tag/API/component 按名称字典序排列，确保多环境产物一致，由 `performance.deterministicSort` 控制（默认 `true`）
+
+## 性能配置
+
+详细配置项请参阅 [配置对象 → PerformanceConfig](/docs/api/configuration#performanceconfig)。

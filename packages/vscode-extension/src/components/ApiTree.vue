@@ -1,7 +1,7 @@
 <script setup lang="tsx">
 import type { TreeOption } from 'naive-ui'
 import type { VNodeChild } from 'vue'
-import type { Api, ApiProject, ApiType, MethodType } from '~/types'
+import type { Api, ApiProject, ApiType, CacheData, MethodType } from '~/types'
 import {
   Folder,
   HardwareChipOutline,
@@ -100,7 +100,6 @@ function nodeProps({ option }: { option: TreeOption }) {
 function getApiNode(projects: ApiProject[]) {
   const nodes: ApiNode[] = []
   for (const project of projects) {
-    const servers = project.apiDocs
     const serverNodes: ApiNode[] = []
     nodes.push({
       id: project.name,
@@ -109,34 +108,40 @@ function getApiNode(projects: ApiProject[]) {
       label: project.name,
       children: serverNodes,
     })
-    servers.forEach((groups, idx) => {
+    project.servers.forEach((server: CacheData, idx: number) => {
+      const serverLabel = server.serverName || server.path.split(/[/\\]/).filter(Boolean).pop() || server.path
       const groupNodes: ApiNode[] = []
       const serverNode: ApiNode = {
-        id: `server-${project.name}-${idx + 1}`,
+        id: `server-${project.name}-${idx}`,
         level: 2,
         type: 'server',
-        label: `Server ${idx + 1}`,
+        label: serverLabel,
         children: groupNodes,
       }
+      ;(serverNode as any).serverPath = server.path
       serverNodes.push(serverNode)
-      groups.forEach((group, apiIdx) => {
-        const apiNodes: ApiNode[] = []
-        const groupNode: ApiNode = {
-          id: `group-${project.name}-${idx + 1}-${apiIdx + 1}`,
+      const tagMap = new Map<string, Api[]>()
+      for (const api of server.apis) {
+        if (!tagMap.has(api.tag)) {
+          tagMap.set(api.tag, [])
+        }
+        tagMap.get(api.tag)!.push(api)
+      }
+      let tagIdx = 0
+      tagMap.forEach((apis, tag) => {
+        const apiNodes: ApiNode[] = apis.map(api => ({
+          id: `${project.name}/${idx}/${api.name}`,
+          level: 4,
+          type: 'api' as ApiType,
+          label: `${api.method}\n${api.path}`,
+          api,
+        }))
+        groupNodes.push({
+          id: `group-${project.name}-${idx}-${tagIdx++}`,
           level: 3,
           type: 'group',
-          label: group.tag,
+          label: tag,
           children: apiNodes,
-        }
-        groupNodes.push(groupNode)
-        group.apis.forEach((api) => {
-          apiNodes.push({
-            id: `${api.global}.${api.pathKey}`,
-            level: 4,
-            type: 'api',
-            label: `${api.method}\n${api.path}`,
-            api,
-          })
         })
       })
     })
@@ -147,14 +152,20 @@ function getData(apis: ApiNode[]): TreeOption[] {
   const data: TreeOption[] = []
   for (const apiNode of apis) {
     const children = apiNode.children ? getData(apiNode.children) : undefined
-    data.push({
+    const option: TreeOption & { nodeType?: ApiType, serverPath?: string } = {
       key: apiNode.id,
       label: apiNode.label,
       prefix: iconMap[apiNode.type],
       api: apiNode.api,
       children,
       disabled: !children && !apiNode.api,
-    })
+      nodeType: apiNode.type,
+    }
+    // Store server path for server nodes
+    if (apiNode.type === 'server') {
+      ;(option as any).serverPath = (apiNode as any).serverPath
+    }
+    data.push(option)
   }
   return data
 }
@@ -167,7 +178,7 @@ function filter(pattern: string, node: TreeOption) {
         strings.push(node.label)
       }
       if (api) {
-        strings.push(`${api.global}.${api.pathKey}`)
+        strings.push(api.name)
         if (api.summary) {
           strings.push(api.summary)
         }
@@ -176,7 +187,7 @@ function filter(pattern: string, node: TreeOption) {
     },
     ignoreCase: true,
     onMatched(matchedStr) {
-      return `<span class="text-green-5">${matchedStr}</span>`
+      return `<span class="filter-match-highlight">${matchedStr}</span>`
     },
   })
   if (result) {
@@ -198,7 +209,7 @@ function strRender(str: string, option: TreeOption) {
   const [method, url, ...rest] = str.split('\n')
   return (
     <>
-      <ApiMethod method={api.method as MethodType} html={method} style="--n-padding: 0 4px; --n-font-size: 8px; --n-height: 16px;" />
+      <ApiMethod method={api.method as MethodType} html={method} style="--n-padding: 0 6px; --n-font-size: 10px; --n-height: 18px;" />
       <span class="ml-2" v-html={url} />
       <div v-html={rest.join('\n')} />
     </>
@@ -212,14 +223,50 @@ function getLabel(option: TreeOption) {
 }
 
 function renderLabel({ option }: { option: TreeOption }) {
+  const nodeOpt = option as TreeOption & { nodeType?: ApiType, serverPath?: string }
+  const api = nodeOpt.api as Api | undefined
+  const nodeType = nodeOpt.nodeType
+  const serverPath = nodeOpt.serverPath
+
+  // Build tooltip for server nodes (show full URL) and API nodes (show summary)
+  let tooltip: string | undefined
+  if (nodeType === 'server' && serverPath) {
+    tooltip = serverPath
+  }
+  else if (nodeType === 'api' && api?.summary) {
+    tooltip = api.summary
+  }
+
   return (
-    <div class="flex items-center" data-key={option.key}>{strRender(getLabel(option), option)}</div>
+    <div
+      class="flex items-center gap-1.5"
+      data-key={option.key}
+      title={tooltip}
+    >
+      {strRender(getLabel(option as TreeOption), option)}
+    </div>
   )
+}
+
+function countLeafApis(node: TreeOption): number {
+  if (node.api)
+    return 1
+  if (!node.children?.length)
+    return 0
+  return (node.children as TreeOption[]).reduce((sum, child) => sum + countLeafApis(child), 0)
 }
 
 function renderSuffix({ option }: { option: TreeOption }) {
   const api = option.api as Api | undefined
-  if (!api || hoverKey.value !== option.key) {
+  if (!api) {
+    // Show API count for group/server/project nodes
+    const count = countLeafApis(option)
+    if (count > 0) {
+      return <span class="tree-count-badge">{count}</span>
+    }
+    return
+  }
+  if (hoverKey.value !== option.key) {
     return
   }
   return (
@@ -228,12 +275,17 @@ function renderSuffix({ option }: { option: TreeOption }) {
       onClick={(e) => {
         e.stopPropagation()
         e.preventDefault()
-        handleCopy(api.defaultValue ?? '')
+        handleCopy(api.callingCode ?? '')
       }}
     >
       {{
         icon: () => (
-          <i class="i-carbon-copy text-sm" />
+          <NIcon>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
+          </NIcon>
         ),
       }}
     </NButton>
@@ -252,12 +304,41 @@ const data = computed(() => {
   return getData(root.children ?? [])
 })
 
+function findNodeBySuffix(nodes: TreeOption[], suffix: string): TreeOption | null {
+  for (const node of nodes) {
+    if (node.key && String(node.key).endsWith(suffix) && node.api) {
+      return node
+    }
+    if (node.children?.length) {
+      const found = findNodeBySuffix(node.children as TreeOption[], suffix)
+      if (found)
+        return found
+    }
+  }
+  return null
+}
+
 defineExpose({
   getApi(key: string) {
-    return treeHelper.getNodeById(key, data.value).result?.api as Api | null
+    // 优先精确匹配（新格式: projectName/serverIndex/global.name）
+    const exact = treeHelper.getNodeById(key, data.value).result
+    if (exact?.api)
+      return exact.api as Api | null
+    // 回退：按后缀模糊匹配（兼容旧格式: .global.name）
+    return findNodeBySuffix(data.value, key)?.api as Api | null
   },
   selectApi(key: string) {
-    selectNode(key, data.value)
+    const exact = treeHelper.getNodeById(key, data.value).result
+    if (exact) {
+      selectNode(key, data.value)
+    }
+    else {
+      // 回退：按后缀模糊匹配
+      const node = findNodeBySuffix(data.value, key)
+      if (node?.key) {
+        selectNode(node.key as string, data.value)
+      }
+    }
   },
 })
 </script>
@@ -283,7 +364,7 @@ defineExpose({
       :filter
     >
       <template #empty>
-        <div class="mt-24 h-full flex items-center justify-center">
+        <div class="h-full flex items-center justify-center">
           <template v-if="loading">
             <n-spin :size="14" class="mr-3" />
             <span>{{ $t('loading') }}</span>

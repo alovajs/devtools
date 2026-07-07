@@ -1,0 +1,219 @@
+---
+title: 参数修改器
+description: 灵活修改 API 接口的请求和响应参数，支持增加、删除、修改参数类型
+---
+
+# 参数修改器
+
+本插件用于灵活修改 API 接口的请求和响应参数，支持增加、删除和修改参数类型。
+
+## 主要功能
+
+- 支持修改 `params`、`pathParams`、`data`、`response` 四个维度的参数
+- 支持增加、删除、修改参数类型
+- 支持修改参数层级（`flat`）
+- 通过 `match` 规则精确控制需要修改的字段
+- 通过 `handler` 函数动态修改参数的类型和必填性
+
+## 基本使用
+
+```javascript
+import { defineConfig } from 'wormajs';
+import { payloadModifier } from 'wormajs/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      // ...
+      plugins: [
+        // 修改请求参数中的 userId 字段
+        payloadModifier([
+          {
+            scope: 'params',
+            match: key => key === 'userId',
+            handler: schema => {
+              return {
+                'attr1?': 'string', // 生成为可选参数
+                attr2: 'number', // 生成为必填参数
+                attr3: {
+                  // 嵌套数据
+                  innerAttr: ['string', 'number', 'boolean'],
+                },
+              };
+            },
+          },
+        ]),
+      ],
+    },
+  ],
+});
+```
+
+## 配置参数
+
+### ModifierScope（修改范围）
+
+```typescript
+type ModifierScope = 'params' | 'pathParams' | 'data' | 'response';
+```
+
+### Schema（数据模式定义）
+
+定义参数类型的核心类型，支持多种模式：
+
+- **基本类型**：`'number' | 'string' | 'boolean' | 'undefined' | 'null' | 'unknown' | 'any' | 'never'`
+- **数组类型**：`{ type: 'array'; items: Schema }`
+- **引用类型（对象）**：`{ [attr: string]: Schema }`（key 末尾加 `?` 表示可选参数）
+- **联合类型**：`Array<SchemaPrimitive | SchemaReference | SchemaArray>`
+- **组合类型**：`{ oneOf: Schema[] } | { anyOf: Schema[] } | { allOf: Schema[] }`
+
+### Config（插件配置接口）
+
+```typescript
+interface Config<T extends Schema> {
+  /** 生效范围 */
+  scope: ModifierScope;
+  /** 匹配规则 */
+  match?: string | RegExp | ((key: string) => boolean);
+  /**
+   * 处理器
+   * - 返回 Schema 表示修改类型
+   * - 返回 { required: boolean; value: Schema } 表示修改必填性
+   * - 返回 void | null | undefined 表示移除字段
+   */
+  handler: (
+    schema: T,
+  ) => Schema | { required: boolean; value: Schema } | void | null | undefined;
+}
+```
+
+## 示例
+
+### 修改参数类型
+
+将 `params` 中的 `age` 字段修改为 `number` 类型：
+
+```javascript
+payloadModifier([
+  {
+    scope: 'params',
+    match: 'age',
+    handler: () => 'number',
+  },
+]);
+```
+
+### 修改嵌套参数
+
+修改 `data` 中的 `user` 对象及其嵌套结构：
+
+```javascript
+payloadModifier([
+  {
+    scope: 'data',
+    match: 'user',
+    handler: () => ({
+      name: 'string',
+      age: 'number',
+      address: {
+        city: 'string',
+        zipCode: 'number',
+      },
+    }),
+  },
+]);
+```
+
+### 移除参数
+
+移除 `response` 中的 `debugInfo` 字段：
+
+```javascript
+payloadModifier([
+  {
+    scope: 'response',
+    match: 'debugInfo',
+    handler: () => undefined,
+  },
+]);
+```
+
+### 联合类型
+
+将 `pathParams` 中的 `id` 字段修改为 `string | number` 类型：
+
+```javascript
+payloadModifier([
+  {
+    scope: 'pathParams',
+    match: 'id',
+    handler: () => ['string', 'number'],
+  },
+]);
+```
+
+## 高级用法
+
+### 动态修改必填性
+
+通过返回 `{ required: true/false, value: schema }` 对象来控制：
+
+```javascript
+payloadModifier([
+  {
+    scope: 'data',
+    match: 'email',
+    handler: () => ({ required: true, value: 'string' }),
+  },
+]);
+```
+
+### 可选参数与必填参数
+
+在 Schema 对象的 key 末尾添加 `?` 表示可选，否则为必填：
+
+```javascript
+handler: () => ({
+  username: 'string', // 必填
+  'age?': 'number',   // 可选
+});
+```
+
+### 使用正则匹配
+
+匹配所有以 `_date` 结尾的 `params` 参数：
+
+```javascript
+payloadModifier([
+  {
+    scope: 'params',
+    match: /_date$/,
+    handler: () => 'string',
+  },
+]);
+```
+
+### 支持 oneOf、anyOf、allOf
+
+**oneOf 数组快捷写法：**
+
+```javascript
+handler: () => [
+  { type: 'string', cardNumber: 'string' },
+  { type: 'number', email: 'string' },
+];
+```
+
+**oneOf 关键字写法：**
+
+```javascript
+handler: () => ({
+  oneOf: [
+    { type: 'string', cardNumber: 'string' },
+    { type: 'number', email: 'string' },
+  ],
+});
+```
+
+- `anyOf`：定义可选参数组合
+- `allOf`：定义参数组合（必须同时满足）

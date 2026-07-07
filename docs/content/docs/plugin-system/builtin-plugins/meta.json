@@ -1,0 +1,13 @@
+{
+  "pages": [
+    "aiDoc",
+    "platform",
+    "rename",
+    "tag-modifier",
+    "payload-modifier",
+    "filter-api",
+    "apifox",
+    "import-type"
+  ],
+  "title": "内置插件"
+}

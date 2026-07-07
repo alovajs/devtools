@@ -1,0 +1,148 @@
+import type { Alova, AlovaMethodCreateConfig, AlovaGenerics, Method } from 'alova';
+import type { alovaInstance, $$userConfigMap } from './index{{#if (eq type "commonjs")}}.cjs{{/if}}';
+import type apiDefinitions from './apiDefinitions{{#if (eq type "commonjs")}}.cjs{{/if}}';
+
+type CollapsedAlova = typeof alovaInstance;
+type UserMethodConfigMap = typeof $$userConfigMap;
+
+type Alova2MethodConfig<Responded> =
+  CollapsedAlova extends Alova<
+    AlovaGenerics<
+      any,
+      any,
+      infer RequestConfig,
+      infer Response,
+      infer ResponseHeader,
+      infer L1Cache,
+      infer L2Cache,
+      infer SE
+    >
+  >
+    ? Omit<
+        AlovaMethodCreateConfig<
+          AlovaGenerics<Responded, any, RequestConfig, Response, ResponseHeader, L1Cache, L2Cache, SE>,
+          any,
+          Responded
+        >,
+        'params'
+      >
+    : never;
+
+type ExtractUserDefinedTransformed<
+  DefinitionKey extends keyof typeof apiDefinitions,
+  Default
+> = DefinitionKey extends keyof UserMethodConfigMap
+  ? UserMethodConfigMap[DefinitionKey]['transform'] extends (...args: any[]) => any
+    ? Awaited<ReturnType<UserMethodConfigMap[DefinitionKey]['transform']>>
+    : Default
+  : Default;
+
+type Alova2Method<
+  Responded,
+  DefinitionKey extends keyof typeof apiDefinitions,
+  CurrentConfig extends Alova2MethodConfig<any>
+> =
+  CollapsedAlova extends Alova<
+    AlovaGenerics<
+      any,
+      any,
+      infer RequestConfig,
+      infer Response,
+      infer ResponseHeader,
+      infer L1Cache,
+      infer L2Cache,
+      infer SE
+    >
+  >
+    ? Method<
+        AlovaGenerics<
+          CurrentConfig extends undefined
+            ? ExtractUserDefinedTransformed<DefinitionKey, Responded>
+            : CurrentConfig['transform'] extends (...args: any[]) => any
+              ? Awaited<ReturnType<CurrentConfig['transform']>>
+              : ExtractUserDefinedTransformed<DefinitionKey, Responded>,
+          any,
+          RequestConfig,
+          Response,
+          ResponseHeader,
+          L1Cache,
+          L2Cache,
+          SE
+        >
+      >
+    : never;
+
+{{#each components}}
+{{{.}}}
+{{/each}}
+
+declare global {
+  interface {{{config.global}}} {
+    {{#each tagedApis}}
+    {{{tagName}}}: {
+     {{#apis}}
+      /**
+       * ---
+       *
+       * [{{{method}}}] {{{summary}}}
+       *
+       * **path:** {{{path}}}
+       *
+      {{#if pathParametersComment}}
+       * ---
+       *
+       * **Path Parameters**
+       * ```ts
+       * type PathParameters = {{{pathParametersComment}}}
+       * ```
+       *
+       {{/if}}
+       {{#if queryParametersComment}}
+       * ---
+       *
+       * **Query Parameters**
+       * ```ts
+       * type QueryParameters = {{{queryParametersComment}}}
+       * ```
+       *
+       {{/if}}
+       {{#if requestBodyComment}}
+       * ---
+       *
+       * **RequestBody**
+       * ```ts
+       * type RequestBody = {{{requestBodyComment}}}
+       * ```
+       *
+       {{/if}}
+       {{#if responseComment}}
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * type Response = {{{responseComment}}}
+       * ```
+       {{/if}}
+       */
+      {{{name}}}<Config extends Alova2MethodConfig<{{{response}}}>{{#or pathParameters queryParameters requestBody }} & {
+          {{#if pathParameters}}
+          pathParams: {{{pathParameters}}};
+          {{/if}}
+          {{#if queryParameters}}
+          params: {{{queryParameters}}};
+          {{/if}}
+          {{#if requestBody}}
+          data: {{{requestBody}}};
+          {{/if}}
+      }{{/or}}>(
+        config{{#or pathParameters queryParameters requestBody }}{{else}}?{{/or}}: Config
+      ): Alova2Method<{{{response}}}, '{{{tag}}}.{{{name}}}', Config>;
+     {{/apis}}
+    };
+    {{/each}}
+  }
+
+  var {{{config.global}}}: {{{config.global}}};
+}
+
+export {};

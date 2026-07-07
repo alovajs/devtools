@@ -3,11 +3,11 @@ import path from 'node:path'
 import vscode from '@czhlin/vite-plugin-vscode'
 import VueI18n from '@intlify/unplugin-vue-i18n/vite'
 import Shiki from '@shikijs/markdown-it'
+import tailwindcss from '@tailwindcss/vite'
 import { unheadVueComposablesImports } from '@unhead/vue'
 import Vue from '@vitejs/plugin-vue'
 import VueJsx from '@vitejs/plugin-vue-jsx'
 import LinkAttributes from 'markdown-it-link-attributes'
-import Unocss from 'unocss/vite'
 import AutoImport from 'unplugin-auto-import/vite'
 import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
 import Components from 'unplugin-vue-components/vite'
@@ -90,9 +90,8 @@ export default defineConfig(({ mode }) => {
         resolvers: [NaiveUiResolver()],
       }),
 
-      // https://github.com/antfu/unocss
-      // see uno.config.ts for config
-      Unocss(),
+      // https://tailwindcss.com
+      tailwindcss(),
 
       // https://github.com/unplugin/unplugin-vue-markdown
       // Don't need this? Try vitesse-lite: https://github.com/antfu/vitesse-lite

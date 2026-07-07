@@ -3,8 +3,8 @@
 🚨 action:
   - .github/workflows/**
 
-wormhole:
-  - packages/wormhole/**
+worma:
+  - packages/worma/**
 
 vscode:
   - packages/vscode-extension/**

@@ -1,0 +1,55 @@
+const cache = Object.create(null);
+/**
+ * @typedef {import('alova').AlovaGenerics} AlovaGenerics
+ */
+/**
+ *
+ * @param {(string|symbol)[]} array
+ * @param {import('alova').Alova<AlovaGenerics>} alovaInstance
+ * @param {any} configMap
+ * @returns {()=>void}
+ */
+const createFunctionalProxy = (array, alovaInstance, configMap) => {
+  const apiPathKey = array.join('.');
+  if (cache[apiPathKey]) {
+    return cache[apiPathKey];
+  }
+  const proxy = new Proxy(function () {}, {
+    get(_, property) {
+      const newArray = [...array, property];
+      return createFunctionalProxy(newArray, alovaInstance, configMap);
+    },
+    apply(_, __, [config]) {
+      const apiItem = apiDefinitions[apiPathKey];
+      if (!apiItem) {
+        throw new Error(`the api path of \`${apiPathKey}\` is not found`);
+      }
+      const mergedConfig = {
+        ...configMap[apiPathKey],
+        ...config
+      };
+      const [method, url] = apiItem;
+      const pathParams = mergedConfig.pathParams;
+      const urlReplaced = url.replace(/\{([^}]+)\}/g, (_, key) => {
+        const pathParam = pathParams[key];
+        return pathParam;
+      });
+      delete mergedConfig.pathParams;
+      let data = mergedConfig.data;
+      if (Object.prototype.toString.call(data) === '[object Object]' && typeof FormData !== 'undefined') {
+        let hasBlobData = false;
+        const formData = new FormData();
+        for (const key in data) {
+          formData.append(key, data[key]);
+          if (data[key] instanceof Blob) {
+            hasBlobData = true;
+          }
+        }
+        data = hasBlobData ? formData : data;
+      }
+      return new Method(method.toUpperCase(), alovaInstance, urlReplaced, mergedConfig, data);
+    }
+  });
+  cache[apiPathKey] = proxy;
+  return proxy;
+};

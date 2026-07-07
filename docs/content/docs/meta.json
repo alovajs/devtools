@@ -1,0 +1,19 @@
+{
+  "pages": [
+    "index",
+    "quick-start",
+    "contributing",
+    "---",
+    "guide",
+    "plugin-system",
+    "template-system",
+    "ai-skills",
+    "cli-commands",
+    "---",
+    "api",
+    "performance",
+    "migration",
+    "---",
+    "sponsor"
+  ]
+}

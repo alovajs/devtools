@@ -1,0 +1,10 @@
+{
+  "generator": [
+    {
+      "input": "petstore.json",
+      "output": "src/api",
+      "platform": "swagger",
+      "type": "auto"
+    }
+  ]
+}

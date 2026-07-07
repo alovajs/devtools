@@ -1,0 +1,48 @@
+{{> comment}}
+const { Method } = require('alova');
+const apiDefinitions = require('./apiDefinitions.cjs');
+
+{{> createApis-proxy-js}}
+/**
+ *
+ * @param {import('alova').Alova<AlovaGenerics>} alovaInstance
+ * @param {any} configMap
+ * @returns { {{{config.global}}} }
+ */
+const createApis = (alovaInstance, configMap) => {
+  const Apis = new Proxy(
+    {},
+    {
+      get(_, property) {
+        return createFunctionalProxy([property], alovaInstance, configMap);
+      }
+    }
+  );
+  return Apis;
+};
+/**
+ * @param { {{{config.global}}} } Apis
+ * @returns { void }
+ */
+const mountApis = (Apis) => {
+  ({{{config.globalHost}}}).{{{config.global}}} = Apis;
+};
+{{> withConfigType-jsdoc}}
+/**
+ * @typedef {{#raw "{{ " }}{{/raw}}
+ *  [P in keyof typeof import('./apiDefinitions')]?: MethodConfig<
+ *    P extends `${infer Tag}.${infer Url}`
+ *      ? Parameters<NonNullable<APISofParameters<Tag,Url>[0]>['transform']>[0]
+ *      : any
+ *  >
+ * {{#raw "}}" }}{{/raw}} MethodsConfigMap
+ */
+/**
+ * @template {MethodsConfigMap} Config
+ * @param {Config} config
+ */
+const withConfigType = (config) => config;
+
+exports.createApis = createApis;
+exports.mountApis = mountApis;
+exports.withConfigType = withConfigType;

@@ -4,7 +4,7 @@ export default defineConfig({
   test: {
     projects: ['packages/*'],
     coverage: {
-      include: ['packages/wormhole/src/**/*'],
+      include: ['packages/worma/src/**/*'],
       reporter: ['lcov', 'html'],
     },
   },

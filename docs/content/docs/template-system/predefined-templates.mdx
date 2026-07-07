@@ -1,0 +1,199 @@
+---
+title: 预定义模板
+description: 使用内置的五套预定义模板
+---
+
+
+## alova
+
+按需引入模式，每个 API 作为独立函数导出，支持 Tree-shaking。
+
+```javascript
+import { alova } from 'wormajs/plugin';
+
+plugins: [alova({ framework: 'vue' })]
+```
+
+**模板结构：**
+
+<Files>
+  <Folder name="alova" defaultOpen>
+    <File name="components.d.ts" />
+    <File name="helper.ts" />
+    <File name="index.ts" />
+    <File name="typed.ts" />
+    <Folder name="services" defaultOpen>
+      <File name="index.ts" />
+      <File name="pet.ts" />
+      <File name="store.ts" />
+      <File name="user.ts" />
+    </Folder>
+  </Folder>
+</Files>
+
+**使用方法：**
+
+```typescript
+import { getUserList } from './api/alova/services/user';
+
+const users = await getUserList({ params: { page: 1, size: 10 } });
+```
+
+支持 `data`（请求体）、`params`（查询参数）、`pathParams`（路径参数），以及 alova method 的配置参数（如 `cacheFor`、`transform` 等）。
+
+## alovaGlobals
+
+全局挂载模式，兼容 alova@3（仅 v3，不再支持 v2）。
+
+```javascript
+import { alovaGlobals } from 'wormajs/plugin';
+
+plugins: [alovaGlobals({
+  global: 'Apis',
+  globalHost: 'globalThis',
+})]
+```
+
+**参数说明：**
+
+```typescript
+interface TemplateAlovaGlobalsConfig {
+  /** 全局导出的 api 名称，默认为 'Apis'，多 generator 时为必填且不可重复 */
+  global?: string;
+  /** 全局 api 对象挂载的宿主对象，默认为 'globalThis' */
+  globalHost?: string;
+  /** 使用 import type 方式导入，默认 false */
+  useImportType?: boolean;
+}
+```
+
+> `global` 参数会拼接在每个 API 的 `pathKey` 和 `defaultValue` 最前面（如 `Apis.pet.addPet`），确保全局引用路径正确。
+
+**模板结构：**
+
+<Files>
+  <Folder name="alova-globals" defaultOpen>
+    <File name="apiDefinitions.ts" />
+    <File name="createApis.ts" />
+    <File name="globals.d.ts" />
+    <File name="index.ts" />
+  </Folder>
+</Files>
+
+**使用方法：**
+
+```typescript
+// main.ts — 只需导入一次
+import './api/alova-globals';
+
+// 任意文件中直接使用
+const user = await Apis.user.getUserById({ pathParams: { userId: 123 } });
+```
+
+支持 `data`、`params`、`pathParams`，以及 alova method 的配置参数。
+
+## axios
+
+生成基于 axios 的调用函数，采用按需引入模式。
+
+```javascript
+import { axios } from 'wormajs/plugin';
+plugins: [axios()];
+```
+
+**模板结构：**
+
+<Files>
+  <Folder name="axios" defaultOpen>
+    <File name="components.d.ts" />
+    <File name="helper.ts" />
+    <File name="index.ts" />
+    <Folder name="services" defaultOpen>
+      <File name="index.ts" />
+      <File name="pet.ts" />
+      <File name="store.ts" />
+      <File name="user.ts" />
+    </Folder>
+  </Folder>
+</Files>
+
+**使用方法：**
+
+```typescript
+import { createUser } from './api/axios/services/user';
+
+const newUser = await createUser({ data: { name: 'Alice', email: 'alice@example.com' } });
+```
+
+支持 `data`、`params`、`pathParams`，以及 axios 请求配置参数（如 `timeout`、`headers` 等）。
+
+## fetch
+
+生成基于原生 fetch 的调用函数，零额外依赖，采用按需引入模式。
+
+```javascript
+import { fetch } from 'wormajs/plugin';
+plugins: [fetch()];
+```
+
+**模板结构：**
+
+<Files>
+  <Folder name="fetch" defaultOpen>
+    <File name="FetchClient.ts" />
+    <File name="components.d.ts" />
+    <File name="helper.ts" />
+    <File name="index.ts" />
+    <Folder name="services" defaultOpen>
+      <File name="index.ts" />
+      <File name="pet.ts" />
+      <File name="store.ts" />
+      <File name="user.ts" />
+    </Folder>
+  </Folder>
+</Files>
+
+**使用方法：**
+
+```typescript
+import { getUserList } from './api/fetch/services/user';
+
+const users = await getUserList({ params: { page: 1, size: 10 } });
+```
+
+支持 `data`、`params`、`pathParams`，以及 fetch 请求配置参数。
+
+## ky
+
+生成基于 [ky](https://github.com/sindresorhus/ky) 的调用函数，采用按需引入模式。
+
+```javascript
+import { ky } from 'wormajs/plugin';
+plugins: [ky()];
+```
+
+**模板结构：**
+
+<Files>
+  <Folder name="ky" defaultOpen>
+    <File name="components.d.ts" />
+    <File name="helper.ts" />
+    <File name="index.ts" />
+    <Folder name="services" defaultOpen>
+      <File name="index.ts" />
+      <File name="pet.ts" />
+      <File name="store.ts" />
+      <File name="user.ts" />
+    </Folder>
+  </Folder>
+</Files>
+
+**使用方法：**
+
+```typescript
+import { getUserById } from './api/ky/services/user';
+
+const user = await getUserById({ pathParams: { userId: 123 } });
+```
+
+支持 `data`、`params`、`pathParams`，以及 ky 请求配置参数。

@@ -1,0 +1,14 @@
+{{> comment}}
+import { createAlova } from 'alova';
+import fetchAdapter from 'alova/fetch';
+{{> stateshook-import}}
+
+export const alovaInstance = createAlova({
+  baseURL: "{{{baseUrl}}}",
+{{> stateshook-option}}
+  requestAdapter: fetchAdapter(),
+  beforeRequest: method => { },
+  responded: (res, method) => {
+    return method.meta?.blob ? res.blob() : res.json();
+  }
+});

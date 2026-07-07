@@ -1,0 +1,524 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+
+/* ══════════════════════════════════════════
+   Fumadocs 主题色覆盖 — 亮色模式
+   ══════════════════════════════════════════ */
+:root {
+  --color-fd-background: hsl(0, 0%, 98%);
+  --color-fd-foreground: hsl(0, 0%, 5%);
+  --color-fd-muted: hsl(0, 0%, 95%);
+  --color-fd-muted-foreground: hsl(0, 0%, 42%);
+  --color-fd-card: hsl(0, 0%, 100%);
+  --color-fd-card-foreground: hsl(0, 0%, 5%);
+  --color-fd-popover: hsl(0, 0%, 100%);
+  --color-fd-popover-foreground: hsl(0, 0%, 10%);
+  --color-fd-border: hsl(0, 0%, 88%);
+  --color-fd-primary: hsl(22, 100%, 53%);
+  --color-fd-primary-foreground: hsl(0, 0%, 100%);
+  --color-fd-secondary: hsl(0, 0%, 95%);
+  --color-fd-secondary-foreground: hsl(0, 0%, 9%);
+  --color-fd-accent: hsl(22, 100%, 95%);
+  --color-fd-accent-foreground: hsl(22, 100%, 40%);
+  --color-fd-ring: hsl(22, 100%, 53%);
+}
+
+/* ══════════════════════════════════════════
+   Fumadocs 主题色覆盖 — 深色模式（匹配首页暗黑风格）
+   ══════════════════════════════════════════ */
+.dark {
+  --color-fd-background: #0d0d0d;
+  --color-fd-foreground: #ffffff;
+  --color-fd-muted: #1a1a1a;
+  --color-fd-muted-foreground: #888888;
+  --color-fd-card: #111111;
+  --color-fd-card-foreground: #ffffff;
+  --color-fd-popover: #181818;
+  --color-fd-popover-foreground: #ffffff;
+  --color-fd-border: #2a2a2a;
+  --color-fd-primary: hsl(22, 100%, 53%);
+  --color-fd-primary-foreground: #000000;
+  --color-fd-secondary: #1a1a1a;
+  --color-fd-secondary-foreground: #e5e2e1;
+  --color-fd-accent: hsl(22, 100%, 13%);
+  --color-fd-accent-foreground: hsl(22, 100%, 53%);
+  --color-fd-ring: hsl(22, 100%, 53%);
+
+  color-scheme: dark;
+}
+
+/* ══════════════════════════════════════════
+   Brand & Theme Tokens（首页 + 全局共享）
+   ══════════════════════════════════════════ */
+@theme {
+  --color-brand-blue: #0500ff;
+  --color-brand-lime: #d4ff00;
+
+  --color-primary: #ff701e;
+  --color-on-primary: #000000;
+  --color-primary-container: #ff701e;
+  --color-primary-light: #ffb695;
+  --color-accent-blue: #88ceff;
+  --color-background: #0d0d0d;
+  --color-surface: #111111;
+  --color-surface-variant: #1a1a1a;
+  --color-outline: #2a2a2a;
+  --color-outline-variant: #222222;
+  --color-on-background: #ffffff;
+  --color-on-surface: #e5e2e1;
+  --color-on-surface-variant: #888888;
+  --color-text-muted: #555555;
+  --color-editor-bg: #050505;
+  --color-editor-sidebar: #0a0a0a;
+  --color-editor-titlebar: #121212;
+  --color-cta-bg: #080808;
+  --color-tooltip-bg: #181818;
+  --color-window-control: #333333;
+
+  --font-headline-lg: 'Space Grotesk', sans-serif;
+  --font-body-md: 'Space Mono', monospace;
+  --font-label-sm: 'Space Mono', monospace;
+  --font-display-lg: 'Space Grotesk', sans-serif;
+  --font-data-mono: 'Space Mono', monospace;
+
+  /* 缩小圆角以匹配首页锐利风格 */
+  --radius-sm: 0.125rem;
+  --radius-md: 0.125rem;
+  --radius-lg: 0.25rem;
+  --radius-xl: 0.375rem;
+  --radius-2xl: 0.5rem;
+  --radius-3xl: 0.625rem;
+}
+
+/* ══════════════════════════════════════════
+   基础样式
+   ══════════════════════════════════════════ */
+body {
+  background: var(--color-fd-background);
+  color: var(--color-fd-foreground);
+  font-family:
+    'Inter',
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ══════════════════════════════════════════
+   Fumadocs 文档页面样式适配
+   ══════════════════════════════════════════ */
+
+/* 文档主内容区域标题使用 Space Grotesk */
+[data-fd-layout='docs'] h1,
+[data-fd-layout='docs'] h2,
+[data-fd-layout='docs'] h3,
+[data-fd-layout='docs'] h4 {
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+/* 侧边栏链接 hover 高亮 */
+#nd-sidebar a[data-active='true'],
+#nd-sidebar a:hover {
+  color: var(--color-fd-primary);
+}
+
+/* 侧边栏激活指示器 */
+#nd-sidebar [data-active='true'] {
+  border-left-color: var(--color-fd-primary);
+}
+
+/* TOC 目录链接激活态 */
+#nd-toc a[data-active='true'],
+#nd-toc a:hover {
+  color: var(--color-fd-primary);
+}
+
+/* 卡片组件边框锐化 */
+.fd-card {
+  border: 1px solid var(--color-fd-border);
+}
+
+/* 代码块使用首页编辑器风格 */
+.fd-codeblock {
+  border: 1px solid var(--color-fd-border);
+}
+
+.fd-codeblock pre {
+  background: var(--color-fd-card) !important;
+}
+
+/* 深色模式代码块背景 */
+.dark .fd-codeblock pre {
+  background: #050505 !important;
+}
+
+/* 表格边框锐化 */
+.fd-table {
+  border-color: var(--color-fd-border);
+}
+
+/* Tab 组件激活指示器 */
+[data-fd-toc] [aria-selected='true'],
+.fd-tabs [aria-selected='true'] {
+  color: var(--color-fd-primary);
+  border-color: var(--color-fd-primary);
+}
+
+/* Step 组件序号圆圈 */
+.fd-step [data-step-marker] {
+  border-color: var(--color-fd-primary);
+  color: var(--color-fd-primary);
+}
+
+/* inline code 样式 */
+:not(pre) > code {
+  background: var(--color-fd-muted);
+  color: var(--color-fd-primary);
+  padding: 0.125em 0.375em;
+  border-radius: var(--radius-sm);
+  font-size: 0.875em;
+}
+
+/* 深色模式下 inline code */
+.dark :not(pre) > code {
+  background: var(--color-fd-muted);
+  color: var(--color-fd-primary-light, #ffb695);
+}
+
+/* 文档内链接 — 主色，hover 下划线 */
+[data-fd-layout='docs'] a {
+  color: var(--color-fd-primary) !important;
+  text-decoration: none;
+}
+
+[data-fd-layout='docs'] a:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ══════════════════════════════════════════
+   选中 / 滚动条
+   ══════════════════════════════════════════ */
+::selection {
+  background: rgba(255, 112, 30, 0.2);
+  color: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-fd-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-fd-muted-foreground);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+html > body[data-scroll-locked] {
+  margin-right: 0px !important;
+  --removed-body-scroll-bar-size: 0px !important;
+}
+
+/* ══════════════════════════════════════════
+   首页专用动画（keyframes）
+   ══════════════════════════════════════════ */
+@keyframes char-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float-plus {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.1;
+  }
+  50% {
+    transform: translateY(-8px);
+    opacity: 0.3;
+  }
+}
+
+@keyframes float-block {
+  0%,
+  100% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-12px) translateX(6px) rotate(10deg);
+  }
+}
+
+@keyframes hero-float-a {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes tab-in {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ─── Universal Adapter particle flow ─── */
+@keyframes particle-left {
+  0% {
+    cx: 4;
+    opacity: 0;
+  }
+  6% {
+    opacity: 1;
+  }
+  46% {
+    cx: 292;
+    opacity: 0.7;
+  }
+  52% {
+    cx: 292;
+    opacity: 0;
+  }
+  100% {
+    cx: 292;
+    opacity: 0;
+  }
+}
+
+@keyframes particle-right {
+  0% {
+    cx: 308;
+    opacity: 0;
+  }
+  52% {
+    cx: 308;
+    opacity: 0;
+  }
+  58% {
+    opacity: 1;
+  }
+  94% {
+    cx: 594;
+    opacity: 0.7;
+  }
+  100% {
+    cx: 594;
+    opacity: 0;
+  }
+}
+
+@keyframes hub-pulse {
+  0%,
+  100% {
+    r: 4;
+    opacity: 1;
+  }
+  50% {
+    r: 6;
+    opacity: 0.4;
+  }
+}
+
+/* ─── Tilt card hover ─── */
+.tilt-hover {
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.tilt-hover:hover {
+  transform: perspective(800px) rotateX(-1deg) rotateY(2deg) scale(1.02);
+}
+
+@keyframes scan {
+  0% {
+    top: 0%;
+  }
+  100% {
+    top: 100%;
+  }
+}
+
+/* ══════════════════════════════════════════
+   首页专用 Utility Classes
+   ══════════════════════════════════════════ */
+@utility tech-border {
+  border: 1px solid var(--color-outline) !important;
+}
+@utility tech-border-b {
+  border-bottom: 1px solid var(--color-outline) !important;
+}
+@utility tech-border-r {
+  border-right: 1px solid var(--color-outline) !important;
+}
+@utility tech-border-l {
+  border-left: 1px solid var(--color-outline) !important;
+}
+@utility tech-border-t {
+  border-top: 1px solid var(--color-outline) !important;
+}
+@utility tech-border-x {
+  border-left: 1px solid var(--color-outline) !important;
+  border-right: 1px solid var(--color-outline) !important;
+}
+@utility tech-border-y {
+  border-top: 1px solid var(--color-outline) !important;
+  border-bottom: 1px solid var(--color-outline) !important;
+}
+
+@utility tech-border-0 {
+  border: 0 !important;
+}
+@utility tech-border-b-0 {
+  border-bottom: 0 !important;
+}
+@utility tech-border-r-0 {
+  border-right: 0 !important;
+}
+@utility tech-border-l-0 {
+  border-left: 0 !important;
+}
+@utility tech-border-t-0 {
+  border-top: 0 !important;
+}
+
+.corner-plus::before {
+  content: '+';
+  position: absolute;
+  top: -6px;
+  left: -5px;
+  color: var(--color-text-muted);
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+}
+
+.syntax-keyword {
+  color: var(--color-primary);
+}
+.syntax-string {
+  color: var(--color-accent-blue);
+}
+.syntax-comment {
+  color: var(--color-text-muted);
+}
+.syntax-type {
+  color: var(--color-primary-light);
+}
+
+.scan-line {
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, transparent, var(--color-primary), transparent);
+  position: absolute;
+  opacity: 0.2;
+  animation: scan 4s linear infinite;
+}
+
+.worma-bg {
+  background-color: var(--color-background);
+  background-image: radial-gradient(var(--color-surface-variant) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ══════════════════════════════════════════
+   文档页额外适配 — sidebar / 分割线风格
+   ══════════════════════════════════════════ */
+
+/* 侧边栏分割线锐化 */
+#nd-sidebar {
+  border-right: 1px solid var(--color-fd-border);
+}
+
+/* TOC 分割线 */
+#nd-toc {
+  border-left: 1px solid var(--color-fd-border);
+}
+
+/* 顶部导航栏底部分割线 */
+[data-fd-layout='docs'] nav,
+#nd-home-layout nav {
+  border-bottom: 1px solid var(--color-fd-border);
+}
+
+/* 导航栏链接 — // xxx 风格 */
+#nd-navbar > div > ul > li > a {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-fd-muted-foreground);
+  transition: color 0.15s;
+}
+
+#nd-navbar > div > ul > li > a:hover {
+  color: var(--color-fd-primary);
+}
+
+#nd-navbar > div > ul > li > a[data-active='true'] {
+  color: var(--color-fd-primary);
+}
+
+/* fumadocs 默认的面包屑分隔符颜色 */
+[data-fd-layout='docs'] nav[aria-label='Breadcrumb'] span {
+  color: var(--color-fd-muted-foreground);
+}
+
+/* 首页隐藏主题切换按钮 */
+#nd-home-layout button[aria-label*='theme'],
+#nd-home-layout button[title*='theme'],
+#nd-home-layout button[aria-label*='Theme'],
+#nd-home-layout button[title*='Theme'] {
+  display: none !important;
+}
+
+/* 深色模式 — 使用首页背景图案 */
+.dark [data-fd-layout='docs'] {
+  background-color: #0d0d0d;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Sidebar 激活项背景 */
+#nd-sidebar [data-active='true'] {
+  background: var(--color-fd-accent);
+  border-radius: var(--radius-md);
+}

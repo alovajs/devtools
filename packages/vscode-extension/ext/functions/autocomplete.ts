@@ -1,4 +1,4 @@
-import type { Api } from '@alova/wormhole'
+import type { Api } from 'wormajs'
 import { match } from 'sdm2'
 import { getApis } from './getApis'
 
@@ -12,9 +12,9 @@ interface AutoCompleteItem {
 
 function filterAutoCompleteItem(text: string, apiArr: Api[]): AutoCompleteItem[] {
   const autoCompleteArr: AutoCompleteItem[] = []
-  const filter = (text: string, otherText: string) => !!match(otherText, text)
+  const filter = (text: string, otherText: string) => !!match(otherText, text, { ignoreCase: true })
   apiArr.forEach((api) => {
-    const replaceText = api.defaultValue ?? ''
+    const replaceText = api.callingCode ?? ''
     if (filter(text, api.path)) {
       autoCompleteArr.push({
         replaceText,
@@ -33,11 +33,11 @@ function filterAutoCompleteItem(text: string, apiArr: Api[]): AutoCompleteItem[]
         method: api.method,
       })
     }
-    if (filter(text, `${api.global}.${api.pathKey}`)) {
+    if (filter(text, api.name)) {
       autoCompleteArr.push({
         replaceText,
         summary: api.path,
-        path: `${api.global}.${api.pathKey}`,
+        path: api.name,
         documentation: `${api.summary}\n\`\`\`typescript\n${replaceText}\`\`\``,
         method: api.method,
       })

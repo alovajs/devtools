@@ -1,0 +1,28 @@
+{{> comment}}
+export function buildPayload(url: string, defaultConfig: Record<string, any>, apiName: string, config: any) {
+  const mergedConfig: any = { ...defaultConfig[apiName], ...config };
+  const pathParams = mergedConfig.pathParams;
+  const resolvedUrl = url.replace(/\{([^}]+)\}/g, (_, key: string) => {
+    return pathParams?.[key] ?? _;
+  });
+  delete mergedConfig.pathParams;
+  let data = mergedConfig.data;
+  if (Object.prototype.toString.call(data) === '[object Object]' && typeof FormData !== 'undefined') {
+    let hasBlobData = false;
+    const formData = new FormData();
+    for (const key in data) {
+      formData.append(key, data[key]);
+      if (data[key] instanceof Blob) {
+        hasBlobData = true;
+      }
+    }
+    data = hasBlobData ? formData : data;
+    mergedConfig.data = data;
+  }
+  return { url: resolvedUrl, mergedConfig };
+}
+
+export const setDefaultConfig = <
+  ApiMap extends Record<string, (config: any) => any>,
+  ConfigMap extends { [K in keyof ApiMap]?: Partial<Parameters<ApiMap[K]>[0]> },
+>(_: ApiMap, configMap: ConfigMap) => configMap;

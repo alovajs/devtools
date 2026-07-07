@@ -55,15 +55,17 @@ function main() {
     return
   }
 
-  run('pnpm -w coveralls && pnpm -w build')
+  run('pnpm -w build')
 
   if (pub.length) {
     console.log(`🚀 changeset publish：${pub.join(', ')}`)
     run('pnpm -w changeset publish')
   }
   for (const name of pri) {
-    console.log(`🚀 自定义发布：${name}（执行各自 release 命令）`)
-    run(`pnpm -w --filter "${name}" run release`)
+    const plan = releasePlan.find(r => r.name === name)
+    const isPre = plan ? plan.version.includes('-') : false
+    console.log(`🚀 自定义发布：${name}${isPre ? '（prerelease）' : ''}（执行各自 release 命令）`)
+    run(`pnpm -w --filter "${name}" run ${isPre ? 'release:pre' : 'release'}`)
   }
   // 删除文件
   if (!deleteReleasePlan()) {

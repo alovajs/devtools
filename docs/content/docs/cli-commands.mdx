@@ -1,0 +1,68 @@
+---
+title: CLI 命令
+description: worma init / gen 命令参数详解
+---
+
+
+## worma init
+
+初始化配置文件。
+
+```bash
+# 在当前目录创建 worma.config.js
+worma init
+
+# 指定配置文件类型
+worma init -t typescript
+worma init --type commonjs
+
+# 指定模板预设
+worma init -T axios
+worma init --template ky
+
+# 指定项目目录
+worma init -p ./packages/app
+```
+
+### 参数详解
+
+| 参数 | 说明 | 可选值 |
+|------|------|--------|
+| `-t, --type <type>` | 配置文件类型 | `typescript` / `ts` / `commonjs` / `module` |
+| `-T, --template <template>` | 模板预设，默认 `alova` | `alova` / `functional` / `axios` / `fetch` / `ky` |
+| `-p, --project <path>` | 指定项目目录 | — |
+
+## worma gen
+
+根据配置生成 API 代码。
+
+```bash
+# 基本用法（默认 workspace 模式，扫描所有子项目）
+worma gen
+
+# 强制重新生成所有文件（忽略缓存）
+worma gen -f
+worma gen --force
+
+# 指定项目路径（单项目模式）
+worma gen -p ./packages/app
+worma gen --project ./packages/app
+```
+
+### 参数详解
+
+| 参数 | 说明 |
+|------|------|
+| `-f, --force` | 强制重新生成，忽略缓存 |
+| `-p, --project <path>` | 指定项目目录。传入后仅对该项目生成；未传入时以 workspace 模式扫描所有子项目 |
+
+### 行为逻辑
+
+```text
+worma gen
+  → 默认 workspace 模式：扫描所有子项目，逐一生成
+
+worma gen -p ./packages/app
+  → 单项目模式：仅对指定目录读取配置并生成
+```
+

@@ -1,6 +1,7 @@
 import type { ParseOptions } from 'query-string'
 import type { ExtensionContext, Webview } from 'vscode'
 import qs from 'query-string'
+import { getSyntaxHighlightCss } from './theme-colors'
 
 export interface WebviewOptions {
   path?: string
@@ -48,11 +49,17 @@ export class WebviewHelper {
 
   public static setupHtml(webview: Webview, context: ExtensionContext, options?: WebviewOptions) {
     const { serverUrl, injectCode } = this.getUrl(options)
-    return __getWebviewHtml__({
+    const html = __getWebviewHtml__({
       serverUrl,
       webview,
       context,
       injectCode,
     })
+    const css = getSyntaxHighlightCss()
+    const styleTag = `<style id="api-code-theme">${css}</style>`
+    if (html.includes('</head>')) {
+      return html.replace('</head>', `${styleTag}</head>`)
+    }
+    return `${styleTag}${html}`
   }
 }

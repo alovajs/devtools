@@ -1,0 +1,9 @@
+{{#if (eq framework "vue")}}
+  statesHook: vueHook,
+{{else if (eq framework "react")}}
+  statesHook: reactHook,
+{{else if (eq framework "svelte")}}
+  statesHook: svelteHook,
+{{else if (eq framework "solid")}}
+  statesHook: solidHook,
+{{/if}}

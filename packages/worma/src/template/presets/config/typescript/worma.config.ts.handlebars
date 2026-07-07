@@ -1,0 +1,9 @@
+import { defineConfig } from 'wormajs';
+import { platform, aiDoc{{#if templateImport}}, {{{templateImport}}}{{/if}} } from 'wormajs/plugin';
+
+// For more config detailed visit:
+// https://github.com/alovajs/devtools
+
+export default defineConfig({
+  {{> generator-content}}
+});

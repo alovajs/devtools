@@ -1,0 +1,156 @@
+---
+title: Skill 文档结构
+description: SKILL.md 主文档和 references/*.md 的详细格式
+---
+
+## 整体结构
+
+<Files>
+  <Folder name="aidocs" defaultOpen>
+    <File name="SKILL.md" />
+    <Folder name="references" defaultOpen>
+      <Folder name="pet" defaultOpen>
+        <File name="addPet.md" />
+        <File name="getPetById.md" />
+        <File name="findPetsByStatus.md" />
+      </Folder>
+      <Folder name="user">
+        <File name="loginUser.md" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
+## SKILL.md
+
+`SKILL.md` 是 AI 的入口文件，包含 frontmatter 元数据、概述和完整的 API 目录索引：
+
+```markdown
+---
+name: petstore-openapi-3.0-api-reference
+description: >-
+  API reference documentation for Alova Functional (Petstore - OpenAPI 3.0 v1.0.0).
+  Contains specifications for all REST API endpoints, including HTTP request methods,
+  URL paths, path/query parameters, request body schemas, and response types.
+  Key domains covered: pet, store, user.
+---
+
+> version 1.0.0
+
+## Overview
+
+This skill provides complete API reference documentation for Alova Functional.
+When you need to call any endpoint in this service, consult the corresponding
+API document in the references directory for detailed parameter schemas,
+request/response formats, and usage examples.
+
+## API Directory (Alova Functional)
+
+- **pet**
+  - [Add a new pet to the store](./references/pet/addPet.md) `[POST] /pet`
+  - [Find pet by ID](./references/pet/getPetById.md) `[GET] /pet/{petId}`
+  - [Finds Pets by status](./references/pet/findPetsByStatus.md) `[GET] /pet/findByStatus`
+- **user**
+  - [Logs user into the system](./references/user/loginUser.md) `[GET] /user/login`
+```
+
+| 区域 | 说明 |
+|------|------|
+| frontmatter | `name` 格式为 `{title}-api-reference`，用于编码助手识别 Skill；`description` 包含服务名、版本、域名列表和触发时机 |
+| `> version` | 引用块标注 OpenAPI 文档版本号 |
+| `## Overview` | 概述该 Skill 的用途，引导 AI 查阅 `references/` 下的详细文档 |
+| `## API Directory` | 按 tag 分组列出所有端点，每组包含接口摘要链接 + `[METHOD] /path`，AI 通过此目录快速定位所需接口 |
+| Parameter | `{title}`、`{serverName}`、`{version}`、`{tagedApis}` 等由模板从 OpenAPI 文档和配置中提取渲染 |
+
+## 接口详情
+
+每个 API 端点对应一个独立 Markdown 文档。以 `addPet` 为例：
+
+````markdown
+# IMPORTANT: Enforce before generating code (must not be violated)!!!
+
+Before executing the code generation task, recite the following usage
+conventions and ensure compliance when generating.
+
+## Usage Conventions
+
+1. The API defined in this document is located at `src/api/alova/pet`
+2. Follow the calling method shown in the example below.
+
+## API
+
+Add a new pet to the store
+
+`[POST] /pet`
+
+## Request Body
+
+Pass the required request body in `data`:
+
+```typescript
+{
+  id?: number
+  name: string
+  category?: {
+    id?: number
+    name?: string
+  }
+  photoUrls: string[]
+  tags?: Array<{
+    id?: number
+    name?: string
+  }>
+  // pet status in the store
+  status?: "available" | "pending" | "sold"
+}
+```
+
+## Response
+
+Use the response data as needed:
+
+```typescript
+{
+  id?: number
+  name: string
+  category?: {
+    id?: number
+    name?: string
+  }
+  photoUrls: string[]
+  tags?: Array<{
+    id?: number
+    name?: string
+  }>
+  // pet status in the store
+  status?: "available" | "pending" | "sold"
+}
+```
+
+## Usage Example
+
+```typescript
+addPet({
+  data: {
+    name: '',
+    photoUrls: []
+  }
+})
+```
+````
+
+### 文档结构说明
+
+| 区域 | 说明 |
+|------|------|
+| 顶部强制声明 | `# IMPORTANT: Enforce before generating code` — 要求 AI 在生成代码前必须复述使用约定 |
+| `## Usage Conventions` | 强制规范：声明 API 所在文件位置（如 `src/api/alova/pet`），要求遵循下文示例的调用方式 |
+| `## API` | 接口摘要说明 + `` `[METHOD] /path` `` 格式的端点标识 |
+| `## Path Parameters` | 路径参数类型定义（如有），AI 通过 `pathParams` 传入 |
+| `## Query Parameters` | 查询参数类型定义（如有），AI 通过 `params` 传入 |
+| `## Request Body` | 请求体类型定义（如有），AI 通过 `data` 传入 |
+| `## Response` | 响应体类型定义，AI 据此推断返回数据结构 |
+| `## Usage Example` | 带参数值的完整调用示例，AI 可直接参考生成代码 |
+| Parameter | `{fileLocation}` 由 aiDoc 插件在 `codeGenerated` 生命周期自动注入；`{serverName}` 来自生成器配置；`{method}`、`{path}`、`{summary}` 等来自 OpenAPI 文档 |
+
+> 不同类型的接口只包含对应的参数段。只有路径参数的 GET 接口不含 Request Body，POST 接口通常包含 Request Body 和 Response。

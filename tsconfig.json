@@ -12,5 +12,7 @@
     "scripts/**.*",
     "typings/**/*.d.ts"
   ],
-  "exclude": ["design/**"]
+  "exclude": [
+    "design/**"
+  ]
 }

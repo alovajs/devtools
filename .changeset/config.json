@@ -4,14 +4,7 @@
   "commit": false,
   "fixed": [],
   "linked": [],
-  "ignore": [
-    "js-commonjs-v2-demo",
-    "js-commonjs-demo",
-    "js-module-v2-demo",
-    "js-module-demo",
-    "ts-v2-demo",
-    "ts-demo"
-  ],
+  "ignore": [],
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "minor",

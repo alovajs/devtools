@@ -1,0 +1,36 @@
+{
+  "name": "worma-benchmark",
+  "type": "module",
+  "private": true,
+  "description": "Benchmark comparing worma with other OpenAPI TypeScript code generators",
+  "scripts": {
+    "generate-specs": "tsx scripts/generate-specs.ts",
+    "bench": "pnpm generate-specs && tsx bench.ts",
+    "dev": "pnpm generate-specs && concurrently -n vite,hono -c blue,green \"cross-env NODE_OPTIONS=--expose-gc vite\" \"cross-env NODE_OPTIONS=--expose-gc tsx server.ts\"",
+    "dev:vite": "cross-env NODE_OPTIONS=--expose-gc vite",
+    "dev:server": "pnpm generate-specs && cross-env NODE_OPTIONS=--expose-gc tsx server.ts",
+    "build": "vite build",
+    "start": "pnpm generate-specs && cross-env NODE_OPTIONS=--expose-gc tsx server.ts --prod",
+    "preview": "vite preview",
+    "clean": "rm -rf output node_modules dist results specs"
+  },
+  "devDependencies": {
+    "@ant-design/icons-vue": "catalog:",
+    "@hey-api/client-fetch": "catalog:",
+    "@hey-api/openapi-ts": "catalog:",
+    "@hono/node-server": "catalog:",
+    "@vitejs/plugin-vue": "catalog:build",
+    "ant-design-vue": "catalog:",
+    "concurrently": "catalog:",
+    "cross-env": "catalog:",
+    "echarts": "catalog:",
+    "hono": "catalog:",
+    "openapi-typescript": "catalog:",
+    "tsx": "catalog:dev",
+    "typescript": "catalog:dev",
+    "vite": "catalog:build",
+    "vue": "catalog:frontend",
+    "vue-echarts": "catalog:",
+    "wormajs": "workspace:*"
+  }
+}

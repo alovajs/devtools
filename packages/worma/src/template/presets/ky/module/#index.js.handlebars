@@ -1,0 +1,14 @@
+{{> comment}}
+import ky from 'ky';
+
+export const kyInstance = ky.create({
+  prefix: '{{{baseUrl}}}/',
+  hooks: {
+    beforeRequest: [
+      _state => { },
+    ],
+    afterResponse: [
+      _state => { },
+    ],
+  },
+});

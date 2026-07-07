@@ -1,0 +1,449 @@
+import type {
+  BaseReferenceObject,
+  MaybeArraySchemaObject,
+  OpenAPIDocument,
+  ReferenceObject,
+  ResponsesObject,
+  SchemaObject,
+} from '@/type'
+import { cloneDeep, isArray, isEqualWith, isObject, mergeWith, sortBy } from 'lodash'
+import { getGlobalConfig } from '@/config'
+import { standardLoader } from '@/core/loader'
+import { capitalizeFirstLetter } from '@/utils'
+/**
+ * Determine whether it is a $ref object
+ * @param obj Judgment object
+ * @returns Whether it is a $ref object
+ */
+export function isReferenceObject(obj: any): obj is ReferenceObject {
+  return !!(obj as ReferenceObject)?.$ref
+}
+function isBaseReferenceObject(obj: any): obj is BaseReferenceObject {
+  return !!(obj as BaseReferenceObject)?._$ref
+}
+export function isMaybeArraySchemaObject(obj: any): obj is MaybeArraySchemaObject {
+  return !!(obj as MaybeArraySchemaObject)?.items
+}
+
+/**
+ *
+ * @param path $ref search path
+ * @param openApi openApi document object
+ * @param isDeep Whether to deep copy
+ * @returns SchemaObject found
+ */
+export function findBy$ref<T = SchemaObject>(path: string, openApi: OpenAPIDocument, isDeep: boolean = false) {
+  const pathArr = path.split('/')
+  let find: any = {
+    '#': openApi,
+  }
+  pathArr.forEach((key) => {
+    const tryKeys = [key, decodeURIComponent(key)]
+    if (find) {
+      find = find[tryKeys.find(k => !!find[k]) ?? key]
+    }
+  })
+  if (!find) {
+    const DEFAULT_CONFIG = getGlobalConfig()
+    throw new DEFAULT_CONFIG.Error(`cannot find $ref '${path}'`)
+  }
+  return (isDeep ? cloneDeep(find) : find) as T
+}
+export function parseReference<T, U = Exclude<T, ReferenceObject>>(obj: T, document: OpenAPIDocument, isDeep: boolean = false): U {
+  if (isReferenceObject(obj)) {
+    return findBy$ref<U>(obj.$ref, document, isDeep)
+  }
+  return obj as unknown as U
+}
+export function dereference<T, U = Exclude<T, ReferenceObject>>(obj: T, document: OpenAPIDocument, isDeep: boolean = false): U {
+  if (isReferenceObject(obj)) {
+    const result = findBy$ref<U & { description?: string }>(obj.$ref, document, isDeep)
+    const description = obj.description || result.description
+    return {
+      ...result,
+      description,
+    }
+  }
+  return obj as unknown as U
+}
+export function nextReference(schema: SchemaObject) {
+  for (const keyStr of Object.keys(schema)) {
+    const key = keyStr as keyof SchemaObject
+    if (schema[key] && typeof schema[key] === 'object' && isReferenceObject(schema[key])) {
+      return schema[key]
+    }
+  }
+  return null
+}
+/**
+ *
+ * @param path $ref path
+ * @param data Reuse object
+ * @param openApi Inserted openapi document object
+ */
+export function setComponentsBy$ref(path: string, data: any, openApi: OpenAPIDocument) {
+  const pathArr = path.split('/')
+  let find: any = {
+    '#': openApi,
+  }
+  pathArr.forEach((key, idx) => {
+    if (idx + 1 === pathArr.length) {
+      find[key] = data
+      return
+    }
+    if (find[key]) {
+      find = find[key]
+    }
+    else {
+      find = find[key] = {}
+    }
+  })
+}
+/**
+ *
+ * @param path $ref path
+ * @param toUpperCase Whether the initial letter size
+ * @returns Reference object name
+ */
+export function get$refName(path: string, toUpperCase: boolean = true) {
+  const pathArr = path.split('/')
+  const name = pathArr[pathArr.length - 1]
+  if (!toUpperCase) {
+    return name
+  }
+  return capitalizeFirstLetter(name)
+}
+/**
+ *
+ * @param schemaOrigin Object with $ref
+ * @param openApi openApi document object
+ * @returns Removed $ref object
+ */
+/**
+ * M2-B1: $ref 解引用缓存优化 —— 命中 searchMap 时跳过 cloneDeep
+ */
+export function removeAll$ref<T = SchemaObject>(schemaOrigin: any, openApi: OpenAPIDocument, optons?: { searchMap?: Map<string, SchemaObject>, refNameMap?: Map<string, string> }) {
+  const { searchMap = new Map(), refNameMap = new Map() } = optons ?? {}
+
+  // 先检查缓存，命中则直接返回（避免 cloneDeep 开销）
+  if (isReferenceObject(schemaOrigin)) {
+    if (searchMap.has(schemaOrigin.$ref)) {
+      return searchMap.get(schemaOrigin.$ref) as T
+    }
+    const schema = findBy$ref<SchemaObject>(schemaOrigin.$ref, openApi, true) as SchemaObject & Record<string, any>
+    refNameMap.set(schemaOrigin.$ref, standardLoader.transformRefName(schemaOrigin.$ref))
+    // Mark for easy restoration
+    schema._$ref = schemaOrigin.$ref
+    searchMap.set(schemaOrigin.$ref, schema)
+    for (const key of Object.keys(schema)) {
+      if (schema[key] && typeof schema[key] === 'object') {
+        schema[key] = removeAll$ref(schema[key], openApi, { searchMap, refNameMap })
+      }
+    }
+    return schema as T
+  }
+
+  // 非 $ref 节点：仍需 cloneDeep 防止污染原始文档，但子节点走 searchMap 去重
+  const deepSchemaOrigin = cloneDeep(schemaOrigin)
+  for (const key of Object.keys(deepSchemaOrigin)) {
+    if (deepSchemaOrigin[key] && typeof deepSchemaOrigin[key] === 'object') {
+      deepSchemaOrigin[key] = removeAll$ref(deepSchemaOrigin[key], openApi, { searchMap, refNameMap })
+    }
+  }
+  return deepSchemaOrigin as T
+}
+/**
+ *
+ * @param objValue object to be compared
+ * @param srcValue source object
+ * @param openApi openApi document object
+ * @returns Are they equal?
+ */
+export function isEqualObject(objValue: any, srcValue: any, openApi: OpenAPIDocument) {
+  const visited = new WeakMap()
+  const ignoreKeyArr = ['_$ref']
+  function customizer(objValueOrigin: any, otherValueOrigin: any) {
+    if (objValueOrigin === otherValueOrigin) {
+      return true
+    }
+    let objValue = objValueOrigin
+    let otherValue = otherValueOrigin
+    if (isReferenceObject(objValueOrigin)) {
+      objValue = findBy$ref(objValueOrigin.$ref, openApi)
+    }
+    if (isReferenceObject(otherValueOrigin)) {
+      otherValue = findBy$ref(otherValueOrigin.$ref, openApi)
+    }
+    // Ignore the effect of array order
+
+    if (isArray(objValue) && isArray(otherValue)) {
+      const sortObjValue = sortBy(objValue)
+      const sortOtherValue = sortBy(otherValue)
+      const keys = [...new Set([...Object.keys(sortObjValue), ...Object.keys(sortOtherValue)])].filter(
+        key => !ignoreKeyArr.includes(key),
+      )
+      return keys.every(key => isEqualWith((sortObjValue as any)[key], (sortOtherValue as any)[key], customizer))
+    }
+    // If it is an object, compare recursively
+
+    if (isObject(objValue) && isObject(otherValue)) {
+      if (visited.has(objValue) && visited.get(objValue) === otherValue) {
+        return true
+      }
+      visited.set(objValue, otherValue)
+      const keys = [...new Set([...Object.keys(objValue), ...Object.keys(otherValue)])].filter(
+        key => !ignoreKeyArr.includes(key),
+      )
+      return keys.every(key => isEqualWith((objValue as any)[key], (otherValue as any)[key], customizer))
+    }
+  }
+  return isEqualWith(objValue, srcValue, customizer)
+}
+
+export function next$ref() {
+  function getNameVersion(path: string) {
+    const name = standardLoader.transformRefName(path, {
+      toUpperCase: false,
+    })
+    const [, nameVersion = 0] = /(\d+)$/.exec(name) ?? []
+    return Number(nameVersion)
+  }
+  function getOnlyName(path: string) {
+    const name = standardLoader.transformRefName(path, {
+      toUpperCase: false,
+    })
+    return name.replace(/\d+$/, '')
+  }
+  function getOnlyPath(path: string) {
+    return path.split('/').slice(0, -1).join('/')
+  }
+  function getNext(path: string, map: Array<[string, any]> = []) {
+    const name = getOnlyName(path)
+    const basePath = getOnlyPath(path)
+    let nameVersion = getNameVersion(path)
+    map.forEach(([key]) => {
+      if (getOnlyName(key) === name && getOnlyPath(path) === basePath) {
+        nameVersion = Math.max(nameVersion, getNameVersion(key))
+      }
+    })
+    return `${basePath}/${name}${nameVersion + 1}`
+  }
+  return {
+    getNameVersion,
+    getOnlyName,
+    getOnlyPath,
+    getNext,
+  }
+}
+
+/**
+ * 根据 usedRefs 优化 refsMap：
+ * 1) 移除未使用的 key；
+ * 2) 同组（相同 basePath+onlyName）内按版本升序将值左移，
+ *    即剩余键依次接收原始值的前 N 个（N 为剩余键数量）。
+ */
+export function optimizeRefsMap(
+  refsMap: Record<string, string>,
+  usedRefs: Array<string | ReferenceObject>,
+): Record<string, string> {
+  const helper = next$ref()
+  const usedSet = new Set<string>(usedRefs.map(v => (typeof v === 'string' ? v : v.$ref)))
+
+  const grouped: Record<string, Array<{ key: string, value: string, version: number }>> = {}
+  for (const [key, value] of Object.entries(refsMap || {})) {
+    const groupId = `${helper.getOnlyPath(key)}::${helper.getOnlyName(key)}`
+    const arr = grouped[groupId] || (grouped[groupId] = [])
+    arr.push({ key, value, version: helper.getNameVersion(key) })
+  }
+
+  const newRefsMap: Record<string, string> = {}
+  for (const groupId of Object.keys(grouped)) {
+    const list = grouped[groupId].sort((a, b) => a.version - b.version)
+    const remain = list.filter(item => usedSet.has(item.key))
+    if (remain.length === 0) {
+      continue
+    }
+    const assignValues = list.map(item => item.value).slice(0, remain.length)
+    remain.forEach((item, idx) => {
+      newRefsMap[item.key] = assignValues[idx]
+    })
+  }
+  return newRefsMap
+}
+function isCircular(obj: any) {
+  const seenObjects = new WeakSet()
+
+  function detect(obj: any) {
+    if (obj && typeof obj === 'object') {
+      if (seenObjects.has(obj)) {
+        return true
+      }
+      seenObjects.add(obj)
+      for (const key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          if (detect(obj[key])) {
+            return true
+          }
+        }
+      }
+    }
+    return false
+  }
+
+  return detect(obj)
+}
+function hasBaseReferenceObject(obj: any) {
+  if (obj && typeof obj === 'object') {
+    if (isBaseReferenceObject(obj)) {
+      return true
+    }
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        if (hasBaseReferenceObject(obj[key])) {
+          return true
+        }
+      }
+    }
+  }
+  return false
+}
+function removeBaseReference(obj: Record<string, any>, options: {
+  openApi: OpenAPIDocument
+  map?: Array<[string, any]>
+  refNameMap?: Map<string, string>
+}) {
+  const { openApi, map = [], refNameMap = new Map() } = options
+  if (isBaseReferenceObject(obj)) {
+    const refObj = { $ref: obj._$ref }
+    if (isEqualObject(obj, refObj, openApi)) {
+      return refObj
+    }
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key) && hasBaseReferenceObject(obj[key])) {
+        obj[key] = removeBaseReference(obj[key], { openApi, map, refNameMap })
+      }
+    }
+    const [path] = map.find(([, item]) => isEqualObject(item, obj, openApi)) ?? []
+    if (path) {
+      return {
+        $ref: path,
+      }
+    }
+    const refHelper = next$ref()
+    const nextPath = refHelper.getNext(refObj.$ref, map)
+    if (refNameMap.has(refObj.$ref)) {
+      refNameMap.set(nextPath, `${refNameMap.get(refObj.$ref) ?? ''}${refHelper.getNameVersion(nextPath)}`)
+    }
+    map.push([nextPath, obj])
+    setComponentsBy$ref(nextPath, obj, openApi)
+    return {
+      $ref: nextPath,
+    }
+  }
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key) && hasBaseReferenceObject(obj[key])) {
+      obj[key] = removeBaseReference(obj[key], { openApi, map, refNameMap })
+    }
+  }
+  return obj
+}
+function unCircular(
+  obj: Record<string, any>,
+  options: {
+    openApi: OpenAPIDocument
+    map?: Array<[string, any]>
+    objPath?: string
+    seen?: WeakMap<object, { $ref: string }>
+    refNameMap?: Map<string, string>
+  },
+) {
+  const { openApi, map = [], objPath = '$', seen = new WeakMap(), refNameMap = new Map() } = options
+  if (typeof obj !== 'object' || obj === null) {
+    return obj // 原始值直接返回
+  }
+  if (seen.has(obj)) {
+    return seen.get(obj)
+  }
+  const setSeen = (obj: object, refOjec: { $ref: string }) => {
+    const oldRefObj = seen.get(obj) ?? refOjec
+    oldRefObj.$ref = refOjec.$ref
+    seen.set(obj, oldRefObj)
+  }
+  const $ref = `#/components/schemas/${standardLoader.transform(standardLoader.transformRadomVariable(objPath), {
+    style: 'camelCase',
+  })}`
+  setSeen(obj, { $ref })
+  if (isBaseReferenceObject(obj)) {
+    const refObj = { $ref: obj._$ref }
+    if (isEqualObject(obj, refObj, openApi)) {
+      setSeen(obj, refObj)
+      return refObj
+    }
+    const refHelper = next$ref()
+    const nextPath = refHelper.getNext(refObj.$ref, map)
+    if (refNameMap.has(refObj.$ref)) {
+      refNameMap.set(nextPath, `${refNameMap.get(refObj.$ref) ?? ''}${refHelper.getNameVersion(nextPath)}`)
+    }
+    seen.set(obj, { $ref: nextPath })
+    map.push([nextPath, obj])
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        obj[key] = unCircular(obj[key], { openApi, map, objPath: `${objPath}.${key}`, seen, refNameMap })
+      }
+    }
+    setComponentsBy$ref(nextPath, obj, openApi)
+    return {
+      $ref: nextPath,
+    }
+  }
+  map.push([$ref, obj])
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      obj[key] = unCircular(obj[key], { openApi, map, objPath: `${objPath}.${key}`, seen, refNameMap })
+    }
+  }
+  setComponentsBy$ref($ref, obj, openApi)
+  return obj
+}
+
+export function mergeObject<T>(objValue: any, srcValue: any, options: {
+  openApi: OpenAPIDocument
+  map?: Array<[string, any]>
+  refNameMap?: Map<string, string>
+}): T {
+  const { openApi, map = [], refNameMap = new Map() } = options
+  function customizer(objValue: any, srcValue: any): any {
+    // If they are all arrays and the src value is an empty array, the src value will be returned directly.
+
+    if (isArray(objValue) && isArray(srcValue) && !srcValue.length) {
+      return srcValue
+    }
+    if (isEqualObject(objValue, srcValue, openApi)) {
+      return objValue
+    }
+    // Handle circular references
+
+    if (isCircular(srcValue)) {
+      srcValue = unCircular(srcValue, { openApi, map, objPath: standardLoader.transformRadomVariable(JSON.stringify(objValue)), refNameMap })
+    }
+    // Is there also a $ref attribute?
+
+    if (hasBaseReferenceObject(srcValue)) {
+      return removeBaseReference(srcValue, { openApi, map, refNameMap })
+    }
+    return srcValue
+  }
+  // M2-B1: mergeWith 自身不污染首参（返回新对象），去掉冗余 cloneDeep
+  return mergeWith(objValue, srcValue, customizer)
+}
+
+export function getResponseSuccessKey(responsesObject?: ResponsesObject) {
+  if (!responsesObject) {
+    return '200'
+  }
+  const successKeys = Object.keys(responsesObject)
+    .map(key => Number(key))
+    .filter(key => !Number.isNaN(key) && key >= 200 && key < 300)
+    .sort((a, b) => a - b)
+  return `${successKeys[0] ?? 'default'}`
+}
