@@ -44,16 +44,16 @@ class SnippetManager {
   public openSnippetSearch() {
     if (!this.quickPick) {
       this.quickPick = window.createQuickPick()
-      this.quickPick.placeholder = '搜索代码片段...'
+      this.quickPick.placeholder = 'Search snippets...'
       this.quickPick.matchOnDescription = true
       this.quickPick.matchOnDetail = true
 
       // 设置面板标题和图标
-      this.quickPick.title = '代码片段搜索'
+      this.quickPick.title = 'Snippet Search'
       this.quickPick.buttons = [
         {
           iconPath: new ThemeIcon('add'),
-          tooltip: '添加新代码片段',
+          tooltip: 'Add new snippet',
         },
       ]
 
@@ -107,7 +107,7 @@ class SnippetManager {
     const editor = window.activeTextEditor
 
     if (!editor) {
-      window.showErrorMessage('没有活动的编辑器')
+      window.showErrorMessage('No active editor')
       return
     }
 
@@ -115,12 +115,12 @@ class SnippetManager {
     const currentLanguage = editor.document.languageId
     if (snippet.language !== '*' && snippet.language !== currentLanguage) {
       const response = await window.showWarningMessage(
-        `此代码片段适用于 ${snippet.language}，当前文件是 ${currentLanguage}。是否仍要插入？`,
-        '是',
-        '否',
+        `This snippet is for ${snippet.language}, but the current file is ${currentLanguage}. Insert anyway?`,
+        'Yes',
+        'No',
       )
 
-      if (response !== '是') {
+      if (response !== 'Yes') {
         return
       }
     }
@@ -140,8 +140,8 @@ class SnippetManager {
   // 创建新代码片段
   private async createNewSnippet() {
     const name = await window.showInputBox({
-      prompt: '输入代码片段名称',
-      placeHolder: '例如: React函数组件',
+      prompt: 'Enter snippet name',
+      placeHolder: 'e.g. React Function Component',
     })
 
     if (!name)
@@ -149,8 +149,8 @@ class SnippetManager {
 
     const description
       = (await window.showInputBox({
-        prompt: '输入代码片段描述',
-        placeHolder: '例如: 创建React函数组件模板',
+        prompt: 'Enter snippet description',
+        placeHolder: 'e.g. Create a React function component template',
       })) || ''
 
     const languages = [
@@ -168,13 +168,13 @@ class SnippetManager {
     ]
     const language
       = (await window.showQuickPick(languages, {
-        placeHolder: '选择适用语言 (* 表示所有语言)',
+        placeHolder: 'Select applicable language (* for all languages)',
       })) || '*'
 
     const tagsInput
       = (await window.showInputBox({
-        prompt: '输入标签（逗号分隔）',
-        placeHolder: '例如: react, component',
+        prompt: 'Enter tags (comma separated)',
+        placeHolder: 'e.g. react, component',
       })) || ''
 
     const tags = tagsInput
@@ -184,7 +184,7 @@ class SnippetManager {
 
     // 打开新编辑器用于输入代码
     const document = await workspace.openTextDocument({
-      content: '// 在此输入您的代码片段\n// 使用 $1, $2 等作为光标位置',
+      content: '// Enter your code snippet here\n// Use $1, $2, etc. as cursor positions',
       language: 'javascript',
     })
 
@@ -207,10 +207,10 @@ class SnippetManager {
           }
 
           this.snippets.push(newSnippet)
-          window.showInformationMessage(`代码片段 "${name}" 已添加!`)
+          window.showInformationMessage(`Snippet "${name}" added!`)
         }
         else {
-          window.showWarningMessage('代码片段创建已取消')
+          window.showWarningMessage('Snippet creation cancelled')
         }
 
         disposable.dispose()
@@ -242,7 +242,7 @@ export const insertSnippet: CommandType = {
   commandId: Commands.snippet_search_insert,
   handler: () => async () => {
     const selected = await window.showQuickPick(snippetManager.getSnippetsForCommandPalette(), {
-      placeHolder: '选择要插入的代码片段',
+      placeHolder: 'Select a snippet to insert',
       matchOnDescription: true,
       matchOnDetail: true,
     })
@@ -260,7 +260,7 @@ export const insertSnippet: CommandType = {
 export const helpeSnippet: CommandType = {
   commandId: Commands.snippet_search_show_help,
   handler: () => () => {
-    window.showInformationMessage('使用 Ctrl+Alt+P (Win/Linux) 或 Cmd+Alt+P (Mac) 打开代码片段搜索')
+    window.showInformationMessage('Use Ctrl+Alt+P (Win/Linux) or Cmd+Alt+P (Mac) to open snippet search')
   },
 }
 export default <ExtensionModule> function (ctx) {

@@ -8,6 +8,6 @@
     "start": "node src/main.js"
   },
   "dependencies": {
-    "axios": "catalog:default"
+    "axios": "catalog:"
   }
 }

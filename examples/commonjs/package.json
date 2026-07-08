@@ -9,9 +9,9 @@
   },
   "dependencies": {
     "alova": "^3.0.0",
-    "axios": "catalog:default"
+    "axios": "catalog:"
   },
   "devDependencies": {
-    "wormajs": "workspace:*"
+    "wormajs": "catalog:"
   }
 }

@@ -27,10 +27,10 @@
     "hono": "catalog:",
     "openapi-typescript": "catalog:",
     "tsx": "catalog:dev",
-    "typescript": "catalog:dev",
+    "typescript": "^5.9.3",
     "vite": "catalog:build",
     "vue": "catalog:frontend",
     "vue-echarts": "catalog:",
-    "wormajs": "workspace:*"
+    "wormajs": "catalog:"
   }
 }

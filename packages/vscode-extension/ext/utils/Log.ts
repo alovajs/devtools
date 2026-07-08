@@ -48,7 +48,7 @@ export class Log {
     }
 
     if (options?.prompt) {
-      const openOutputButton = '显示日志'
+      const openOutputButton = 'Show Logs'
       const message = typeof err === 'string' ? err : `${displayName} Error: ${err.toString()}`
       const result = await window.showErrorMessage(message, openOutputButton)
       if (result === openOutputButton) {

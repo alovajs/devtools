@@ -37,21 +37,25 @@
 
 ## 本地运行
 
+每个示例项目都是**自包含**的，依赖已写死直接版本号，可单独克隆安装运行（无需完整 monorepo 环境）。
+
 ```bash
-# 克隆仓库
+# 方式一：从完整 monorepo 进入（可联调本地 wormajs）
 git clone https://github.com/alovajs/devtools.git
-cd devtools/examples
+cd devtools/examples/typescript   # 或 esm / commonjs
+npm install
+npm run gen
 
-# 选择任一项目
-cd typescript   # 或 esm / commonjs
-
-# 安装依赖 & 生成代码
+# 方式二：单独克隆某个示例目录（复制/下载该文件夹即可）
+cd examples/typescript            # 或 esm / commonjs
 npm install
 npm run gen
 
 # 查看生成的 API 代码
 ls src/api/
 ```
+
+> 注意：示例内通过 `worma` 命令调用代码生成器，其底层依赖包名为 `wormajs`（`npm install` 会自动安装）。在完整 monorepo 内运行时会使用本地 `packages/worma`，独立克隆时则使用 npm 上发布的 `wormajs`。
 
 ## 目录结构
 

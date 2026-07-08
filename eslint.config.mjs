@@ -64,4 +64,15 @@ export default antfu({
         ],
       },
     ],
+  })
+  // 这些项目需要独立克隆安装运行，禁用 catalog 强制，允许写死直接版本号。
+  // 其余 packages/* 仍保持 catalog 一致性不受影响。
+  .append({
+    files: [
+      "examples/**/package.json",
+      "benchmark/**/package.json",
+    ],
+    rules: {
+      "pnpm/json-enforce-catalog": "off",
+    },
   });

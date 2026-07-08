@@ -8,6 +8,6 @@
     "start": "node src/main.js"
   },
   "dependencies": {
-    "ky": "catalog:default"
+    "ky": "catalog:"
   }
 }

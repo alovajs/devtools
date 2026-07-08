@@ -6,14 +6,17 @@ OpenAPI 代码生成工具性能对比 — 一键运行，直观看到 worma 与
 
 | 工具                    | npm 包                | 生成内容                         |
 | ----------------------- | --------------------- | -------------------------------- |
-| **worma**               | `worma`               | 类型 + 请求函数 + aiDoc + 多模板 |
+| **worma**               | `wormajs`             | 类型 + 请求函数 + aiDoc + 多模板 |
 | **openapi-typescript**  | `openapi-typescript`  | 纯类型定义（`.d.ts`）            |
 | **@hey-api/openapi-ts** | `@hey-api/openapi-ts` | 类型 + 请求函数                  |
 
 ## 快速开始
 
+benchmark 已自包含，依赖写死直接版本号。
+
 ```bash
-# 在项目根目录安装所有依赖（包含 benchmark & worma）
+# 方式一：在完整 monorepo 内（可联调本地 wormajs）
+# 项目根目录安装所有依赖（包含 benchmark）
 pnpm install
 
 # 构建 worma（生成 dist/，benchmark 需要它的 CLI）
@@ -21,7 +24,15 @@ pnpm build
 
 # 进入 benchmark 运行对比
 cd benchmark && pnpm bench
+
+# 方式二：单独克隆 benchmark 目录
+# 复制/下载 benchmark/ 文件夹后直接安装运行（使用 npm 发布的 wormajs）
+cd benchmark
+npm install
+npm run bench
 ```
+
+> 注意：benchmark 通过 `worma` 命令调用生成器，其依赖包名为 `wormajs`。在 monorepo 内联调本地 `packages/worma`，独立克隆时则使用 npm 上发布的 `wormajs`。
 
 ## 对比维度
 
