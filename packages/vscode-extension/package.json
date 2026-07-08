@@ -241,6 +241,7 @@
     "reactive-vscode": "catalog:frontend",
     "sinon": "catalog:dev",
     "tailwindcss": "catalog:build",
+    "typescript": "catalog:dev",
     "unplugin-auto-import": "catalog:build",
     "unplugin-vue-components": "catalog:build",
     "unplugin-vue-markdown": "catalog:build",
