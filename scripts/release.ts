@@ -26,6 +26,34 @@ function getWorkspacePackageInfo() {
   return map
 }
 
+function normalizeMarketplaceVersion(pkgName: string): boolean {
+  // VS Marketplace / OpenVSX 扩展版本号仅支持 major.minor.patch，不接受 semver 预发布标签。
+  // 规则：取 major.minor，并将 beta.x 中的 x 作为 patch。例如 1.0.0-beta.1 -> 1.0.1
+  let pkgFile = ''
+  fg.sync(['packages/*/package.json'], { cwd: process.cwd(), absolute: true }).forEach((file) => {
+    try {
+      const j = JSON.parse(fs.readFileSync(file, 'utf8')) as Record<string, any>
+      if (j.name === pkgName)
+        pkgFile = file
+    }
+    catch {
+      // ignore
+    }
+  })
+  if (!pkgFile)
+    return false
+  const json = JSON.parse(fs.readFileSync(pkgFile, 'utf8')) as Record<string, any>
+  const version = String(json.version)
+  const match = version.match(/^(\d+)\.(\d+)\.\d+-beta\.(\d+)$/)
+  if (!match)
+    return false
+  const next = `${match[1]}.${match[2]}.${match[3]}`
+  json.version = next
+  fs.writeFileSync(pkgFile, `${JSON.stringify(json, null, 2)}\n`)
+  console.log(`🔧 规整扩展版本: ${version} -> ${next}（不提交）`)
+  return true
+}
+
 function main() {
   const releasePlan = loadReleasePlan()
   const infoMap = getWorkspacePackageInfo()
@@ -64,6 +92,10 @@ function main() {
   for (const name of pri) {
     const plan = releasePlan.find(r => r.name === name)
     const isPre = plan ? plan.version.includes('-') : false
+    if (isPre) {
+      // 扩展预发布：将 beta.x 的 x 作为 patch，仅保留 major.minor.patch
+      normalizeMarketplaceVersion(name)
+    }
     console.log(`🚀 自定义发布：${name}${isPre ? '（prerelease）' : ''}（执行各自 release 命令）`)
     run(`pnpm -w --filter "${name}" run ${isPre ? 'release:pre' : 'release'}`)
   }
