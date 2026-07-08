@@ -1,5 +1,11 @@
 # worma
 
+## 0.0.2-beta.1
+
+### Patch Changes
+
+- [#150](https://github.com/alovajs/devtools/pull/150) [`62804c3`](https://github.com/alovajs/devtools/commit/62804c3f865bc64293910b496843b507c44f6af9) Thanks [@JOU-amjs](https://github.com/JOU-amjs)! - Correc temp file name. Which is bundled by esbuild.
+
 ## 0.0.2-beta.0
 
 ### Patch Changes
