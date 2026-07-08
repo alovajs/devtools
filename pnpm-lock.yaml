@@ -634,7 +634,7 @@ importers:
         specifier: ^3.0.0
         version: 3.3.4
       axios:
-        specifier: 'catalog:'
+        specifier: ^1.17.0
         version: 1.17.0
     devDependencies:
       wormajs:
@@ -647,10 +647,10 @@ importers:
         specifier: ^3.0.0
         version: 3.3.4
       axios:
-        specifier: 'catalog:'
+        specifier: ^1.17.0
         version: 1.17.0
       ky:
-        specifier: 'catalog:'
+        specifier: ^2.0.2
         version: 2.0.2
     devDependencies:
       wormajs:
@@ -663,14 +663,14 @@ importers:
         specifier: ^3.0.0
         version: 3.3.4
       axios:
-        specifier: 'catalog:'
+        specifier: ^1.17.0
         version: 1.17.0
       ky:
-        specifier: 'catalog:'
+        specifier: ^2.0.2
         version: 2.0.2
     devDependencies:
       tsx:
-        specifier: catalog:dev
+        specifier: ^4.22.4
         version: 4.22.4
       typescript:
         specifier: ^5.9.3
