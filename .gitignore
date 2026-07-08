@@ -9,6 +9,7 @@ public/assets/fonts
 out
 *-out
 dist
+docs/.source/
 dist-ssr
 *.vsix
 .vscode-test

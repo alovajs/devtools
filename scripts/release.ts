@@ -50,7 +50,7 @@ function normalizeMarketplaceVersion(pkgName: string): boolean {
   const next = `${match[1]}.${match[2]}.${match[3]}`
   json.version = next
   fs.writeFileSync(pkgFile, `${JSON.stringify(json, null, 2)}\n`)
-  console.log(`🔧 规整扩展版本: ${version} -> ${next}（不提交）`)
+  console.log(`🔧 format extension version: ${version} -> ${next}`)
   return true
 }
 
@@ -64,7 +64,7 @@ function main() {
   for (const name of names) {
     const info = infoMap.get(name)
     if (!info) {
-      console.warn(`⚠ 未找到包: ${name}`)
+      console.warn(`⚠ package is not found: ${name}`)
       continue
     }
     if (info.private) {
@@ -72,7 +72,7 @@ function main() {
         pri.push(name)
       }
       else {
-        console.warn(`⚠ 私有包 ${name} 未定义 release 命令`)
+        console.warn(`⚠ private package ${name} is not define script \`release\``)
       }
     }
     else {
@@ -96,7 +96,7 @@ function main() {
       // 扩展预发布：将 beta.x 的 x 作为 patch，仅保留 major.minor.patch
       normalizeMarketplaceVersion(name)
     }
-    console.log(`🚀 自定义发布：${name}${isPre ? '（prerelease）' : ''}（执行各自 release 命令）`)
+    console.log(`🚀 custom publish：${name}${isPre ? '（prerelease）' : ''}`)
     run(`pnpm -w --filter "${name}" run ${isPre ? 'release:pre' : 'release'}`)
   }
   // 删除文件
