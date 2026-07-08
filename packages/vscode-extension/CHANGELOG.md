@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.0.2-beta.0
+
+### Patch Changes
+
+- [#146](https://github.com/alovajs/devtools/pull/146) [`31a0d64`](https://github.com/alovajs/devtools/commit/31a0d64212d61373859c060894f72ac3ec195d73) Thanks [@JOU-amjs](https://github.com/JOU-amjs)! - Release new version of VS Code extension
+
 ## 2.0.13
 
 ### Patch Changes

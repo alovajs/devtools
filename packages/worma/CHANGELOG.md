@@ -1,5 +1,11 @@
 # worma
 
+## 0.0.2-beta.0
+
+### Patch Changes
+
+- [#146](https://github.com/alovajs/devtools/pull/146) [`cf924d7`](https://github.com/alovajs/devtools/commit/cf924d7164c64f51f17289ffa2109748f2074e14) Thanks [@JOU-amjs](https://github.com/JOU-amjs)! - Release new beta version of wormajs
+
 ## 1.5.2
 
 ### Patch Changes

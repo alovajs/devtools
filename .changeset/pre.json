@@ -6,5 +6,8 @@
     "worma-vscode": "0.0.1",
     "wormajs": "0.0.1"
   },
-  "changesets": []
+  "changesets": [
+    "vscode-extension-release",
+    "wormajs-release"
+  ]
 }
