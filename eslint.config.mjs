@@ -19,7 +19,8 @@ export default antfu({
     ".codebuddy/**",
     ".next",
     "**/.source",
-    "**/*.tsbuildinfo"
+    "**/*.tsbuildinfo",
+    "**/next-env.d.ts"
   ],
   markdown: false,
   formatters: true,
@@ -67,12 +68,18 @@ export default antfu({
   })
   // 这些项目需要独立克隆安装运行，禁用 catalog 强制，允许写死直接版本号。
   // 其余 packages/* 仍保持 catalog 一致性不受影响。
-  .append({
-    files: [
-      "examples/**/package.json",
-      "benchmark/**/package.json",
-    ],
-    rules: {
-      "pnpm/json-enforce-catalog": "off",
-    },
+  // 注意：overrideRules 会对所有配置对象（含后续 append 的配置）重新写入该规则，
+  // 导致 append 里的 "off" 被覆盖回 "error"。因此用 onResolved 在最终配置末尾
+  // 追加，确保对 examples/benchmark 真正关闭该规则。
+  .onResolved((configs) => {
+    configs.push({
+      files: [
+        "examples/**/package.json",
+        "benchmark/**/package.json",
+      ],
+      rules: {
+        "pnpm/json-enforce-catalog": "off",
+      },
+    });
+    return configs;
   });

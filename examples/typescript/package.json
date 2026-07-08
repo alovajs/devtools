@@ -10,12 +10,12 @@
   },
   "dependencies": {
     "alova": "^3.0.0",
-    "axios": "catalog:",
-    "ky": "catalog:"
+    "axios": "^1.17.0",
+    "ky": "^2.0.2"
   },
   "devDependencies": {
-    "tsx": "catalog:dev",
+    "tsx": "^4.22.4",
     "typescript": "^5.9.3",
-    "wormajs": "catalog:"
+    "wormajs": "latest"
   }
 }

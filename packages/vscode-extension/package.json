@@ -133,10 +133,10 @@
     ],
     "icons": {
       "worma-icon-id": {
-        "description": "alova icon",
+        "description": "worma icon",
         "default": {
           "fontPath": "./res/logo.ttf",
-          "fontCharacter": "\\E64E"
+          "fontCharacter": "\\E64F"
         }
       }
     },

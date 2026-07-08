@@ -12,7 +12,7 @@ const links = [
     items: [
       { label: 'Documentation', href: '/docs' },
       { label: 'Contributing', href: '/docs/contributing' },
-      { label: 'Examples', href: '/docs/quick-start' },
+      { label: 'Examples', href: 'https://stackblitz.com/fork/github/alovajs/devtools/tree/main/examples/typescript' },
     ],
   },
   {

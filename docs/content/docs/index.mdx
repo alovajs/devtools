@@ -7,7 +7,7 @@ description: worma — 一份 OpenAPI，同时生成调用代码和 AI 知识
 
 在 AI 编码工具（如 Cursor）中，当 AI 尝试调用后端接口时，常常会出现函数名错误、参数不匹配等问题。worma 正是为解决这一问题而生。
 
-worma 是一款通用的 OpenAPI 代码生成工具，与后端语言和前端请求库无关。无论后端使用 Java、Go 还是 Python，前端使用 Alova、Axios、Fetch 还是 Ky，只需提供一份 OpenAPI 规范文件，即可同时生成调用代码、TypeScript 类型定义、接口文档和 AI Skill。
+worma 是一款通用的 OpenAPI 代码生成工具，与后端语言和前端请求库无关。无论后端使用 Java、Go 还是 Python，前端使用 Alova、Axios、Fetch 还是 Ky，无论项目运行在 Node.js、Deno 还是 Bun，TypeScript 或 JavaScript 项目均可使用，且从 OpenAPI 规范到生成代码全程类型安全。只需提供一份 OpenAPI 规范文件，即可同时生成调用代码、TypeScript 类型定义、接口文档和 AI Skill。
 
 名字取自"虫洞"（wormhole），寓意后端接口与前端代码之间的连接应当像虫洞一样直接，无需绕行。worma 在 `@alova/wormhole` 基础上进行了大量重新设计和性能优化，扩展为通用 OpenAPI 代码生成工具，原有 `@alova/wormhole` 用户可通过 `alovaGlobals` 模板平滑迁移。
 
