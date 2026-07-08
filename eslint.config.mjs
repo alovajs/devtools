@@ -19,7 +19,8 @@ export default antfu({
     ".codebuddy/**",
     ".next",
     "**/.source",
-    "**/*.tsbuildinfo"
+    "**/*.tsbuildinfo",
+    "**/next-env.d.ts"
   ],
   markdown: false,
   formatters: true,
