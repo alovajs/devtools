@@ -15,22 +15,22 @@
     "clean": "rm -rf output node_modules dist results specs"
   },
   "devDependencies": {
-    "@ant-design/icons-vue": "catalog:",
-    "@hey-api/client-fetch": "catalog:",
-    "@hey-api/openapi-ts": "catalog:",
-    "@hono/node-server": "catalog:",
-    "@vitejs/plugin-vue": "catalog:build",
-    "ant-design-vue": "catalog:",
-    "concurrently": "catalog:",
-    "cross-env": "catalog:",
-    "echarts": "catalog:",
-    "hono": "catalog:",
-    "openapi-typescript": "catalog:",
-    "tsx": "catalog:dev",
+    "@ant-design/icons-vue": "^7.0.1",
+    "@hey-api/client-fetch": "^0.8.4",
+    "@hey-api/openapi-ts": "^0.64.0",
+    "@hono/node-server": "^1.14.0",
+    "@vitejs/plugin-vue": "^6.0.0",
+    "ant-design-vue": "^4.2.6",
+    "concurrently": "^9.1.0",
+    "cross-env": "^7.0.3",
+    "echarts": "^5.6.0",
+    "hono": "^4.7.0",
+    "openapi-typescript": "^7.6.0",
+    "tsx": "^4.22.4",
     "typescript": "^5.9.3",
-    "vite": "catalog:build",
-    "vue": "catalog:frontend",
-    "vue-echarts": "catalog:",
-    "wormajs": "catalog:"
+    "vite": "^7.3.1",
+    "vue": "^3.5.17",
+    "vue-echarts": "^7.0.3",
+    "wormajs": "latest"
   }
 }

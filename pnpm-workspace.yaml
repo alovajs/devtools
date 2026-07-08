@@ -150,6 +150,8 @@ catalogs:
     '@types/vscode-webview': ^1.57.5
     openapi-types: ^12.1.3
     type-fest: ^4.41.0
+  conflicts_wormajs_h0_0_2mbeta_0:
+    wormajs: ^0.0.2-beta.0
 
 ignoredBuiltDependencies:
   - '@vscode/vsce-sign'

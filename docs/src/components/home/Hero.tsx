@@ -172,6 +172,23 @@ void main() {
 
 export default function Hero() {
   const [toast, setToast] = useState(false)
+  const [version, setVersion] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+    fetch('https://registry.npmjs.org/wormajs/latest')
+      .then(res => res.json())
+      .then((data: { version?: string }) => {
+        if (!cancelled && data.version)
+          setVersion(data.version)
+      })
+      .catch(() => {
+        // keep empty on failure; fallback text below
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const handleCopy = async () => {
     try {
@@ -191,7 +208,7 @@ export default function Hero() {
         <CornerPlus />
         <div className="text-primary font-data-mono mb-8 inline-flex items-center gap-3 text-[10px] tracking-[0.2em]">
           <span className="bg-primary h-2 w-2" />
-          SYSTEM_INIT // v1.2.48_STABLE
+          {version ? `SYSTEM_INIT // v${version}` : 'SYSTEM_INIT // LOADING'}
         </div>
         <h1 className="font-headline-lg text-on-background mb-8 text-5xl font-bold leading-[0.95] tracking-tighter uppercase lg:text-7xl">
           一份 OpenAPI
@@ -230,6 +247,16 @@ export default function Hero() {
       </div>
       <div className="relative z-10 flex items-center justify-center p-8 lg:p-16">
         <span className="text-[120px] text-[#020202] font-bold tracking-tighter uppercase">WORMA</span>
+        <div className="text-primary font-data-mono absolute bottom-4 left-8 text-[10px] flex flex-wrap items-center gap-x-3 gap-y-1 tracking-wider">
+          <span>// COMPAT</span>
+          <span>[ TS ]</span>
+          <span>[ JS ]</span>
+          <span>// RUNTIME</span>
+          <span>[ Node.js ]</span>
+          <span>[ Deno ]</span>
+          <span>[ Bun ]</span>
+          <span>// TYPE_SAFE</span>
+        </div>
       </div>
     </section>
   )

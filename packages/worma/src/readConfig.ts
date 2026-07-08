@@ -39,7 +39,7 @@ export async function readConfig(projectPath = process.cwd()) {
   // 否则 __dirname 会指向用户项目目录，导致预设模板路径解析失败
   // monorepo 子包可能不直接依赖 wormajs，但 config 文件会 import from 'wormajs'
   const allExternals = [...new Set([...userDependencies, 'worma', 'wormajs/plugin'])]
-  const configTmpFileName = `alova_tmp_${Date.now()}.cjs`
+  const configTmpFileName = `worma_tmp_${Date.now()}.cjs`
   // 使用绝对路径：esbuild 写入相对 outfile 时按 cwd 解析，
   // 而 require() 解析相对路径时基于调用模块所在目录，二者不一致会导致 require 失败。
   // 绝对路径可保证写入与 require 指向同一文件。
