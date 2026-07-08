@@ -33,8 +33,12 @@ export function normalInterfaceGenerator(ast: TInterface, ctx: GeneratorCtx) {
     const keyName = standardLoader.validate(param.keyName) ? param.keyName : `"${param.keyName}"`
     ctx.pathKey = keyName
     const nextResult = ctx.next(param.ast, ctx.options)
-    const value = getValue(nextResult, ctx.options);
-    `${nextResult.comment ?? ''}${keyName}${optionalFlag}: ${value}`.split('\n').forEach(line => lines.push(`  ${line}`))
+    const value = getValue(nextResult, ctx.options)
+    // Literal (const) properties are rendered without a space after the colon
+    // so the generated property keeps the form key:"value" (see issue #824).
+    const sep = param.ast.type === ASTType.LITERAL ? ':' : ': '
+    const propLine = `${nextResult.comment ?? ''}${keyName}${optionalFlag}${sep}${value}`
+    propLine.split('\n').forEach(line => lines.push(`  ${line}`))
   })
   if (ast.addParams) {
     ctx.pathKey = '[key: string]'
