@@ -5,6 +5,12 @@ packages:
   - e2e-fixtures-temp/*
   - docs
 
+# 保留 monorepo 内 examples/benchmark 对本地 wormajs 的联调能力：
+# 完整仓库 install 时把 wormajs 解析到本地 packages/worma。
+# 独立克隆子目录时不带本文件，会自动回落到 npm 上发布的 wormajs。
+overrides:
+  wormajs: 'workspace:*'
+
 catalog:
   '@ant-design/icons-vue': ^7.0.1
   '@gsap/react': ^2.1.2
@@ -30,6 +36,7 @@ catalog:
   skills: ^1.5.13
   string-width: ^7.2.0
   vue-echarts: ^7.0.3
+  wormajs: latest
 
 catalogs:
   build:

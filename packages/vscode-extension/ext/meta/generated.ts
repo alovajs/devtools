@@ -2,8 +2,8 @@
 // @see https://github.com/antfu/vscode-ext-gen
 
 // Meta info
-export const publisher = 'Worma'
-export const name = 'worma-vscode-extension'
+export const publisher = 'worma'
+export const name = 'worma-vscode'
 export const version = '0.0.1'
 export const displayName = 'Worma'
 export const description = 'Generate and search APIs without API documentation any more'
@@ -22,7 +22,7 @@ export type CommandKey
     | 'worma.snippetSearch.showHelp'
 
 /**
- * Commands map registed by `Worma.worma-vscode-extension`
+ * Commands map registered by `worma.worma-vscode`
  */
 export const commands = {
   /**
@@ -85,7 +85,7 @@ export interface ConfigItem<T extends keyof ConfigKeyTypeMap> {
 }
 
 /**
- * Configs map registered by `Worma.worma-vscode-extension`
+ * Configs map registered by `worma.worma-vscode`
  */
 export const configs = {
   /**
@@ -101,7 +101,7 @@ export interface ScopedConfigKeyTypeMap {
 }
 
 export const scopedConfigs = {
-  scope: 'worma-vscode-extension',
+  scope: 'worma-vscode',
   defaults: {
     autoUpdate: true,
   } satisfies ScopedConfigKeyTypeMap,
@@ -111,8 +111,4 @@ export interface NestedConfigs {
   worma: {
     autoUpdate: boolean | { launchEditor?: boolean, interval?: number }
   }
-}
-
-export interface NestedScopedConfigs {
-  autoUpdate: boolean | { launchEditor?: boolean, interval?: number }
 }

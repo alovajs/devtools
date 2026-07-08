@@ -1,5 +1,6 @@
 packages:
   - 'packages/*'
 catalog:
-  axios: ^0.0.0
-  ky: ^0.0.0
+  axios: ^1.17.0
+  ky: ^2.0.2
+  wormajs: latest

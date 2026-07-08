@@ -20,7 +20,13 @@ export function groupTypeGenerator(ast: TIntersection | TUnion, ctx: GeneratorCt
     // In UNION (|), INTERSECTION members do NOT need parens because `&` already binds tighter
     const memberTsStr = getValue(nextValue, ctx.options)
     const producesUnionLike = item.type === ASTType.UNION || item.type === ASTType.ENUM
-    const needsParens = ast.type === ASTType.INTERSECTION && producesUnionLike
+    let needsParens = ast.type === ASTType.INTERSECTION && producesUnionLike
+    // In UNION (|), wrap block-like members that contain const discriminators
+    // (key:"value" literal properties) so discriminated union branches are clearly
+    // delimited (see issue #824).
+    if (!needsParens && ast.type === ASTType.UNION && /\w+:"[^"]*"/.test(memberTsStr))
+      needsParens = true
+
     groups.push(needsParens ? `(${memberTsStr})` : memberTsStr)
   })
 

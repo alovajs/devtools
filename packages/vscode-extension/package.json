@@ -94,17 +94,17 @@
       },
       {
         "command": "worma.snippetSearch.open",
-        "title": "打开代码片段搜索",
+        "title": "Open Snippet Search",
         "category": "Snippet Search"
       },
       {
         "command": "worma.snippetSearch.insert",
-        "title": "插入代码片段",
+        "title": "Insert Snippet",
         "category": "Snippet Search"
       },
       {
         "command": "worma.snippetSearch.showHelp",
-        "title": "显示快捷键帮助",
+        "title": "Show Shortcut Help",
         "category": "Snippet Search"
       }
     ],
@@ -241,6 +241,7 @@
     "reactive-vscode": "catalog:frontend",
     "sinon": "catalog:dev",
     "tailwindcss": "catalog:build",
+    "typescript": "catalog:dev",
     "unplugin-auto-import": "catalog:build",
     "unplugin-vue-components": "catalog:build",
     "unplugin-vue-markdown": "catalog:build",
