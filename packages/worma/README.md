@@ -1,8 +1,6 @@
-# worma - A Universal OpenAPI Code Generator
+# worma - The OpenAPI Generator for human and AI
 
-<p align="center">
-<img width="200px" src="https://alova.js.org/img/logo-text-vertical.svg" />
-</p>
+![](https://worma.js.org/img/banner.png)
 
 <p align="center"><b>One OpenAPI spec. Code for developers, knowledge for AI.<br />Generate API calling functions, TypeScript types, documentation, and AI Skills in a single command.</b></p>
 

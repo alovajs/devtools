@@ -1,0 +1,126 @@
+---
+title: 从 wormhole 迁移
+description: "@alova/wormhole 迁移到 worma 的完整指南"
+---
+
+worma 是从 `@alova/wormhole` 中独立出来、并重新进行通用化设计的 OpenAPI 代码生成工具。不再局限于 alova 请求库，新增 axios、fetch、ky 等多套模板，支持自定义模板和更完善的插件系统。
+
+## AI 自动迁移
+
+安装 worma Skill。
+
+```bash
+skills add alovajs/skills --skill worma-guidelines
+```
+
+然后在 AI 对话中输入以下提示词即可自动完成迁移：
+
+```text
+请将此项目从@alova/wormhole迁移到worma
+```
+
+## 包名与安装
+
+| 项目     | @alova/wormhole                 | worma                 |
+| -------- | ------------------------------- | --------------------- |
+| npm 包名 | `@alova/wormhole`               | `wormajs`             |
+| 安装命令 | `npm i @alova/wormhole -D`      | `npm i wormajs -D`    |
+| 入口引用 | `from '@alova/wormhole'`        | `from 'wormajs'`      |
+| 插件引用 | `from '@alova/wormhole/plugin'` | `from 'wormajs/plugin'` |
+
+## 配置文件
+
+将 `alova.config.{js,ts}` 重命名为 `worma.config.{js,ts}` 即可，`defineConfig` 用法保持一致。worma 新增了 `.wormarc` 简易配置支持。
+
+## CLI 命令
+
+| 项目           | @alova/wormhole   | worma               |
+| -------------- | ----------------- | ------------------- |
+| 初始化         | `alova init`      | `worma init`        |
+| 生成           | `alova gen`       | `worma gen`         |
+| 指定项目       | `-c, --cwd`       | `-p, --project`     |
+| Workspace 模式 | `-w, --workspace` | 默认行为，无需 flag |
+| 详细日志       | `--verbose`       | `-d, --debug`       |
+
+## 模板迁移：默认模式 → `plugins`
+
+`@alova/wormhole` 默认使用 alovaGlobals 模板（全局挂载），无需在配置中指定。worma 必须通过 `plugins` 数组显式选择模板：
+
+```javascript
+// @alova/wormhole（默认 alovaGlobals，无需配置）
+export default defineConfig({
+  generator: [{
+    input: 'https://api.example.com/openapi.json',
+    output: 'src/api',
+  }],
+});
+
+// worma（需显式指定）
+import { alovaGlobals } from 'wormajs/plugin';
+
+export default defineConfig({
+  generator: [{
+    input: 'https://api.example.com/openapi.json',
+    output: 'src/api',
+    plugins: [alovaGlobals()],
+  }],
+});
+```
+
+worma 还新增了 `alova`（按需引入）、`axios`、`fetch`、`ky` 等多套模板可选，详见 [预定义模板](/docs/template-system/predefined-templates)。
+
+## platform 配置 → 插件
+
+`@alova/wormhole` 的 `platform` 配置项在 worma 中改为 `platform` 插件：
+
+```javascript
+// @alova/wormhole
+defineConfig({
+  generator: [
+    {
+      input: "https://api.example.com",
+      platform: "swagger",
+    },
+  ],
+});
+
+// worma
+import { platform } from "wormajs/plugin";
+
+defineConfig({
+  generator: [
+    {
+      input: "https://api.example.com",
+      plugins: [platform("swagger")],
+    },
+  ],
+});
+```
+
+## 已移除的配置项
+
+| @alova/wormhole 配置项 | 说明                           |
+| ---------------------- | ------------------------------ |
+| `fileNameCase`         | 已移除，无替代方案             |
+| `autoUpdate`（根配置） | 已移除，由 VSCode 扩展自行管理 |
+| `platform` 参数        | 改为 `platform` 插件           |
+
+## 其他变更
+
+- alova 模板仅支持 **alova@3**，不再支持 alova@2
+
+## 迁移检查清单
+
+1. 卸载 `@alova/wormhole`，安装 `wormajs`
+2. 重命名配置文件：`alova.config.{js,ts}` → `worma.config.{js,ts}`
+3. 更新 import 路径：`@alova/wormhole` → `wormajs`，`@alova/wormhole/plugin` → `wormajs/plugin`
+4. 添加模板插件到 `plugins` 数组（如 `alovaGlobals()`）
+5. `platform` 参数改为 `platform` 插件
+6. CLI 参数 `-c, --cwd` → `-p, --project`
+
+## 其他来源迁移
+
+如果你当前直接使用 axios、ky 等请求库手写接口调用，可参考对应的迁移指南：
+
+- [从 Axios 迁移](/docs/migration/from-axios)
+- [从 Ky 迁移](/docs/migration/from-ky)

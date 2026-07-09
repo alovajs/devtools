@@ -3,7 +3,7 @@ import type { RenderTemplateParams } from '@/helper/config/type'
 import { resolve } from 'node:path'
 import { logger } from '@/helper/logger'
 import { TemplateHelper } from '@/helper/template'
-import { aiDoc } from '@/plugins/presets/aiDoc'
+import { aiDoc, parseAgentList } from '@/plugins/presets/aiDoc'
 import { generateWithPlugin } from '../util'
 
 // Hoisted: create the shared memfs volume before any module imports
@@ -624,6 +624,223 @@ describe('plugins/aiDoc', () => {
       )
       const callArg = (execSync as ReturnType<typeof vi.fn>).mock.calls[0][0] as string
       expect(callArg).toContain('-a "unknown-agent"')
+    })
+
+    it('parseAgentList should split comma-separated agents, trim and dedupe', () => {
+      expect(parseAgentList('cursor')).toEqual(['cursor'])
+      expect(parseAgentList('cursor, claude-code')).toEqual(['cursor', 'claude-code'])
+      expect(parseAgentList(' cursor , claude-code , windsurf ')).toEqual([
+        'cursor',
+        'claude-code',
+        'windsurf',
+      ])
+      // Chinese comma is supported, mixed with English comma and arbitrary spacing
+      expect(parseAgentList('cursor，claude-code')).toEqual(['cursor', 'claude-code'])
+      expect(parseAgentList('cursor， claude-code ，windsurf')).toEqual([
+        'cursor',
+        'claude-code',
+        'windsurf',
+      ])
+      expect(parseAgentList('cursor,claude-code，windsurf')).toEqual([
+        'cursor',
+        'claude-code',
+        'windsurf',
+      ])
+      // zero spaces around commas
+      expect(parseAgentList('cursor,claude-code,windsurf')).toEqual([
+        'cursor',
+        'claude-code',
+        'windsurf',
+      ])
+      // duplicate entries are removed
+      expect(parseAgentList('cursor, cursor, claude-code')).toEqual(['cursor', 'claude-code'])
+      expect(parseAgentList('cursor，cursor，claude-code')).toEqual(['cursor', 'claude-code'])
+      // whitespace-only / empty entries are ignored
+      expect(parseAgentList('')).toEqual([])
+      expect(parseAgentList(' , , ')).toEqual([])
+      expect(parseAgentList('，,，')).toEqual([])
+      expect(parseAgentList('cursor,,claude-code')).toEqual(['cursor', 'claude-code'])
+      // quotes around values are preserved as-is (callers pass clean names)
+      expect(parseAgentList('"cursor", "claude-code"')).toEqual(['"cursor"', '"claude-code"'])
+    })
+
+    it('should install skill into every comma-separated agent in .env.local', async () => {
+      const { execSync } = await import('node:child_process')
+      testVol.writeFileSync(
+        resolve(process.cwd(), '.env.local'),
+        'agent=cursor, claude-code, windsurf\n',
+        'utf-8',
+      )
+
+      const plugin = aiDoc({ installSkill: true })
+      const outputPath = 'src/api-skill-multi-agent'
+      plugin.config?.({ config: { output: outputPath } as any, projectPath: process.cwd(), reportProgress: vi.fn() })
+
+      const apiTest = {
+        tag: 'test',
+        method: 'GET',
+        summary: 'Test',
+        path: '/test',
+        name: 'testApi',
+        response: 'void',
+        pathKey: 'test.testApi',
+        pathParameters: '',
+        queryParameters: '',
+        callingCode: '',
+      }
+      const data: any = {
+        title: 'Skill Multi Agent Test',
+        version: '1.0.0',
+        openapi: '3.0.1',
+        baseUrl: '/api',
+        allApis: [apiTest],
+        components: [],
+        componentNames: [],
+        type: 'typescript',
+        config: {},
+        tagedApis: [
+          {
+            tagName: 'test',
+            apis: [apiTest],
+          },
+        ],
+      }
+
+      await plugin.codeGenerated?.({
+        config: {} as any,
+        data,
+        filePaths: [],
+        outputDir: resolve(process.cwd(), outputPath),
+        projectPath: process.cwd(),
+        reportProgress: vi.fn(),
+        renderTemplate: renderTemplateFn,
+      })
+
+      // One execSync call per configured agent
+      const calls = (execSync as ReturnType<typeof vi.fn>).mock.calls
+      expect(calls.length).toBe(3)
+      const args = calls.map(c => c[0] as string)
+      expect(args.some(arg => arg.includes('-a "cursor"'))).toBe(true)
+      expect(args.some(arg => arg.includes('-a "claude-code"'))).toBe(true)
+      expect(args.some(arg => arg.includes('-a "windsurf"'))).toBe(true)
+    })
+
+    it('should dedupe repeated agents when installing skill', async () => {
+      const { execSync } = await import('node:child_process')
+      testVol.writeFileSync(
+        resolve(process.cwd(), '.env.local'),
+        'agent=cursor, cursor, claude-code\n',
+        'utf-8',
+      )
+
+      const plugin = aiDoc({ installSkill: true })
+      const outputPath = 'src/api-skill-dedupe'
+      plugin.config?.({ config: { output: outputPath } as any, projectPath: process.cwd(), reportProgress: vi.fn() })
+
+      const apiTest = {
+        tag: 'test',
+        method: 'GET',
+        summary: 'Test',
+        path: '/test',
+        name: 'testApi',
+        response: 'void',
+        pathKey: 'test.testApi',
+        pathParameters: '',
+        queryParameters: '',
+        callingCode: '',
+      }
+      const data: any = {
+        title: 'Skill Dedupe Test',
+        version: '1.0.0',
+        openapi: '3.0.1',
+        baseUrl: '/api',
+        allApis: [apiTest],
+        components: [],
+        componentNames: [],
+        type: 'typescript',
+        config: {},
+        tagedApis: [
+          {
+            tagName: 'test',
+            apis: [apiTest],
+          },
+        ],
+      }
+
+      await plugin.codeGenerated?.({
+        config: {} as any,
+        data,
+        filePaths: [],
+        outputDir: resolve(process.cwd(), outputPath),
+        projectPath: process.cwd(),
+        reportProgress: vi.fn(),
+        renderTemplate: renderTemplateFn,
+      })
+
+      const calls = (execSync as ReturnType<typeof vi.fn>).mock.calls
+      expect(calls.length).toBe(2)
+      const args = calls.map(c => c[0] as string)
+      expect(args.filter(arg => arg.includes('-a "cursor"')).length).toBe(1)
+      expect(args.some(arg => arg.includes('-a "claude-code"'))).toBe(true)
+    })
+
+    it('should install skill into agents separated by a Chinese comma', async () => {
+      const { execSync } = await import('node:child_process')
+      testVol.writeFileSync(
+        resolve(process.cwd(), '.env.local'),
+        'agent=cursor，claude-code\n',
+        'utf-8',
+      )
+
+      const plugin = aiDoc({ installSkill: true })
+      const outputPath = 'src/api-skill-cn-comma'
+      plugin.config?.({ config: { output: outputPath } as any, projectPath: process.cwd(), reportProgress: vi.fn() })
+
+      const apiTest = {
+        tag: 'test',
+        method: 'GET',
+        summary: 'Test',
+        path: '/test',
+        name: 'testApi',
+        response: 'void',
+        pathKey: 'test.testApi',
+        pathParameters: '',
+        queryParameters: '',
+        callingCode: '',
+      }
+      const data: any = {
+        title: 'Skill Cn Comma Test',
+        version: '1.0.0',
+        openapi: '3.0.1',
+        baseUrl: '/api',
+        allApis: [apiTest],
+        components: [],
+        componentNames: [],
+        type: 'typescript',
+        config: {},
+        tagedApis: [
+          {
+            tagName: 'test',
+            apis: [apiTest],
+          },
+        ],
+      }
+
+      await plugin.codeGenerated?.({
+        config: {} as any,
+        data,
+        filePaths: [],
+        outputDir: resolve(process.cwd(), outputPath),
+        projectPath: process.cwd(),
+        reportProgress: vi.fn(),
+        renderTemplate: renderTemplateFn,
+      })
+
+      const calls = (execSync as ReturnType<typeof vi.fn>).mock.calls
+      expect(calls.length).toBe(2)
+      const args = calls.map(c => c[0] as string)
+      expect(args.some(arg => arg.includes('-a "cursor"'))).toBe(true)
+      expect(args.some(arg => arg.includes('-a "claude-code"'))).toBe(true)
     })
 
     it('should throw via logger when skills CLI fails', async () => {

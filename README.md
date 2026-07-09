@@ -1,4 +1,6 @@
-# worma - Universal OpenAPI Code Generator
+# worma - The OpenAPI Generator for human and AI
+
+![](https://worma.js.org/img/banner.png)
 
 [![npm version](https://img.shields.io/npm/v/wormajs)](https://www.npmjs.com/package/wormajs)
 [![license](https://img.shields.io/github/license/alovajs/devtools)](https://github.com/alovajs/devtools/blob/main/LICENSE)
@@ -47,7 +49,7 @@ npx worma gen
 
 - [Full Documentation](https://worma.js.org)
 - [Quick Start Guide](https://worma.js.org/docs/quick-start)
-- [Migration from @alova/wormhole](https://worma.js.org/docs/migration)
+- [Migration from @alova/wormhole](https://worma.js.org/docs/migration/from-alova)
 - [Plugin System](https://worma.js.org/docs/plugin-system)
 
 ## Changelog

@@ -9,7 +9,7 @@
     "start:axios": "pnpm --filter axios-app start",
     "start:fetch": "pnpm --filter fetch-app start",
     "start:ky": "pnpm --filter ky-app start",
-    "start": "pnpm start:alova && pnpm start:axios && pnpm start:fetch && pnpm start:ky"
+    "start": "npm run gen:all && pnpm start:alova && pnpm start:axios && pnpm start:fetch && pnpm start:ky"
   },
   "devDependencies": {
     "wormajs": "catalog:"

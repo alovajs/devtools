@@ -1,0 +1,113 @@
+---
+title: 从 Ky 迁移
+description: 从手动调用 ky 迁移到 worma 生成的类型安全调用代码
+---
+
+如果你的项目当前直接使用 [ky](https://github.com/sindresorhus/ky) 手写接口调用，可以借助 worma 从 OpenAPI 规范生成类型安全的调用代码。**底层依然是标准 ky，因此兼容性极好，你原有的 ky 请求可以完全保留，无需一次性迁移。**
+
+## 迁移前：手写 ky 调用
+
+```typescript
+import ky from 'ky';
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+const users = await ky
+  .get('api/users', { searchParams: { page: 1, size: 10 } })
+  .json<User>();
+
+const created = await ky
+  .post('api/users', { json: { name: 'Alice', email: 'alice@example.com' } })
+  .json<User>();
+```
+
+## 迁移步骤
+
+### 1. 使用 init 创建配置文件
+
+```bash
+npx worma init --template ky
+```
+
+该命令会在项目根目录生成 `worma.config.ts`（或 `.js`），已默认选用 ky 模板。也可以不传 `--template`，在交互式菜单中选择 ky。
+
+### 2. 使用 gen 生成调用代码
+
+```bash
+npx worma gen
+```
+
+生成结果位于 `src/api/ky/` 下，每个 API 作为独立函数导出，支持 Tree-shaking：
+
+<Files>
+  <Folder name="ky" defaultOpen>
+    <File name="index.ts" />
+    <File name="helper.ts" />
+    <File name="components.d.ts" />
+    <Folder name="services" defaultOpen>
+      <File name="user.ts" />
+    </Folder>
+  </Folder>
+</Files>
+
+其中 `index.ts` 会创建一个默认的 `kyInstance`：
+
+```typescript
+// src/api/ky/index.ts
+import ky from 'ky';
+
+export const kyInstance = ky.create({
+  prefix: 'https://api.example.com/',
+});
+```
+
+### 3. 替换实例（唯一需要修改的地方）
+
+迁移非常简单：**只需从你已有的 ky 实例文件导入实例，在生成的 `index.ts` 中同名导出即可，其他文件无需任何修改。**
+
+```typescript
+// src/api/ky/index.ts
+// 从你已有的 ky 实例文件导入，并同名（kyInstance）导出
+export { myKy as kyInstance } from '@/lib/request';
+```
+
+> `@/lib/request` 即你项目中已配置好前缀、钩子等能力的 ky 实例文件，`myKy` 为其导出名。这样 `services` 中引用的 `kyInstance` 直接指向你的实例，无需改动任何其它文件。
+
+## 兼容性说明
+
+worma 生成的调用代码底层就是标准 ky，因此**兼容性极好，你原有的 ky 请求可以完全保留，可逐步迁移**——将手写调用替换为生成的类型安全函数，与原有 `ky.get/post` 调用并行不冲突。
+
+## 替换手写调用
+
+```typescript
+// 迁移后：无需 .json()，返回类型由 OpenAPI 自动推导
+import { getUserList, createUser } from './api/ky/services/user';
+
+const users = await getUserList({ params: { page: 1, size: 10 } });
+
+const created = await createUser({
+  data: { name: 'Alice', email: 'alice@example.com' },
+});
+```
+
+调用约定对照：
+
+| 手写 ky                          | worma 生成函数                    |
+| -------------------------------- | --------------------------------- |
+| `ky.get(url, { searchParams })`  | `fn({ params })`                  |
+| `ky.post(url, { json })`         | `fn({ data })`                    |
+| `ky.get(url, { searchParams: { id } })` | `fn({ pathParams: { id } })` |
+| `await ky.x().json<T>()`         | `await fn(...)` 直接返回 `T`      |
+
+生成的函数同样接受原生 ky 请求配置（如 `timeout`、`headers`、`retry`、`signal` 等）。
+
+## 迁移检查清单
+
+1. 运行 `worma init --template ky` 生成配置文件
+2. 运行 `worma gen` 生成 `src/api/ky/`
+3. 将 `index.ts` 中的默认 `kyInstance` 替换为你的现有实例并导出（其余文件无需改动）
+4. 按需将手写 `ky.get/post` 调用替换为生成的类型安全函数，并把 `searchParams` → `params`、`json` 请求体 → `data`

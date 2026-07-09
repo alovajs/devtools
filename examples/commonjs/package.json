@@ -5,7 +5,7 @@
   "description": "Worma CommonJS example - all templates for CJS projects",
   "scripts": {
     "gen": "worma gen -f",
-    "start": "node src/main.js"
+    "start": "npm run gen && node src/main.js"
   },
   "dependencies": {
     "alova": "^3.0.0",

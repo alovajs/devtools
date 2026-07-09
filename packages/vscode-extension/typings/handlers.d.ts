@@ -1,25 +1,37 @@
 import type { Publisher } from '@jsonrpc-rx/server'
 import type { ExtensionContext, TextDocument } from 'vscode'
 
-export type { Api, ApiDoc, CacheData } from 'wormajs'
-
-export interface ApiWithSource extends Api {
-  serverName: string
-  serverPath: string
-  projectName: string
-  serverIndex: number
-}
-
-export interface ApiRef {
-  uniqueKey: string
-  serverName: string
-  serverPath: string
+export interface Api {
+  tag: string
   method: string
-  path: string
   summary: string
-  targetKey: string
+  path: string
+  pathParameters: string
+  queryParameters: string
+  pathParametersComment?: string
+  queryParametersComment?: string
+  responseComment?: string
+  requestBodyComment?: string
+  name: string
+  response: string
+  requestBody?: string
+  callingCode?: string
 }
-
+export interface ApiDoc {
+  apis: Api[]
+  tagName: string
+}
+/**
+ * Standardized cache data for VSCode extension
+ * Used for rendering sidebar API tree and quick search
+ */
+export interface CacheData {
+  path: string
+  /** Server name displayed in sidebar */
+  serverName?: string
+  /** All APIs as a flat array */
+  apis: Api[]
+}
 declare function getApiDocs(): Promise<{
   name: string
   servers: CacheData[]
@@ -51,3 +63,5 @@ export declare function getHandlers(context: ExtensionContext): {
   execCommand: (command: string, ...rest: any[]) => Promise<unknown>
   onDidOpenTextDocument: import('@jsonrpc-rx/server').Observable<({ next }: Publisher<TextDocument>) => () => any>
 }
+
+export {}

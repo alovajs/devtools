@@ -81,43 +81,70 @@ export function aiDoc(config?: AiDocConfig): ApiPlugin {
       })
 
       if (installSkillEnabled) {
-        const { agent } = resolveAgent(projectPath)
-        installSkill(aidocsDir, agent, projectPath)
+        const { agents } = resolveAgents(projectPath)
+        for (const agent of agents) {
+          installSkill(aidocsDir, agent, projectPath)
+        }
       }
     },
   }
 }
 
 /**
- * Resolve the target coding agent from `.env.local` in the project root.
+ * Resolve the target coding agents from `.env.local` in the project root.
+ *
+ * Multiple agents can be configured as a comma-separated list, e.g.
+ * `agent=cursor, claude-code, windsurf`. Both commas and surrounding
+ * whitespace are tolerated.
  *
  * If the file does not exist, it will be created and `.gitignore` will be
  * updated to ignore `*.local` files. An error is then thrown asking the user
- * to set `agent=<coding-agent>`.
+ * to set `agent=<coding-agent>` (optionally multiple, comma-separated).
  *
- * If `agent` is missing, an error is thrown with guidance.
+ * If `agent` is missing or empty, an error is thrown with guidance.
  */
-function resolveAgent(projectPath: string): { agent: string } {
+function resolveAgents(projectPath: string): { agents: string[] } {
   const envFilePath = path.join(projectPath, '.env.local')
 
   if (!fs.existsSync(envFilePath)) {
     createEnvLocalFile(envFilePath)
     ensureGitIgnoreLocal(projectPath)
     throw logger.throwError(
-      `${prefix}Created .env.local at project root. Please set the coding agent you are using, e.g. agent=cursor. Supported agents list: ${SKILLS_SUPPORTED_AGENTS_URL}`,
+      `${prefix}Created .env.local at project root. Please set the coding agent you are using, e.g. agent=cursor or multiple agents comma-separated: agent=cursor,claude-code. Supported agents list: ${SKILLS_SUPPORTED_AGENTS_URL}`,
     )
   }
 
   const content = fs.readFileSync(envFilePath, 'utf-8')
-  const agent = parseEnvValue(content, 'agent')
+  const raw = parseEnvValue(content, 'agent') ?? ''
+  const agents = parseAgentList(raw)
 
-  if (!agent) {
+  if (agents.length === 0) {
     throw logger.throwError(
-      `${prefix}Missing "agent" in .env.local at project root. Please set the coding agent you are using, e.g. agent=cursor. Supported agents list: ${SKILLS_SUPPORTED_AGENTS_URL}`,
+      `${prefix}Missing "agent" in .env.local at project root. Please set the coding agent you are using, e.g. agent=cursor or multiple agents comma-separated: agent=cursor,claude-code. Supported agents list: ${SKILLS_SUPPORTED_AGENTS_URL}`,
     )
   }
 
-  return { agent }
+  return { agents }
+}
+
+/**
+ * Parse an agent string into a deduplicated list of trimmed agent names.
+ *
+ * Agents may be separated by either an English comma (`,`) or a Chinese
+ * comma (`，`), with any amount of whitespace (including none) allowed on
+ * either side. Empty entries are ignored.
+ */
+export function parseAgentList(raw: string): string[] {
+  const seen = new Set<string>()
+  const result: string[] = []
+  for (const part of raw.split(/[,，]/)) {
+    const agent = part.trim()
+    if (!agent || seen.has(agent))
+      continue
+    seen.add(agent)
+    result.push(agent)
+  }
+  return result
 }
 
 /**
@@ -159,7 +186,8 @@ function installSkill(skillPath: string, agent: string, projectPath: string) {
 
 function createEnvLocalFile(envFilePath: string) {
   const content = `# Worma aiDoc skill installer configuration
-# Please set the coding agent you are using (e.g. cursor, claude-code, windsurf).
+# Please set the coding agent(s) you are using (e.g. cursor, claude-code, windsurf).
+# You can configure multiple agents comma-separated, e.g. agent=cursor,claude-code.
 # Supported agents list: ${SKILLS_SUPPORTED_AGENTS_URL}
 agent=
 `
