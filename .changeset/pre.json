@@ -7,8 +7,7 @@
     "wormajs": "0.0.1"
   },
   "changesets": [
-    "fuzzy-places-stop",
-    "olive-hats-kiss",
+    "fine-beers-make",
     "vscode-extension-release",
     "wormajs-release"
   ]
