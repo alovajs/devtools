@@ -1,0 +1,105 @@
+---
+title: 从 Axios 迁移
+description: 从手动调用 axios 迁移到 worma 生成的类型安全调用代码
+---
+
+如果你的项目当前直接使用 axios 手写接口调用（拼接 URL、手动维护请求/响应类型），可以借助 worma 从 OpenAPI 规范生成类型安全的调用代码。**底层依然是标准 axios，因此兼容性极好，你原有的 axios 请求可以完全保留，无需一次性迁移。**
+
+## 迁移前：手写 axios 调用
+
+```typescript
+import axios from 'axios';
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+const res = await axios.get<User>('/api/users', {
+  params: { page: 1, size: 10 },
+});
+const users = res.data;
+
+const created = await axios
+  .post<User>('/api/users', { name: 'Alice', email: 'alice@example.com' })
+  .then((r) => r.data);
+```
+
+## 迁移步骤
+
+### 1. 使用 init 创建配置文件
+
+```bash
+npx worma init --template axios
+```
+
+该命令会在项目根目录生成 `worma.config.ts`（或 `.js`），已默认选用 axios 模板。也可以不传 `--template`，在交互式菜单中选择 axios。
+
+### 2. 使用 gen 生成调用代码
+
+```bash
+npx worma gen
+```
+
+生成结果位于 `src/api/axios/` 下，每个 API 作为独立函数导出，支持 Tree-shaking：
+
+<Files>
+  <Folder name="axios" defaultOpen>
+    <File name="index.ts" />
+    <File name="helper.ts" />
+    <File name="components.d.ts" />
+    <Folder name="services" defaultOpen>
+      <File name="user.ts" />
+    </Folder>
+  </Folder>
+</Files>
+
+其中 `index.ts` 会创建一个默认的 `axiosInstance`：
+
+```typescript
+// src/api/axios/index.ts
+import axios from 'axios';
+
+export const axiosInstance = axios.create({
+  baseURL: 'https://api.example.com',
+});
+```
+
+### 3. 替换实例（唯一需要修改的地方）
+
+迁移非常简单：**只需从你已有的 axios 实例文件导入实例，在生成的 `index.ts` 中同名导出即可，其他文件无需任何修改。**
+
+```typescript
+// src/api/axios/index.ts
+// 从你已有的 axios 实例文件导入，并同名（axiosInstance）导出
+export { myAxios as axiosInstance } from '@/lib/request';
+```
+
+> `@/lib/request` 即你项目中已配置好拦截器、baseURL 等的 axios 实例文件，`myAxios` 为其导出名。这样 `services` 中引用的 `axiosInstance` 直接指向你的实例，无需改动任何其它文件。
+
+## 兼容性说明
+
+worma 生成的调用代码底层就是标准 axios，因此**兼容性极好，你原有的 axios 请求可以完全保留，可逐步迁移**——将手写调用替换为生成的类型安全函数，与原有 `axios.get/post` 调用并行不冲突。
+
+## 替换手写调用
+
+```typescript
+// 迁移后：函数名、参数、返回类型均由 OpenAPI 自动推导
+import { getUserList, createUser } from './api/axios/services/user';
+
+const users = await getUserList({ params: { page: 1, size: 10 } });
+
+const created = await createUser({
+  data: { name: 'Alice', email: 'alice@example.com' },
+});
+```
+
+`data` 对应请求体、`params` 对应查询参数、`pathParams` 对应路径参数，与原生 axios 配置项语义一致。生成的函数同样接受原生 axios 请求配置（如 `timeout`、`headers`、`signal` 等）。
+
+## 迁移检查清单
+
+1. 运行 `worma init --template axios` 生成配置文件
+2. 运行 `worma gen` 生成 `src/api/axios/`
+3. 将 `index.ts` 中的默认 `axiosInstance` 替换为你的现有实例并导出（其余文件无需改动）
+4. 按需将手写 `axios.get/post` 调用替换为生成的类型安全函数

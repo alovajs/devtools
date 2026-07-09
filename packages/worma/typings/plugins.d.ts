@@ -426,6 +426,14 @@ export interface AiDocConfig {
 	installSkill?: boolean;
 }
 export declare function aiDoc(config?: AiDocConfig): ApiPlugin;
+/**
+ * Parse an agent string into a deduplicated list of trimmed agent names.
+ *
+ * Agents may be separated by either an English comma (`,`) or a Chinese
+ * comma (`，`), with any amount of whitespace (including none) allowed on
+ * either side. Empty entries are ignored.
+ */
+export declare function parseAgentList(raw: string): string[];
 export type ScopeType = "ALL" | "SELECTED_ENDPOINTS" | "SELECTED_TAGS" | "SELECTED_FOLDERS";
 export interface APIFoxBody {
 	scope?: {

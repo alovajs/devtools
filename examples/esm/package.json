@@ -5,7 +5,7 @@
   "description": "Worma ESM example - all templates for ES Module projects",
   "scripts": {
     "gen": "worma gen -f",
-    "start": "node --experimental-specifier-resolution=node src/main.js"
+    "start": "npm run gen && node --experimental-specifier-resolution=node src/main.js"
   },
   "dependencies": {
     "alova": "^3.0.0",

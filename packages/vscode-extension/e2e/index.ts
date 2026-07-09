@@ -75,7 +75,11 @@ async function main() {
         await fs.writeJson(pkgFile, pkg, { spaces: 2 })
     }
 
-    await run('pnpm i', { cwd: fixtureTargetPath })
+    // These fixtures are generated at runtime (gitignored) and are NOT present
+    // in the committed `pnpm-lock.yaml`, so a frozen-lockfile install (the CI
+    // default in pnpm 10) fails with ERR_PNPM_OUTDATED_LOCKFILE. Allow the
+    // lockfile to be updated for the temporary fixture install.
+    await run('pnpm i --no-frozen-lockfile', { cwd: fixtureTargetPath })
     installed.add(example)
   }
 
