@@ -12,6 +12,7 @@ description: 生成 AI 可读的接口知识文档，让编码助手准确感知
 - 自动生成 `SKILL.md` 总览索引和按 tag 分组的 API 参考文档
 - 支持自定义模板路径和输出目录
 - 支持自动安装 Skill 到主流编码助手（Cursor、Claude Code、Windsurf 等）
+- 支持在 `.env.local` 中通过逗号分隔配置多个编码助手，一次生成同时安装到多个助手
 
 ## 基本使用
 
@@ -87,10 +88,13 @@ function aiDoc(config?: AiDocConfig): ApiPlugin;
 
 ```ini
 # Worma aiDoc skill installer configuration
-# Please set the coding agent you are using (e.g. cursor, claude-code, windsurf).
+# Please set the coding agent(s) you are using (e.g. cursor, claude-code, windsurf).
+# You can configure multiple agents comma-separated, e.g. agent=cursor,claude-code.
 # Supported agents list: https://www.npmjs.com/package/skills#supported-agents
 agent=cursor
 ```
+
+> 如需同时安装到多个编码助手，使用逗号分隔即可，例如 `agent=cursor,claude-code,windsurf`。worma 会自动去重，并为每个助手执行一次安装。
 
 2. **运行生成命令**：
 

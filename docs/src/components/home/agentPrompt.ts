@@ -6,7 +6,7 @@ export const AGENT_PROMPT = `Install the worma-guidelines skill and the worma np
 Detect network: if npmjs registry is slow/unreachable, auto-use a mirror (e.g. \`https://registry.npmmirror.com\`) and tell the user; otherwise use the default registry.
 \`\`\`bash
 npx skills add alovajs/skills --yes --skill worma-guidelines
-npm i wormajs -D
+npm i wormajs@beta -D
 \`\`\`
 
 **Step 2: Detect HTTP client**
