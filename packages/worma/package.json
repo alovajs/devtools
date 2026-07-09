@@ -1,6 +1,6 @@
 {
   "name": "wormajs",
-  "version": "0.0.2-beta.1",
+  "version": "0.0.2-beta.2",
   "description": "A modern OpenAPI code generator - Generate type-safe API clients from OpenAPI specs",
   "author": "worma",
   "license": "MIT",

@@ -1,5 +1,11 @@
 # worma
 
+## 0.0.2-beta.2
+
+### Patch Changes
+
+- [#152](https://github.com/alovajs/devtools/pull/152) [`2cfd90b`](https://github.com/alovajs/devtools/commit/2cfd90bf9eff5eb4bd23faa1a49214dce7d414b2) Thanks [@JOU-amjs](https://github.com/JOU-amjs)! - modify api skill name, support multiple agent set
+
 ## 0.0.2-beta.1
 
 ### Patch Changes
