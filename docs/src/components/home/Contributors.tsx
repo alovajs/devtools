@@ -46,7 +46,6 @@ export const betaContributors: Contributor[] = [
     contributions: ['深度使用', 'bug猎手', '体验打磨'],
     links: [
       { type: 'github', url: 'https://github.com/jinpark-dev' },
-      { type: 'website', url: 'https://jinpark.dev' },
     ],
   },
   {
@@ -55,7 +54,6 @@ export const betaContributors: Contributor[] = [
     contributions: ['深度使用', '改进献策', '细节把关'],
     links: [
       { type: 'github', url: 'https://github.com/limu-dev' },
-      { type: 'email', url: 'mailto:limu@worma.dev' },
     ],
   },
 ]
@@ -99,7 +97,7 @@ function renderLink(link: ContributorLink) {
       href={link.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="text-on-surface-variant hover:text-primary inline-flex items-center gap-1 font-data-mono text-[11px] transition-colors"
+      className="text-[var(--color-fd-muted-foreground)] hover:text-[var(--color-fd-primary)] inline-flex items-center gap-1 font-data-mono text-[11px] transition-colors"
     >
       {Icon && <Icon className="h-3.5 w-3.5" />}
       <span>{getLinkLabel(link)}</span>
@@ -109,14 +107,14 @@ function renderLink(link: ContributorLink) {
 
 export default function Contributors() {
   return (
-    <section className="worma-bg tech-border relative my-8 overflow-hidden">
+    <section className="relative my-8 overflow-hidden border border-[var(--color-fd-border)] bg-[var(--color-fd-background)] bg-[radial-gradient(var(--color-fd-border)_1px,transparent_1px)_0_0/40px_40px]">
       <SectionLabel>CONTRIBUTORS // BETA_PHASE</SectionLabel>
-      <div className="tech-border-b p-8 lg:p-12">
+      <div className="border-b border-[var(--color-fd-border)] p-8 lg:p-12">
         <SectionHeader label="// 社区贡献者" title="BETA 贡献者" />
-        <p className="text-on-surface-variant mt-6 max-w-2xl font-body-md text-sm leading-relaxed">
+        <p className="mt-6 max-w-2xl font-body-md text-sm leading-relaxed text-[var(--color-fd-muted-foreground)]">
           worma 仍处于 beta 阶段，以下伙伴参与了早期的设计、开发与验证。每一项贡献，无论大小，都让虫洞连接更通畅。
         </p>
-        <div className="font-data-mono text-primary mt-6 text-[10px] tracking-[0.3em] uppercase">
+        <div className="mt-6 font-data-mono text-[10px] tracking-[0.3em] uppercase text-[var(--color-fd-primary)]">
           TOTAL //
           {' '}
           {betaContributors.length}
@@ -124,21 +122,21 @@ export default function Contributors() {
           CONTRIBUTORS
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-px bg-outline sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-px bg-[var(--color-fd-border)] sm:grid-cols-2 lg:grid-cols-3">
         {betaContributors.map(contributor => (
           <div
             key={contributor.name}
-            className="group relative flex flex-col gap-4 bg-background p-6 transition-colors hover:bg-surface"
+            className="group relative flex flex-col gap-4 bg-[var(--color-fd-card)] p-6 transition-colors hover:bg-[var(--color-fd-muted)]"
           >
             <div className="flex items-center gap-4">
-              <div className="bg-surface text-primary font-headline-lg flex h-12 w-12 shrink-0 items-center justify-center text-lg font-bold uppercase transition-colors group-hover:bg-primary group-hover:text-on-primary">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center text-lg font-bold uppercase text-[var(--color-fd-primary)] transition-colors font-headline-lg bg-[var(--color-fd-muted)] group-hover:bg-[var(--color-fd-primary)] group-hover:text-[var(--color-fd-primary-foreground)]">
                 {getInitials(contributor.name)}
               </div>
               <div className="min-w-0">
-                <div className="text-on-background truncate font-body-md text-sm font-bold">
+                <div className="truncate font-body-md text-sm font-bold text-[var(--color-fd-foreground)]">
                   {contributor.name}
                 </div>
-                <div className="text-primary font-data-mono text-[10px] uppercase tracking-wider">
+                <div className="font-data-mono text-[10px] uppercase tracking-wider text-[var(--color-fd-primary)]">
                   {contributor.role}
                 </div>
               </div>
@@ -147,7 +145,7 @@ export default function Contributors() {
               {contributor.contributions.map(area => (
                 <span
                   key={area}
-                  className="border-outline text-on-surface-variant rounded-sm border px-2 py-0.5 font-data-mono text-[10px] uppercase tracking-wider"
+                  className="rounded-sm border border-[var(--color-fd-border)] px-2 py-0.5 font-data-mono text-[10px] uppercase tracking-wider text-[var(--color-fd-muted-foreground)]"
                 >
                   {area}
                 </span>
