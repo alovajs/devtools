@@ -2,7 +2,6 @@
   "pages": [
     "index",
     "quick-start",
-    "contributing",
     "---",
     "guide",
     "plugin-system",
@@ -14,6 +13,8 @@
     "performance",
     "migration",
     "---",
-    "sponsor"
+    "sponsor",
+    "contributing",
+    "contributors"
   ]
 }

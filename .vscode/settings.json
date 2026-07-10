@@ -138,5 +138,6 @@
   ],
   "files.associations": {
     "*.mdx": "markdown"
-  }
+  },
+  "worma.autoUpdate": false
 }

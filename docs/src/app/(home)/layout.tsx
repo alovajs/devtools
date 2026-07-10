@@ -1,5 +1,5 @@
 import { HomeLayout } from 'fumadocs-ui/layouts/home'
-import { BookOpen, ExternalLink, Heart, Puzzle } from 'lucide-react'
+import { BookOpen, ExternalLink, Heart, Puzzle, Users } from 'lucide-react'
 import { ForceDarkTheme } from '@/components/ForceDarkTheme'
 import { baseOptions } from '@/lib/layout.shared'
 
@@ -29,6 +29,11 @@ export default function Layout({ children }: LayoutProps<'/'>) {
             icon: <Heart className="h-4 w-4" />,
             text: '赞助',
             url: '/docs/sponsor',
+          },
+          {
+            icon: <Users className="h-4 w-4" />,
+            text: '贡献者',
+            url: '/docs/contributors',
           },
         ]}
       >

@@ -2,7 +2,7 @@
   "pages": [
     "from-axios",
     "from-ky",
-    "from-alova"
+    "from-wormhole"
   ],
   "title": "迁移指南"
 }
