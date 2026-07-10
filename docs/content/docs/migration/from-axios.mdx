@@ -31,7 +31,7 @@ const created = await axios
 ### 1. 使用 init 创建配置文件
 
 ```bash
-npx worma init --template axios
+npx wormajs init --template axios
 ```
 
 该命令会在项目根目录生成 `worma.config.ts`（或 `.js`），已默认选用 axios 模板。也可以不传 `--template`，在交互式菜单中选择 axios。
@@ -39,7 +39,7 @@ npx worma init --template axios
 ### 2. 使用 gen 生成调用代码
 
 ```bash
-npx worma gen
+npx wormajs gen
 ```
 
 生成结果位于 `src/api/axios/` 下，每个 API 作为独立函数导出，支持 Tree-shaking：

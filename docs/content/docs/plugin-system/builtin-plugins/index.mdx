@@ -12,7 +12,7 @@ worma 内置了以下预设插件，可在 `plugins` 数组中按顺序配置使
 | rename | 重命名 API 调用函数和参数名，支持多种命名风格 | [查看详情](/docs/plugin-system/builtin-plugins/rename) |
 | tagModifier | 修改 API 的 tag 名称 | [查看详情](/docs/plugin-system/builtin-plugins/tag-modifier) |
 | payloadModifier | 增加、删除和修改 API 的参数类型 | [查看详情](/docs/plugin-system/builtin-plugins/payload-modifier) |
-| filterApi | 根据 URL 和 tag 匹配过滤 API | [查看详情](/docs/plugin-system/builtin-plugins/filter-api) |
+| apiFilter | 根据 URL 和 tag 匹配过滤 API | [查看详情](/docs/plugin-system/builtin-plugins/filter-api) |
 | apifox | 自动导入 Apifox 中的项目 | [查看详情](/docs/plugin-system/builtin-plugins/apifox) |
 | platform | 自动拼接 Swagger / Knife4j / FastAPI / YApi 的 OpenAPI 文件地址 | [查看详情](/docs/plugin-system/builtin-plugins/platform) |
 | importType | 复用外部类型，排除自动生成 | [查看详情](/docs/plugin-system/builtin-plugins/import-type) |
@@ -45,7 +45,7 @@ export default defineConfig({
 ```javascript
 import { defineConfig } from 'wormajs';
 import {
-  rename, tagModifier, payloadModifier, filterApi, apifox, importType,
+  rename, tagModifier, payloadModifier, apiFilter, apifox, importType,
   alova, platform
 } from 'wormajs/plugin';
 import { aiDoc } from 'wormajs/plugin';
@@ -58,7 +58,7 @@ export default defineConfig({
         rename({ style: 'camelCase' }),
         tagModifier(tag => `api_${tag}`),
         payloadModifier([/* ... */]),
-        filterApi({ include: '/api/v1' }),
+        apiFilter({ include: '/api/v1' }),
         importType({ 'my-types|type': ['Pagination'] }),
         alova(),
         aiDoc(),

@@ -30,7 +30,7 @@ const created = await ky
 ### 1. 使用 init 创建配置文件
 
 ```bash
-npx worma init --template ky
+npx wormajs init --template ky
 ```
 
 该命令会在项目根目录生成 `worma.config.ts`（或 `.js`），已默认选用 ky 模板。也可以不传 `--template`，在交互式菜单中选择 ky。
@@ -38,7 +38,7 @@ npx worma init --template ky
 ### 2. 使用 gen 生成调用代码
 
 ```bash
-npx worma gen
+npx wormajs gen
 ```
 
 生成结果位于 `src/api/ky/` 下，每个 API 作为独立函数导出，支持 Tree-shaking：

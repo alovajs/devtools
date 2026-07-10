@@ -5,7 +5,7 @@ import SectionLabel from './SectionLabel'
 const plugins = [
   { name: 'aiDoc', desc: 'AI 提供文档和提示词。', icon: 'psychology' },
   { name: 'rename', desc: '为 API、字段和参数提供最佳重命名。', icon: 'edit' },
-  { name: 'filterApi', desc: '按标签筛选 API，按需生成。', icon: 'filter_list' },
+  { name: 'apiFilter', desc: '按标签筛选 API，按需生成。', icon: 'filter_list' },
   { name: 'apifox', desc: '自动导入 Apifox 中的项目', icon: 'cloud_upload' },
   { name: 'payloadModifier', desc: '增加、删除和修改 API 的参数类型', icon: 'tune' },
 ]
