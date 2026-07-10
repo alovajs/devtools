@@ -18,7 +18,7 @@ description: 根据 URL 或标签（tag）过滤 API 接口，支持多种匹配
 
 ```javascript
 import { defineConfig } from 'wormajs';
-import { filterApi } from 'wormajs/plugin';
+import { apiFilter } from 'wormajs/plugin';
 
 export default defineConfig({
   generator: [
@@ -26,7 +26,7 @@ export default defineConfig({
       // ...
       plugins: [
         // 过滤包含特定 URL 的 API
-        filterApi({ include: '/api/user' }),
+        apiFilter({ include: '/api/user' }),
       ],
     },
   ],
@@ -61,7 +61,7 @@ interface FilterApiConfig {
   exclude?: string | RegExp | ((key: string) => boolean);
 }
 
-function filterApi(config: FilterApiConfig | FilterApiConfig[]): ApiPlugin;
+function apiFilter(config: FilterApiConfig | FilterApiConfig[]): ApiPlugin;
 ```
 
 ## 多条件配置
@@ -69,7 +69,7 @@ function filterApi(config: FilterApiConfig | FilterApiConfig[]): ApiPlugin;
 同时配置多个过滤条件，最终结果为所有条件的并集：
 
 ```javascript
-filterApi([
+apiFilter([
   {
     scope: 'url',
     include: /^\/api\/user/, // 包含以 /api/user 开头的 URL
@@ -86,7 +86,7 @@ filterApi([
 包含特定 URL 但排除部分 API：
 
 ```javascript
-filterApi({
+apiFilter({
   include: /\/api\/user/,
   exclude: '/api/user/list', // 排除 /api/user/list
 });
@@ -99,7 +99,7 @@ filterApi({
 使用自定义函数匹配：
 
 ```javascript
-filterApi({
+apiFilter({
   scope: 'url',
   include: key => key.startsWith('/api') && key.length > 10,
 });
