@@ -1,7 +1,7 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
 import { useTheme } from 'next-themes'
+import { usePathname } from 'next/navigation'
 import { useEffect } from 'react'
 
 /**
@@ -20,7 +20,8 @@ export function DefaultSystemTheme({ skipHome = false }: { skipHome?: boolean })
 
   useEffect(() => {
     // 首页由 ForceDarkTheme 强制深色，跳过
-    if (skipHome && pathname === '/') return
+    if (skipHome && pathname === '/')
+      return
     setTheme('system')
     // 仅在布局挂载（整页加载 / 进入该区域）时执行一次
   }, [])

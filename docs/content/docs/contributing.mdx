@@ -13,17 +13,43 @@ description: 欢迎参与 worma 的开发与文档建设，从这里开始你的
 
 ## 开发环境
 
-worma 使用 pnpm 管理 monorepo，推荐使用 Node.js ≥ 18 与 pnpm ≥ 8：
+worma 使用 pnpm 管理 monorepo，推荐使用 Node.js ≥ 20.19 与 pnpm ≥ 9.1：
 
 ```bash
 # 安装依赖
 pnpm install
 
 # 启动文档站点（开发模式）
-pnpm --filter docs dev
+pnpm --filter worma-docs dev
+```
 
-# 运行单元测试
-pnpm test
+## 模块开发流程
+
+本仓库包含多个子包，下面是各模块的开发与验证方式。
+
+### worma 核心包（wormajs）
+
+核心代码位于 `packages/worma`，每次修改代码后请运行单元测试进行验证：
+
+```bash
+# 仅运行 worma 核心包的单元测试
+pnpm --filter wormajs test
+
+# 或在仓库根目录运行全部单元测试（不含 e2e）
+pnpm test:unit
+
+# 构建核心包
+pnpm --filter wormajs build
+```
+
+> 说明：仓库根目录的 `pnpm test` 会依次执行 e2e、单元测试与覆盖率统计（包含构建步骤），日常开发验证推荐使用更轻量的 `pnpm test:unit`。
+
+### vscode-extension 扩展（worma-vscode）
+
+扩展代码位于 `packages/vscode-extension`，在 VS Code 中打开该目录后直接按下 **F5** 即可启动扩展开发宿主（Extension Development Host）进行调试；也可通过以下命令启动开发构建：
+
+```bash
+pnpm --filter worma-vscode dev
 ```
 
 ## 提交规范
@@ -46,7 +72,7 @@ git commit -m "feat(core): 支持 oneOf 联合类型生成"
 ## Pull Request 流程
 
 1. Fork 仓库并基于 `main` 分支创建特性分支：`feat/your-feature`。
-2. 确保通过 `pnpm test` 与 lint 检查。
+2. 确保通过 `pnpm test:unit` 与 lint 检查。
 3. 提交 PR 时清晰描述改动动机、范围与验证方式。
 4. 等待维护者 Review，根据反馈调整。
 
