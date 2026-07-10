@@ -14,7 +14,7 @@ Pick the scenario that matches the user's need, then fetch the detailed informat
 | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | First time setup / install & configure | [Installation & Configuration](https://worma.js.org/llms.mdx/docs/guide/installation-config.md)                                                           |
 | Quick start                            | [Quick Start](https://worma.js.org/llms.mdx/docs/quick-start.md)                                                                                          |
-| Migrate from `@alova/wormhole`         | [Migration Guide](https://worma.js.org/llms.mdx/docs/migration/from-alova.md)                                                                             |
+| Migrate from `@alova/wormhole`         | [Migration Guide](https://worma.js.org/llms.mdx/docs/migration/from-wormhole.md)                                                                          |
 | CLI commands (`init`, `gen`, etc.)     | [CLI Commands](https://worma.js.org/llms.mdx/docs/cli-commands.md)                                                                                        |
 | Write custom Handlebars templates      | [Custom Templates](https://worma.js.org/llms.mdx/docs/template-system/custom-templates.md)                                                                |
 | Build your own plugin                  | [Custom Plugin](https://worma.js.org/llms.mdx/docs/plugin-system/custom-plugin.md) / [Plugin API](https://worma.js.org/llms.mdx/docs/api/plugin-api.md)   |
