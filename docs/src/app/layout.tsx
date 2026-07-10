@@ -1,5 +1,6 @@
 import { Inter } from 'next/font/google'
 import { Provider } from '@/components/provider'
+import { DefaultSystemTheme } from '@/components/DefaultSystemTheme'
 import './global.css'
 
 const inter = Inter({
@@ -19,7 +20,11 @@ export default function Layout({ children }: LayoutProps<'/'>) {
         />
       </head>
       <body className="min-h-screen flex flex-col">
-        <Provider>{children}</Provider>
+        <Provider>
+          {/* 非首页（首页强制深色）默认跟随系统配色 */}
+          <DefaultSystemTheme skipHome />
+          {children}
+        </Provider>
       </body>
     </html>
   )
