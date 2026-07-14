@@ -13,6 +13,6 @@
     "ky": "^2.0.2"
   },
   "devDependencies": {
-    "wormajs": "latest"
+    "wormajs": "workspace:*"
   }
 }

@@ -12,6 +12,6 @@
     "start": "npm run gen:all && pnpm start:alova && pnpm start:axios && pnpm start:fetch && pnpm start:ky"
   },
   "devDependencies": {
-    "wormajs": "catalog:"
+    "wormajs": "workspace:*"
   }
 }

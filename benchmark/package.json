@@ -31,6 +31,6 @@
     "vite": "^7.3.1",
     "vue": "^3.5.17",
     "vue-echarts": "^7.0.3",
-    "wormajs": "latest"
+    "wormajs": "workspace:*"
   }
 }

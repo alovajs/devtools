@@ -40,7 +40,7 @@ const schemaCache = new Map<string, string>()
 async function processSchema(key: string, schema: SchemaObject): Promise<SchemaResultItem[]> {
   const results: SchemaResultItem[] = []
 
-  const tsStr = await schemaLoader.transform(schema, {
+  await schemaLoader.transform(schema, {
     document,
     deep: false,
     noEnum: true,
@@ -68,7 +68,6 @@ async function processSchema(key: string, schema: SchemaObject): Promise<SchemaR
     },
   })
 
-  results.push({ key, result: tsStr })
   return results
 }
 
