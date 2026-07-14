@@ -1,5 +1,11 @@
 # worma
 
+## 0.0.2-beta.3
+
+### Patch Changes
+
+- [#158](https://github.com/alovajs/devtools/pull/158) [`0acc04a`](https://github.com/alovajs/devtools/commit/0acc04ad401971e6c08dff095e731639c0a00b3f) Thanks [@JOU-amjs](https://github.com/JOU-amjs)! - remove extra data after generating in workpool
+
 ## 0.0.2-beta.2
 
 ### Patch Changes
