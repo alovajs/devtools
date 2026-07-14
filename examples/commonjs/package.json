@@ -12,6 +12,6 @@
     "axios": "^1.17.0"
   },
   "devDependencies": {
-    "wormajs": "latest"
+    "wormajs": "workspace:*"
   }
 }
