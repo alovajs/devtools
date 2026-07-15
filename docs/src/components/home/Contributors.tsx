@@ -24,6 +24,8 @@ export interface ContributorLink {
 export interface Contributor {
   /** 展示名称 */
   name: string
+  /** 头像图片地址（位于 public 目录下），未提供时展示姓名首字母 */
+  avatar?: string
   /** beta 阶段承担的角色 */
   role: string
   /** 主要贡献方向 */
@@ -55,6 +57,13 @@ export const betaContributors: Contributor[] = [
     links: [
       { type: 'github', url: 'https://github.com/limu-dev' },
     ],
+  },
+  {
+    name: 'em_zh_z',
+    avatar: '/img/em_zh_z.jpg',
+    role: 'Beta 体验官',
+    contributions: ['bug猎手', '深度使用'],
+    links: [],
   },
 ]
 
@@ -129,9 +138,19 @@ export default function Contributors() {
             className="group relative flex flex-col gap-4 bg-[var(--color-fd-card)] p-6 transition-colors hover:bg-[var(--color-fd-muted)]"
           >
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center text-lg font-bold uppercase text-[var(--color-fd-primary)] transition-colors font-headline-lg bg-[var(--color-fd-muted)] group-hover:bg-[var(--color-fd-primary)] group-hover:text-[var(--color-fd-primary-foreground)]">
-                {getInitials(contributor.name)}
-              </div>
+              {contributor.avatar
+                ? (
+                    <img
+                      src={contributor.avatar}
+                      alt={contributor.name}
+                      className="h-12 w-12 shrink-0 rounded-full object-cover"
+                    />
+                  )
+                : (
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center text-lg font-bold uppercase text-[var(--color-fd-primary)] transition-colors font-headline-lg bg-[var(--color-fd-muted)] group-hover:bg-[var(--color-fd-primary)] group-hover:text-[var(--color-fd-primary-foreground)]">
+                      {getInitials(contributor.name)}
+                    </div>
+                  )}
               <div className="min-w-0">
                 <div className="truncate font-body-md text-sm font-bold text-[var(--color-fd-foreground)]">
                   {contributor.name}
