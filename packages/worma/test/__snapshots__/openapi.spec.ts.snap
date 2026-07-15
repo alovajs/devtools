@@ -11,6 +11,14 @@ export default defineConfig({
   generator: [
     {
       /**
+       * file input. support:
+       * 1. openapi json file url
+       * 2. local file
+       * 3. string array — each URL will be tried in order, first success wins
+       */
+      // input: 'http://localhost:3000',
+
+      /**
        * output path of interface file and type file.
        * Multiple generators cannot have the same address, otherwise the generated code will overwrite each other.
        */

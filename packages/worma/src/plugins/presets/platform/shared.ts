@@ -3,7 +3,10 @@ import type { ApiPlugin, GeneratorConfig } from '@/type'
 
 /** Remove trailing slashes from a base URL */
 export function normalizeBase(baseUrl: string): string {
-  return baseUrl.replace(/\/+$/, '')
+  while (baseUrl.endsWith('/')) {
+    baseUrl = baseUrl.slice(0, -1)
+  }
+  return baseUrl
 }
 
 /**
