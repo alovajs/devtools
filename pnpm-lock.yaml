@@ -625,6 +625,19 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3
 
+  e2e-fixtures-temp/commonjs:
+    dependencies:
+      alova:
+        specifier: ^3.0.0
+        version: 3.3.4
+      axios:
+        specifier: ^1.17.0
+        version: 1.17.0
+    devDependencies:
+      wormajs:
+        specifier: workspace:*
+        version: link:../../packages/worma
+
   examples/commonjs:
     dependencies:
       alova:

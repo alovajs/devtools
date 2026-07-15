@@ -74,19 +74,18 @@ worma init -T fetch -t typescript
 ```javascript
 import { defineConfig } from "wormajs";
 import { rename, aiDoc } from "wormajs/plugin";
-import { alova, platform } from "wormajs/plugin";
+import { alova, swagger } from "wormajs/plugin";
 
 export default defineConfig({
   generator: [
     {
-      input: "https://api.example.com/openapi.json",
       output: "src/api",
       docComment: true,
       responseMediaType: "application/json",
       bodyMediaType: "application/json",
       serverName: "用户服务",
       plugins: [
-        platform("swagger"),
+        swagger("https://api.example.com/openapi.json"),
         alova(),
         aiDoc(),
         rename({ getUserInfo: "fetchUserProfile" }),
@@ -186,7 +185,7 @@ export default defineConfig({
 });
 ```
 
-> **使用 `apifox` 插件后不再需要设置 `input` 字段**，插件会自动从 Apifox 拉取最新的 OpenAPI 文档。更多用法（按标签筛选、指定版本等）请查看 [Apifox 拉取器](/plugin-system/builtin-plugins/apifox)。
+> **使用 `apifox` 插件后不再需要设置 `input` 字段**，插件会自动从 Apifox 拉取最新的 OpenAPI 文档。更多用法（按标签筛选、指定版本等）请查看 [平台拉取器](/docs/plugin-system/builtin-plugins/platform)。
 
 ## 简易配置 [#wormarc]
 

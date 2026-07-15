@@ -73,6 +73,29 @@ export function registerCommonHelpers(hbs: typeof HandlebarsType) {
       return text
     return text.split('\n').map(line => line.replace(/^\* ?/, '')).join('\n')
   })
+  /**
+   * Scan the type string for every PascalCase identifier that is in componentNames
+   * (and not already prefixed with `${importName}.`) and prefix it.
+   * Works uniformly for top-level names, generics, object literals, and arrays.
+   *
+   * @param typeStr       The type expression to process.
+   * @param componentNames The list of component schema names to prefix.
+   * @param importName     The imported namespace name to prefix with. Defaults to "ComponentTypes".
+   */
+  hbs.registerHelper('addNamespace', (typeStr: unknown, componentNames: unknown, importName?: unknown) => {
+    const type = typeStr as string
+    const names = componentNames as string[]
+    const importPrefix = (typeof importName === 'string' && importName.length > 0) ? importName : 'ComponentTypes'
+    if (!type || !Array.isArray(names) || names.length === 0) {
+      return new hbs.SafeString(type || 'unknown')
+    }
+    const nameSet = new Set(names)
+    const escapedPrefix = importPrefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const result = type.replace(new RegExp(`(?<!${escapedPrefix}\\.)(\\b[A-Z]\\w*\\b)`, 'g'), (match) => {
+      return nameSet.has(match) ? `${importPrefix}.${match}` : match
+    })
+    return new hbs.SafeString(result)
+  })
 }
 
 /**

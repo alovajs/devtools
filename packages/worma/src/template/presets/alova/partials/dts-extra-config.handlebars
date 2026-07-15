@@ -1,8 +1,8 @@
 {{#or pathParameters queryParameters requestBody}}
 type {{{name}}}ExtraConfig = {
-  {{#if pathParameters}}pathParams: {{processType pathParameters @root.componentNames}};
-  {{/if}}{{#if queryParameters}}params: {{processType queryParameters @root.componentNames}};
-  {{/if}}{{#if requestBody}}data: {{processType requestBody @root.componentNames}};
+  {{#if pathParameters}}pathParams: {{addNamespace pathParameters @root.componentNames}};
+  {{/if}}{{#if queryParameters}}params: {{addNamespace queryParameters @root.componentNames}};
+  {{/if}}{{#if requestBody}}data: {{addNamespace requestBody @root.componentNames}};
   {{/if}}
 };
 {{/or}}

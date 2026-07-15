@@ -1,5 +1,5 @@
 import { defineConfig } from 'wormajs'
-import { aiDoc, alovaGlobals, platform } from 'wormajs/plugin'
+import { aiDoc, alovaGlobals, swagger } from 'wormajs/plugin'
 
 // ─── Worma TypeScript 示例 ──────────────────────────
 // 本文件展示了单项目中配置 5 个 generator 的方式，
@@ -15,11 +15,10 @@ export default defineConfig({
      *   • 无需 import，直接 MyApis.getPetById() 调用
      */
     {
-      input: 'C:/Users/Administrator/Desktop/api-docs.json',
       output: 'src/api/alova-globals',
       serverName: 'Alova Globals',
       plugins: [
-        platform('swagger'),
+        swagger('C:/Users/Administrator/Desktop/api-docs.json'),
         alovaGlobals({ global: 'MyApis' }),
         aiDoc(),
       ],

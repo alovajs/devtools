@@ -1,4 +1,3 @@
-import type HandlebarsType from 'handlebars'
 import type { ApiPlugin, FunctionalTemplateOptions, GlobalsTemplateOptions, RequestLibTemplateOptions } from '@/helper/config/type'
 import path from 'node:path'
 import { PluginName, PresetTemplateName } from '@/constant'
@@ -10,28 +9,6 @@ export function getPresetTemplatePath(presetName: string): string {
   // 预设模板在 src/template/presets 目录中
   // 编译后在 dist/template/presets 目录
   return path.join(__dirname, 'presets', presetName)
-}
-
-/**
- * Register processType helper on an hbs instance.
- *
- * Scans the type string for every PascalCase identifier that is in componentNames
- * (and not already prefixed with "ComponentTypes.") and prefixes it.
- * Works uniformly for top-level names, generics, object literals, and arrays.
- */
-export function registerProcessTypeHelper(hbs: typeof HandlebarsType) {
-  hbs.registerHelper('processType', (_typeStr: unknown, _componentNames: unknown) => {
-    const typeStr = _typeStr as string
-    const componentNames = _componentNames as string[]
-    if (!typeStr || !Array.isArray(componentNames) || componentNames.length === 0) {
-      return new hbs.SafeString(typeStr || 'unknown')
-    }
-    const componentSet = new Set(componentNames)
-    const result = typeStr.replace(/(?<!ComponentTypes\.)(\b[A-Z]\w*\b)/g, (match) => {
-      return componentSet.has(match) ? `ComponentTypes.${match}` : match
-    })
-    return new hbs.SafeString(result)
-  })
 }
 
 // ========== Template Preset Plugins ==========
@@ -95,9 +72,6 @@ export function alova(opts?: FunctionalTemplateOptions): ApiPlugin {
     getTemplate() {
       return { path: getPresetTemplatePath(PresetTemplateName.ALOVA) }
     },
-    onHandlebarsCreated({ hbs }) {
-      registerProcessTypeHelper(hbs)
-    },
     beforeCodeGenerate({ data }) {
       data.config = {
         ...data.config,
@@ -117,9 +91,6 @@ export function axios(opts?: RequestLibTemplateOptions): ApiPlugin {
     name: PluginName.TEMPLATE_AXIOS,
     getTemplate() {
       return { path: getPresetTemplatePath(PresetTemplateName.AXIOS) }
-    },
-    onHandlebarsCreated({ hbs }) {
-      registerProcessTypeHelper(hbs)
     },
     beforeCodeGenerate({ data }) {
       data.config = {
@@ -141,9 +112,6 @@ export function fetch(opts?: RequestLibTemplateOptions): ApiPlugin {
     getTemplate() {
       return { path: getPresetTemplatePath(PresetTemplateName.FETCH) }
     },
-    onHandlebarsCreated({ hbs }) {
-      registerProcessTypeHelper(hbs)
-    },
     beforeCodeGenerate({ data }) {
       data.config = {
         ...data.config,
@@ -163,9 +131,6 @@ export function ky(opts?: RequestLibTemplateOptions): ApiPlugin {
     name: PluginName.TEMPLATE_KY,
     getTemplate() {
       return { path: getPresetTemplatePath(PresetTemplateName.KY) }
-    },
-    onHandlebarsCreated({ hbs }) {
-      registerProcessTypeHelper(hbs)
     },
     beforeCodeGenerate({ data }) {
       data.config = {

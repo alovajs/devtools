@@ -12,15 +12,15 @@ import type * as ComponentTypes from '../components';
 {{#each apis}}
 
 interface {{{name}}}ExtraConfig {
-  {{#if pathParameters}}pathParams: {{processType pathParameters @root.componentNames}};
-  {{/if}}{{#if queryParameters}}params: {{processType queryParameters @root.componentNames}};
-  {{/if}}{{#if requestBody}}data: {{processType requestBody @root.componentNames}};
+  {{#if pathParameters}}pathParams: {{addNamespace pathParameters @root.componentNames}};
+  {{/if}}{{#if queryParameters}}params: {{addNamespace queryParameters @root.componentNames}};
+  {{/if}}{{#if requestBody}}data: {{addNamespace requestBody @root.componentNames}};
   {{/if}}
 }
 {{> api-jsdoc}}
-export function {{{name}}}<Config extends Alova2MethodConfig<{{processType response @root.componentNames}}> & {{{name}}}ExtraConfig>(config: Config): Alova2Method<ExtractResponded<Config, '{{{name}}}', {{processType response @root.componentNames}}>> {
+export function {{{name}}}<Config extends Alova2MethodConfig<{{addNamespace response @root.componentNames}}> & {{{name}}}ExtraConfig>(config: Config): Alova2Method<ExtractResponded<Config, '{{{name}}}', {{addNamespace response @root.componentNames}}>> {
   const { url, data, mergedConfig } = buildPayload('{{{path}}}', {{{tag}}}DefaultConfig, {{{name}}}.name, config);
-  return alovaInstance.Request<ExtractResponded<Config, '{{{name}}}', {{processType response @root.componentNames}}>>({
+  return alovaInstance.Request<ExtractResponded<Config, '{{{name}}}', {{addNamespace response @root.componentNames}}>>({
     ...mergedConfig,
     url,
     data,

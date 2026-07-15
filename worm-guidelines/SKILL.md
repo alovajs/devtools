@@ -41,15 +41,15 @@ worma ships with request-library templates such as `alova`, `axios`, `fetch`, an
 
 Add these plugins to `generator.plugins` to customize the generation pipeline.
 
-| Plugin              | Description                                                          | Docs                                                                                                    |
-| ------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `aiDoc()`           | Generates AI-readable interface docs for coding assistants.          | [aiDoc](https://worma.js.org/llms.mdx/docs/plugin-system/builtin-plugins/aiDoc.md)                      |
-| `platform()`        | Auto-assembles OpenAPI URLs for Swagger, Knife4j, FastAPI, and YApi. | [platform](https://worma.js.org/llms.mdx/docs/plugin-system/builtin-plugins/platform.md)                |
-| `apifox()`          | Imports OpenAPI documents directly from Apifox.                      | [apifox](https://worma.js.org/llms.mdx/docs/plugin-system/builtin-plugins/apifox.md)                    |
-| `rename()`          | Renames/transforms API URLs and parameters.                          | [rename](https://worma.js.org/llms.mdx/docs/plugin-system/builtin-plugins/rename.md)                    |
-| `tagModifier()`     | Modifies the `tags` of APIs in the OpenAPI spec.                     | [tagModifier](https://worma.js.org/llms.mdx/docs/plugin-system/builtin-plugins/tag-modifier.md)         |
-| `payloadModifier()` | Adds, removes, or changes request/response parameter types.          | [payloadModifier](https://worma.js.org/llms.mdx/docs/plugin-system/builtin-plugins/payload-modifier.md) |
-| `filterApi()`       | Filters APIs by URL or tag with matching rules.                      | [filterApi](https://worma.js.org/llms.mdx/docs/plugin-system/builtin-plugins/filter-api.md)             |
-| `importType()`      | Reuses external types and excludes auto-generated types.             | [importType](https://worma.js.org/llms.mdx/docs/plugin-system/builtin-plugins/import-type.md)           |
+| Plugin                                             | Description                                                                                        | Docs                                                                                                    |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `aiDoc()`                                          | Generates AI-readable interface docs for coding assistants.                                        | [aiDoc](https://worma.js.org/llms.mdx/docs/plugin-system/builtin-plugins/aiDoc.md)                      |
+| `swagger()` / `knife4j()` / `fastapi()` / `yapi()` | Auto-assembles OpenAPI URLs for Swagger, Knife4j, FastAPI, and YApi (yapi needs a pid and cookie). | [platform](https://worma.js.org/llms.mdx/docs/plugin-system/builtin-plugins/platform.md)                |
+| `apifox()`                                         | Imports OpenAPI documents directly from Apifox.                                                    | [apifox](https://worma.js.org/llms.mdx/docs/plugin-system/builtin-plugins/apifox.md)                    |
+| `rename()`                                         | Renames/transforms API URLs and parameters.                                                        | [rename](https://worma.js.org/llms.mdx/docs/plugin-system/builtin-plugins/rename.md)                    |
+| `tagModifier()`                                    | Modifies the `tags` of APIs in the OpenAPI spec.                                                   | [tagModifier](https://worma.js.org/llms.mdx/docs/plugin-system/builtin-plugins/tag-modifier.md)         |
+| `payloadModifier()`                                | Adds, removes, or changes request/response parameter types.                                        | [payloadModifier](https://worma.js.org/llms.mdx/docs/plugin-system/builtin-plugins/payload-modifier.md) |
+| `filterApi()`                                      | Filters APIs by URL or tag with matching rules.                                                    | [filterApi](https://worma.js.org/llms.mdx/docs/plugin-system/builtin-plugins/filter-api.md)             |
+| `importType()`                                     | Reuses external types and excludes auto-generated types.                                           | [importType](https://worma.js.org/llms.mdx/docs/plugin-system/builtin-plugins/import-type.md)           |
 
 → See [Built-in Plugins Overview](https://worma.js.org/llms.mdx/docs/plugin-system/builtin-plugins/index.md) for shared usage patterns and more details.

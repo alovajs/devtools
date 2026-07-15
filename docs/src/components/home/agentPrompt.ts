@@ -25,7 +25,7 @@ Check \`package.json\` for an already installed HTTP client among: ${PREDEFINED_
 Before configuring, ask:
 - What is the OpenAPI data source URL?
 - Which platform or source type are they using?
-  - Swagger / Knife4j / FastAPI → use the \`platform()\` plugin
+  - Swagger / Knife4j / FastAPI → use the \`swagger()\` / \`knife4j()\` / \`fastapi()\` plugin
   - Apifox → use the \`apifox()\` plugin (needs projectId and apifoxToken)
   - Direct OpenAPI file URL → use \`input\` directly
 
@@ -39,13 +39,12 @@ Run \`npx wormajs init --template [http client]\` to generate \`worma.config.[j|
 Result for a TypeScript project using axios + Swagger:
 \`\`\`ts
 import { defineConfig } from 'wormajs';
-import { axios, aiDoc, platform } from 'wormajs/plugin';
+import { axios, aiDoc, swagger } from 'wormajs/plugin';
 
 export default defineConfig({
   generator: [{
-    input: '<user-provided-url>',
     output: 'src/api',
-    plugins: [platform('swagger'), axios(), aiDoc()],
+    plugins: [swagger('<user-provided-url>'), axios(), aiDoc()],
   }],
 });
 \`\`\`
