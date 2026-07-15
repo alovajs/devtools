@@ -2,7 +2,7 @@
   "publisher": "worma",
   "name": "worma-vscode",
   "displayName": "Worma",
-  "version": "0.1.2-beta.1",
+  "version": "0.2.0",
   "private": true,
   "packageManager": "pnpm@10.13.1",
   "description": "Generate and search APIs without API documentation any more",
