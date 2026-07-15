@@ -1,5 +1,15 @@
 # Change Log
 
+## 0.2.0
+
+### Minor Changes
+
+- [#160](https://github.com/alovajs/devtools/pull/160) [`a13da24`](https://github.com/alovajs/devtools/commit/a13da24104c3c623d0d2ce9373c82415c0f56e7a) Thanks [@JOU-amjs](https://github.com/JOU-amjs)! - split platform plugin to individual plugin
+
+### Patch Changes
+
+- [#146](https://github.com/alovajs/devtools/pull/146) [`31a0d64`](https://github.com/alovajs/devtools/commit/31a0d64212d61373859c060894f72ac3ec195d73) Thanks [@JOU-amjs](https://github.com/JOU-amjs)! - Release new version of VS Code extension
+
 ## 0.1.2-beta.1
 
 ### Patch Changes

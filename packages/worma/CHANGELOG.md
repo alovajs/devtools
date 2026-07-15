@@ -1,5 +1,19 @@
 # worma
 
+## 0.1.0
+
+### Minor Changes
+
+- [#160](https://github.com/alovajs/devtools/pull/160) [`a13da24`](https://github.com/alovajs/devtools/commit/a13da24104c3c623d0d2ce9373c82415c0f56e7a) Thanks [@JOU-amjs](https://github.com/JOU-amjs)! - split platform plugin to individual plugin
+
+### Patch Changes
+
+- [#158](https://github.com/alovajs/devtools/pull/158) [`0acc04a`](https://github.com/alovajs/devtools/commit/0acc04ad401971e6c08dff095e731639c0a00b3f) Thanks [@JOU-amjs](https://github.com/JOU-amjs)! - remove extra data after generating in workpool
+
+- [#152](https://github.com/alovajs/devtools/pull/152) [`2cfd90b`](https://github.com/alovajs/devtools/commit/2cfd90bf9eff5eb4bd23faa1a49214dce7d414b2) Thanks [@JOU-amjs](https://github.com/JOU-amjs)! - modify api skill name, support multiple agent set
+
+- [#146](https://github.com/alovajs/devtools/pull/146) [`cf924d7`](https://github.com/alovajs/devtools/commit/cf924d7164c64f51f17289ffa2109748f2074e14) Thanks [@JOU-amjs](https://github.com/JOU-amjs)! - Release new beta version of wormajs
+
 ## 0.0.2-beta.3
 
 ### Patch Changes
