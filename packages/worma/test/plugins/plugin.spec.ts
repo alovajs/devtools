@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 import { TemplateHelper } from '@/helper/template'
 import { createPlugin } from '@/plugins'
 import { extend } from '@/plugins/presets/utils'
-import { getPresetTemplatePath, registerProcessTypeHelper } from '@/template'
+import { getPresetTemplatePath } from '@/template'
 import { generateWithPlugin } from '../util'
 
 vi.mock('node:fs')
@@ -543,24 +543,25 @@ describe('plugin test', () => {
       expect(globalsFile).toMatch('interface Apis')
     })
 
-    it('should work with preset plugin onHandlebarsCreated like processType', async () => {
-      const processTypePluginFn = vi.fn()
-      const processTypePlugin = {
-        name: 'processTypePlugin',
+    it('should have addNamespace helper available globally without manual registration', async () => {
+      const onHbsCreatedFn = vi.fn()
+      const addNamespacePlugin = {
+        name: 'addNamespaceCheckPlugin',
         onHandlebarsCreated({ hbs }: { hbs: typeof HandlebarsType }) {
-          // Use the same helper registration pattern as preset templates
-          registerProcessTypeHelper(hbs)
-          processTypePluginFn()
+          onHbsCreatedFn()
+          // addNamespace is now registered globally via registerCommonHelpers,
+          // so it must be present without any manual registration.
+          expect(typeof hbs.helpers.addNamespace).toBe('function')
         },
       }
 
       const { globalsFile } = await generateWithPlugin(
         resolve(__dirname, '../openapis/openapi_301.json'),
-        [processTypePlugin],
+        [addNamespacePlugin],
       )
 
-      expect(processTypePluginFn).toHaveBeenCalledTimes(1)
-      // Generation should succeed with the processType helper registered
+      expect(onHbsCreatedFn).toHaveBeenCalledTimes(1)
+      // Generation should succeed with the addNamespace helper registered globally
       expect(globalsFile).toMatch('interface Apis')
     })
 

@@ -2,7 +2,7 @@
 
 exports[`createConfig API > should create worma.config 1`] = `
 "import { defineConfig } from 'wormajs';
-import { platform, aiDoc, alova } from 'wormajs/plugin';
+import { swagger, aiDoc, alova } from 'wormajs/plugin';
 
 // For more config detailed visit:
 // https://github.com/alovajs/devtools
@@ -16,7 +16,7 @@ export default defineConfig({
        * 2. local file
        * 3. string array — each URL will be tried in order, first success wins
        */
-      input: 'http://localhost:3000',
+      // input: 'http://localhost:3000',
 
       /**
        * output path of interface file and type file.
@@ -25,10 +25,10 @@ export default defineConfig({
       output: 'src/api',
 
       /**
-       * platform plugin: auto-resolves OpenAPI file URLs from platform type.
-       * Uses config.input as base URL to construct candidate OpenAPI endpoints.
+       * swagger platform plugin: auto-resolves OpenAPI file URLs from the base URL.
+       * The base URL is passed as the plugin argument (not config.input).
        */
-      plugins: [platform('swagger'), aiDoc({ installSkill: true }), alova()]
+      plugins: [swagger('http://localhost:3000'), aiDoc({ installSkill: true }), alova()]
 
       /**
        * the mediaType of the generated response data. default is \`application/json\`

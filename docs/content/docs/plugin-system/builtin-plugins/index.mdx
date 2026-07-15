@@ -1,6 +1,6 @@
 ---
 title: 内置插件
-description: 全部内置插件的使用，包括 importType、aiDoc、platform、rename、tagModifier 等
+description: 全部内置插件的使用，包括 importType、aiDoc、swagger/knife4j/fastapi/yapi/apifox、rename、tagModifier 等
 ---
 
 
@@ -13,8 +13,7 @@ worma 内置了以下预设插件，可在 `plugins` 数组中按顺序配置使
 | tagModifier | 修改 API 的 tag 名称 | [查看详情](/docs/plugin-system/builtin-plugins/tag-modifier) |
 | payloadModifier | 增加、删除和修改 API 的参数类型 | [查看详情](/docs/plugin-system/builtin-plugins/payload-modifier) |
 | apiFilter | 根据 URL 和 tag 匹配过滤 API | [查看详情](/docs/plugin-system/builtin-plugins/filter-api) |
-| apifox | 自动导入 Apifox 中的项目 | [查看详情](/docs/plugin-system/builtin-plugins/apifox) |
-| platform | 自动拼接 Swagger / Knife4j / FastAPI / YApi 的 OpenAPI 文件地址 | [查看详情](/docs/plugin-system/builtin-plugins/platform) |
+| swagger / knife4j / fastapi / yapi / apifox | 自动拼接或拉取各平台的 OpenAPI 文件地址（YApi 需 cookie，Apifox 需 projectId 与访问令牌） | [查看详情](/docs/plugin-system/builtin-plugins/platform) |
 | importType | 复用外部类型，排除自动生成 | [查看详情](/docs/plugin-system/builtin-plugins/import-type) |
 | aiDoc | 生成 AI Skill 文档 | 详见 [AI Skills 集成](/docs/ai-skills) |
 
@@ -46,7 +45,7 @@ export default defineConfig({
 import { defineConfig } from 'wormajs';
 import {
   rename, tagModifier, payloadModifier, apiFilter, apifox, importType,
-  alova, platform
+  alova, swagger
 } from 'wormajs/plugin';
 import { aiDoc } from 'wormajs/plugin';
 
@@ -54,7 +53,7 @@ export default defineConfig({
   generator: [
     {
       plugins: [
-        platform('swagger'),
+        swagger('https://petstore3.swagger.io'),
         rename({ style: 'camelCase' }),
         tagModifier(tag => `api_${tag}`),
         payloadModifier([/* ... */]),

@@ -826,14 +826,13 @@ alova gen -p ./packages/app
 
 ```TypeScript
 import { defineConfig } from 'wormajs';
-import { platform, alovaGlobals } from 'wormajs/plugin';
+import { swagger, alovaGlobals } from 'wormajs/plugin';
 
 export default defineConfig({
   generator: [
     {
-      input: 'https://petstore3.swagger.io',
-      // 使用 platform 插件，传入平台类型
-      plugins: [platform('swagger'), alovaGlobals()],
+      // 使用 swagger 插件，URL 作为插件参数传入
+      plugins: [swagger('https://petstore3.swagger.io'), alovaGlobals()],
       output: './src/api',
     }
   ]
@@ -853,7 +852,7 @@ export default defineConfig({
 
 ### 平台规则
 
-用户通过 `platform('<type>')` 传入平台类型字符串，插件内部使用 `config.input` 作为 API 文档项目 URL，根据平台类型自动拼接 OpenAPI 文件地址，赋值数组给 `config.input` 供后续依次尝试。
+用户通过 `swagger('<url>')` / `knife4j('<url>')` / `fastapi('<url>')` 传入平台基础地址（或地址数组），插件内部据此自动拼接 OpenAPI 文件地址数组并写入 `config.input` 供后续依次尝试；YApi 较为特殊，使用 `yapi({ url, pid, cookie })` 传入服务基础地址、项目 ID 与登录 cookie，插件据此拼装 `exportSwagger` 导出地址。
 
 | 平台类型    | 生成的 input 数组                                                                    |
 | ----------- | ------------------------------------------------------------------------------------ |

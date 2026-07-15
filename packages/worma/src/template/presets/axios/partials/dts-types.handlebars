@@ -1,7 +1,7 @@
-type {{{name}}}Response = {{processType response @root.componentNames}};
+type {{{name}}}Response = {{addNamespace response @root.componentNames}};
 type {{{name}}}ExtraConfig = Omit<AxiosRequestConfig, 'data' | 'params'> & {
-  {{#if pathParameters}}pathParams: {{processType pathParameters @root.componentNames}};
-  {{/if}}{{#if queryParameters}}params: {{processType queryParameters @root.componentNames}};
-  {{/if}}{{#if requestBody}}data: {{processType requestBody @root.componentNames}};
+  {{#if pathParameters}}pathParams: {{addNamespace pathParameters @root.componentNames}};
+  {{/if}}{{#if queryParameters}}params: {{addNamespace queryParameters @root.componentNames}};
+  {{/if}}{{#if requestBody}}data: {{addNamespace requestBody @root.componentNames}};
   {{/if}}
 };

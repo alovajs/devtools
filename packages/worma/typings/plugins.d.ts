@@ -597,33 +597,82 @@ export interface ModifierConfig<T extends Schema> {
 export type PayloadModifierConfig = ModifierConfig<Schema>;
 export declare function payloadModifier(configs: PayloadModifierConfig[]): ApiPlugin;
 /**
- * Supported platform types
- */
-export type PlatformType = "swagger" | "knife4j" | "fastapi" | "yapi";
-/**
- * Platform plugin for auto-resolving OpenAPI file URLs.
+ * Swagger platform plugin.
  *
- * Pass a platform type (e.g., `'swagger'`) and the plugin will use `config.input`
- * as the base URL to generate candidate OpenAPI file URLs. The framework will try
- * each URL in order and use the first successful response.
+ * Pass the base URL of your Swagger UI / server; the plugin will try several
+ * common OpenAPI document endpoints and let the framework pick the first one
+ * that responds. The base URL is provided as the plugin argument (not config.input).
  *
- * @param platformType - The platform type: 'swagger' | 'knife4j' | 'fastapi' | 'yapi'
+ * @param input - base URL string, or an array of base URLs
  * @returns ApiPlugin
  *
  * @example
  * ```ts
- * import { platform, alovaGlobals } from 'wormajs/plugin';
+ * import { swagger, alovaGlobals } from 'wormajs/plugin';
  *
  * defineConfig({
  *   generator: [{
- *     input: 'https://petstore3.swagger.io',
- *     plugins: [platform('swagger'), alovaGlobals()],
+ *     plugins: [swagger('https://petstore3.swagger.io'), alovaGlobals()],
  *     output: './src/api',
  *   }]
  * });
  * ```
  */
-export declare function platform(platformType: PlatformType): ApiPlugin;
+export declare function swagger(input: string | string[]): ApiPlugin;
+/**
+ * Knife4j platform plugin.
+ *
+ * @param input - base URL string, or an array of base URLs
+ */
+export declare function knife4j(input: string | string[]): ApiPlugin;
+/**
+ * FastAPI platform plugin.
+ *
+ * @param input - base URL string, or an array of base URLs
+ */
+export declare function fastapi(input: string | string[]): ApiPlugin;
+/**
+ * YApi platform plugin.
+ *
+ * YApi projects are private, so the OpenAPI document must be exported through
+ * YApi's own export endpoint, authenticated with your login cookie. The plugin
+ * builds the export URL from the server base URL (`url`) plus the required
+ * `pid` and the optional `type` / `status` / `isWiki` query params.
+ *
+ * @param options - `{ url, pid, cookie?, type?, status?, isWiki?, timeout? }`. `url`, `pid` and `cookie` are required.
+ *
+ * @example
+ * ```ts
+ * import { yapi, alovaGlobals } from 'wormajs/plugin';
+ *
+ * defineConfig({
+ *   generator: [{
+ *     plugins: [
+ *       yapi({ url: 'https://yapi.xxx.com', pid: 123, cookie: '_yapi_token=xxx' }),
+ *       alovaGlobals(),
+ *     ],
+ *     output: './src/api',
+ *   }]
+ * });
+ * ```
+ */
+export interface YapiOptions {
+	/** YApi server base URL, e.g. `https://yapi.xxx.com` */
+	url: string;
+	/** Project id, required. */
+	pid: string | number;
+	/** OpenAPI type, default `OpenAPIV2` */
+	type?: string;
+	/** Interface status, default `all` */
+	status?: string;
+	/** Whether to include wiki, default `true` */
+	isWiki?: boolean;
+	/** Login cookie. Also accepted via fetchOptions.headers.cookie. */
+	cookie?: string;
+	/** Extra fetch timeout in milliseconds. */
+	timeout?: number;
+}
+export declare function yapi(options: YapiOptions): ApiPlugin;
 /**
  * Rename style options
  */
@@ -635,7 +684,7 @@ export interface RenameConfig {
 	/**
 	 * Target scope for renaming, defaults to 'url'
 	 */
-	scope?: "url" | "params" | "pathParams" | "data" | "response" | "refName";
+	scope?: "url" | "params" | "pathParams" | "data" | "response" | "refName" | "name";
 	/**
 	 * Matching rule for selective renaming:
 	 * - string: target contains this string
@@ -643,7 +692,7 @@ export interface RenameConfig {
 	 * - function: custom matching logic
 	 * If not specified, all targets will be processed
 	 */
-	match?: string | RegExp | ((key: string) => boolean);
+	match?: string | RegExp | ((key: string, level?: number) => boolean);
 	/**
 	 * Naming style to apply
 	 */

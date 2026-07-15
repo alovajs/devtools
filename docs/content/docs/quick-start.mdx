@@ -63,14 +63,13 @@ worma init
 
 ```javascript
 import { defineConfig } from "wormajs";
-import { alova, aiDoc, platform } from "wormajs/plugin";
+import { alova, aiDoc, swagger } from "wormajs/plugin";
 
 export default defineConfig({
   generator: [
     {
-      input: "https://api.example.com",
       output: "src/api",
-      plugins: [alova(), aiDoc(), platform("swagger")],
+      plugins: [swagger("https://api.example.com"), alova(), aiDoc()],
     },
   ],
 });

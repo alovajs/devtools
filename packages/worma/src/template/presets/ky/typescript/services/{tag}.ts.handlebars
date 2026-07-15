@@ -9,11 +9,11 @@ import { {{{tagName}}}DefaultConfig } from '.';
 
 {{#each tagedApis}}
 {{#each apis}}
-type {{{name}}}Response = {{processType response @root.componentNames}};
+type {{{name}}}Response = {{addNamespace response @root.componentNames}};
 type {{{name}}}ExtraConfig = Options & {
-  {{#if pathParameters}}pathParams: {{processType pathParameters @root.componentNames}};
-  {{/if}}{{#if queryParameters}}searchParams: {{processType queryParameters @root.componentNames}};
-  {{/if}}{{#if requestBody}}json: {{processType requestBody @root.componentNames}};
+  {{#if pathParameters}}pathParams: {{addNamespace pathParameters @root.componentNames}};
+  {{/if}}{{#if queryParameters}}searchParams: {{addNamespace queryParameters @root.componentNames}};
+  {{/if}}{{#if requestBody}}json: {{addNamespace requestBody @root.componentNames}};
   {{/if}}
 };
 {{> api-jsdoc}}

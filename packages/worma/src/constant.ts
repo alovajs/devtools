@@ -22,6 +22,7 @@ export enum ConfigTypeEnum {
 export enum PlatformTypeEnum {
   SWAGGER = 'swagger',
   KNIFE4J = 'knife4j',
+  FASTAPI = 'fastapi',
   YAPI = 'yapi',
 }
 
@@ -74,6 +75,7 @@ export enum RenameScope {
   DATA = 'data',
   RESPONSE = 'response',
   REF_NAME = 'refName',
+  NAME = 'name',
 }
 
 /** 过滤 scope 类型 */
@@ -99,7 +101,10 @@ export enum PluginName {
   IMPORT_TYPE = 'importType',
   AI_DOC = 'aiDoc',
   APIFOX = 'apifox',
-  PLATFORM = 'platform',
+  SWAGGER = 'swagger',
+  KNIFE4J = 'knife4j',
+  FASTAPI = 'fastapi',
+  YAPI = 'yapi',
   TEMPLATE_ALOVA = 'templateAlova',
   TEMPLATE_ALOVA_GLOBALS = 'templateAlovaGlobals',
   TEMPLATE_AXIOS = 'templateAxios',

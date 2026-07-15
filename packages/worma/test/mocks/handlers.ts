@@ -12,7 +12,7 @@ export default <RequestHandler[]>[
     const openApiDocs = await swagger2Json()
     return HttpResponse.json(openApiDocs)
   }),
-  // Handler for platform('swagger') generated URLs — /v2/swagger.json and /api/v3/openapi.json
+  // Handler for swagger() generated URLs — /v2/swagger.json and /api/v3/openapi.json
   http.get('https://generator3.swagger.io/v2/swagger.json', async () => {
     const openApiDocs = await swagger2Json()
     return HttpResponse.json(openApiDocs)

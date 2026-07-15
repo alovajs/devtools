@@ -2,24 +2,29 @@ import type { GeneratorConfig } from '@/type'
 import { extendsConfig } from '@/functions/prepareConfig'
 
 /**
- * 扩展生成器配置：
- * 根据传入的 newConfig（对象或函数）与基础 config 生成合并后的配置。
- * 当未提供 newConfig 时，直接回退到原始 config。
- * @param config 基础配置
- * @param newConfig 需要扩展的配置或用于生成扩展配置的函数
- * @returns 合并且标准化后的配置
+ * Extends the generator configuration:
+ * merges the provided newConfig (object or function) with the base config to produce the merged config.
+ * When newConfig is not provided, falls back to the original config.
+ * @param config base configuration
+ * @param newConfig config to merge, or a function that produces the merged config
+ * @returns the merged and normalized configuration
  */
 export function extend(config: GeneratorConfig, newConfig?: Partial<GeneratorConfig> | ((config: GeneratorConfig) => Partial<GeneratorConfig>)) {
-  // 根据 newConfig 类型计算扩展配置：函数则调用生成配置，否则直接使用对象；未提供则回退到原始 config
+  // Compute the extension config based on newConfig's type: call it if it's a function,
+  // otherwise use it directly; fall back to the original config if not provided
   const pluginExtendsConfig = typeof newConfig === 'function' ? newConfig(config) : (newConfig ?? config)
-  // 使用 extendsConfig 进行配置合并与标准化，确保最终结构满足生成器需求
+  // Use extendsConfig to merge and normalize, ensuring the final structure meets the generator's requirements
   return extendsConfig(config, pluginExtendsConfig)
 }
 
 /**
  * Tests if value matches the specified rule
  */
-export function isMatch(value: string, match?: string | RegExp | ((key: string) => boolean)): boolean {
+export function isMatch(
+  value: string,
+  match?: string | RegExp | ((key: string, level?: number) => boolean),
+  level = 0,
+): boolean {
   if (!match)
     return true
 
@@ -32,7 +37,7 @@ export function isMatch(value: string, match?: string | RegExp | ((key: string) 
   }
 
   if (typeof match === 'function') {
-    return match(value)
+    return match(value, level)
   }
 
   return false

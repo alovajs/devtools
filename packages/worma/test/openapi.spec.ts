@@ -3,7 +3,7 @@ import fs from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { vol } from 'memfs'
 import { createConfig, generate } from '@/index'
-import { alovaGlobals, platform } from '@/plugins'
+import { alovaGlobals, swagger } from '@/plugins'
 import { createStrReg, getSalt } from './util'
 
 vi.mock('node:fs')
@@ -154,10 +154,9 @@ describe('generate with OpenAPI file', () => {
     await generate({
       generator: [
         {
-          input: 'https://generator3.swagger.io',
           output: outputDir2,
           type: 'ts',
-          plugins: [platform('swagger'), alovaGlobals()],
+          plugins: [swagger('https://generator3.swagger.io'), alovaGlobals()],
         },
       ],
     })
@@ -170,13 +169,12 @@ describe('generate with OpenAPI file', () => {
     await generate({
       generator: [
         {
-          input: 'https://generator3.swagger.io/v1.0/foo?test=1&bar=2#ccc',
           fetchOptions: {
             method: 'POST',
           },
           output: outputDir3,
           type: 'ts',
-          plugins: [platform('swagger'), alovaGlobals()],
+          plugins: [swagger('https://generator3.swagger.io/v1.0/foo?test=1&bar=2#ccc'), alovaGlobals()],
         },
       ],
     })
