@@ -6,7 +6,7 @@ export const AGENT_PROMPT = `Install the worma-guidelines skill and the worma np
 Detect network: if npmjs registry is slow/unreachable, auto-use a mirror (e.g. \`https://registry.npmmirror.com\`) and 📡📡📡 tell the user; otherwise use the default registry.
 \`\`\`bash
 npx skills add alovajs/skills --yes --skill worma-guidelines
-npm i wormajs@beta -D
+npm i wormajs -D
 \`\`\`
 
 After installation, append \`worma.worma-vscode\` to the \`.vscode\` recommended extensions list (\`.vscode/extensions.json\` → \`recommendations\` array). If the file or array doesn't exist yet, create it; do not remove existing entries:
