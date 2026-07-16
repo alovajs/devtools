@@ -533,6 +533,7 @@ export type ModifierScope = "params" | "pathParams" | "data" | "response";
 export type SchemaPrimitive = "number" | "string" | "boolean" | "undefined" | "null" | "unknown" | "any" | "never";
 /**
  * Array type: a native JS array whose elements are Schemas.
+ * e.g. ['string'] means string[]; ['string', 'number'] means the tuple [string, number]
  */
 export type SchemaArray = Schema[];
 /**
@@ -563,6 +564,7 @@ export interface SchemaAllOf {
 }
 /**
  * Standalone primitive type that is itself optional (driven by the `type` field).
+ * Used in handler input/output to mean "this field is optional / make it optional".
  */
 export interface SchemaOptional {
 	required: boolean;
@@ -570,10 +572,10 @@ export interface SchemaOptional {
 }
 /**
  * The data Schema.
- * SchemaArray is a native array (elements are Schemas).
- * Composite types use { oneOf | anyOf | allOf: Schema[] }.
- * Optional object properties use a trailing '?' on the key;
- * a standalone optional primitive uses the SchemaOptional wrapper.
+ * - SchemaArray is a native array (elements are Schemas)
+ * - composite types use { oneOf | anyOf | allOf: Schema[] }
+ * - optional object properties use a trailing '?' on the key;
+ *   a standalone optional primitive uses the SchemaOptional wrapper
  */
 export type Schema = SchemaPrimitive | SchemaReference | SchemaArray | SchemaEnum | SchemaOneOf | SchemaAnyOf | SchemaAllOf | SchemaOptional;
 export interface ModifierConfig {
@@ -591,6 +593,8 @@ export interface ModifierConfig {
 	/**
 	 * handler flexibly modifies the parameter type value.
 	 * @param schema the original field type, already converted to the user-facing Schema representation.
+	 *               When the field itself is optional and is a primitive, it is passed as { required: false, type: 'string' }.
+	 *               Narrow the type inside handler if needed (e.g. with a cast).
 	 * @returns Schema to change the type; { required: boolean, type: Schema } to change requiredness (driven by `type`);
 	 *          void | null | undefined to remove the field.
 	 */
@@ -602,14 +606,42 @@ export interface ModifierConfig {
 export type PayloadModifierConfig = ModifierConfig;
 export declare function payloadModifier(configs: PayloadModifierConfig[]): ApiPlugin;
 /**
+ * FastAPI platform plugin.
+ *
+ * Pass the base URL of your FastAPI app; the plugin will try `/openapi.json`
+ * first, then fall back to the bare base URL.
+ *
+ * @param input - base URL string, or an array of base URLs
+ *
+ * @example
+ * ```ts
+ * plugins: [fastapi('http://fastapi-example.dokkuapp.com'), alovaGlobals()]
+ * ```
+ */
+export declare const fastapi: (input: string | string[]) => ApiPlugin;
+/**
+ * Knife4j platform plugin.
+ *
+ * Pass the base URL of your Knife4j instance; the plugin will try the OAS3
+ * endpoint (springdoc) first, then the Swagger2 endpoint (springfox), then the
+ * bare base URL.
+ *
+ * @param input - base URL string, or an array of base URLs
+ *
+ * @example
+ * ```ts
+ * plugins: [knife4j('https://openapi3.demo.knife4jnext.com'), alovaGlobals()]
+ * ```
+ */
+export declare const knife4j: (input: string | string[]) => ApiPlugin;
+/**
  * Swagger platform plugin.
  *
  * Pass the base URL of your Swagger UI / server; the plugin will try several
- * common OpenAPI document endpoints and let the framework pick the first one
- * that responds. The base URL is provided as the plugin argument (not config.input).
+ * common OpenAPI document endpoints (OAS3 first, then Swagger2, then the bare
+ * base URL) and let the framework pick the first one that responds.
  *
  * @param input - base URL string, or an array of base URLs
- * @returns ApiPlugin
  *
  * @example
  * ```ts
@@ -623,28 +655,36 @@ export declare function payloadModifier(configs: PayloadModifierConfig[]): ApiPl
  * });
  * ```
  */
-export declare function swagger(input: string | string[]): ApiPlugin;
-/**
- * Knife4j platform plugin.
- *
- * @param input - base URL string, or an array of base URLs
- */
-export declare function knife4j(input: string | string[]): ApiPlugin;
-/**
- * FastAPI platform plugin.
- *
- * @param input - base URL string, or an array of base URLs
- */
-export declare function fastapi(input: string | string[]): ApiPlugin;
+export declare const swagger: (input: string | string[]) => ApiPlugin;
+export interface YapiOptions {
+	/** YApi 服务基础地址，例如 `https://yapi.xxx.com` */
+	url: string;
+	/** 项目 ID，必填，用于拼装导出地址 */
+	pid: string | number;
+	/** OpenAPI 类型，默认 `OpenAPIV2` */
+	type?: string;
+	/** 接口状态，默认 `all` */
+	status?: string;
+	/** 是否包含 wiki，默认 `true` */
+	isWiki?: boolean;
+	/** 登录 cookie。也可通过 fetchOptions.headers.cookie 传入 */
+	cookie?: string;
+	/** 额外的 fetch 超时（毫秒） */
+	timeout?: number;
+}
 /**
  * YApi platform plugin.
  *
  * YApi projects are private, so the OpenAPI document must be exported through
  * YApi's own export endpoint, authenticated with your login cookie. The plugin
  * builds the export URL from the server base URL (`url`) plus the required
- * `pid` and the optional `type` / `status` / `isWiki` query params.
+ * `pid` and the optional `type` / `status` / `isWiki` query params (which
+ * default to `OpenAPIV2`, `all`, and `true` respectively).
  *
- * @param options - `{ url, pid, cookie?, type?, status?, isWiki?, timeout? }`. `url`, `pid` and `cookie` are required.
+ * `url`, `pid` and `cookie` are required — the plugin throws a clear error when
+ * any is missing.
+ *
+ * @param options - `{ url, pid, cookie?, type?, status?, isWiki?, timeout? }`
  *
  * @example
  * ```ts
@@ -653,7 +693,11 @@ export declare function fastapi(input: string | string[]): ApiPlugin;
  * defineConfig({
  *   generator: [{
  *     plugins: [
- *       yapi({ url: 'https://yapi.xxx.com', pid: 123, cookie: '_yapi_token=xxx' }),
+ *       yapi({
+ *         url: 'https://yapi.xxx.com',
+ *         pid: 123,
+ *         cookie: '_yapi_token=xxx; _yapi_uid=yyy',
+ *       }),
  *       alovaGlobals(),
  *     ],
  *     output: './src/api',
@@ -661,22 +705,6 @@ export declare function fastapi(input: string | string[]): ApiPlugin;
  * });
  * ```
  */
-export interface YapiOptions {
-	/** YApi server base URL, e.g. `https://yapi.xxx.com` */
-	url: string;
-	/** Project id, required. */
-	pid: string | number;
-	/** OpenAPI type, default `OpenAPIV2` */
-	type?: string;
-	/** Interface status, default `all` */
-	status?: string;
-	/** Whether to include wiki, default `true` */
-	isWiki?: boolean;
-	/** Login cookie. Also accepted via fetchOptions.headers.cookie. */
-	cookie?: string;
-	/** Extra fetch timeout in milliseconds. */
-	timeout?: number;
-}
 export declare function yapi(options: YapiOptions): ApiPlugin;
 /**
  * Rename style options

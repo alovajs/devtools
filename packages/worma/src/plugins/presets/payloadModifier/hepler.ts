@@ -211,7 +211,7 @@ export function applyModifierSchema<T extends MaybeSchemaObject = SchemaObject>(
     = (required === false && typeof currentSpec === 'string')
       ? { required: false, type: currentSpec }
       : currentSpec
-  const ret = config.handler(handlerInput as T)
+  const ret = config.handler(handlerInput)
   if (!ret) {
     return {
       required,
