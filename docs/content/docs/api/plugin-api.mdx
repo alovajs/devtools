@@ -44,12 +44,12 @@ interface ApiPlugin {
     params: ConfigHookParams,
   ) => MaybePromise<GeneratorConfig | undefined | null | void>;
 
-  /** ② OpenAPI 解析前 */
-  beforeOpenapiParse?: (params: BeforeOpenapiParseHookParams) => void;
+  /** ② 规范解析前：拿到原始规范文本，可返回新字符串替换后再解析 */
+  beforeSpecParse?: (params: BeforeSpecParseHookParams) => MaybePromise<string | undefined | null | void>;
 
   /** ③ OpenAPI 解析后：可修改 document */
-  openapiParsed?: (
-    params: OpenapiParsedHookParams,
+  specParsed?: (
+    params: SpecParsedHookParams,
   ) => MaybePromise<OpenAPIDocument | undefined | null | void>;
 
   /** ④ 获取模板路径 */
@@ -87,20 +87,43 @@ interface ConfigHookParams {
 }
 ```
 
-### BeforeOpenapiParseHookParams
+### BeforeSpecParseHookParams
+
+`beforeSpecParse` 在规范文件（OpenAPI/Swagger 的 JSON 或 YAML 文本）**取回之后、解析之前**触发，`params.spec` 即原始规范文本字符串。
+
+**转换规范文件内容**：钩子可以返回一个新的字符串来**替换**待解析的规范文本，返回的字符串会作为后续解析（含 JSON/YAML 识别、Swagger 2.0 → OpenAPI 3.0 转换）的输入。若不返回值（或返回非字符串），则保持原始文本不变。多个插件的 `beforeSpecParse` 会依次串联执行——前一个插件的返回结果作为后一个插件的 `spec` 入参。
+
+常见用途：修复非法/不规范的原始规范文本、注入或删改字段、在解析前做字符串级别的替换等。
 
 ```typescript
-interface BeforeOpenapiParseHookParams {
+interface BeforeSpecParseHookParams {
   config: Readonly<GeneratorConfig>;
+  /** 原始规范文本（JSON 或 YAML），解析前的字符串内容 */
+  spec: string;
   projectPath: string;
   reportProgress: ReportProgress;
 }
 ```
 
-### OpenapiParsedHookParams
+示例：解析前替换规范文本内容。
 
 ```typescript
-interface OpenapiParsedHookParams {
+import { createPlugin } from "wormajs/plugin";
+
+const patchSpecPlugin = createPlugin(() => ({
+  name: "patch-spec",
+  beforeSpecParse({ spec }) {
+    // spec 是原始规范文本，返回新字符串即可替换后再解析
+    return spec.replace(/"nullable":\s*"true"/g, '"nullable": true');
+  },
+}));
+```
+
+### SpecParsedHookParams
+
+
+```typescript
+interface SpecParsedHookParams {
   config: Readonly<GeneratorConfig>;
   document: OpenAPIDocument;
   projectPath: string;

@@ -42,12 +42,14 @@ export interface ConfigHookParams {
 	projectPath: string;
 	reportProgress: ReportProgress;
 }
-export interface BeforeOpenapiParseHookParams {
+export interface BeforeSpecParseHookParams {
 	config: Readonly<GeneratorConfig>;
+	/** The raw OpenAPI specification text (JSON or YAML), before it is parsed. */
+	spec: string;
 	projectPath: string;
 	reportProgress: ReportProgress;
 }
-export interface OpenapiParsedHookParams {
+export interface SpecParsedHookParams {
 	config: Readonly<GeneratorConfig>;
 	document: OpenAPIDocument;
 	projectPath: string;
@@ -128,14 +130,16 @@ export interface ApiPlugin {
 	 */
 	config?: (params: ConfigHookParams) => MaybePromise<GeneratorConfig | undefined | null | void>;
 	/**
-	 * Called before parsing the OpenAPI file.
+	 * Called after the raw OpenAPI spec text is fetched but before it is parsed.
+	 * Return a (possibly modified) string to replace the spec text that will be
+	 * parsed. Returning nothing keeps the original spec text.
 	 */
-	beforeOpenapiParse?: (params: BeforeOpenapiParseHookParams) => void;
+	beforeSpecParse?: (params: BeforeSpecParseHookParams) => MaybePromise<string | undefined | null | void>;
 	/**
 	 * Manipulate the openapi document after parsing.
 	 * Returning null does NOT replacing anything.
 	 */
-	openapiParsed?: (params: OpenapiParsedHookParams) => MaybePromise<OpenAPIDocument | undefined | null | void>;
+	specParsed?: (params: SpecParsedHookParams) => MaybePromise<OpenAPIDocument | undefined | null | void>;
 	/**
 	 * Called before code generation. Mutate `params.data` directly to inject
 	 * configuration data (no longer returns a value).

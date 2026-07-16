@@ -10,9 +10,9 @@ export const CORE_PROGRESS_SOURCE = 'core'
  */
 export const GeneratorStage = {
   INIT: 'init',
-  BEFORE_OPENAPI_PARSE: 'beforeOpenapiParse',
+  BEFORE_SPEC_PARSE: 'beforeSpecParse',
   PARSE_OPENAPI: 'parseOpenapi',
-  OPENAPI_PARSED: 'openapiParsed',
+  SPEC_PARSED: 'specParsed',
   TEMPLATE_LOADED: 'templateLoaded',
   TEMPLATE_DATA_PARSED: 'templateDataParsed',
   BEFORE_CODE_GENERATE: 'beforeCodeGenerate',

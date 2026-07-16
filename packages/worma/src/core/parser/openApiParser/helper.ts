@@ -1,4 +1,5 @@
 import type { WorkerPool } from '@/core/WorkerPool'
+import type { MaybePromise } from '@/helper/config/type'
 import type { OpenAPIDocument, OpenAPIV2Document } from '@/type'
 import type { FetchOptions } from '@/utils/base'
 import { existsSync } from 'node:fs'
@@ -10,7 +11,6 @@ import { PoolManager } from '@/core/workerPool/poolManager'
 import { logger } from '@/helper'
 import { fetchData } from '@/utils'
 
-const supportedExtname = ['json', 'yaml']
 function isSwagger2(data: any): data is OpenAPIV2Document {
   return !!data?.swagger
 }
@@ -63,60 +63,81 @@ function convertSwagger2Async(data: OpenAPIV2Document): Promise<OpenAPIDocument>
   })
 }
 
-// Parse local openapi files
-async function parseLocalFile(url: string, projectPath = process.cwd()) {
-  const [, extname] = /\.([^.]+)$/.exec(url) ?? []
-  if (!supportedExtname.includes(extname)) {
-    throw logger.throwError(`Unsupported file type: ${extname}`, {
-      url,
-      projectPath,
-    })
-  }
+// Read local openapi spec file as raw text
+async function fetchRawLocalFile(url: string, projectPath = process.cwd()): Promise<string> {
   const filePath = path.resolve(projectPath, url)
-
-  if (extname === 'yaml') {
-    return YAML.load(await fs.readFile(filePath, 'utf-8')) as any
-  }
-  // M6-C3: prefer async read, fallback to require() for environments where
-  // fs is mocked (e.g. memfs in tests) but the real file exists on disk
   try {
-    return JSON.parse(await fs.readFile(filePath, 'utf-8'))
+    return await fs.readFile(filePath, 'utf-8')
   }
   catch {
-    // Fallback: use require() which bypasses fs mocks to reach real disk
+    // M6-C3: fallback to require() for environments where fs is mocked
+    // (e.g. memfs in tests) but the real file exists on disk. Limited to JSON.
     // eslint-disable-next-line ts/no-require-imports
-    return require(filePath) as any
+    return JSON.stringify(require(filePath), null, 2)
   }
 }
-// Parse remote openapi files
 
-async function parseRemoteFile(url: string, fetchOptions?: FetchOptions) {
-  const dataText = (await fetchData(url, fetchOptions)) ?? ''
-  let data: any
+// Fetch remote openapi spec as raw text
+async function fetchRawRemoteFile(url: string, fetchOptions?: FetchOptions): Promise<string> {
+  return (await fetchData(url, fetchOptions)) ?? ''
+}
+
+const isRemoteUrl = (u: string) => /^https?:\/\//.test(u)
+
+/**
+ * Fetch the raw spec text (JSON/YAML) from the first URL that succeeds.
+ * Returns the raw text together with the resolved URL; throws if all URLs fail.
+ */
+async function fetchRawText(
+  urls: string[],
+  options: { projectPath?: string, fetchOptions?: FetchOptions },
+): Promise<{ text: string, url: string }> {
+  if (urls.length === 0) {
+    throw logger.throwError('No URLs provided to fetch OpenAPI document')
+  }
+  const { projectPath, fetchOptions } = options
+
+  // All URLs race in parallel: local files are fast, remote ones use network.
+  // Each task fetches the raw text AND validates that it is actually an OpenAPI/Swagger
+  // document before resolving. Invalid candidates (e.g. an HTML error page returned by
+  // a fallback URL) reject, so that Promise.any falls through to the next URL
+  // instead of resolving with garbage text.
+  const tasks = urls.map((u) => {
+    return (async () => {
+      const text = isRemoteUrl(u)
+        ? await fetchRawRemoteFile(u, fetchOptions)
+        : await fetchRawLocalFile(u, projectPath)
+
+      // Quick parse + validity check (full parse + Swagger2→OpenAPI3 conversion
+      // happens later in parseSpec, after beforeSpecParse may rewrite the text).
+      let probe: any
+      try {
+        probe = JSON.parse(text)
+      }
+      catch (jsonError) {
+        try {
+          probe = YAML.load(text) as any
+        }
+        catch (yamlError) {
+          throw new Error(`${u}: ${(jsonError instanceof Error ? jsonError.message : String(jsonError))} (YAML: ${yamlError instanceof Error ? yamlError.message : String(yamlError)})`)
+        }
+      }
+      if (!isValidOpenApiData(probe)) {
+        throw new Error(`${u} did not yield a valid OpenAPI/Swagger document`)
+      }
+      return { text, url: u }
+    })()
+  })
+
   try {
-    // 尝试解析为 JSON 格式
-    data = JSON.parse(dataText)
+    return await Promise.any(tasks)
   }
-  catch (jsonError) {
-    try {
-      // 若 JSON 解析失败，尝试解析为 YAML 格式
-      data = YAML.load(dataText) as any
-    }
-    catch (yamlError) {
-      throw logger.throwError(`Only JSON and YAML formats are supported. Parsing failed:
-        ${jsonError instanceof Error ? jsonError.message : String(jsonError)}
-        ${yamlError instanceof Error ? yamlError.message : String(yamlError)}`, {
-        url,
-      })
-    }
+  catch (err) {
+    const errors = (err instanceof AggregateError)
+      ? err.errors.map((e: any) => e.message)
+      : [(err as Error).message]
+    throw logger.throwError(`Unable to retrieve valid OpenAPI document from any URL:\n${errors.join('\n')}`)
   }
-
-  // Validate if the data is valid (prevent server from returning error responses)
-  if (!isValidOpenApiData(data)) {
-    throw new Error(`Data retrieved from URL ${url} is not a valid OpenAPI document`)
-  }
-
-  return data
 }
 
 // Validate OpenAPI data
@@ -134,43 +155,40 @@ function isValidOpenApiData(data: any): boolean {
   return !!(data.openapi || data.swagger || data.info || data.paths)
 }
 
-const isRemoteUrl = (u: string) => /^https?:\/\//.test(u)
-
 /**
- * Try all URLs in parallel (local & remote) — first successful one wins.
- * Returns the parsed data together with the resolved URL; throws if all URLs fail.
+ * Parse a raw spec string (JSON or YAML) into an OpenAPIDocument.
+ * Performs format auto-detection, validity checks, and Swagger2→OpenAPI3 conversion.
  */
-async function tryUrls(
-  urls: string[],
-  options: { projectPath?: string, fetchOptions?: FetchOptions },
-): Promise<{ data: any, url: string }> {
-  if (urls.length === 0) {
-    throw logger.throwError('No URLs provided to fetch OpenAPI document')
-  }
-  const { projectPath, fetchOptions } = options
-
-  // All URLs race in parallel: local files are fast, remote ones use network
-  const tasks = urls.map((u) => {
-    if (isRemoteUrl(u)) {
-      return parseRemoteFile(u, fetchOptions).then(
-        data => ({ data, url: u }),
-        (err) => {
-          throw new Error(`${u}: ${err instanceof Error ? err.message : String(err)}`)
-        },
-      )
-    }
-    return parseLocalFile(u, projectPath).then(data => ({ data, url: u }))
-  })
-
+async function parseSpec(text: string, url: string): Promise<OpenAPIDocument> {
+  let data: any
   try {
-    return await Promise.any(tasks)
+    // Try to parse as JSON first
+    data = JSON.parse(text)
   }
-  catch (err) {
-    const errors = (err instanceof AggregateError)
-      ? err.errors.map((e: any) => e.message)
-      : [(err as Error).message]
-    throw logger.throwError(`Unable to retrieve valid OpenAPI document from any URL:\n${errors.join('\n')}`)
+  catch (jsonError) {
+    try {
+      // Fall back to YAML (also covers JSON, since JSON is a subset of YAML)
+      data = YAML.load(text) as any
+    }
+    catch (yamlError) {
+      throw logger.throwError(`Only JSON and YAML formats are supported. Parsing failed:
+        ${jsonError instanceof Error ? jsonError.message : String(jsonError)}
+        ${yamlError instanceof Error ? yamlError.message : String(yamlError)}`, {
+        url,
+      })
+    }
   }
+
+  // Validate if the data is valid (prevent server from returning error responses)
+  if (!isValidOpenApiData(data)) {
+    throw new Error(`Data retrieved from URL ${url} is not a valid OpenAPI document`)
+  }
+
+  // If it is a swagger2 file — convert via worker to avoid main-thread blocking
+  if (isSwagger2(data)) {
+    data = await convertSwagger2Async(data)
+  }
+  return data
 }
 
 export interface OpenApiDataResult {
@@ -179,28 +197,41 @@ export interface OpenApiDataResult {
   resolvedUrl: string
 }
 
+export interface GetOpenApiDataOptions {
+  projectPath?: string
+  fetchOptions?: FetchOptions
+  /**
+   * Called with the raw spec text (before parsing). May return a modified
+   * string that replaces the spec text used for parsing. Returning nothing
+   * (undefined / null / void) keeps the original text.
+   */
+  beforeSpecParse?: (spec: string) => MaybePromise<string | undefined | null | void>
+}
+
 /**
  * Parse OpenAPI document and return the resolved URL alongside the data.
  * Use this when you need to know which URL actually provided the document.
+ *
+ * If `beforeSpecParse` is provided, it is invoked with the raw spec text once
+ * it has been fetched (but before parsing), and its returned string replaces
+ * the text that will be parsed.
  */
 export async function getOpenApiDataWithUrl(
   url: string | string[],
-  options?: {
-    projectPath?: string
-    fetchOptions?: FetchOptions
-  },
+  options?: GetOpenApiDataOptions,
 ): Promise<OpenApiDataResult> {
-  const { projectPath, fetchOptions } = options ?? {}
+  const { projectPath, fetchOptions, beforeSpecParse } = options ?? {}
 
   // Normalize to array — single string or array both handled uniformly
   const urls = Array.isArray(url) ? url : [url]
-  const { data, url: resolvedUrl } = await tryUrls(urls, { projectPath, fetchOptions })
-  let result = data
+  const { text, url: resolvedUrl } = await fetchRawText(urls, { projectPath, fetchOptions })
 
-  // If it is a swagger2 file — convert via worker to avoid main-thread blocking
-  if (isSwagger2(result)) {
-    result = await convertSwagger2Async(result)
-  }
+  // Allow the caller (e.g. a `beforeSpecParse` plugin hook) to transform the
+  // raw spec text before it is parsed into an OpenAPIDocument.
+  const finalText = (beforeSpecParse ? await beforeSpecParse(text) : text) ?? text
+
+  const result = await parseSpec(finalText, resolvedUrl)
+
   if (!result) {
     throw logger.throwError(`Cannot read file from ${urls.join(', ')}`, {
       projectPath,
@@ -217,10 +248,7 @@ export async function getOpenApiDataWithUrl(
  */
 export async function getOpenApiData(
   url: string | string[],
-  options?: {
-    projectPath?: string
-    fetchOptions?: FetchOptions
-  },
+  options?: GetOpenApiDataOptions,
 ): Promise<OpenAPIDocument> {
   const { data } = await getOpenApiDataWithUrl(url, options)
   return data

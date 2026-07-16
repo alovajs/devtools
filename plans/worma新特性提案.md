@@ -901,10 +901,10 @@ defineConfig({
 
 | 旧名称              | 新名称          |
 | ------------------- | --------------- |
-| `afterOpenapiParse` | `openapiParsed` |
+| `afterSpecParse`    | `specParsed`    |
 | `afterCodeGenerate` | `codeGenerated` |
 
-`beforeOpenapiParse` 和 `beforeCodeGenerate` 保持不变。
+`beforeSpecParse` 和 `beforeCodeGenerate` 保持不变。
 
 ## Hook 参数对象化
 
@@ -925,13 +925,13 @@ interface ApiPlugin {
     reportProgress: ReportProgress
   }) => MaybePromise<GeneratorConfig | undefined | null | void>
 
-  beforeOpenapiParse?: (params: {
+  beforeSpecParse?: (params: {
     config: Readonly<GeneratorConfig>
     projectPath: string
     reportProgress: ReportProgress
   }) => void
 
-  openapiParsed?: (params: {
+  specParsed?: (params: {
     config: Readonly<GeneratorConfig>
     document: OpenAPIDocument
     projectPath: string
@@ -975,7 +975,7 @@ interface ApiPlugin {
 ### 钩子执行时序
 
 ```
-config() → beforeOpenapiParse() → 解析 OpenAPI → openapiParsed()
+config() → beforeSpecParse() → 解析 OpenAPI → specParsed()
 → templateParser.parse()
 → ① beforeCodeGenerate(data)     ← 插件注入配置数据到 templateData
 → 流式渲染 + 写盘：
@@ -999,7 +999,7 @@ config() → beforeOpenapiParse() → 解析 OpenAPI → openapiParsed()
 每个 hook 都会接收 `config` 和 `projectPath` 参数：
 
 - `config` hook：接收可修改的 config 对象
-- `beforeOpenapiParse` 及之后的 hook：接收 `Object.freeze()` 冻结的 config，防止误修改
+- `beforeSpecParse` 及之后的 hook：接收 `Object.freeze()` 冻结的 config，防止误修改
 - `projectPath`：当前项目路径，所有 hook 均可获取
 
 ## importType 插件改进
@@ -1352,7 +1352,7 @@ interface GenerateApiOptions {
 
 ### 插件钩子注入 `reportProgress`
 
-6 个生命周期钩子（`config` / `beforeOpenapiParse` / `openapiParsed` / `beforeCodeGenerate` / `beforeFileWrite` / `codeGenerated`）的参数对象统一新增 `reportProgress` 字段：
+6 个生命周期钩子（`config` / `beforeSpecParse` / `specParsed` / `beforeCodeGenerate` / `beforeFileWrite` / `codeGenerated`）的参数对象统一新增 `reportProgress` 字段：
 
 ```ts
 type ReportProgress = (progress: number, message?: string) => void;
@@ -1369,7 +1369,7 @@ export default defineConfig({
       plugins: [
         {
           name: "remoteSchema",
-          async openapiParsed({ document, reportProgress }) {
+          async specParsed({ document, reportProgress }) {
             reportProgress(10, "fetching schema patches");
             await fetchPatches();
             reportProgress(60, "merging");
@@ -1390,10 +1390,10 @@ export default defineConfig({
 | 百分比 | 阶段                               |
 | ------ | ---------------------------------- |
 | 5      | starting                           |
-| 10     | beforeOpenapiParse                 |
+| 10     | beforeSpecParse                 |
 | 20     | parsing openapi document           |
 | 35     | openapi parsed                     |
-| 45     | openapiParsed (after plugin chain) |
+| 45     | specParsed (after plugin chain) |
 | 55     | template configuration loaded      |
 | 65     | template data parsed               |
 | 70     | beforeCodeGenerate                 |
