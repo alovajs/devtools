@@ -33,7 +33,7 @@ export default defineConfig({
             match: key => key === 'userId',
             handler: schema => {
               return {
-                'attr1?': 'string', // 生成为可选参数
+                attr1: { required: false, type: 'string' }, // 生成为可选参数
                 attr2: 'number', // 生成为必填参数
                 attr3: {
                   // 嵌套数据
@@ -63,7 +63,7 @@ type ModifierScope = 'params' | 'pathParams' | 'data' | 'response';
 
 - **基本类型**：`'number' | 'string' | 'boolean' | 'undefined' | 'null' | 'unknown' | 'any' | 'never'`
 - **数组类型**：`Schema[]`（由元素类型组成的原生数组，例如 `['string']` 表示 `string[]`，`['string', 'number']` 表示元组 `[string, number]`）
-- **引用类型（对象）**：`{ [attr: string]: Schema }`（key 末尾加 `?` 表示可选参数）
+- **引用类型（对象）**：`{ [attr: string]: Schema }`（可选属性使用 `SchemaOptional` 包装形式 `{ required: false, type: Schema }`）
 - **联合类型**：`{ oneOf: Schema[] } | { anyOf: Schema[] } | { allOf: Schema[] }`
 - **枚举类型**：`{ enum: Array<string | number | boolean | null>; type?: SchemaPrimitive }`（值必须是给定集合之一，`type` 可选表示枚举元素的基础类型）
 - **可选普通类型**：`{ required: boolean; type: Schema }`（独立的普通类型字段本身可选时使用，以 `type` 字段为准）
@@ -188,14 +188,16 @@ payloadModifier([
 
 ### 可选参数与必填参数
 
-在 Schema 对象的 key 末尾添加 `?` 表示可选，否则为必填：
+在 Schema 对象中，必填属性直接写；可选属性使用 `SchemaOptional` 包装形式 `{ required: false, type: Schema }` 表示：
 
 ```javascript
 handler: () => ({
-  username: 'string', // 必填
-  'age?': 'number',   // 可选
+  username: 'string',                       // 必填
+  age: { required: false, type: 'number' }, // 可选
 });
 ```
+
+`SchemaOptional` 与逐字段调用时「可选普通类型」的入参表示完全一致，因此整段调用和逐字段调用的 handler 处理逻辑可以统一。
 
 ### 使用正则匹配
 

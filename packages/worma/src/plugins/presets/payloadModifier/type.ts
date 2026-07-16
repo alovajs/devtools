@@ -10,7 +10,9 @@ export type SchemaArray = Schema[]
 
 /**
  * Object/reference type.
- * Append '?' to the end of a key to mark it optional.
+ * Required properties are written directly; optional properties are wrapped
+ * with the `SchemaOptional` form `{ required: false, type: Schema }`
+ * (consistent with how a standalone optional primitive is represented).
  */
 export interface SchemaReference {
   [attr: string]: Schema
@@ -44,8 +46,8 @@ export interface SchemaOptional {
  * The data Schema.
  * - SchemaArray is a native array (elements are Schemas)
  * - composite types use { oneOf | anyOf | allOf: Schema[] }
- * - optional object properties use a trailing '?' on the key;
- *   a standalone optional primitive uses the SchemaOptional wrapper
+ * - optional object properties are wrapped with `SchemaOptional` ({ required: false, type: Schema });
+ *   a standalone optional primitive uses the same SchemaOptional wrapper
  */
 export type Schema
   = SchemaPrimitive
@@ -74,10 +76,12 @@ interface ModifierConfig {
    * @param schema the original field type, already converted to the user-facing Schema representation.
    *               When the field itself is optional and is a primitive, it is passed as { required: false, type: 'string' }.
    *               Narrow the type inside handler if needed (e.g. with a cast).
+   * @param key the matched field key. When `match` is omitted, the whole scope object is passed to the handler
+   *            once and `key` is `undefined`; when `match` is set, `key` is the matched field name for each call.
    * @returns Schema to change the type; { required: boolean, type: Schema } to change requiredness (driven by `type`);
    *          void | null | undefined to remove the field.
    */
-  handler: (schema: Schema) => Schema | { required: boolean, type: Schema } | void | null | undefined
+  handler: (schema: Schema, key?: string) => Schema | { required: boolean, type: Schema } | void | null | undefined
 }
 
 export type PayloadModifierConfig = ModifierConfig

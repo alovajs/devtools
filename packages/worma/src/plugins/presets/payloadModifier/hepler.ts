@@ -94,11 +94,29 @@ function toSchemaObject(base: SchemaObject, s: Schema): SchemaObject {
       if (!val) {
         continue
       }
-      const optional = key.endsWith('?')
-      const cleanKey = optional ? key.slice(0, -1) : key
+      // 兼容旧 `?` 后缀写法（向后兼容）
+      const optionalByKey = key.endsWith('?')
+      const cleanKey = optionalByKey ? key.slice(0, -1) : key
+      let isOptional: boolean
+      let effectiveVal: Schema
+      if (
+        !optionalByKey
+        && val && typeof val === 'object' && !Array.isArray(val)
+        && typeof (val as SchemaOptional).required === 'boolean'
+        && 'type' in val
+      ) {
+        // SchemaOptional 包装：可选性由 `required` 字段表达（与逐字段分支入参统一）
+        const opt = val as SchemaOptional
+        isOptional = !opt.required
+        effectiveVal = opt.type
+      }
+      else {
+        isOptional = optionalByKey
+        effectiveVal = val
+      }
       const baseProp = properties[cleanKey]
-      properties[cleanKey] = toSchemaObject(baseProp || {}, val)
-      if (optional) {
+      properties[cleanKey] = toSchemaObject(baseProp || {}, effectiveVal)
+      if (isOptional) {
         requiredSet.delete(cleanKey)
       }
       else {
@@ -173,8 +191,8 @@ function toSchemaSpec(obj: SchemaObject): Schema {
     const result: SchemaReference = {}
     for (const key of Object.keys(properties)) {
       const spec = toSchemaSpec(properties[key])
-      const finalKey = requiredSet.has(key) ? key : `${key}?`
-      result[finalKey] = spec
+      // 必填字段裸写；可选字段用 SchemaOptional 包装（与逐字段分支入参统一，避免 `?` 魔法字符串）
+      result[key] = requiredSet.has(key) ? spec : { required: false, type: spec }
     }
     return result
   }
@@ -190,12 +208,14 @@ function toSchemaSpec(obj: SchemaObject): Schema {
 
 interface ApplyModifierSchemaOptions {
   required: boolean
+  // The matched field key. `undefined` when the whole scope object is passed (no `match`).
+  key?: string
 }
 // Replace whole schema based on handler result (used for params/pathParams)
 export function applyModifierSchema<T extends MaybeSchemaObject = SchemaObject>(
   schema: T,
   config: PayloadModifierConfig,
-  { required }: ApplyModifierSchemaOptions,
+  { required, key }: ApplyModifierSchemaOptions,
 ): {
   required: boolean
   schema: T | null
@@ -211,7 +231,7 @@ export function applyModifierSchema<T extends MaybeSchemaObject = SchemaObject>(
     = (required === false && typeof currentSpec === 'string')
       ? { required: false, type: currentSpec }
       : currentSpec
-  const ret = config.handler(handlerInput)
+  const ret = config.handler(handlerInput, key)
   if (!ret) {
     return {
       required,
