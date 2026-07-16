@@ -109,9 +109,6 @@ catalogs:
     string-width:
       specifier: ^7.2.0
       version: 7.2.0
-    wormajs:
-      specifier: latest
-      version: 0.0.1
   dev:
     '@antfu/eslint-config':
       specifier: ^5.4.1
@@ -531,8 +528,8 @@ importers:
         specifier: ^7.0.3
         version: 7.0.3(@vue/runtime-core@3.5.22)(echarts@5.6.0)(vue@3.5.22(typescript@5.9.3))
       wormajs:
-        specifier: latest
-        version: 0.0.1
+        specifier: workspace:*
+        version: link:../packages/worma
 
   docs:
     dependencies:
@@ -651,8 +648,8 @@ importers:
         version: 1.17.0
     devDependencies:
       wormajs:
-        specifier: latest
-        version: 0.0.1
+        specifier: workspace:*
+        version: link:../../packages/worma
 
   examples/esm:
     dependencies:
@@ -667,14 +664,14 @@ importers:
         version: 2.0.2
     devDependencies:
       wormajs:
-        specifier: latest
-        version: 0.0.1
+        specifier: workspace:*
+        version: link:../../packages/worma
 
   examples/monorepo:
     devDependencies:
       wormajs:
-        specifier: 'catalog:'
-        version: 0.0.1
+        specifier: workspace:*
+        version: link:../../packages/worma
 
   examples/typescript:
     dependencies:
@@ -695,8 +692,8 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
       wormajs:
-        specifier: latest
-        version: 0.0.1
+        specifier: workspace:*
+        version: link:../../packages/worma
 
   packages/vscode-extension:
     dependencies:
@@ -10046,10 +10043,6 @@ packages:
 
   workerpool@9.3.4:
     resolution: {integrity: sha512-TmPRQYYSAnnDiEB0P/Ytip7bFGvqnSU6I2BcuSw7Hx+JSg/DsUi5ebYfc8GYaSdpuvOcEs6dXxPurOYpe9QFwg==}
-
-  wormajs@0.0.1:
-    resolution: {integrity: sha512-EJybVK/OqDmrUYqHJtaE+V5kDGtR93wURU3zdLXomiKvjB+/4/TI66hsCYRIyJaDnwWLMFsfO3rVKp+Kyh2AcA==}
-    hasBin: true
 
   wrap-ansi@6.2.0:
     resolution: {integrity: sha512-r6lPcBGxZXlIcymEu7InxDMhdW0KDxpLgoFLcguasxCaJ/SOIZwINatK9KY/tf+ZrlywOKU0UDj3ATXUBfxJXA==}
@@ -20015,29 +20008,6 @@ snapshots:
   wordwrap@1.0.0: {}
 
   workerpool@9.3.4: {}
-
-  wormajs@0.0.1:
-    dependencies:
-      alova: 3.3.4
-      chalk: 4.1.2
-      cli-truncate: 4.0.0
-      commander: 14.0.3
-      esbuild: 0.25.10
-      glob: 11.0.3
-      handlebars: 4.7.8
-      js-yaml: 4.2.0
-      lodash: 4.18.1
-      log-update: 6.1.0
-      openapi-types: 12.1.3
-      ora: 5.4.1
-      prettier: 3.8.5
-      skills: 1.5.13
-      string-width: 7.2.0
-      swagger2openapi: 7.0.8
-      zod: 3.25.76
-      zod-validation-error: 3.5.3(zod@3.25.76)
-    transitivePeerDependencies:
-      - encoding
 
   wrap-ansi@6.2.0:
     dependencies:
