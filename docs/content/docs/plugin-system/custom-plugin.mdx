@@ -19,8 +19,8 @@ npx skills add alovajs/skills --skill worma-guidelines
 
 ```mermaid
 flowchart LR
-    A[config] --> B[beforeOpenapiParse]
-    B --> C[openapiParsed]
+    A[config] --> B[beforeSpecParse]
+    B --> C[specParsed]
     C --> D[getTemplate]
     D --> E[beforeCodeGenerate]
     E --> F[onHandlebarsCreated]
@@ -31,7 +31,7 @@ flowchart LR
 插件按以下时序在代码生成的各阶段介入：
 
 ```
-config() → beforeOpenapiParse() → 解析 OpenAPI → openapiParsed()
+config() → beforeSpecParse() → 解析 OpenAPI → specParsed()
 → getTemplate()                ← 插件返回模板路径
 → beforeCodeGenerate(data)     ← 插件注入配置数据到 templateData
 → onHandlebarsCreated(hbs)     ← 可注册自定义 helpers/partials
@@ -62,13 +62,15 @@ export default defineConfig({
             return modifiedConfig;
           },
 
-          // 阶段 2：OpenAPI 解析前
-          beforeOpenapiParse({ config, projectPath, reportProgress }) {
-            // config 已冻结，不可修改
+          // 阶段 2：规范解析前，可转换原始规范文本
+          beforeSpecParse({ spec, config, projectPath, reportProgress }) {
+            // spec 是原始规范文本（JSON/YAML 字符串）；config 已冻结，不可修改
+            // 返回新字符串即可替换后再解析；不返回则保持原文本
+            return spec.replace('"version": "1.0"', '"version": "1.0.0"');
           },
 
           // 阶段 3：OpenAPI 解析后，可修改文档内容
-          async openapiParsed({ document, reportProgress }) {
+          async specParsed({ document, reportProgress }) {
             reportProgress(30, 'processing...');
             // 修改 document
             return modifiedDocument;
@@ -130,7 +132,7 @@ export default defineConfig({
 ```javascript
 {
   name: 'remoteSchema',
-  async openapiParsed({ document, reportProgress }) {
+  async specParsed({ document, reportProgress }) {
     reportProgress(10, 'fetching schema patches');
     await fetchPatches();
     reportProgress(60, 'merging');
@@ -171,7 +173,7 @@ interface Config {
 const createTagModifierPlugin = createPlugin((config: Config): Partial<ApiPlugin> => ({
   name: 'tag-modifier-plugin',
 
-  openapiParsed({ document }) {
+  specParsed({ document }) {
     const paths = document.paths || {};
     for (const [path, methods] of Object.entries(paths)) {
       for (const method of Object.values(methods || {})) {
@@ -235,7 +237,7 @@ const createCustomPlugin = createPlugin((options) => ({
     return config;
   },
 
-  async openapiParsed({ document, reportProgress }) {
+  async specParsed({ document, reportProgress }) {
     reportProgress(30, 'processing document');
     return document;
   },
@@ -266,15 +268,17 @@ interface ApiPlugin {
     reportProgress: ReportProgress;
   }) => MaybePromise<GeneratorConfig | undefined | null | void>;
 
-  /** ② OpenAPI 解析前 */
-  beforeOpenapiParse?: (params: {
+  /** ② 规范解析前：拿到原始规范文本，可返回新字符串替换后再解析 */
+  beforeSpecParse?: (params: {
     config: Readonly<GeneratorConfig>;
+    /** 原始规范文本（JSON 或 YAML），解析前的字符串内容 */
+    spec: string;
     projectPath: string;
     reportProgress: ReportProgress;
-  }) => void;
+  }) => MaybePromise<string | undefined | null | void>;
 
   /** ③ OpenAPI 解析后：可修改 document */
-  openapiParsed?: (params: {
+  specParsed?: (params: {
     config: Readonly<GeneratorConfig>;
     document: OpenAPIDocument;
     projectPath: string;

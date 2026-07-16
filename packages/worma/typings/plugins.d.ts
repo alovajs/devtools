@@ -42,12 +42,14 @@ export interface ConfigHookParams {
 	projectPath: string;
 	reportProgress: ReportProgress;
 }
-export interface BeforeOpenapiParseHookParams {
+export interface BeforeSpecParseHookParams {
 	config: Readonly<GeneratorConfig>;
+	/** The raw OpenAPI specification text (JSON or YAML), before it is parsed. */
+	spec: string;
 	projectPath: string;
 	reportProgress: ReportProgress;
 }
-export interface OpenapiParsedHookParams {
+export interface SpecParsedHookParams {
 	config: Readonly<GeneratorConfig>;
 	document: OpenAPIDocument;
 	projectPath: string;
@@ -128,14 +130,16 @@ export interface ApiPlugin {
 	 */
 	config?: (params: ConfigHookParams) => MaybePromise<GeneratorConfig | undefined | null | void>;
 	/**
-	 * Called before parsing the OpenAPI file.
+	 * Called after the raw OpenAPI spec text is fetched but before it is parsed.
+	 * Return a (possibly modified) string to replace the spec text that will be
+	 * parsed. Returning nothing keeps the original spec text.
 	 */
-	beforeOpenapiParse?: (params: BeforeOpenapiParseHookParams) => void;
+	beforeSpecParse?: (params: BeforeSpecParseHookParams) => MaybePromise<string | undefined | null | void>;
 	/**
 	 * Manipulate the openapi document after parsing.
 	 * Returning null does NOT replacing anything.
 	 */
-	openapiParsed?: (params: OpenapiParsedHookParams) => MaybePromise<OpenAPIDocument | undefined | null | void>;
+	specParsed?: (params: SpecParsedHookParams) => MaybePromise<OpenAPIDocument | undefined | null | void>;
 	/**
 	 * Called before code generation. Mutate `params.data` directly to inject
 	 * configuration data (no longer returns a value).
@@ -529,36 +533,29 @@ export interface ImportTypeOptions {
 export declare function importType(imports: Record<string, string[]>, options?: {
 	files?: string[];
 }): ApiPlugin;
-declare enum ModifierScope {
-	PARAMS = "params",
-	PATH_PARAMS = "pathParams",
-	DATA = "data",
-	RESPONSE = "response"
-}
-export type SchemaPrimitive = "number" | "string" | "boolean" | "undefined" | "null" | "unknown" | "any" | "never" | ({} & string);
+export type ModifierScope = "params" | "pathParams" | "data" | "response";
+export type SchemaPrimitive = "number" | "string" | "boolean" | "undefined" | "null" | "unknown" | "any" | "never";
 /**
- * 表示数组类型
+ * Array type: a native JS array whose elements are Schemas.
+ * e.g. ['string'] means string[]; ['string', 'number'] means the tuple [string, number]
  */
-export interface SchemaArray {
-	type: "array";
-	items: Schema | Schema[];
-}
+export type SchemaArray = Schema[];
 /**
- * 修改参数为引用类型
- * 在key末端添加上?表示为可选值
+ * Object/reference type.
+ * Append '?' to the end of a key to mark it optional.
  */
 export interface SchemaReference {
 	[attr: string]: Schema;
 }
 /**
- * 枚举类型表示
+ * Enum type representation.
  */
 export interface SchemaEnum {
 	enum: Array<string | number | boolean | null>;
 	type?: SchemaPrimitive;
 }
 /**
- * 组合类型表示（与/或/交叉）
+ * Composite types (oneOf / anyOf / allOf).
  */
 export interface SchemaOneOf {
 	oneOf: Schema[];
@@ -570,41 +567,85 @@ export interface SchemaAllOf {
 	allOf: Schema[];
 }
 /**
- * 数据Schema
- * SchemaArray表示类型数组，而数组表示“或”的意思
+ * Standalone primitive type that is itself optional (driven by the `type` field).
+ * Used in handler input/output to mean "this field is optional / make it optional".
  */
-export type Schema = SchemaPrimitive | SchemaReference | SchemaArray | SchemaEnum | SchemaOneOf | SchemaAnyOf | SchemaAllOf | Array<SchemaPrimitive | SchemaReference | SchemaArray | SchemaEnum>;
-export interface ModifierConfig<T extends Schema> {
+export interface SchemaOptional {
+	required: boolean;
+	type: Schema;
+}
+/**
+ * The data Schema.
+ * - SchemaArray is a native array (elements are Schemas)
+ * - composite types use { oneOf | anyOf | allOf: Schema[] }
+ * - optional object properties use a trailing '?' on the key;
+ *   a standalone optional primitive uses the SchemaOptional wrapper
+ */
+export type Schema = SchemaPrimitive | SchemaReference | SchemaArray | SchemaEnum | SchemaOneOf | SchemaAnyOf | SchemaAllOf | SchemaOptional;
+export interface ModifierConfig {
 	/**
-	 * 生效范围，表示处理哪个位置的参数
+	 * The scope the modifier applies to (which parameter location to process).
 	 */
 	scope: ModifierScope;
 	/**
-	 * 匹配规则，只有匹配到的才会进行转换，不指定则转换全部
-	 * string：原参数名包含此string；RegExp：原参数名匹配此正则；函数时接收key并返回是否匹配的boolean值
+	 * Match rule. Only matched fields are transformed; when omitted, all fields are transformed.
+	 * - string: the original field name contains this string
+	 * - RegExp: the original field name matches this pattern
+	 * - function: receives the key and returns a boolean indicating a match
 	 */
 	match?: string | RegExp | ((key: string) => boolean);
 	/**
-	 * handler用于灵活修改参数类型值
-	 * @param schema Schema中的一种，由用户自行定义
-	 * @returns 返回多种参数，具体为：Schema表示修改的类型；{ required: boolean, value: Schema }表示可将当前值修改为是否必填；void | null | undefined表示移除当前字段
+	 * handler flexibly modifies the parameter type value.
+	 * @param schema the original field type, already converted to the user-facing Schema representation.
+	 *               When the field itself is optional and is a primitive, it is passed as { required: false, type: 'string' }.
+	 *               Narrow the type inside handler if needed (e.g. with a cast).
+	 * @returns Schema to change the type; { required: boolean, type: Schema } to change requiredness (driven by `type`);
+	 *          void | null | undefined to remove the field.
 	 */
-	handler: (schema: T) => Schema | {
+	handler: (schema: Schema) => Schema | {
 		required: boolean;
-		value: Schema;
+		type: Schema;
 	} | void | null | undefined;
 }
-export type PayloadModifierConfig = ModifierConfig<Schema>;
+export type PayloadModifierConfig = ModifierConfig;
 export declare function payloadModifier(configs: PayloadModifierConfig[]): ApiPlugin;
+/**
+ * FastAPI platform plugin.
+ *
+ * Pass the base URL of your FastAPI app; the plugin will try `/openapi.json`
+ * first, then fall back to the bare base URL.
+ *
+ * @param input - base URL string, or an array of base URLs
+ *
+ * @example
+ * ```ts
+ * plugins: [fastapi('http://fastapi-example.dokkuapp.com'), alovaGlobals()]
+ * ```
+ */
+export declare const fastapi: (input: string | string[]) => ApiPlugin;
+/**
+ * Knife4j platform plugin.
+ *
+ * Pass the base URL of your Knife4j instance; the plugin will try the OAS3
+ * endpoint (springdoc) first, then the Swagger2 endpoint (springfox), then the
+ * bare base URL.
+ *
+ * @param input - base URL string, or an array of base URLs
+ *
+ * @example
+ * ```ts
+ * plugins: [knife4j('https://openapi3.demo.knife4jnext.com'), alovaGlobals()]
+ * ```
+ */
+export declare const knife4j: (input: string | string[]) => ApiPlugin;
 /**
  * Swagger platform plugin.
  *
  * Pass the base URL of your Swagger UI / server; the plugin will try several
- * common OpenAPI document endpoints and let the framework pick the first one
- * that responds. The base URL is provided as the plugin argument (not config.input).
+ * common OpenAPI document endpoints (OAS3 first, then Swagger2, then the bare
+ * base URL) and let the framework pick the first one that responds.
  *
  * @param input - base URL string, or an array of base URLs
- * @returns ApiPlugin
  *
  * @example
  * ```ts
@@ -618,28 +659,36 @@ export declare function payloadModifier(configs: PayloadModifierConfig[]): ApiPl
  * });
  * ```
  */
-export declare function swagger(input: string | string[]): ApiPlugin;
-/**
- * Knife4j platform plugin.
- *
- * @param input - base URL string, or an array of base URLs
- */
-export declare function knife4j(input: string | string[]): ApiPlugin;
-/**
- * FastAPI platform plugin.
- *
- * @param input - base URL string, or an array of base URLs
- */
-export declare function fastapi(input: string | string[]): ApiPlugin;
+export declare const swagger: (input: string | string[]) => ApiPlugin;
+export interface YapiOptions {
+	/** YApi 服务基础地址，例如 `https://yapi.xxx.com` */
+	url: string;
+	/** 项目 ID，必填，用于拼装导出地址 */
+	pid: string | number;
+	/** OpenAPI 类型，默认 `OpenAPIV2` */
+	type?: string;
+	/** 接口状态，默认 `all` */
+	status?: string;
+	/** 是否包含 wiki，默认 `true` */
+	isWiki?: boolean;
+	/** 登录 cookie。也可通过 fetchOptions.headers.cookie 传入 */
+	cookie?: string;
+	/** 额外的 fetch 超时（毫秒） */
+	timeout?: number;
+}
 /**
  * YApi platform plugin.
  *
  * YApi projects are private, so the OpenAPI document must be exported through
  * YApi's own export endpoint, authenticated with your login cookie. The plugin
  * builds the export URL from the server base URL (`url`) plus the required
- * `pid` and the optional `type` / `status` / `isWiki` query params.
+ * `pid` and the optional `type` / `status` / `isWiki` query params (which
+ * default to `OpenAPIV2`, `all`, and `true` respectively).
  *
- * @param options - `{ url, pid, cookie?, type?, status?, isWiki?, timeout? }`. `url`, `pid` and `cookie` are required.
+ * `url`, `pid` and `cookie` are required — the plugin throws a clear error when
+ * any is missing.
+ *
+ * @param options - `{ url, pid, cookie?, type?, status?, isWiki?, timeout? }`
  *
  * @example
  * ```ts
@@ -648,7 +697,11 @@ export declare function fastapi(input: string | string[]): ApiPlugin;
  * defineConfig({
  *   generator: [{
  *     plugins: [
- *       yapi({ url: 'https://yapi.xxx.com', pid: 123, cookie: '_yapi_token=xxx' }),
+ *       yapi({
+ *         url: 'https://yapi.xxx.com',
+ *         pid: 123,
+ *         cookie: '_yapi_token=xxx; _yapi_uid=yyy',
+ *       }),
  *       alovaGlobals(),
  *     ],
  *     output: './src/api',
@@ -656,22 +709,6 @@ export declare function fastapi(input: string | string[]): ApiPlugin;
  * });
  * ```
  */
-export interface YapiOptions {
-	/** YApi server base URL, e.g. `https://yapi.xxx.com` */
-	url: string;
-	/** Project id, required. */
-	pid: string | number;
-	/** OpenAPI type, default `OpenAPIV2` */
-	type?: string;
-	/** Interface status, default `all` */
-	status?: string;
-	/** Whether to include wiki, default `true` */
-	isWiki?: boolean;
-	/** Login cookie. Also accepted via fetchOptions.headers.cookie. */
-	cookie?: string;
-	/** Extra fetch timeout in milliseconds. */
-	timeout?: number;
-}
 export declare function yapi(options: YapiOptions): ApiPlugin;
 /**
  * Rename style options

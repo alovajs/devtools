@@ -27,8 +27,8 @@ export const zFetchOptions = z.record(z.string(), z.any()) as z.ZodSchema<FetchO
 export const zApiPlugin = z.object({
   name: z.string().optional(),
   config: z.function().optional(),
-  beforeOpenapiParse: z.function().optional(),
-  openapiParsed: z.function().optional(),
+  beforeSpecParse: z.function().optional(),
+  specParsed: z.function().optional(),
   beforeCodeGenerate: z.function().optional(),
   beforeFileWrite: z.function().optional(),
   codeGenerated: z.function().optional(),

@@ -341,10 +341,10 @@ const plugin = aiDoc({
 
 | 旧名称              | 新名称          |
 | ------------------- | --------------- |
-| `afterOpenapiParse` | `openapiParsed` |
+| `afterSpecParse`    | `specParsed`    |
 | `afterCodeGenerate` | `codeGenerated` |
 
-`beforeOpenapiParse` 和 `beforeCodeGenerate` 保持不变。
+`beforeSpecParse` 和 `beforeCodeGenerate` 保持不变。
 
 ### 8.5.2 Hook 参数对象化 ✅
 
@@ -365,13 +365,13 @@ interface ApiPlugin {
     reportProgress: ReportProgress;
   }) => MaybePromise<GeneratorConfig | undefined | null | void>;
 
-  beforeOpenapiParse?: (params: {
+  beforeSpecParse?: (params: {
     config: Readonly<GeneratorConfig>;
     projectPath: string;
     reportProgress: ReportProgress;
   }) => void;
 
-  openapiParsed?: (params: {
+  specParsed?: (params: {
     config: Readonly<GeneratorConfig>;
     document: OpenAPIDocument;
     projectPath: string;
@@ -398,10 +398,10 @@ interface ApiPlugin {
 
 ### 8.5.3 Config 冻结策略与 projectPath ✅
 
-| Hook                        | config 状态                        | projectPath  |
-| --------------------------- | ---------------------------------- | ------------ |
-| `config`                    | 可修改（原始对象）                 | 当前项目路径 |
-| `beforeOpenapiParse` 及之后 | `Object.freeze()` 冻结，防止误修改 | 当前项目路径 |
+| Hook                     | config 状态                        | projectPath  |
+| ------------------------ | ---------------------------------- | ------------ |
+| `config`                 | 可修改（原始对象）                 | 当前项目路径 |
+| `beforeSpecParse` 及之后 | `Object.freeze()` 冻结，防止误修改 | 当前项目路径 |
 
 所有 hook 均接收 `projectPath: string` 参数，表示当前正在处理的项目目录路径。
 
@@ -449,7 +449,7 @@ export interface GenerateProgress {
 export type ReportProgress = (progress: number, message?: string) => void;
 ```
 
-5 个 hook 参数接口（`ConfigHookParams` / `BeforeOpenapiParseHookParams` / `OpenapiParsedHookParams` / `BeforeCodeGenerateHookParams` / `CodeGeneratedHookParams`）统一新增 `reportProgress: ReportProgress` 字段。
+5 个 hook 参数接口（`ConfigHookParams` / `BeforeSpecParseHookParams` / `SpecParsedHookParams` / `BeforeCodeGenerateHookParams` / `CodeGeneratedHookParams`）统一新增 `reportProgress: ReportProgress` 字段。
 
 `packages/worma/src/type/lib.ts` 中 `GenerateApiOptions` 扩展：
 
@@ -506,20 +506,20 @@ hookSeqEach<H, P>(
 
 `GeneratorHelper.generate(config, { projectPath, force, tracker })` 内部按以下百分比对 source = `'core'` 上报：
 
-| %   | 阶段                               |
-| --- | ---------------------------------- |
-| 5   | starting                           |
-| 10  | beforeOpenapiParse                 |
-| 20  | parsing openapi document           |
-| 35  | openapi parsed                     |
-| 45  | openapiParsed (after plugin chain) |
-| 55  | template configuration loaded      |
-| 65  | template data parsed               |
-| 70  | beforeCodeGenerate                 |
-| 80  | processing templates               |
-| 90  | template generation completed      |
-| 95  | writing files                      |
-| 100 | completed                          |
+| %   | 阶段                            |
+| --- | ------------------------------- |
+| 5   | starting                        |
+| 10  | beforeSpecParse                 |
+| 20  | parsing openapi document        |
+| 35  | openapi parsed                  |
+| 45  | specParsed (after plugin chain) |
+| 55  | template configuration loaded   |
+| 65  | template data parsed            |
+| 70  | beforeCodeGenerate              |
+| 80  | processing templates            |
+| 90  | template generation completed   |
+| 95  | writing files                   |
+| 100 | completed                       |
 
 跳过 / 失败路径同样上报 `100`，消息分别为 `skipped: <reason>` / `failed: <error.message>`。`tracker` 不存在时，所有上报降级为 noop（不 throw、不分配快照对象）。
 

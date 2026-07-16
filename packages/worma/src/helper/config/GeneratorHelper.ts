@@ -1,4 +1,4 @@
-import type { RenderTemplateParams } from './type'
+import type { MaybePromise, RenderTemplateParams } from './type'
 import type { ProgressTracker } from '@/helper/progress'
 import type { ApiPlugin, GeneratorConfig, TemplateType } from '@/type'
 import path from 'node:path'
@@ -142,10 +142,15 @@ export class GeneratorHelper {
     })
   }
 
-  static async openApiDataWithUrl(config: GeneratorConfig, projectPath: string) {
+  static async openApiDataWithUrl(
+    config: GeneratorConfig,
+    projectPath: string,
+    opts?: { beforeSpecParse?: (spec: string) => MaybePromise<string | undefined | null | void> },
+  ) {
     return getOpenApiDataWithUrl(config.input!, {
       projectPath,
       fetchOptions: config.fetchOptions,
+      beforeSpecParse: opts?.beforeSpecParse,
     })
   }
 
@@ -178,17 +183,18 @@ export class GeneratorHelper {
 
     const frozenConfig = Object.freeze(config)
 
-    // Plugin: handle before parse openapi
-    reportCore(10, 'beforeOpenapiParse')
-    logger.debug('Running beforeOpenapiParse hook')
-    await pluginDriver.hookParallelEach('beforeOpenapiParse', () => ({
-      config: frozenConfig,
-      projectPath,
-    }))
-
+    reportCore(10, 'beforeSpecParse')
+    logger.debug('Fetching and parsing OpenAPI document', { input: config.input })
     reportCore(20, 'parsing openapi document')
-    logger.debug('Fetching OpenAPI document', { input: config.input })
-    const openApiResult = await this.openApiDataWithUrl(config, projectPath)
+    const openApiResult = await this.openApiDataWithUrl(config, projectPath, {
+      // Plugin: beforeSpecParse — receives the raw spec string, may return a modified string
+      beforeSpecParse: (spec: string) =>
+        pluginDriver.hookPipe('beforeSpecParse', spec, (_p, current, _ctx) => ({
+          config: frozenConfig,
+          spec: current,
+          projectPath,
+        })),
+    })
     let document = openApiResult.data
     const resolvedInput = openApiResult.resolvedUrl
     if (!document) {
@@ -202,11 +208,11 @@ export class GeneratorHelper {
       version: (document as any)?.info?.version,
       paths: Object.keys((document as any)?.paths || {}).length,
     })
-    reportCore(35, 'openapi parsed')
+    reportCore(35, 'specParsed')
 
-    // Plugin: handle after parse openapi (openapiParsed)
-    logger.debug('Running openapiParsed hook', { pluginCount })
-    const openapiParsed = await pluginDriver.hookSeqEach('openapiParsed', (_p, prevResult, _ctx) => {
+    // Plugin: handle after parse openapi (specParsed)
+    logger.debug('Running specParsed hook', { pluginCount })
+    const specParsed = await pluginDriver.hookSeqEach('specParsed', (_p, prevResult, _ctx) => {
       if (prevResult) {
         document = prevResult
       }
@@ -216,11 +222,11 @@ export class GeneratorHelper {
         projectPath,
       }
     })
-    if (openapiParsed) {
-      document = openapiParsed
-      logger.debug('openapiParsed hook modified document')
+    if (specParsed) {
+      document = specParsed
+      logger.debug('specParsed hook modified document')
     }
-    reportCore(45, 'openapiParsed')
+    reportCore(45, 'specParsed')
 
     const output = path.resolve(projectPath, config.output!)
     const templateType = await GeneratorHelper.getTemplateType(config, projectPath)

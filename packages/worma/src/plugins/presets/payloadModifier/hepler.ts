@@ -3,9 +3,9 @@ import type {
   Schema,
   SchemaAllOf,
   SchemaAnyOf,
-  SchemaArray,
   SchemaEnum,
   SchemaOneOf,
+  SchemaOptional,
   SchemaPrimitive,
   SchemaReference,
 } from './type'
@@ -30,11 +30,15 @@ function toSchemaObject(base: SchemaObject, s: Schema): SchemaObject {
     delete schema.required
     return schema
   }
-  // Legacy union as array (treated as oneOf)
+
+  // Native array type (elements are Schema)
   if (Array.isArray(s)) {
-    const baseOneOf = base.oneOf || []
+    const arr = s as Schema[]
     cleanType(result)
-    result.oneOf = s.map((item, idx) => toSchemaObject(baseOneOf[idx] || {}, item))
+    result.type = 'array'
+    const items = arr.map(item => toSchemaObject({}, item))
+    // single element -> items is a single schema object; multiple elements -> tuple array
+    ;(result as ArraySchemaObject).items = (items.length === 1 ? items[0] : items) as any
     return result
   }
 
@@ -50,18 +54,21 @@ function toSchemaObject(base: SchemaObject, s: Schema): SchemaObject {
     const baseOneOf = base.oneOf || []
     cleanType(result)
     result.oneOf = spec.oneOf.map((item, idx) => toSchemaObject(baseOneOf[idx] || {}, item))
+    return result
   }
   if ((s as SchemaAnyOf).anyOf) {
     const spec = s as SchemaAnyOf
     const baseAnyOf = base.anyOf || []
     cleanType(result)
     result.anyOf = spec.anyOf.map((item, idx) => toSchemaObject(baseAnyOf[idx] || {}, item))
+    return result
   }
   if ((s as SchemaAllOf).allOf) {
     const spec = s as SchemaAllOf
     const baseAllOf = base.allOf || []
     cleanType(result)
     result.allOf = spec.allOf.map((item, idx) => toSchemaObject(baseAllOf[idx] || {}, item))
+    return result
   }
 
   // Enum: set enum and optional type
@@ -71,32 +78,16 @@ function toSchemaObject(base: SchemaObject, s: Schema): SchemaObject {
     if (spec.type) {
       result.type = spec.type as any
     }
-  }
-
-  // Array: set/merge items
-  if ((s as SchemaArray).type === 'array') {
-    const spec = s as SchemaArray
-    result.type = 'array'
-    const baseItems = (result as any).items
-    if (Array.isArray(spec.items)) {
-      // Tuple items: replace entire items with tuple
-      const items = spec.items.map(item => toSchemaObject({}, item))
-      ;(result as ArraySchemaObject).items = items as any
-    }
-    else {
-      // Single items: merge into existing items schema
-      const patchItem = toSchemaObject(typeof baseItems === 'object' ? baseItems : {}, spec.items)
-      ;(result as ArraySchemaObject).items = patchItem
-    }
     return result
   }
 
-  // Object (reference-like map): merge properties and required
+  // Object (reference-like map): replace properties and required with handler's spec
+  // (the SchemaReference returned by the handler fully replaces this field, only keeping scalar fields like description from base)
   const ref = s as SchemaReference
   if (ref && typeof ref === 'object') {
     result.type = 'object'
-    const properties: Record<string, SchemaObject> = { ...result.properties }
-    const requiredSet = new Set<string>(Array.isArray(result.required) ? result.required : [])
+    const properties: Record<string, SchemaObject> = {}
+    const requiredSet = new Set<string>()
 
     for (const key in ref) {
       const val = ref[key]
@@ -163,16 +154,16 @@ function toSchemaSpec(obj: SchemaObject): Schema {
     return { enum: obj.enum, type } as SchemaEnum
   }
 
-  // Array
+  // Array -> native array
   if (obj.type === 'array' || (obj as any).items) {
     const items = (obj as ArraySchemaObject).items
     if (Array.isArray(items)) {
-      return { type: 'array', items: items.map((it: any) => toSchemaSpec(it)) }
+      return items.map((it: any) => toSchemaSpec(it))
     }
     if (items) {
-      return { type: 'array', items: toSchemaSpec(items) }
+      return [toSchemaSpec(items)]
     }
-    return { type: 'array', items: 'unknown' }
+    return ['unknown']
   }
 
   // Object
@@ -188,7 +179,7 @@ function toSchemaSpec(obj: SchemaObject): Schema {
     return result
   }
 
-  // type union as array
+  // type union as array -> oneOf
   if (Array.isArray(obj.type)) {
     const typeArr = obj.type
     const mapped = typeArr.map(schemaTypeToPrimitiveType)
@@ -207,7 +198,7 @@ export function applyModifierSchema<T extends MaybeSchemaObject = SchemaObject>(
   { required }: ApplyModifierSchemaOptions,
 ): {
   required: boolean
-  value: T | null
+  schema: T | null
 } {
   if (!schema || typeof schema !== 'object') {
     return schema
@@ -215,21 +206,28 @@ export function applyModifierSchema<T extends MaybeSchemaObject = SchemaObject>(
 
   const cloned: SchemaObject = { ...schema }
   const currentSpec = toSchemaSpec(cloned)
-  const ret = config.handler(currentSpec)
+  // When the field is itself optional and is a primitive, wrap it as { required, type } before passing to handler
+  const handlerInput: Schema
+    = (required === false && typeof currentSpec === 'string')
+      ? { required: false, type: currentSpec }
+      : currentSpec
+  const ret = config.handler(handlerInput)
   if (!ret) {
     return {
       required,
-      value: null,
+      schema: null,
     }
   }
-  if (typeof ret === 'object' && 'required' in ret && 'value' in ret) {
+  // A returned { required, type } means changing requiredness (driven by the `type` field)
+  if (typeof ret === 'object' && !Array.isArray(ret) && 'required' in ret && 'type' in ret) {
+    const opt = ret as SchemaOptional
     return {
-      required: !!(ret.required ?? required),
-      value: toSchemaObject(cloned, ret.value) as T,
+      required: !!(opt.required ?? required),
+      schema: toSchemaObject(cloned, opt.type) as T,
     }
   }
   return {
     required,
-    value: toSchemaObject(cloned, ret) as T,
+    schema: toSchemaObject(cloned, ret) as T,
   }
 }

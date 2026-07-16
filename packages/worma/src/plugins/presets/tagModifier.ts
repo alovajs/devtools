@@ -48,6 +48,11 @@ export function processApiTags(apiDescriptor: ApiDescriptor, handler: ModifierHa
   // Process each tag and filter out null/undefined results
   newDescriptor.tags = newDescriptor.tags
     .map((tag: string) => {
+      // Resolve the tag to keep when the modification cannot be applied:
+      // keep the original tag only if it is itself valid, otherwise drop it.
+      // This guarantees that the final output never contains an invalid tag.
+      const keepOriginalOrDrop = (): string | null => isValidTagName(tag) ? tag : null
+
       try {
         // Call user provided handler function
         const modifiedTag = handler(tag)
@@ -59,13 +64,13 @@ export function processApiTags(apiDescriptor: ApiDescriptor, handler: ModifierHa
 
         // Validate if modified tag follows naming conventions
         if (!isValidTagName(modifiedTag)) {
-          return tag // Keep original tag if invalid
+          return keepOriginalOrDrop() // Keep original tag if valid, otherwise drop
         }
 
         return modifiedTag.trim() // Return trimmed modified tag
       }
       catch {
-        return tag // Return original tag on error
+        return keepOriginalOrDrop() // Keep original tag if valid, otherwise drop on error
       }
     })
     .filter((tag): tag is string => tag != null) // Filter out null/undefined values

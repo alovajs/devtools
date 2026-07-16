@@ -62,7 +62,7 @@ describe('generate() progress reporting', () => {
             type: 'ts',
             plugins: [(await import('@/plugins')).alova(), {
               name: 'my-plugin',
-              openapiParsed({ reportProgress }) {
+              specParsed({ reportProgress }) {
                 reportProgress(50, 'merging schemas')
               },
               codeGenerated({ reportProgress }) {

@@ -363,8 +363,8 @@ describe('validate config', () => {
         plugins: [{
           name: 'full-plugin',
           config: () => undefined,
-          beforeOpenapiParse: () => {},
-          openapiParsed: () => undefined,
+          beforeSpecParse: () => {},
+          specParsed: () => undefined,
           beforeCodeGenerate: () => undefined,
           codeGenerated: () => {},
         }],
@@ -390,7 +390,7 @@ describe('validate config', () => {
           generator: [
             {
               ...baseConfig,
-              plugins: [{ name: 'bad-plugin', beforeOpenapiParse: 'not-a-function' } as any],
+              plugins: [{ name: 'bad-plugin', beforeSpecParse: 'not-a-function' } as any],
             },
           ],
         }),

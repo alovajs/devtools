@@ -7,11 +7,11 @@ describe('pluginDriver hook*Each', () => {
     const fooSpy = vi.fn()
     const barSpy = vi.fn()
     const plugins: ApiPlugin[] = [
-      { name: 'foo', beforeOpenapiParse: fooSpy },
-      { name: 'bar', beforeOpenapiParse: barSpy },
+      { name: 'foo', beforeSpecParse: fooSpy },
+      { name: 'bar', beforeSpecParse: barSpy },
     ]
     const driver = new PluginDriver(plugins)
-    await driver.hookParallelEach('beforeOpenapiParse', plugin => ({
+    await driver.hookParallelEach('beforeSpecParse', plugin => ({
       config: { tag: plugin.name } as any,
       projectPath: '/p',
     }))
@@ -26,15 +26,15 @@ describe('pluginDriver hook*Each', () => {
     const plugins: ApiPlugin[] = [
       {
         name: 'first',
-        openapiParsed: vi.fn(({ document }: any) => ({ ...document, step: 'first' })),
+        specParsed: vi.fn(({ document }: any) => ({ ...document, step: 'first' })),
       },
       {
         name: 'second',
-        openapiParsed: vi.fn(({ document }: any) => ({ ...document, step: 'second' })),
+        specParsed: vi.fn(({ document }: any) => ({ ...document, step: 'second' })),
       },
     ]
     const driver = new PluginDriver(plugins)
-    const finalResult = await driver.hookSeqEach('openapiParsed', (plugin, prevResult) => {
+    const finalResult = await driver.hookSeqEach('specParsed', (plugin, prevResult) => {
       calls.push({ name: plugin.name!, prev: prevResult })
       const document = prevResult ?? { step: 'init' }
       return {
@@ -57,7 +57,7 @@ describe('pluginDriver hook*Each', () => {
       { name: 'b' /* no hooks */ },
     ]
     const driver = new PluginDriver(plugins)
-    const result = await driver.hookSeqEach('openapiParsed', (_p, prev) => ({
+    const result = await driver.hookSeqEach('specParsed', (_p, prev) => ({
       config: {} as any,
       document: prev ?? ({} as any),
       projectPath: '/p',

@@ -53,12 +53,15 @@ describe('plugin test', () => {
     expect(globalsFile).toMatch('interface Apis')
   })
 
-  it('should execute beforeOpenapiParse hook correctly', async () => {
+  it('should execute beforeSpecParse hook correctly', async () => {
     const beforeParseHookFn = vi.fn()
     const inputTest = resolve(__dirname, '../openapis/openapi_301.json')
     const beforeParsePlugin = createPlugin(() => ({
       name: 'beforeParsePlugin',
-      beforeOpenapiParse: ({ config }) => {
+      beforeSpecParse: ({ config, spec }) => {
+        // The hook receives the raw spec text (JSON/YAML) before parsing
+        expect(typeof spec).toBe('string')
+        expect(spec.length).toBeGreaterThan(0)
         beforeParseHookFn(config)
         expect(config).toHaveProperty('input')
         expect(config.input).toBe(inputTest)
@@ -82,12 +85,34 @@ describe('plugin test', () => {
     expect(apiDefinitionsFile).not.toBeUndefined()
   })
 
-  it('should execute openapiParsed hook correctly', async () => {
+  it('should allow beforeSpecParse to replace the spec text', async () => {
+    const inputTest = resolve(__dirname, '../openapis/openapi_301.json')
+    const transformPlugin = createPlugin(() => ({
+      name: 'transformPlugin',
+      beforeSpecParse: ({ spec }) => {
+        expect(typeof spec).toBe('string')
+        // Replace the whole spec with a tiny valid OpenAPI document.
+        // The returned string is what actually gets parsed downstream.
+        return JSON.stringify({
+          openapi: '3.0.0',
+          info: { title: 'Injected Title', version: '9.9.9' },
+          paths: {},
+        })
+      },
+    }))
+    const { globalsFile } = await generateWithPlugin(
+      inputTest,
+      [transformPlugin()],
+    )
+    expect(globalsFile).toMatch('Injected Title')
+  })
+
+  it('should execute specParsed hook correctly', async () => {
     const afterParseHookFn = vi.fn()
     const titleTest = 'Modified API Title'
     const afterParsePlugin = createPlugin(() => ({
       name: 'afterParsePlugin',
-      openapiParsed: ({ document }) => {
+      specParsed: ({ document }) => {
         expect(document.info).not.toBe(titleTest)
         afterParseHookFn(document)
         return {
@@ -108,13 +133,13 @@ describe('plugin test', () => {
     expect(apiDefinitionsFile).toMatch(titleTest)
   })
 
-  it('should pass document through when openapiParsed plugins do not return', async () => {
+  it('should pass document through when specParsed plugins do not return', async () => {
     const plugin1Fn = vi.fn()
     const plugin2Fn = vi.fn()
 
     const plugin1 = createPlugin(() => ({
       name: 'plugin1-noop',
-      openapiParsed: ({ document }) => {
+      specParsed: ({ document }) => {
         plugin1Fn(document.info.title)
         // does NOT return document
       },
@@ -122,7 +147,7 @@ describe('plugin test', () => {
 
     const plugin2 = createPlugin(() => ({
       name: 'plugin2-modify',
-      openapiParsed: ({ document }) => {
+      specParsed: ({ document }) => {
         plugin2Fn(document.info.title)
         return {
           ...document,
@@ -133,7 +158,7 @@ describe('plugin test', () => {
 
     const plugin3 = createPlugin(() => ({
       name: 'plugin3-noop',
-      openapiParsed: ({ document }) => {
+      specParsed: ({ document }) => {
         // does NOT return, should still get plugin2's modified document
         plugin1Fn(`plugin3-saw:${document.info.title}`)
       },
@@ -225,8 +250,8 @@ describe('plugin test', () => {
       beforeCodeGenerate() {
         plugin1HookFn('plugin1-beforeCodeGen')
       },
-      openapiParsed: ({ document }) => {
-        plugin1HookFn('plugin1-openapiParsed')
+      specParsed: ({ document }) => {
+        plugin1HookFn('plugin1-specParsed')
         return document
       },
     }))
@@ -240,8 +265,8 @@ describe('plugin test', () => {
       beforeCodeGenerate() {
         plugin2HookFn('plugin2-beforeCodeGen')
       },
-      openapiParsed: ({ document }) => {
-        plugin2HookFn('plugin2-openapiParsed')
+      specParsed: ({ document }) => {
+        plugin2HookFn('plugin2-specParsed')
         return document
       },
     }))
@@ -252,9 +277,9 @@ describe('plugin test', () => {
     )
 
     expect(plugin1HookFn).toHaveBeenCalledWith('plugin1-config')
-    expect(plugin1HookFn).toHaveBeenCalledWith('plugin1-openapiParsed')
+    expect(plugin1HookFn).toHaveBeenCalledWith('plugin1-specParsed')
     expect(plugin2HookFn).toHaveBeenCalledWith('plugin2-config')
-    expect(plugin2HookFn).toHaveBeenCalledWith('plugin2-openapiParsed')
+    expect(plugin2HookFn).toHaveBeenCalledWith('plugin2-specParsed')
     expect(globalsFile).toMatch('interface Apis')
     expect(apiDefinitionsFile).not.toBeUndefined()
     expect(indexFile).not.toBeUndefined()
@@ -264,8 +289,8 @@ describe('plugin test', () => {
     const nullReturnPlugin = createPlugin(() => ({
       name: 'nullReturnPlugin',
       config: () => null,
-      beforeOpenapiParse: () => undefined,
-      openapiParsed: () => {},
+      beforeSpecParse: () => undefined,
+      specParsed: () => {},
     }))
 
     const { apiDefinitionsFile, globalsFile } = await generateWithPlugin(
@@ -330,9 +355,9 @@ describe('plugin test', () => {
         asyncHookFn('async-config')
         return config
       },
-      openapiParsed: async ({ document }) => {
+      specParsed: async ({ document }) => {
         await new Promise(resolve => setTimeout(resolve, 10))
-        asyncHookFn('async-openapiParsed')
+        asyncHookFn('async-specParsed')
         return document
       },
     }))
@@ -343,7 +368,7 @@ describe('plugin test', () => {
     )
 
     expect(asyncHookFn).toHaveBeenCalledWith('async-config')
-    expect(asyncHookFn).toHaveBeenCalledWith('async-openapiParsed')
+    expect(asyncHookFn).toHaveBeenCalledWith('async-specParsed')
     expect(globalsFile).toMatch('interface Apis')
   })
 
@@ -371,10 +396,10 @@ describe('plugin test', () => {
   it('should provide frozen config to hooks after config hook', async () => {
     const frozenCheckPlugin = createPlugin(() => ({
       name: 'frozenCheckPlugin',
-      beforeOpenapiParse: ({ config }) => {
+      beforeSpecParse: ({ config }) => {
         expect(Object.isFrozen(config)).toBeTruthy()
       },
-      openapiParsed: ({ config, document }) => {
+      specParsed: ({ config, document }) => {
         expect(Object.isFrozen(config)).toBeTruthy()
         return document
       },

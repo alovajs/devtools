@@ -6,7 +6,7 @@ import type {
   Parameter,
   SchemaObject,
 } from '@/type'
-import { ModifierScope, ParameterIn, PluginName } from '@/constant'
+import { ParameterIn, PluginName } from '@/constant'
 import { extend, isMatch } from '../utils'
 import { applyModifierSchema } from './hepler'
 
@@ -37,13 +37,13 @@ function modifySchemaProperties<T extends MaybeSchemaObject = SchemaObject>(sche
       if (!isMatch(key, config.match)) {
         continue
       }
-      const { required: requiredOverride, value: valueSchema } = applyModifierSchema(props[key], config, { required: required.includes(key) })
+      const { required: requiredOverride, schema: schemaValue } = applyModifierSchema(props[key], config, { required: required.includes(key) })
       required = required.filter(r => r !== key)
-      if (!valueSchema) {
+      if (!schemaValue) {
         delete props[key]
         continue
       }
-      props[key] = valueSchema
+      props[key] = schemaValue
       if (requiredOverride) {
         required.push(key)
       }
@@ -66,7 +66,7 @@ function modifyParameters(
       if (!isMatch(param.name, config.match)) {
         return param
       }
-      const { value: schema, required } = applyModifierSchema(param.schema!, config, { required: !!param.required })
+      const { schema, required } = applyModifierSchema(param.schema!, config, { required: !!param.required })
       if (!schema) {
         return null
       }
@@ -86,22 +86,22 @@ function payloadModifierApiDescriptor(apiDescriptor: ApiDescriptor, config: Payl
   const newDescriptor = { ...apiDescriptor }
   const { scope } = config
   switch (scope) {
-    case ModifierScope.PARAMS:
+    case 'params':
       if (newDescriptor.parameters) {
         newDescriptor.parameters = modifyParameters(newDescriptor.parameters, ParameterIn.QUERY, config)
       }
       break
-    case ModifierScope.PATH_PARAMS:
+    case 'pathParams':
       if (newDescriptor.parameters) {
         newDescriptor.parameters = modifyParameters(newDescriptor.parameters, ParameterIn.PATH, config)
       }
       break
-    case ModifierScope.DATA:
+    case 'data':
       if (newDescriptor.requestBody) {
         newDescriptor.requestBody = modifySchemaProperties(newDescriptor.requestBody, config)
       }
       break
-    case ModifierScope.RESPONSE:
+    case 'response':
       if (newDescriptor.responses) {
         newDescriptor.responses = modifySchemaProperties(newDescriptor.responses, config)
       }

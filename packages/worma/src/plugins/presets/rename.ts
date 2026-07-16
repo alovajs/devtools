@@ -186,6 +186,8 @@ function renameUrl(url: string, config: RenameConfig, apiDescriptor: ApiDescript
  * Recursively processes a schema (supports nested objects and arrays),
  * applying property renaming to nested objects.
  * @param schema current schema
+ * @param config rename configuration
+ * @param apiDescriptor API descriptor
  * @param level current nesting level (starts from 0)
  * @param scopeLabel used to identify the scope in duplicate-name errors
  */
@@ -223,6 +225,9 @@ function transformSchema(
 
 /**
  * Transforms object properties using the renaming rules (supports deep recursive renaming)
+ * @param obj object whose properties to transform
+ * @param config rename configuration
+ * @param apiDescriptor API descriptor
  * @param level current nesting level (starts from 0), passed through to the match function
  * @param scopeLabel used to identify the scope in duplicate-name errors
  */
