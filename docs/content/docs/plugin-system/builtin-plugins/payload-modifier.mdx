@@ -37,7 +37,7 @@ export default defineConfig({
                 attr2: 'number', // 生成为必填参数
                 attr3: {
                   // 嵌套数据
-                  innerAttr: ['string', 'number', 'boolean'],
+                  innerAttr: { oneOf: ['string', 'number'] },
                 },
               };
             },
@@ -62,28 +62,30 @@ type ModifierScope = 'params' | 'pathParams' | 'data' | 'response';
 定义参数类型的核心类型，支持多种模式：
 
 - **基本类型**：`'number' | 'string' | 'boolean' | 'undefined' | 'null' | 'unknown' | 'any' | 'never'`
-- **数组类型**：`{ type: 'array'; items: Schema }`
+- **数组类型**：`Schema[]`（由元素类型组成的原生数组，例如 `['string']` 表示 `string[]`，`['string', 'number']` 表示元组 `[string, number]`）
 - **引用类型（对象）**：`{ [attr: string]: Schema }`（key 末尾加 `?` 表示可选参数）
-- **联合类型**：`Array<SchemaPrimitive | SchemaReference | SchemaArray>`
-- **组合类型**：`{ oneOf: Schema[] } | { anyOf: Schema[] } | { allOf: Schema[] }`
+- **联合类型**：`{ oneOf: Schema[] } | { anyOf: Schema[] } | { allOf: Schema[] }`
+- **枚举类型**：`{ enum: Array<string | number | boolean | null>; type?: SchemaPrimitive }`（值必须是给定集合之一，`type` 可选表示枚举元素的基础类型）
+- **可选普通类型**：`{ required: boolean; type: Schema }`（独立的普通类型字段本身可选时使用，以 `type` 字段为准）
 
 ### Config（插件配置接口）
 
 ```typescript
-interface Config<T extends Schema> {
+interface Config {
   /** 生效范围 */
   scope: ModifierScope;
-  /** 匹配规则 */
+  /** 匹配规则，不指定则匹配全部 */
   match?: string | RegExp | ((key: string) => boolean);
   /**
    * 处理器
    * - 返回 Schema 表示修改类型
-   * - 返回 { required: boolean; value: Schema } 表示修改必填性
+   * - 返回 { required: boolean; type: Schema } 表示修改必填性（以 type 字段为准）
    * - 返回 void | null | undefined 表示移除字段
+   * handler 参数默认类型为 Schema，如需更精确的类型可在 handler 内部进行断言（as）
    */
   handler: (
-    schema: T,
-  ) => Schema | { required: boolean; value: Schema } | void | null | undefined;
+    schema: Schema,
+  ) => Schema | { required: boolean; type: Schema } | void | null | undefined;
 }
 ```
 
@@ -147,23 +149,39 @@ payloadModifier([
   {
     scope: 'pathParams',
     match: 'id',
-    handler: () => ['string', 'number'],
+    handler: () => ({ oneOf: ['string', 'number'] }),
   },
 ]);
 ```
+
+### 枚举类型
+
+将 `params` 中的 `status` 字段修改为枚举类型，值只能是给定集合之一：
+
+```javascript
+payloadModifier([
+  {
+    scope: 'params',
+    match: 'status',
+    handler: () => ({ enum: ['active', 'inactive', 'pending'], type: 'string' }),
+  },
+]);
+```
+
+`SchemaEnum` 也可用于接收入参时的判断：当字段在 OpenAPI 中本身就是枚举时，handler 收到的 `schema` 即为 `{ enum: [...], type?: ... }`，可据此再转换。
 
 ## 高级用法
 
 ### 动态修改必填性
 
-通过返回 `{ required: true/false, value: schema }` 对象来控制：
+通过返回 `{ required: true/false, type: schema }` 对象来控制（以 `type` 字段为准）：
 
 ```javascript
 payloadModifier([
   {
     scope: 'data',
     match: 'email',
-    handler: () => ({ required: true, value: 'string' }),
+    handler: () => ({ required: true, type: 'string' }),
   },
 ]);
 ```
@@ -195,16 +213,7 @@ payloadModifier([
 
 ### 支持 oneOf、anyOf、allOf
 
-**oneOf 数组快捷写法：**
-
-```javascript
-handler: () => [
-  { type: 'string', cardNumber: 'string' },
-  { type: 'number', email: 'string' },
-];
-```
-
-**oneOf 关键字写法：**
+联合类型统一使用关键字写法：
 
 ```javascript
 handler: () => ({
@@ -217,3 +226,12 @@ handler: () => ({
 
 - `anyOf`：定义可选参数组合
 - `allOf`：定义参数组合（必须同时满足）
+
+### 数组类型
+
+返回由元素类型组成的原生数组即可表示数组：
+
+```javascript
+handler: () => (['string']); // string[]
+handler: () => (['string', 'number']); // 元组 [string, number]
+```

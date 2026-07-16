@@ -529,36 +529,28 @@ export interface ImportTypeOptions {
 export declare function importType(imports: Record<string, string[]>, options?: {
 	files?: string[];
 }): ApiPlugin;
-declare enum ModifierScope {
-	PARAMS = "params",
-	PATH_PARAMS = "pathParams",
-	DATA = "data",
-	RESPONSE = "response"
-}
-export type SchemaPrimitive = "number" | "string" | "boolean" | "undefined" | "null" | "unknown" | "any" | "never" | ({} & string);
+export type ModifierScope = "params" | "pathParams" | "data" | "response";
+export type SchemaPrimitive = "number" | "string" | "boolean" | "undefined" | "null" | "unknown" | "any" | "never";
 /**
- * 表示数组类型
+ * Array type: a native JS array whose elements are Schemas.
  */
-export interface SchemaArray {
-	type: "array";
-	items: Schema | Schema[];
-}
+export type SchemaArray = Schema[];
 /**
- * 修改参数为引用类型
- * 在key末端添加上?表示为可选值
+ * Object/reference type.
+ * Append '?' to the end of a key to mark it optional.
  */
 export interface SchemaReference {
 	[attr: string]: Schema;
 }
 /**
- * 枚举类型表示
+ * Enum type representation.
  */
 export interface SchemaEnum {
 	enum: Array<string | number | boolean | null>;
 	type?: SchemaPrimitive;
 }
 /**
- * 组合类型表示（与/或/交叉）
+ * Composite types (oneOf / anyOf / allOf).
  */
 export interface SchemaOneOf {
 	oneOf: Schema[];
@@ -570,31 +562,44 @@ export interface SchemaAllOf {
 	allOf: Schema[];
 }
 /**
- * 数据Schema
- * SchemaArray表示类型数组，而数组表示“或”的意思
+ * Standalone primitive type that is itself optional (driven by the `type` field).
  */
-export type Schema = SchemaPrimitive | SchemaReference | SchemaArray | SchemaEnum | SchemaOneOf | SchemaAnyOf | SchemaAllOf | Array<SchemaPrimitive | SchemaReference | SchemaArray | SchemaEnum>;
-export interface ModifierConfig<T extends Schema> {
+export interface SchemaOptional {
+	required: boolean;
+	type: Schema;
+}
+/**
+ * The data Schema.
+ * SchemaArray is a native array (elements are Schemas).
+ * Composite types use { oneOf | anyOf | allOf: Schema[] }.
+ * Optional object properties use a trailing '?' on the key;
+ * a standalone optional primitive uses the SchemaOptional wrapper.
+ */
+export type Schema = SchemaPrimitive | SchemaReference | SchemaArray | SchemaEnum | SchemaOneOf | SchemaAnyOf | SchemaAllOf | SchemaOptional;
+export interface ModifierConfig {
 	/**
-	 * 生效范围，表示处理哪个位置的参数
+	 * The scope the modifier applies to (which parameter location to process).
 	 */
 	scope: ModifierScope;
 	/**
-	 * 匹配规则，只有匹配到的才会进行转换，不指定则转换全部
-	 * string：原参数名包含此string；RegExp：原参数名匹配此正则；函数时接收key并返回是否匹配的boolean值
+	 * Match rule. Only matched fields are transformed; when omitted, all fields are transformed.
+	 * - string: the original field name contains this string
+	 * - RegExp: the original field name matches this pattern
+	 * - function: receives the key and returns a boolean indicating a match
 	 */
 	match?: string | RegExp | ((key: string) => boolean);
 	/**
-	 * handler用于灵活修改参数类型值
-	 * @param schema Schema中的一种，由用户自行定义
-	 * @returns 返回多种参数，具体为：Schema表示修改的类型；{ required: boolean, value: Schema }表示可将当前值修改为是否必填；void | null | undefined表示移除当前字段
+	 * handler flexibly modifies the parameter type value.
+	 * @param schema the original field type, already converted to the user-facing Schema representation.
+	 * @returns Schema to change the type; { required: boolean, type: Schema } to change requiredness (driven by `type`);
+	 *          void | null | undefined to remove the field.
 	 */
-	handler: (schema: T) => Schema | {
+	handler: (schema: Schema) => Schema | {
 		required: boolean;
-		value: Schema;
+		type: Schema;
 	} | void | null | undefined;
 }
-export type PayloadModifierConfig = ModifierConfig<Schema>;
+export type PayloadModifierConfig = ModifierConfig;
 export declare function payloadModifier(configs: PayloadModifierConfig[]): ApiPlugin;
 /**
  * Swagger platform plugin.

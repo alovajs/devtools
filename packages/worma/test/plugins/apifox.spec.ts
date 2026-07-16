@@ -20,7 +20,7 @@ describe('apifox preset plugin - config', () => {
       apifoxToken: 'token-abc',
     })
 
-    const next = (await plugin.config!({ config: baseInputConfig, projectPath: '' })) ?? baseInputConfig
+    const next = (await plugin.config!({ config: baseInputConfig, projectPath: '', reportProgress: () => {} })) ?? baseInputConfig
 
     // input URL
     expect(next.input).toBe(
@@ -56,7 +56,7 @@ describe('apifox preset plugin - config', () => {
       selectedTags: ['user', 'order'],
     })
 
-    const next = (await plugin.config!({ config: baseInputConfig, projectPath: '' })) ?? baseInputConfig
+    const next = (await plugin.config!({ config: baseInputConfig, projectPath: '', reportProgress: () => {} })) ?? baseInputConfig
     const data = next.fetchOptions?.data as Record<string, any>
     expect(data.scope?.type).toBe('SELECTED_TAGS')
     expect(data.scope?.selectedTags).toEqual(['user', 'order'])
@@ -76,7 +76,7 @@ describe('apifox preset plugin - config', () => {
       scopeType: 'ALL',
     })
 
-    const next = (await plugin.config!({ config: baseInputConfig, projectPath: '' })) ?? baseInputConfig
+    const next = (await plugin.config!({ config: baseInputConfig, projectPath: '', reportProgress: () => {} })) ?? baseInputConfig
 
     expect(next.input).toBe(
       'https://api.apifox.com/v1/projects/%E4%B8%AD%E6%96%87%20%E9%A1%B9%E7%9B%AE/export-openapi?locale=en-US',
@@ -103,8 +103,8 @@ describe('apifox preset plugin - config', () => {
     const pluginMissingProject = apifox({ apifoxToken: 't', projectId: '' })
     const pluginMissingToken = apifox({ projectId: 'p', apifoxToken: '' })
 
-    const next1 = (await pluginMissingProject.config!({ config: baseInputConfig, projectPath: '' })) ?? baseInputConfig
-    const next2 = (await pluginMissingToken.config!({ config: baseInputConfig, projectPath: '' })) ?? baseInputConfig
+    const next1 = (await pluginMissingProject.config!({ config: baseInputConfig, projectPath: '', reportProgress: () => {} })) ?? baseInputConfig
+    const next2 = (await pluginMissingToken.config!({ config: baseInputConfig, projectPath: '', reportProgress: () => {} })) ?? baseInputConfig
 
     expect(next1).toEqual(baseInputConfig)
     expect(next2).toEqual(baseInputConfig)
@@ -126,7 +126,7 @@ describe('apifox preset plugin - config', () => {
       selectedEndpointIds: [123, 456],
     })
 
-    const next = (await plugin.config!({ config: baseInputConfig, projectPath: '' })) ?? baseInputConfig
+    const next = (await plugin.config!({ config: baseInputConfig, projectPath: '', reportProgress: () => {} })) ?? baseInputConfig
     const data = next.fetchOptions?.data as Record<string, any>
     expect(data.scope?.type).toBe('SELECTED_ENDPOINTS')
     expect(data.scope?.selectedEndpointIds).toEqual([123, 456])
@@ -140,7 +140,7 @@ describe('apifox preset plugin - config', () => {
       selectedFolderIds: [789, 101112],
     })
 
-    const next = (await plugin.config!({ config: baseInputConfig, projectPath: '' })) ?? baseInputConfig
+    const next = (await plugin.config!({ config: baseInputConfig, projectPath: '', reportProgress: () => {} })) ?? baseInputConfig
     const data = next.fetchOptions?.data as Record<string, any>
     expect(data.scope?.type).toBe('SELECTED_FOLDERS')
     expect(data.scope?.selectedFolderIds).toEqual([789, 101112])
@@ -156,7 +156,7 @@ describe('apifox preset plugin - config', () => {
       moduleId: 200,
     })
 
-    const next = (await plugin.config!({ config: baseInputConfig, projectPath: '' })) ?? baseInputConfig
+    const next = (await plugin.config!({ config: baseInputConfig, projectPath: '', reportProgress: () => {} })) ?? baseInputConfig
     const data = next.fetchOptions?.data as Record<string, any>
 
     expect(data.environmentIds).toEqual([1, 2])
@@ -172,7 +172,7 @@ describe('apifox preset plugin - config', () => {
       excludedByTags: ['excludeTag1', 'excludeTag2'],
     })
 
-    const next = (await plugin.config!({ config: baseInputConfig, projectPath: '' })) ?? baseInputConfig
+    const next = (await plugin.config!({ config: baseInputConfig, projectPath: '', reportProgress: () => {} })) ?? baseInputConfig
     const data = next.fetchOptions?.data as Record<string, any>
     expect(data.scope.excludedByTags).toEqual(['excludeTag1', 'excludeTag2'])
   })
@@ -185,7 +185,7 @@ describe('apifox preset plugin - config', () => {
       // 注意这里没有提供 selectedTags
     })
 
-    const next = (await plugin.config!({ config: baseInputConfig, projectPath: '' })) ?? baseInputConfig
+    const next = (await plugin.config!({ config: baseInputConfig, projectPath: '', reportProgress: () => {} })) ?? baseInputConfig
     // 在新版插件中，selectedTags 有默认值 []，并且在 scopeType 为 SELECTED_TAGS 时始终会被设置
     const data = next.fetchOptions?.data as Record<string, any>
     expect(data.scope.selectedTags).toEqual([])
@@ -199,7 +199,7 @@ describe('apifox preset plugin - config', () => {
       selectedTags: undefined,
     } as ApifoxOptions)
 
-    const next = (await plugin.config!({ config: baseInputConfig, projectPath: '' })) ?? baseInputConfig
+    const next = (await plugin.config!({ config: baseInputConfig, projectPath: '', reportProgress: () => {} })) ?? baseInputConfig
     // 即使显式设置为 undefined，TypeScript 默认参数也会将其转换为空数组
     const data = next.fetchOptions?.data as Record<string, any>
     expect(data.scope.selectedTags).toEqual([])
@@ -213,7 +213,7 @@ describe('apifox preset plugin - config', () => {
       selectedTags: [],
     })
 
-    const next = (await plugin.config!({ config: baseInputConfig, projectPath: '' })) ?? baseInputConfig
+    const next = (await plugin.config!({ config: baseInputConfig, projectPath: '', reportProgress: () => {} })) ?? baseInputConfig
     const data = next.fetchOptions?.data as Record<string, any>
     expect(data.scope.selectedTags).toEqual([])
   })
@@ -226,7 +226,7 @@ describe('apifox preset plugin - config', () => {
       selectedTags: ['tag1'],
     })
 
-    const next1 = (await plugin1.config!({ config: baseInputConfig, projectPath: '' })) ?? baseInputConfig
+    const next1 = (await plugin1.config!({ config: baseInputConfig, projectPath: '', reportProgress: () => {} })) ?? baseInputConfig
     // 新版插件默认 scopeType 是 ALL，不会根据 selectedTags 自动推断
     const data1 = next1.fetchOptions?.data as Record<string, any>
     expect(data1.scope.type).toBe('ALL')
@@ -236,7 +236,7 @@ describe('apifox preset plugin - config', () => {
       projectId: 'proj-123',
       apifoxToken: 'token-abc',
     })
-    const next2 = (await plugin2.config!({ config: baseInputConfig, projectPath: '' })) ?? baseInputConfig
+    const next2 = (await plugin2.config!({ config: baseInputConfig, projectPath: '', reportProgress: () => {} })) ?? baseInputConfig
     const data2 = next2.fetchOptions?.data as Record<string, any>
     expect(data2.scope.type).toBe('ALL')
   })
@@ -250,7 +250,7 @@ describe('apifox preset plugin - config', () => {
       selectedTags: ['user', 'order'],
     })
 
-    const next = (await plugin.config!({ config: baseInputConfig, projectPath: '' })) ?? baseInputConfig
+    const next = (await plugin.config!({ config: baseInputConfig, projectPath: '', reportProgress: () => {} })) ?? baseInputConfig
     const data = next.fetchOptions?.data as Record<string, any>
     expect(data.scope?.type).toBe('SELECTED_TAGS')
     expect(data.scope?.selectedTags).toEqual(['user', 'order'])

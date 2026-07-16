@@ -84,14 +84,6 @@ export enum FilterScope {
   TAG = 'tag',
 }
 
-/** 参数修改 scope 类型 */
-export enum ModifierScope {
-  PARAMS = 'params',
-  PATH_PARAMS = 'pathParams',
-  DATA = 'data',
-  RESPONSE = 'response',
-}
-
 /** 内建插件名称 */
 export enum PluginName {
   TAG_MODIFIER = 'tagModifier',
