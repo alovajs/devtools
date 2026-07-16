@@ -1,5 +1,15 @@
 # worma
 
+## 0.2.0
+
+### Minor Changes
+
+- [#162](https://github.com/alovajs/devtools/pull/162) [`e88d4bf`](https://github.com/alovajs/devtools/commit/e88d4bf092fc7b68fec1ea440921205615c9542d) Thanks [@JOU-amjs](https://github.com/JOU-amjs)! - optimize plugin hooks, rename openpai to spec
+
+### Patch Changes
+
+- [#162](https://github.com/alovajs/devtools/pull/162) [`e88d4bf`](https://github.com/alovajs/devtools/commit/e88d4bf092fc7b68fec1ea440921205615c9542d) Thanks [@JOU-amjs](https://github.com/JOU-amjs)! - optimize the usage of plugins
+
 ## 0.1.0
 
 ### Minor Changes
