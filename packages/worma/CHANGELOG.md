@@ -1,5 +1,11 @@
 # worma
 
+## 0.2.1
+
+### Patch Changes
+
+- [#165](https://github.com/alovajs/devtools/pull/165) [`d006912`](https://github.com/alovajs/devtools/commit/d00691270f56e7080c8fd577c20c89140adf5ab0) Thanks [@JOU-amjs](https://github.com/JOU-amjs)! - correct the usage of pyloadModifier, optimize config hook calling
+
 ## 0.2.0
 
 ### Minor Changes
