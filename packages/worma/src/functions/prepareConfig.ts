@@ -13,6 +13,10 @@ export function extendsConfig(config: GeneratorConfig, newConfig: Partial<Genera
 
     // handleApi is a special case, we need to merge the functions
     if (typeof newValue === 'function' && typeof srcValue === 'function') {
+      // Avoid chaining the same function reference with itself (idempotency guard).
+      if (newValue === srcValue) {
+        return newValue
+      }
       // chain the functions
       return (...args: any[]) => {
         const result = srcValue(...args)

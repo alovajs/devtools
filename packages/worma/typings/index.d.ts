@@ -497,7 +497,7 @@ export declare const logger: Logger$1;
  * @param projectPath The project path where the configuration file is located. The default value is `process.cwd()`.
  * @returns a promise instance that contains configuration object.
  */
-export declare function readConfig(projectPath?: string): Promise<Readonly<Config>>;
+export declare function readConfig(projectPath?: string): Promise<Config>;
 /**
  * Get cached API docs. Cache is self-describing — no config needed.
  * In monorepo, pass ANY sub-package path; cache is always read from the unified cacheRoot.

@@ -7,7 +7,6 @@ import { logger } from '@/helper/logger'
 import { zConfig } from './zType'
 
 export class ConfigManager {
-  private static instance: ConfigManager
   private config: Config
   private readConfig: Readonly<Config>
 
@@ -16,15 +15,8 @@ export class ConfigManager {
   })
 
   private readonly defaultGeneratorConfig = generatorHelper.getDefaultConfig()
-  private constructor() {
+  constructor() {
     this.config = this.defaultConfig
-  }
-
-  public static getInstance(): ConfigManager {
-    if (!ConfigManager.instance) {
-      ConfigManager.instance = new ConfigManager()
-    }
-    return ConfigManager.instance
   }
 
   /**
@@ -93,6 +85,3 @@ export class ConfigManager {
     return result
   }
 }
-
-// 导出单例实例
-export const configManager = ConfigManager.getInstance()

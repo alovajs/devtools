@@ -42,18 +42,6 @@ describe('defineConfig', () => {
 })
 
 describe('configHelper.readUserConfig', () => {
-  let configHelper: ConfigHelper
-
-  beforeEach(() => {
-    configHelper = ConfigHelper.getInstance()
-    // 重置单例实例
-    vi.spyOn(ConfigHelper, 'getInstance').mockReturnValue(configHelper)
-  })
-
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   it('should return the config object when passed directly', async () => {
     const config: UserConfig = {
       generator: [{
@@ -62,7 +50,7 @@ describe('configHelper.readUserConfig', () => {
         plugins: [{ getTemplate: () => ({ path: 'template' }) }],
       }],
     }
-    const result = await configHelper.readUserConfig(config)
+    const result = await ConfigHelper.readUserConfig(config)
     expect(result).toEqual(config)
   })
 
@@ -74,7 +62,7 @@ describe('configHelper.readUserConfig', () => {
         plugins: [{ getTemplate: () => ({ path: 'template' }) }],
       }],
     })
-    const result = await configHelper.readUserConfig(configFn)
+    const result = await ConfigHelper.readUserConfig(configFn)
     expect(result.generator[0].input).toBe('./openapi.json')
     expect(result.generator[0].output).toBe('./src/api')
     expect(typeof result.generator[0].plugins[0].getTemplate).toBe('function')
@@ -88,7 +76,7 @@ describe('configHelper.readUserConfig', () => {
         plugins: [{ getTemplate: () => ({ path: 'template' }) }],
       }],
     })
-    const result = await configHelper.readUserConfig(configPromise)
+    const result = await ConfigHelper.readUserConfig(configPromise)
     expect(result.generator[0].input).toBe('./openapi.json')
     expect(result.generator[0].output).toBe('./src/api')
     expect(typeof result.generator[0].plugins[0].getTemplate).toBe('function')
@@ -102,7 +90,7 @@ describe('configHelper.readUserConfig', () => {
         plugins: [{ getTemplate: () => ({ path: 'template' }) }],
       }],
     })
-    const result = await configHelper.readUserConfig(asyncConfigFn)
+    const result = await ConfigHelper.readUserConfig(asyncConfigFn)
     expect(result.generator[0].input).toBe('./openapi.json')
     expect(result.generator[0].output).toBe('./src/api')
     expect(typeof result.generator[0].plugins[0].getTemplate).toBe('function')
