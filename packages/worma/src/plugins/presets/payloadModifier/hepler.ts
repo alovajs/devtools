@@ -16,8 +16,80 @@ import type {
   SchemaType,
 } from '@/type'
 
+// Detect a `SchemaOptional` wrapper: { required: boolean, type: Schema }.
+// The `required` must be a literal boolean so a plain SchemaReference whose
+// property happens to be named "required" (e.g. { required: 'boolean' }) is not misread.
+function isSchemaOptional(val: unknown): val is SchemaOptional {
+  return !!val
+    && typeof val === 'object'
+    && !Array.isArray(val)
+    && typeof (val as SchemaOptional).required === 'boolean'
+    && 'type' in (val as object)
+}
+
+// Collapse (possibly nested) `SchemaOptional` wrappers.
+// - The OUTERMOST `required` wins; inner `required` fields are ignored.
+// - A non-wrapped value defaults to required (required: true).
+function unwrapOptional(s: Schema): { required: boolean, type: Schema } {
+  if (!isSchemaOptional(s)) {
+    return { required: true, type: s }
+  }
+  const required = s.required
+  let type: Schema = s.type
+  while (isSchemaOptional(type)) {
+    type = type.type
+  }
+  return { required, type }
+}
+
+// Remove the internal `_$ref` marker that `removeAll$ref` stamps onto dereferenced
+// component schemas. When a handler replaces a schema, the result must NOT inherit the
+// original component's `_$ref` — otherwise `mergeObject`/`removeBaseReference` downstream
+// treats the replacement as a reference to the original component and discards the change.
+function stripInternalRef(schema: any): any {
+  if (!schema || typeof schema !== 'object') {
+    return schema
+  }
+  if (Array.isArray(schema)) {
+    return schema.map(stripInternalRef)
+  }
+  const out: Record<string, any> = {}
+  for (const key of Object.keys(schema)) {
+    if (key === '_$ref') {
+      continue
+    }
+    out[key] = stripInternalRef(schema[key])
+  }
+  return out
+}
+
+// Set of valid SchemaPrimitive values for O(1) validation lookup
+const VALID_PRIMITIVES: ReadonlySet<string> = new Set([
+  'number',
+  'string',
+  'boolean',
+  'undefined',
+  'null',
+  'unknown',
+  'any',
+  'never',
+])
+
+function validatePrimitive(val: string): void {
+  if (!VALID_PRIMITIVES.has(val)) {
+    throw new Error(
+      `[payloadModifier] Invalid schema type "${val}". Must be one of: ${[...VALID_PRIMITIVES].join(', ')}`,
+    )
+  }
+}
+
 // Convert Schema (custom spec) -> OpenAPI SchemaObject
 function toSchemaObject(base: SchemaObject, s: Schema): SchemaObject {
+  // A `SchemaOptional` wrapper only affects requiredness (handled by the caller);
+  // here we care about the type shape, so fully unwrap nested wrappers first.
+  if (isSchemaOptional(s)) {
+    s = unwrapOptional(s).type
+  }
   const result: SchemaObject = { ...base }
   const cleanType = (schema: SchemaObject) => {
     delete schema.type
@@ -42,8 +114,9 @@ function toSchemaObject(base: SchemaObject, s: Schema): SchemaObject {
     return result
   }
 
-  // Primitive types and no-op primitives
+  // Primitive types — validate against SchemaPrimitive set during conversion
   if (typeof s === 'string') {
+    validatePrimitive(s)
     result.type = s as SchemaType
     return result
   }
@@ -76,13 +149,17 @@ function toSchemaObject(base: SchemaObject, s: Schema): SchemaObject {
     const spec = s as SchemaEnum
     result.enum = spec.enum
     if (spec.type) {
+      if (typeof spec.type === 'string') {
+        validatePrimitive(spec.type)
+      }
       result.type = spec.type as any
     }
     return result
   }
 
   // Object (reference-like map): replace properties and required with handler's spec
-  // (the SchemaReference returned by the handler fully replaces this field, only keeping scalar fields like description from base)
+  // (the SchemaReference returned by the handler fully replaces this field, only keeping
+  // scalar fields like description from base)
   const ref = s as SchemaReference
   if (ref && typeof ref === 'object') {
     result.type = 'object'
@@ -94,33 +171,27 @@ function toSchemaObject(base: SchemaObject, s: Schema): SchemaObject {
       if (!val) {
         continue
       }
-      // 兼容旧 `?` 后缀写法（向后兼容）
-      const optionalByKey = key.endsWith('?')
-      const cleanKey = optionalByKey ? key.slice(0, -1) : key
+      // SchemaOptional wrapper: optionality expressed via { required, type };
+      // bare value defaults to required. Nested wrappers are collapsed — outermost
+      // `required` wins, inner ones are ignored.
       let isOptional: boolean
       let effectiveVal: Schema
-      if (
-        !optionalByKey
-        && val && typeof val === 'object' && !Array.isArray(val)
-        && typeof (val as SchemaOptional).required === 'boolean'
-        && 'type' in val
-      ) {
-        // SchemaOptional 包装：可选性由 `required` 字段表达（与逐字段分支入参统一）
-        const opt = val as SchemaOptional
-        isOptional = !opt.required
-        effectiveVal = opt.type
+      if (isSchemaOptional(val)) {
+        const { required, type } = unwrapOptional(val)
+        isOptional = !required
+        effectiveVal = type
       }
       else {
-        isOptional = optionalByKey
+        isOptional = false
         effectiveVal = val
       }
-      const baseProp = properties[cleanKey]
-      properties[cleanKey] = toSchemaObject(baseProp || {}, effectiveVal)
+      const baseProp = properties[key]
+      properties[key] = toSchemaObject(baseProp || {}, effectiveVal)
       if (isOptional) {
-        requiredSet.delete(cleanKey)
+        requiredSet.delete(key)
       }
       else {
-        requiredSet.add(cleanKey)
+        requiredSet.add(key)
       }
     }
 
@@ -191,7 +262,7 @@ function toSchemaSpec(obj: SchemaObject): Schema {
     const result: SchemaReference = {}
     for (const key of Object.keys(properties)) {
       const spec = toSchemaSpec(properties[key])
-      // 必填字段裸写；可选字段用 SchemaOptional 包装（与逐字段分支入参统一，避免 `?` 魔法字符串）
+      // Required fields are written bare; optional fields wrapped with SchemaOptional
       result[key] = requiredSet.has(key) ? spec : { required: false, type: spec }
     }
     return result
@@ -221,7 +292,7 @@ export function applyModifierSchema<T extends MaybeSchemaObject = SchemaObject>(
   schema: T | null
 } {
   if (!schema || typeof schema !== 'object') {
-    return schema
+    return { required, schema: schema as T }
   }
 
   const cloned: SchemaObject = { ...schema }
@@ -238,16 +309,31 @@ export function applyModifierSchema<T extends MaybeSchemaObject = SchemaObject>(
       schema: null,
     }
   }
-  // A returned { required, type } means changing requiredness (driven by the `type` field)
-  if (typeof ret === 'object' && !Array.isArray(ret) && 'required' in ret && 'type' in ret) {
-    const opt = ret as SchemaOptional
+  // A returned SchemaOptional means changing requiredness (driven by the `type` field).
+  // Nested wrappers are collapsed: the outermost `required` wins, inner ones are ignored;
+  // `type` may be any Schema expression (primitive, object, array, union, ...).
+  if (isSchemaOptional(ret)) {
+    const { required: nextRequired, type } = unwrapOptional(ret)
+    let r = stripInternalRef(toSchemaObject(cloned, type)) as T
+    // When handler explicitly sets required=false, propagate to object-level required array
+    // so all properties become nullable as semantically expected
+    if (!nextRequired && r && typeof r === 'object' && !Array.isArray(r)) {
+      const robj = r as Record<string, any>
+      if (robj.type === 'object' && Array.isArray(robj.required) && robj.required.length > 0) {
+        r = { ...r, required: [] } as T
+      }
+    }
     return {
-      required: !!(opt.required ?? required),
-      schema: toSchemaObject(cloned, opt.type) as T,
+      required: nextRequired,
+      schema: r,
     }
   }
+  // Non-SchemaOptional return: handler explicitly provides a type value,
+  // so default to required=true (the handler had the chance to wrap with
+  // { required: false, type: ... } if it wanted to keep it optional).
+  const r = stripInternalRef(toSchemaObject(cloned, ret)) as T
   return {
-    required,
-    schema: toSchemaObject(cloned, ret) as T,
+    required: true,
+    schema: r,
   }
 }

@@ -3,7 +3,7 @@ import { unlink } from 'node:fs/promises'
 import path from 'node:path'
 import esbuild from 'esbuild'
 import { readAllCacheApis, readCacheApis } from '@/functions/wormaJson'
-import { configHelper, logger } from '@/helper'
+import { ConfigHelper, logger } from '@/helper'
 import { getUserInstalledDependencies, resolveConfigFile } from '@/utils'
 import { readWormaRc } from './functions/readWormaRc'
 /**
@@ -29,7 +29,6 @@ export async function readConfig(projectPath = process.cwd()) {
         name: 'readConfig',
       })
     }
-    await configHelper.load(config, projectPath)
     return config
   }
 
@@ -63,10 +62,8 @@ export async function readConfig(projectPath = process.cwd()) {
   finally {
     await unlink(outfile)
   }
-  const config = await configHelper.readUserConfig(module.default || module)
-  // Read the cache file and save it
-  await configHelper.load(config, projectPath)
-  return configHelper.getConfig()
+  const config = await ConfigHelper.readUserConfig(module.default || module)
+  return config
 }
 
 /**

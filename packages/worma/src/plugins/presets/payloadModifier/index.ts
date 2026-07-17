@@ -60,14 +60,14 @@ function schemaToParameters(
   return newParameters
 }
 
-// Apply modifications to a single matched property (used when `match` is set)
+// Apply modifications to properties of an object schema (used when `match` is set)
 function modifySchemaProperties<T extends SchemaObject = SchemaObject>(schema: T, config: PayloadModifierConfig): T {
   if (!schema || typeof schema !== 'object') {
     return schema
   }
   const targetSchema: SchemaObject = { ...schema }
 
-  // union recursively
+  // recurse into union keywords
   if (Array.isArray(targetSchema.oneOf)) {
     targetSchema.oneOf = targetSchema.oneOf.map(item => modifySchemaProperties(item, config))
   }
@@ -77,7 +77,7 @@ function modifySchemaProperties<T extends SchemaObject = SchemaObject>(schema: T
   if (Array.isArray(targetSchema.allOf)) {
     targetSchema.allOf = targetSchema.allOf.map(item => modifySchemaProperties(item, config))
   }
-  // modify properties
+  // modify matched properties
   if (targetSchema.properties) {
     const props = { ...targetSchema.properties } as Record<string, SchemaObject>
     let required: string[] = Array.isArray(targetSchema.required) ? [...targetSchema.required] : []
@@ -86,7 +86,11 @@ function modifySchemaProperties<T extends SchemaObject = SchemaObject>(schema: T
       if (!isMatch(key, config.match)) {
         continue
       }
-      const { required: requiredOverride, schema: schemaValue } = applyModifierSchema(props[key], config, { required: required.includes(key), key })
+      const { required: requiredOverride, schema: schemaValue } = applyModifierSchema(
+        props[key],
+        config,
+        { required: required.includes(key), key },
+      )
       required = required.filter(r => r !== key)
       if (!schemaValue) {
         delete props[key]
@@ -103,6 +107,7 @@ function modifySchemaProperties<T extends SchemaObject = SchemaObject>(schema: T
   return targetSchema as T
 }
 
+// Apply modifications to matched parameters (used when `match` is set for params/pathParams)
 function modifyParameters(
   parameters: Parameter[],
   type: ParameterIn,
@@ -112,70 +117,67 @@ function modifyParameters(
     return parameters
   }
   return parameters.map((param) => {
-    if (param.in === type) {
-      if (!isMatch(param.name, config.match)) {
-        return param
-      }
-      const { schema, required } = applyModifierSchema(param.schema!, config, { required: !!param.required, key: param.name })
-      if (!schema) {
-        return null
-      }
-      return {
-        ...param,
-        schema,
-        required,
-      }
+    if (param.in !== type || !isMatch(param.name, config.match)) {
+      return param
     }
-    return param
+    const { schema, required } = applyModifierSchema(
+      param.schema!,
+      config,
+      { required: !!param.required, key: param.name },
+    )
+    if (!schema) {
+      return null
+    }
+    return { ...param, schema, required }
   }).filter(item => item !== null)
 }
 
-function payloadModifierApiDescriptor(apiDescriptor: ApiDescriptor, config: PayloadModifierConfig) {
-  if (!apiDescriptor) {
-    return null
+// Apply config to a parameter scope (params or pathParams)
+function applyToParameters(
+  parameters: Parameter[] | undefined,
+  type: ParameterIn,
+  config: PayloadModifierConfig,
+): Parameter[] | undefined {
+  if (!parameters)
+    return undefined
+  if (config.match) {
+    return modifyParameters(parameters, type, config)
   }
+  const schema = parametersToSchema(parameters, type)
+  const result = applyModifierSchema(schema, config, { required: false })
+  return schemaToParameters(parameters, result.schema, type)
+}
+
+// Apply config to a schema scope (data or response)
+function applyToSchemaField(
+  schema: SchemaObject | undefined,
+  config: PayloadModifierConfig,
+): SchemaObject | undefined {
+  if (!schema)
+    return undefined
+  if (config.match) {
+    return modifySchemaProperties(schema, config)
+  }
+  return applyModifierSchema(schema, config, { required: false }).schema ?? undefined
+}
+
+function payloadModifierApiDescriptor(apiDescriptor: ApiDescriptor, config: PayloadModifierConfig) {
+  if (!apiDescriptor)
+    return null
   const newDescriptor = { ...apiDescriptor }
-  const { scope, match } = config
+  const { scope } = config
   switch (scope) {
     case 'params':
-      if (newDescriptor.parameters) {
-        newDescriptor.parameters = match
-          ? modifyParameters(newDescriptor.parameters, ParameterIn.QUERY, config)
-          : schemaToParameters(
-              newDescriptor.parameters,
-              applyModifierSchema(parametersToSchema(newDescriptor.parameters, ParameterIn.QUERY), config, { required: false })
-                .schema,
-              ParameterIn.QUERY,
-            )
-      }
+      newDescriptor.parameters = applyToParameters(newDescriptor.parameters, ParameterIn.QUERY, config)
       break
     case 'pathParams':
-      if (newDescriptor.parameters) {
-        newDescriptor.parameters = match
-          ? modifyParameters(newDescriptor.parameters, ParameterIn.PATH, config)
-          : schemaToParameters(
-              newDescriptor.parameters,
-              applyModifierSchema(parametersToSchema(newDescriptor.parameters, ParameterIn.PATH), config, { required: false })
-                .schema,
-              ParameterIn.PATH,
-            )
-      }
+      newDescriptor.parameters = applyToParameters(newDescriptor.parameters, ParameterIn.PATH, config)
       break
     case 'data':
-      if (newDescriptor.requestBody) {
-        newDescriptor.requestBody = match
-          ? modifySchemaProperties(newDescriptor.requestBody, config)
-          : applyModifierSchema(newDescriptor.requestBody, config, { required: false }).schema ?? undefined
-      }
+      newDescriptor.requestBody = applyToSchemaField(newDescriptor.requestBody, config)
       break
     case 'response':
-      if (newDescriptor.responses) {
-        newDescriptor.responses = match
-          ? modifySchemaProperties(newDescriptor.responses, config)
-          : applyModifierSchema(newDescriptor.responses, config, { required: false }).schema ?? undefined
-      }
-      break
-    default:
+      newDescriptor.responses = applyToSchemaField(newDescriptor.responses, config)
       break
   }
   return newDescriptor

@@ -1,6 +1,6 @@
 import type { Config, GenerateApiOptions, GeneratorProgressEvent } from '@/type/lib'
 import { PoolManager } from '@/core/workerPool/poolManager'
-import { configHelper, logger, TemplateHelper } from '@/helper'
+import { ConfigHelper, logger, TemplateHelper } from '@/helper'
 import { GeneratorHelper } from '@/helper/config/GeneratorHelper'
 import { ProgressTracker } from '@/helper/progress'
 
@@ -21,12 +21,11 @@ async function generate(config: Config, options?: GenerateApiOptions): Promise<b
   const projectPath = options?.projectPath ?? process.cwd()
   const emit = options?.onProgress
 
-  // Load phase (shared, no per-gen events during load) — plugins may modify generator configs
-  logger.debug('Loading config', { projectPath })
-  await configHelper.load(config, projectPath)
-  // Use the processed generators from ConfigManager (after plugin hooks have run)
-  const generators = configHelper.getConfig().generator
-  logger.debug('Config loaded', { generatorCount: generators.length })
+  // Each generate() call creates its own ConfigHelper / ConfigManager,
+  // so multiple concurrent calls never share mutable config state.
+  const helper = new ConfigHelper()
+  await helper.load(config, projectPath)
+  const generators = helper.getConfig().generator
 
   // Run all generators in parallel, each with its own ProgressTracker
   const results = await Promise.all(
