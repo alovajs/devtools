@@ -48,6 +48,9 @@ export function parse(schema: MaybeSchemaObject, options: {
   return null
 }
 export function getParserSchemaType(schema: MaybeSchemaObject): ParserSchemaType {
+  if (!schema) {
+    return 'null'
+  }
   if (isReferenceObject(schema)) {
     return 'reference'
   }
