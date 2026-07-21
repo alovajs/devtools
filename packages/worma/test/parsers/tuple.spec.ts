@@ -1,5 +1,5 @@
 import type { ParserCtx, ParserOptions } from '@/core/loader/astLoader/parsers/type'
-import type { AST, TupleSchemaObject } from '@/type'
+import type { AST, MaybeSchemaObject, TupleSchemaObject } from '@/type'
 import { tupleTypeParser } from '@/core/loader/astLoader/parsers/tuple'
 import { ASTType } from '@/type'
 
@@ -99,9 +99,9 @@ describe('tuple Type Parser', () => {
       expect(result.params[2]).toBe(mockBooleanAST)
 
       expect(ctx.next).toHaveBeenCalledTimes(3)
-      expect(ctx.next).toHaveBeenNthCalledWith(1, schema.items[0], ctx.options)
-      expect(ctx.next).toHaveBeenNthCalledWith(2, schema.items[1], ctx.options)
-      expect(ctx.next).toHaveBeenNthCalledWith(3, schema.items[2], ctx.options)
+      expect(ctx.next).toHaveBeenNthCalledWith(1, (schema.items as MaybeSchemaObject[])[0], ctx.options)
+      expect(ctx.next).toHaveBeenNthCalledWith(2, (schema.items as MaybeSchemaObject[])[1], ctx.options)
+      expect(ctx.next).toHaveBeenNthCalledWith(3, (schema.items as MaybeSchemaObject[])[2], ctx.options)
     })
 
     it('should parse tuple with single item type', () => {
@@ -411,6 +411,79 @@ describe('tuple Type Parser', () => {
       expect(result.type).toBe(ASTType.TUPLE)
       expect(result.minItems).toBeUndefined()
       expect(result.maxItems).toBe(5)
+    })
+
+    it('should parse tuple from prefixItems (OpenAPI 3.1)', () => {
+      const schema = {
+        type: 'array',
+        prefixItems: [
+          { type: 'string', description: 'First item' },
+          { type: 'number', description: 'Second item' },
+        ],
+        minItems: 2,
+        maxItems: 2,
+        description: 'Tuple from prefixItems',
+      } as unknown as TupleSchemaObject
+
+      const mockStringAST: AST = { type: ASTType.STRING, keyName: '', comment: 'First item' }
+      const mockNumberAST: AST = { type: ASTType.NUMBER, keyName: '', comment: 'Second item' }
+
+      const ctx = createMockCtx('prefixItemsTuple')
+      ctx.next = vi.fn()
+        .mockReturnValueOnce(mockStringAST)
+        .mockReturnValueOnce(mockNumberAST)
+
+      const result = tupleTypeParser(schema, ctx)
+
+      expect(result.type).toBe(ASTType.TUPLE)
+      expect(result.params).toHaveLength(2)
+      expect(result.params[0]).toBe(mockStringAST)
+      expect(result.params[1]).toBe(mockNumberAST)
+      expect(ctx.next).toHaveBeenNthCalledWith(1, schema.prefixItems![0], ctx.options)
+      expect(ctx.next).toHaveBeenNthCalledWith(2, schema.prefixItems![1], ctx.options)
+    })
+
+    it('should set spreadParam to NEVER when additionalItems is false (closed tuple)', () => {
+      const schema = {
+        type: 'array',
+        prefixItems: [{ type: 'string' }],
+        minItems: 1,
+        maxItems: 1,
+        additionalItems: false,
+      } as unknown as TupleSchemaObject
+
+      const mockStringAST: AST = { type: ASTType.STRING, keyName: '' }
+      const ctx = createMockCtx('closedTuple')
+      ctx.next = vi.fn().mockReturnValue(mockStringAST)
+
+      const result = tupleTypeParser(schema, ctx)
+
+      expect(result.type).toBe(ASTType.TUPLE)
+      expect(result.params).toHaveLength(1)
+      expect(result.spreadParam?.type).toBe(ASTType.NEVER)
+    })
+
+    it('should set spreadParam from single items schema (JSON Schema 2020-12 additional items)', () => {
+      const schema = {
+        type: 'array',
+        prefixItems: [{ type: 'string' }],
+        items: { type: 'number' },
+      } as unknown as TupleSchemaObject
+
+      const mockStringAST: AST = { type: ASTType.STRING, keyName: '' }
+      const mockNumberAST: AST = { type: ASTType.NUMBER, keyName: '' }
+
+      const ctx = createMockCtx('openTuple')
+      ctx.next = vi.fn()
+        .mockReturnValueOnce(mockStringAST)
+        .mockReturnValueOnce(mockNumberAST)
+
+      const result = tupleTypeParser(schema, ctx)
+
+      expect(result.type).toBe(ASTType.TUPLE)
+      expect(result.params).toHaveLength(1)
+      expect(result.spreadParam?.type).toBe(ASTType.NUMBER)
+      expect(ctx.next).toHaveBeenNthCalledWith(2, schema.items as MaybeSchemaObject, ctx.options)
     })
   })
 })

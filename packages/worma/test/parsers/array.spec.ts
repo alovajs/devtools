@@ -274,5 +274,23 @@ describe('array Type Parser', () => {
       expect(result.deepComment).toContain('[items] start')
       expect(result.deepComment).toContain('[items] end')
     })
+
+    it('should default to any when array has no items schema', () => {
+      const schema: ArraySchemaObject = {
+        type: 'array',
+        description: 'Array without items',
+      } as ArraySchemaObject
+
+      const mockItemAST: AST = { type: ASTType.ANY, keyName: '' }
+      const ctx = createMockCtx('anyArray')
+      ctx.next = vi.fn().mockReturnValue(mockItemAST)
+
+      const result = arrayTypeParser(schema, ctx)
+
+      expect(result.type).toBe(ASTType.ARRAY)
+      expect(result.keyName).toBe('anyArray')
+      expect(result.params).toBe(mockItemAST)
+      expect(ctx.next).toHaveBeenCalledWith({ type: 'any' }, ctx.options)
+    })
   })
 })
