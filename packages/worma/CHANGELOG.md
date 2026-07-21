@@ -1,5 +1,11 @@
 # worma
 
+## 0.2.2
+
+### Patch Changes
+
+- [#172](https://github.com/alovajs/devtools/pull/172) [`f5252c2`](https://github.com/alovajs/devtools/commit/f5252c2857b75bbf85eb84b1979868411a56bcb9) Thanks [@czhlin](https://github.com/czhlin)! - fix: prevent parser crash when array schema has undefined or missing items
+
 ## 0.2.1
 
 ### Patch Changes
