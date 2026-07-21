@@ -31,6 +31,31 @@ describe('tuple Forwarder', () => {
       expect(result).toBeTruthy()
     })
 
+    it('should return true for array schema with prefixItems (OpenAPI 3.1)', () => {
+      const schema = {
+        type: 'array',
+        prefixItems: [
+          { type: 'string' },
+          { type: 'number' },
+        ],
+      } as unknown as SchemaObject
+
+      const result = tupleForwarder.is(schema)
+
+      expect(result).toBeTruthy()
+    })
+
+    it('should return false for array schema with empty prefixItems array', () => {
+      const schema = {
+        type: 'array',
+        prefixItems: [],
+      } as unknown as SchemaObject
+
+      const result = tupleForwarder.is(schema)
+
+      expect(result).toBe(false)
+    })
+
     it('should return false for array schema with items as object', () => {
       const schema: SchemaObject = {
         type: 'array',

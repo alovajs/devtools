@@ -11,6 +11,9 @@ export function getCommentBySchema(schema: MaybeSchemaObject, options: {
   type: CommentType
 }) {
   const commenter = CommentHelper.load(options)
+  if (!schema) {
+    return commenter.end()
+  }
   if (!isReferenceObject(schema) && schema.title) {
     commenter.add('[title]', schema.title)
   }
@@ -29,7 +32,7 @@ export function initAST(schema: MaybeSchemaObject, ctx: ParserCtx) {
       type: ctx.options.commentType,
     }),
     keyName: ctx.keyName,
-    deprecated: isReferenceObject(schema) ? false : schema.deprecated,
+    deprecated: schema && !isReferenceObject(schema) ? schema.deprecated : false,
   }
   ctx.keyName = ''
   return result

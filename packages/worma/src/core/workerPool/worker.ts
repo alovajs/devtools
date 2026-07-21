@@ -81,6 +81,7 @@ parentPort?.on('message', async (batch: SchemaBatchItem[]) => {
     parentPort?.postMessage({ type: 'result', data: allResults })
   }
   catch (err) {
-    parentPort?.postMessage({ type: 'error', message: (err as Error).message })
+    const error = err as Error
+    parentPort?.postMessage({ type: 'error', message: error.message })
   }
 })

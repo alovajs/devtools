@@ -18,6 +18,10 @@ export function stringTypeParser(schema: SchemaObject, init: AbstractAST) {
 }
 export function simpleTypeParser(schema: SchemaObject, ctx: ParserCtx) {
   const result: AbstractAST = initAST(schema, ctx)
+  if (!schema) {
+    result.type = ASTType.NULL
+    return result
+  }
   switch (schema.type) {
     case 'boolean':
       result.type = ASTType.BOOLEAN
