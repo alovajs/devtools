@@ -16,9 +16,13 @@ export function tupleTypeGenerator(ast: TTuple, ctx: GeneratorCtx) {
   const spreadParam = ast.spreadParam ?? {
     type: ASTType.ANY,
   }
+  // 封闭元组（禁止额外项）时不展开剩余项
+  const isClosed = spreadParam.type === ASTType.NEVER
 
-  while (params.length < minItems) {
-    params.push(spreadParam)
+  if (!isClosed) {
+    while (params.length < minItems) {
+      params.push(spreadParam)
+    }
   }
   const lines: string[] = [`[`]
   params.forEach((param, idx, arr) => {
@@ -27,12 +31,12 @@ export function tupleTypeGenerator(ast: TTuple, ctx: GeneratorCtx) {
     const endText = idx === arr.length - 1 ? '' : ',';
     `${value}${endText}`.split('\n').forEach(line => lines.push(` ${line}`))
   })
-  if (maxItems < minItems) {
+  if (maxItems < minItems && !isClosed) {
     ctx.pathKey = spreadParam.keyName
     lines.push(`,\n...Array<${getValue(ctx.next(spreadParam, ctx.options), ctx.options)}>`)
   }
   lines.push(`]`)
-  if (maxItems > minItems) {
+  if (maxItems > minItems && !isClosed) {
     const nextParams = [...params]
     for (let i = 0; i < maxItems - minItems; i += 1) {
       nextParams.push(spreadParam)

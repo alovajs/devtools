@@ -6,7 +6,10 @@ import { initAST } from './utils'
 
 export function arrayTypeParser(schema: ArraySchemaObject, ctx: ParserCtx) {
   ctx.pathKey = '[]'
-  const itemsAst = ctx.next(schema.items, ctx.options)
+  const itemsAst = ctx.next(
+    schema.items || ({ type: 'any' } as any),
+    ctx.options,
+  )
   const result: TArray = {
     ...initAST(schema, ctx),
     type: ASTType.ARRAY,
