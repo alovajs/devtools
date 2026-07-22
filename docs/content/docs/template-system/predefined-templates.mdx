@@ -10,8 +10,7 @@ description: 使用内置的五套预定义模板
 
 ```javascript
 import { alova } from 'wormajs/plugin';
-
-plugins: [alova({ framework: 'vue' })]
+plugins: [alova()];
 ```
 
 **模板结构：**
@@ -31,6 +30,13 @@ plugins: [alova({ framework: 'vue' })]
   </Folder>
 </Files>
 
+<Callout type="idea" title="重新生成时不会被覆盖的文件">
+- `index.ts`（根目录入口）
+- `services/index.ts`（服务导出入口）
+
+因此你可以自由修改这些文件，在 index 中调整导出方式、注入中间件或自定义请求实例配置，重新生成时不会丢失你的改动。
+</Callout>
+
 **使用方法：**
 
 ```typescript
@@ -40,6 +46,27 @@ const users = await getUserList({ params: { page: 1, size: 10 } });
 ```
 
 支持 `data`（请求体）、`params`（查询参数）、`pathParams`（路径参数），以及 alova method 的配置参数（如 `cacheFor`、`transform` 等）。
+
+**传递 alova 原生配置参数：**
+
+```typescript
+// cacheFor - 设置缓存时间（毫秒）
+await getUserList({
+  params: { page: 1, size: 10 },
+  cacheFor: 60_000       // alova method 原生参数：缓存 60 秒
+});
+
+// transform - 响应数据转换
+await getPetById({
+  pathParams: { petId: 123 },
+  transform: (data) => data.name  // alova method 原生参数：只取 name 字段
+});
+
+// shareRequest - 共享请求
+await getUserList({
+  shareRequest: false     // alova method 原生参数：禁止请求共享
+});
+```
 
 ## alovaGlobals
 
@@ -80,6 +107,12 @@ interface TemplateAlovaGlobalsConfig {
   </Folder>
 </Files>
 
+<Callout type="idea" title="重新生成时不会被覆盖的文件">
+- `index.ts`
+
+因此你可以自由修改这个文件，自定义全局配置或初始化逻辑，重新生成时不会丢失你的改动。
+</Callout>
+
 **使用方法：**
 
 ```typescript
@@ -91,6 +124,22 @@ const user = await Apis.user.getUserById({ pathParams: { userId: 123 } });
 ```
 
 支持 `data`、`params`、`pathParams`，以及 alova method 的配置参数。
+
+**传递 alova 原生配置参数：**
+
+```typescript
+// cacheFor - 设置缓存时间（毫秒）
+await Apis.user.getUserList({
+  params: { page: 1, size: 10 },
+  cacheFor: 60_000       // alova method 原生参数：缓存 60 秒
+});
+
+// transform - 响应数据转换
+await Apis.pet.getPetById({
+  pathParams: { petId: 123 },
+  transform: (data) => data.name  // alova method 原生参数：只取 name 字段
+});
+```
 
 ## axios
 
@@ -117,6 +166,13 @@ plugins: [axios()];
   </Folder>
 </Files>
 
+<Callout type="idea" title="重新生成时不会被覆盖的文件">
+- `index.ts`（根目录入口）
+- `services/index.ts`（服务导出入口）
+
+因此你可以自由修改这些文件，在 index 中调整导出方式、注入中间件或自定义请求实例配置，重新生成时不会丢失你的改动。
+</Callout>
+
 **使用方法：**
 
 ```typescript
@@ -125,7 +181,34 @@ import { createUser } from './api/axios/services/user';
 const newUser = await createUser({ data: { name: 'Alice', email: 'alice@example.com' } });
 ```
 
-支持 `data`、`params`、`pathParams`，以及 axios 请求配置参数（如 `timeout`、`headers` 等）。
+支持 `data`（请求体，对应 axios 的 `data`）、`params`（查询参数，对应 axios 的 `params`）、`pathParams`（路径参数），以及 axios 请求配置参数（如 `timeout`、`headers` 等）。
+
+**传递 axios 原生配置参数：**
+
+```typescript
+// responseType - 指定响应数据类型
+await getUserList({
+  params: { page: 1, size: 10 },
+  responseType: 'json'    // axios 原生参数
+});
+
+// withCredentials - 跨域请求是否携带 cookie
+await createUser({
+  data: { name: 'Alice' },
+  withCredentials: true    // axios 原生参数
+});
+
+// timeout - 请求超时时间（毫秒）
+await getUserById({
+  pathParams: { userId: 123 },
+  timeout: 5000            // axios 原生参数：5 秒超时
+});
+
+// 自定义 headers
+await getInventory({
+  headers: { 'X-Custom-Header': 'value' }  // axios 原生参数
+});
+```
 
 ## fetch
 
@@ -153,6 +236,13 @@ plugins: [fetch()];
   </Folder>
 </Files>
 
+<Callout type="idea" title="重新生成时不会被覆盖的文件">
+- `index.ts`（根目录入口）
+- `services/index.ts`（服务导出入口）
+
+因此你可以自由修改这些文件，在 index 中调整导出方式、注入中间件或自定义请求实例配置，重新生成时不会丢失你的改动。
+</Callout>
+
 **使用方法：**
 
 ```typescript
@@ -161,7 +251,35 @@ import { getUserList } from './api/fetch/services/user';
 const users = await getUserList({ params: { page: 1, size: 10 } });
 ```
 
-支持 `data`、`params`、`pathParams`，以及 fetch 请求配置参数。
+支持 `body`（请求体，对应原生 fetch 的 `body`）、`params`（查询参数）、`pathParams`（路径参数），以及 fetch 请求配置参数（如 `headers`、`signal` 等）。
+
+**传递 fetch 原生配置参数：**
+
+```typescript
+// signal - 请求取消（AbortController）
+const controller = new AbortController();
+await getUserList({
+  params: { page: 1, size: 10 },
+  signal: controller.signal   // fetch 原生参数：可取消请求
+});
+
+// credentials - 控制 cookie 携带策略
+await createUser({
+  body: { name: 'Alice' },
+  credentials: 'include'      // fetch 原生参数：携带 cookie
+});
+
+// 自定义 headers
+await getInventory({
+  headers: { 'X-API-Key': 'xxx' }  // fetch 原生参数
+});
+
+// mode - 请求模式
+await getUserList({
+  params: { status: 'active' },
+  mode: 'cors'                 // fetch 原生参数
+});
+```
 
 ## ky
 
@@ -188,6 +306,13 @@ plugins: [ky()];
   </Folder>
 </Files>
 
+<Callout type="idea" title="重新生成时不会被覆盖的文件">
+- `index.ts`（根目录入口）
+- `services/index.ts`（服务导出入口）
+
+因此你可以自由修改这些文件，在 index 中调整导出方式、注入中间件或自定义请求实例配置，重新生成时不会丢失你的改动。
+</Callout>
+
 **使用方法：**
 
 ```typescript
@@ -196,4 +321,34 @@ import { getUserById } from './api/ky/services/user';
 const user = await getUserById({ pathParams: { userId: 123 } });
 ```
 
-支持 `data`、`params`、`pathParams`，以及 ky 请求配置参数。
+支持 `json`（请求体，对应 ky 的 `json` 参数）、`searchParams`（查询参数，对应 ky 的 `searchParams`）、`pathParams`（路径参数），以及 ky 请求配置参数（如 `headers`、`timeout`、`retry` 等）。
+
+**传递 ky 原生配置参数：**
+
+```typescript
+// timeout - 请求超时（毫秒）
+await getUserList({
+  searchParams: { page: 1, size: 10 },
+  timeout: 5000              // ky 原生参数：5 秒超时
+});
+
+// retry - 失败重试次数
+await createUser({
+  json: { name: 'Alice' },
+  retry: 3                   // ky 原生参数：最多重试 3 次
+});
+
+// hooks - 请求生命周期钩子
+await uploadFile({
+  body: file,
+  hooks: {
+    beforeRequest: [(r) => console.log('请求前:', r)],
+    afterResponse: [(r) => console.log('响应后:', r)]
+  }                          // ky 原生参数
+});
+
+// headers - 自定义请求头
+await getInventory({
+  headers: { 'Authorization': 'Bearer token' }  // ky 原生参数
+});
+```
