@@ -1,9 +1,12 @@
 {{> comment}}
-import { setMethodDefaultConfig } from '../helper';
 {{#each tagedApis}}
-import * as {{{tagName}}} from './{{{tagName}}}';
+import type * as {{{tagName}}} from './{{{tagName}}}';
 {{/each}}
 
+type MethodDefaultConfig<TagedMap extends Record<string, (config: any) => any>> = {
+  [K in keyof TagedMap]?: Partial<Parameters<TagedMap[K]>[0]>;
+};
+
 {{#each tagedApis}}
-export const {{{tagName}}}DefaultConfig = setMethodDefaultConfig({{{tagName}}}, {});
+export const {{{tagName}}}DefaultConfig: MethodDefaultConfig<typeof {{{tagName}}}> = {};
 {{/each}}

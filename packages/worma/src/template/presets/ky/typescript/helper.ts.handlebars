@@ -23,8 +23,3 @@ export function buildPayload(url: string, defaultConfig: Record<string, any>, ap
   }
   return { url: resolvedUrl, mergedConfig };
 }
-
-export const setDefaultConfig = <
-  ApiMap extends Record<string, (config: any) => any>,
-  ConfigMap extends { [K in keyof ApiMap]?: Partial<Parameters<ApiMap[K]>[0]> },
->(_: ApiMap, configMap: ConfigMap) => configMap;

@@ -2,8 +2,3 @@
 export function buildPayload(url: string, defaultConfig: Record<string, any>, apiName: string, config: any) {
 {{> build-payload-body}}
 }
-
-export const setMethodDefaultConfig = <
-  TagedMap extends Record<string, (config: any) => any>,
-  ConfigMap extends { [K in keyof TagedMap]?: Partial<Parameters<TagedMap[K]>[0]> },
->(_: TagedMap, configMap: ConfigMap) => configMap;
