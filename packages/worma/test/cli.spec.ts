@@ -52,18 +52,22 @@ function resetMocks() {
   // Re-apply default implementations
   vi.mocked(readConfig).mockImplementation(() => Promise.resolve(generatingConfig) as any)
   vi.mocked(resolveWorkspaces).mockImplementation(() => Promise.resolve(['./packages/test-pkg-1', './packages/test-pkg-2']) as any)
-  mockMultiGenRenderer.mockImplementation(() => ({
-    setActive: vi.fn(),
-    setProgress: vi.fn(),
-    setDone: vi.fn(),
-    setFailed: vi.fn(),
-    setSkipped: vi.fn(),
-    finalize: vi.fn(),
-  }))
-  mockMultiProjRenderer.mockImplementation(() => ({
-    onProjectEvent: vi.fn(),
-    finalize: vi.fn(),
-  }))
+  mockMultiGenRenderer.mockImplementation(() => {
+    return {
+      setActive: vi.fn(),
+      setProgress: vi.fn(),
+      setDone: vi.fn(),
+      setFailed: vi.fn(),
+      setSkipped: vi.fn(),
+      finalize: vi.fn(),
+    }
+  })
+  mockMultiProjRenderer.mockImplementation(() => {
+    return {
+      onProjectEvent: vi.fn(),
+      finalize: vi.fn(),
+    }
+  })
 }
 
 describe('cli', () => {
