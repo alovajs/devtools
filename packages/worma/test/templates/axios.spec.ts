@@ -27,6 +27,12 @@ describe('axios template (per-tag, tree-shaking)', () => {
     const serviceFiles = vol.readdirSync(servicesDir) as string[]
     const tagFiles = serviceFiles.filter(f => f.endsWith('.ts') && f !== 'index.ts')
     expect(tagFiles.length).toBeGreaterThan(0)
+    const content = vol.readFileSync(resolve(servicesDir, 'index.ts'), 'utf-8') as string
+    expect(content).toMatch(/import type \* as \w+ from/)
+    expect(content).not.toMatch(/^import \* as /m)
+    expect(content).toMatch(/DefaultConfig: MethodDefaultConfig<typeof \w+> = \{\}/)
+    expect(content).not.toContain('satisfies')
+    expect(content).not.toContain('setDefaultConfig')
   })
 
   it('should generate axiosInstance in index.ts', async () => {
