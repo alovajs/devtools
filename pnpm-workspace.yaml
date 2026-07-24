@@ -6,8 +6,11 @@ packages:
   - docs
 
 # 保留 monorepo 内 examples/benchmark 对本地 wormajs 的联调能力：
-# 完整仓库 install 时把 wormajs 解析到本地 packages/worma。
-# 独立克隆子目录时不带本文件，会自动回落到 npm 上发布的 wormajs。
+# examples/benchmark 的 package.json 里 wormajs 声明为 "latest"，
+# 以便用户通过 codesandbox/stackblitz 直接 fork 子目录运行时拉取已发布版本。
+# 完整仓库 install 时，根 package.json 的 resolutions.wormajs=workspace:* 会强制
+# 把 wormajs 解析到本地 packages/worma，保证联调。
+# 独立克隆子目录时不带本文件与根 package.json，override 失效，会回落到 npm 上发布的 wormajs。
 catalog:
   '@gsap/react': ^2.1.2
   '@shikijs/twoslash': ^4.3.0

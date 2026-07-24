@@ -76,7 +76,8 @@
   "resolutions": {
     "unplugin": "catalog:build",
     "vite": "catalog:build",
-    "vite-plugin-inspect": "catalog:build"
+    "vite-plugin-inspect": "catalog:build",
+    "wormajs": "workspace:*"
   },
   "lint-staged": {
     "*": "npm run lintf"

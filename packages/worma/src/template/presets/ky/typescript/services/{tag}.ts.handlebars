@@ -17,7 +17,7 @@ type {{{name}}}ExtraConfig = Options & {
   {{/if}}
 };
 {{> api-jsdoc}}
-export function {{{name}}}(config: {{{name}}}ExtraConfig): Promise<{{{name}}}Response> {
+export function {{{name}}}(config{{#or pathParameters queryParameters requestBody }}{{else}}?{{/or}}: {{{name}}}ExtraConfig): Promise<{{{name}}}Response> {
   const { url, mergedConfig } = buildPayload('{{{path}}}', {{{tag}}}DefaultConfig, {{{name}}}.name, config);
   const resolvedPath = url.replace(/^\//, '');
   return kyInstance(resolvedPath, {

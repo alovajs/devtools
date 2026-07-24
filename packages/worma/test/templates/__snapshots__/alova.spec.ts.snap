@@ -3512,7 +3512,7 @@ interface getInventoryExtraConfig {}
  *
  */
 export function getInventory<Config extends Alova2MethodConfig<Record<string, number>> & getInventoryExtraConfig>(
-  config: Config
+  config?: Config
 ): Alova2Method<ExtractResponded<Config, 'getInventory', Record<string, number>>> {
   const { url, data, mergedConfig } = buildPayload('/store/inventory', storeDefaultConfig, getInventory.name, config);
   return alovaInstance.Request<ExtractResponded<Config, 'getInventory', Record<string, number>>>({
@@ -4066,7 +4066,7 @@ interface logoutUserExtraConfig {}
  *
  */
 export function logoutUser<Config extends Alova2MethodConfig<null> & logoutUserExtraConfig>(
-  config: Config
+  config?: Config
 ): Alova2Method<ExtractResponded<Config, 'logoutUser', null>> {
   const { url, data, mergedConfig } = buildPayload('/user/logout', userDefaultConfig, logoutUser.name, config);
   return alovaInstance.Request<ExtractResponded<Config, 'logoutUser', null>>({

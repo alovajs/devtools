@@ -366,6 +366,7 @@ overrides:
   unplugin: ^2.3.5
   vite: ^7.3.1
   vite-plugin-inspect: ^11.3.0
+  wormajs: workspace:*
 
 importers:
 
