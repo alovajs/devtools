@@ -30,6 +30,13 @@ describe('alova template', () => {
     const serviceFiles = vol.readdirSync(resolve(outputDir, 'services')) as string[]
     const tagFiles = serviceFiles.filter(f => f.endsWith('.ts') && !f.endsWith('.d.ts') && f !== 'index.ts')
     expect(tagFiles.length).toBeGreaterThan(0)
+    const content = vol.readFileSync(resolve(outputDir, 'services/index.ts'), 'utf-8') as string
+    const helperContent = vol.readFileSync(resolve(outputDir, 'helper.ts'), 'utf-8') as string
+    expect(content).toContain(`import { setMethodDefaultConfig } from '../helper'`)
+    expect(content).not.toMatch(/^import (?:type )?\* as /m)
+    expect(content).toMatch(/DefaultConfig = setMethodDefaultConfig\('\w+', \{\}\)/)
+    expect(helperContent).toMatch(/\w+: typeof import\('\.\/services\/\w+'\)/)
+    expect(helperContent).toContain('ConfigMap = {')
   })
 
   it('should use value import for alovaInstance (not import type)', async () => {

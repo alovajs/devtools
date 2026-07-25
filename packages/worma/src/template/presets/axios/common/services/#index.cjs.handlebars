@@ -1,11 +1,8 @@
 {{> comment}}
 const { setDefaultConfig } = require('../helper.cjs');
-{{#each tagedApis}}
-const {{{tagName}}} = require('./{{{tagName}}}.cjs');
-{{/each}}
 
 {{#each tagedApis}}
-const {{{tagName}}}DefaultConfig = setDefaultConfig({{{tagName}}}, {});
+const {{{tagName}}}DefaultConfig = setDefaultConfig('{{{tagName}}}', {});
 {{/each}}
 
 {{#each tagedApis}}
