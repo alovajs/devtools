@@ -5,6 +5,7 @@
     "baseUrl": ".",
     "module": "commonjs",
     "moduleResolution": "node",
+    "ignoreDeprecations": "6.0",
     "strict": true,
     "outDir": "../e2e-out",
     "esModuleInterop": true,
