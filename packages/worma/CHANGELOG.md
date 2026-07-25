@@ -1,5 +1,11 @@
 # worma
 
+## 0.2.3
+
+### Patch Changes
+
+- [#174](https://github.com/alovajs/devtools/pull/174) [`02d78cd`](https://github.com/alovajs/devtools/commit/02d78cd10aacd0c04a51e7e0a92de9b0b8b802f8) Thanks [@LittleTurtle2333](https://github.com/LittleTurtle2333)! - fix: generate type-only service imports to preserve tree shaking
+
 ## 0.2.2
 
 ### Patch Changes
