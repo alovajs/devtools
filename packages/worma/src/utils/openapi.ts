@@ -280,7 +280,7 @@ function isCircular(obj: any) {
       }
       seenObjects.add(obj)
       for (const key in obj) {
-        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        if (Object.hasOwn(obj, key)) {
           if (detect(obj[key])) {
             return true
           }
@@ -298,7 +298,7 @@ function hasBaseReferenceObject(obj: any) {
       return true
     }
     for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      if (Object.hasOwn(obj, key)) {
         if (hasBaseReferenceObject(obj[key])) {
           return true
         }
@@ -319,7 +319,7 @@ function removeBaseReference(obj: Record<string, any>, options: {
       return refObj
     }
     for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key) && hasBaseReferenceObject(obj[key])) {
+      if (Object.hasOwn(obj, key) && hasBaseReferenceObject(obj[key])) {
         obj[key] = removeBaseReference(obj[key], { openApi, map, refNameMap })
       }
     }
@@ -341,7 +341,7 @@ function removeBaseReference(obj: Record<string, any>, options: {
     }
   }
   for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key) && hasBaseReferenceObject(obj[key])) {
+    if (Object.hasOwn(obj, key) && hasBaseReferenceObject(obj[key])) {
       obj[key] = removeBaseReference(obj[key], { openApi, map, refNameMap })
     }
   }
@@ -387,7 +387,7 @@ function unCircular(
     seen.set(obj, { $ref: nextPath })
     map.push([nextPath, obj])
     for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      if (Object.hasOwn(obj, key)) {
         obj[key] = unCircular(obj[key], { openApi, map, objPath: `${objPath}.${key}`, seen, refNameMap })
       }
     }
@@ -398,7 +398,7 @@ function unCircular(
   }
   map.push([$ref, obj])
   for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+    if (Object.hasOwn(obj, key)) {
       obj[key] = unCircular(obj[key], { openApi, map, objPath: `${objPath}.${key}`, seen, refNameMap })
     }
   }

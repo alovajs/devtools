@@ -15,6 +15,7 @@
       ]
     },
     "resolveJsonModule": false,
+    "ignoreDeprecations": "6.0",
     "types": [
       "vitest/globals"
     ],
@@ -31,6 +32,8 @@
     "vitest.config.mts"
   ],
   "exclude": [
-    "test/output/**/*"
+    "test/output/**/*",
+    "test/debug_output*/**",
+    "test/mock_output/**"
   ]
 }

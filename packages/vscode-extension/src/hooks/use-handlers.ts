@@ -1,5 +1,5 @@
-import type { DataType, HandlersType, MessageType } from '#/handlers'
 import type { MessageReceiver, MessageSender } from '@jsonrpc-rx/client'
+import type { DataType, HandlersType, MessageType } from '#/handlers'
 import { JsonrpcClient, wrap } from '@jsonrpc-rx/client'
 import { getVscodeApi } from '~/utils/vscode'
 

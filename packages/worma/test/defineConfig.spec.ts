@@ -37,7 +37,7 @@ describe('defineConfig', () => {
     const result = await configPromise
     expect(result.generator[0].input).toBe('./openapi.json')
     expect(result.generator[0].output).toBe('./src/api')
-    expect(typeof result.generator[0].plugins[0].getTemplate).toBe('function')
+    expect(typeof result.generator[0].plugins![0].getTemplate).toBe('function')
   })
 })
 
@@ -65,7 +65,7 @@ describe('configHelper.readUserConfig', () => {
     const result = await ConfigHelper.readUserConfig(configFn)
     expect(result.generator[0].input).toBe('./openapi.json')
     expect(result.generator[0].output).toBe('./src/api')
-    expect(typeof result.generator[0].plugins[0].getTemplate).toBe('function')
+    expect(typeof result.generator[0].plugins![0].getTemplate).toBe('function')
   })
 
   it('should return the config object when passed a promise', async () => {
@@ -79,7 +79,7 @@ describe('configHelper.readUserConfig', () => {
     const result = await ConfigHelper.readUserConfig(configPromise)
     expect(result.generator[0].input).toBe('./openapi.json')
     expect(result.generator[0].output).toBe('./src/api')
-    expect(typeof result.generator[0].plugins[0].getTemplate).toBe('function')
+    expect(typeof result.generator[0].plugins![0].getTemplate).toBe('function')
   })
 
   it('should handle async functions correctly', async () => {
@@ -93,6 +93,6 @@ describe('configHelper.readUserConfig', () => {
     const result = await ConfigHelper.readUserConfig(asyncConfigFn)
     expect(result.generator[0].input).toBe('./openapi.json')
     expect(result.generator[0].output).toBe('./src/api')
-    expect(typeof result.generator[0].plugins[0].getTemplate).toBe('function')
+    expect(typeof result.generator[0].plugins![0].getTemplate).toBe('function')
   })
 })

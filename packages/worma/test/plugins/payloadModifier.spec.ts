@@ -829,47 +829,47 @@ describe('payloadModifier plugin tests', () => {
     }
 
     it('throws on invalid primitive type', () => {
-      const handleApi = getHandleApi([{ scope: 'params', match: 'age', handler: () => 'int64' }])
+      const handleApi = getHandleApi([{ scope: 'params', match: 'age', handler: () => 'int64' as any }])
       expect(() => handleApi(api())).toThrow(/Invalid schema type "int64"/)
     })
 
     it('throws on invalid primitive in SchemaOptional.type', () => {
-      const handleApi = getHandleApi([{ scope: 'params', match: 'age', handler: () => ({ required: false, type: 'int64' }) }])
+      const handleApi = getHandleApi([{ scope: 'params', match: 'age', handler: () => ({ required: false, type: 'int64' as any }) }])
       expect(() => handleApi(api())).toThrow(/Invalid schema type "int64"/)
     })
 
     it('throws on invalid primitive in oneOf', () => {
-      const handleApi = getHandleApi([{ scope: 'params', match: 'age', handler: () => ({ oneOf: ['int64', 'string'] }) }])
+      const handleApi = getHandleApi([{ scope: 'params', match: 'age', handler: () => ({ oneOf: ['int64' as any, 'string'] }) }])
       expect(() => handleApi(api())).toThrow(/Invalid schema type "int64"/)
     })
 
     it('throws on invalid primitive in anyOf', () => {
-      const handleApi = getHandleApi([{ scope: 'params', match: 'age', handler: () => ({ anyOf: ['int64', 'string'] }) }])
+      const handleApi = getHandleApi([{ scope: 'params', match: 'age', handler: () => ({ anyOf: ['int64' as any, 'string'] }) }])
       expect(() => handleApi(api())).toThrow(/Invalid schema type "int64"/)
     })
 
     it('throws on invalid primitive in allOf', () => {
-      const handleApi = getHandleApi([{ scope: 'params', match: 'age', handler: () => ({ allOf: ['int64', 'string'] }) }])
+      const handleApi = getHandleApi([{ scope: 'params', match: 'age', handler: () => ({ allOf: ['int64' as any, 'string'] }) }])
       expect(() => handleApi(api())).toThrow(/Invalid schema type "int64"/)
     })
 
     it('throws on invalid type in SchemaEnum', () => {
-      const handleApi = getHandleApi([{ scope: 'params', match: 'age', handler: () => ({ enum: ['a', 'b'], type: 'int64' }) }])
+      const handleApi = getHandleApi([{ scope: 'params', match: 'age', handler: () => ({ enum: ['a', 'b'], type: 'int64' as any }) }])
       expect(() => handleApi(api())).toThrow(/Invalid schema type "int64"/)
     })
 
     it('throws on invalid primitive in array element', () => {
-      const handleApi = getHandleApi([{ scope: 'data', match: 'name', handler: () => ['int64'] }])
+      const handleApi = getHandleApi([{ scope: 'data', match: 'name', handler: () => ['int64' as any] }])
       expect(() => handleApi(api())).toThrow(/Invalid schema type "int64"/)
     })
 
     it('throws on invalid primitive in nested SchemaReference', () => {
-      const handleApi = getHandleApi([{ scope: 'data', match: 'name', handler: () => ({ key: 'int64' }) }])
+      const handleApi = getHandleApi([{ scope: 'data', match: 'name', handler: () => ({ key: 'int64' as any }) }])
       expect(() => handleApi(api())).toThrow(/Invalid schema type "int64"/)
     })
 
     it('throws on invalid primitive in deeply nested SchemaOptional', () => {
-      const handleApi = getHandleApi([{ scope: 'params', match: 'age', handler: () => ({ required: true, type: { required: false, type: 'int64' } }) }])
+      const handleApi = getHandleApi([{ scope: 'params', match: 'age', handler: () => ({ required: true, type: { required: false, type: 'int64' as any } }) }])
       expect(() => handleApi(api())).toThrow(/Invalid schema type "int64"/)
     })
 

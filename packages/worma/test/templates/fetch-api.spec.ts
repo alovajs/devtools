@@ -41,7 +41,7 @@ describe('fetch template — API call execution', () => {
       expect(result.name).toBe('bird')
     })
 
-    it('pUT with body: sends JSON, returns response', async () => {
+    it('put with body: sends JSON, returns response', async () => {
       let receivedBody: any = null
       getServer().use(
         http.put(`${BASE}/pet`, async ({ request }) => {
@@ -89,7 +89,7 @@ describe('fetch template — API call execution', () => {
       expect(result[0].name).toBe('cat')
     })
 
-    it('pUT with body: returns response', async () => {
+    it('put with body: returns response', async () => {
       let receivedBody: any = null
       getServer().use(
         http.put(`${BASE}/pet`, async ({ request }) => {
@@ -137,7 +137,7 @@ describe('fetch template — API call execution', () => {
       expect(result[0].name).toBe('fish')
     })
 
-    it('pUT with body: returns response', async () => {
+    it('put with body: returns response', async () => {
       let receivedBody: any = null
       getServer().use(
         http.put(`${BASE}/pet`, async ({ request }) => {

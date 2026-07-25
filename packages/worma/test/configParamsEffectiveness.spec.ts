@@ -225,7 +225,7 @@ describe('serverName effectiveness (cache persistence)', () => {
       openapi: '3.0.0',
       version: '1.0.0',
       baseUrl: 'http://localhost',
-      allApis: [{ tag: 'test', method: 'GET', summary: 'test', path: '/t', pathParameters: '', queryParameters: '', name: 'test', response: 'Test', pathKey: 'test.test' }],
+      allApis: [{ tag: 'test', method: 'GET', summary: 'test', path: '/t', pathParameters: '', queryParameters: '', name: 'test', response: 'Test' }],
       tagedApis: [{ tagName: 'test', apis: [] }],
       components: [],
       type: 'typescript' as const,

@@ -25,7 +25,7 @@ export function getFileNameByPath(path: string) {
 }
 // Generate unique id
 export function uuid() {
-  let dt = new Date().getTime()
+  let dt = Date.now()
   const id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (dt + Math.random() * 16) % 16 | 0
     dt = Math.floor(dt / 16)

@@ -303,7 +303,7 @@ describe('rename plugin', () => {
   // ---- The following are unit tests calling handleApi directly, to avoid relying on file writes (memfs) ----
   function runRename(descriptor: any, config: any): any {
     const plugin = rename(config)
-    return plugin.config({ config: {} as any }).handleApi(descriptor as any)
+    return (plugin.config?.({ config: {} as any, projectPath: '', reportProgress: () => {} }) as any).handleApi(descriptor as any)
   }
 
   it('should deep-rename nested object and array-item properties (data scope)', () => {
@@ -472,7 +472,7 @@ describe('rename plugin', () => {
     const result = runRename(descriptor, {
       scope: 'name',
       // Apply a custom prefix to the function name
-      transform: (descriptor, value) => `api_${value}`,
+      transform: (descriptor: any, value: any) => `api_${value}`,
     })
 
     expect(result.operationId).toBe('api_get_all_users')
