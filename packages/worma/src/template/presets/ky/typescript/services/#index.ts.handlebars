@@ -1,12 +1,6 @@
 {{> comment}}
-{{#each tagedApis}}
-import type * as {{{tagName}}} from './{{{tagName}}}';
-{{/each}}
-
-type MethodDefaultConfig<ApiMap extends Record<string, (config: any) => any>> = {
-  [K in keyof ApiMap]?: Partial<Parameters<ApiMap[K]>[0]>;
-};
+import { setDefaultConfig } from '../helper';
 
 {{#each tagedApis}}
-export const {{{tagName}}}DefaultConfig: MethodDefaultConfig<typeof {{{tagName}}}> = {};
+export const {{{tagName}}}DefaultConfig = setDefaultConfig('{{{tagName}}}', {});
 {{/each}}

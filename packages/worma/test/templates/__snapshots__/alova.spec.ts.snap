@@ -2757,6 +2757,22 @@ export function buildPayload(url: string, defaultConfig: Record<string, any>, ap
   }
   return { url: urlReplaced, data, mergedConfig };
 }
+
+export type ServicesMap = {
+  tag: typeof import('./services/tag');
+  pet: typeof import('./services/pet');
+  store: typeof import('./services/store');
+  user: typeof import('./services/user');
+};
+
+export const setMethodDefaultConfig = <
+  T extends keyof ServicesMap,
+  TagedMap extends Record<string, (config: any) => any> = ServicesMap[T],
+  ConfigMap = { [K in keyof TagedMap]?: Partial<Parameters<TagedMap[K]>[0]> }
+>(
+  _: T,
+  configMap: ConfigMap
+) => configMap;
 "
 `;
 
@@ -2904,19 +2920,12 @@ exports[`alova template > snapshot tests > should match snapshot for typescript 
  *
  * **Do not edit the file manually.**
  */
-import type * as tag from './tag';
-import type * as pet from './pet';
-import type * as store from './store';
-import type * as user from './user';
+import { setMethodDefaultConfig } from '../helper';
 
-type MethodDefaultConfig<TagedMap extends Record<string, (config: any) => any>> = {
-  [K in keyof TagedMap]?: Partial<Parameters<TagedMap[K]>[0]>;
-};
-
-export const tagDefaultConfig: MethodDefaultConfig<typeof tag> = {};
-export const petDefaultConfig: MethodDefaultConfig<typeof pet> = {};
-export const storeDefaultConfig: MethodDefaultConfig<typeof store> = {};
-export const userDefaultConfig: MethodDefaultConfig<typeof user> = {};
+export const tagDefaultConfig = setMethodDefaultConfig('tag', {});
+export const petDefaultConfig = setMethodDefaultConfig('pet', {});
+export const storeDefaultConfig = setMethodDefaultConfig('store', {});
+export const userDefaultConfig = setMethodDefaultConfig('user', {});
 "
 `;
 

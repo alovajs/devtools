@@ -23,3 +23,15 @@ export function buildPayload(url: string, defaultConfig: Record<string, any>, ap
   }
   return { url: resolvedUrl, mergedConfig };
 }
+
+export type ServicesMap = {
+{{#each tagedApis}}
+  {{{tagName}}}: typeof import('./services/{{{tagName}}}');
+{{/each}}
+};
+
+export const setDefaultConfig = <
+  T extends keyof ServicesMap,
+  TagedMap extends Record<string, (config: any) => any> = ServicesMap[T],
+  ConfigMap = { [K in keyof TagedMap]?: Partial<Parameters<TagedMap[K]>[0]> },
+>(_: T, configMap: ConfigMap) => configMap;
