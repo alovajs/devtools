@@ -33,5 +33,8 @@ export type ServicesMap = {
 export const setDefaultConfig = <
   T extends keyof ServicesMap,
   TagedMap extends Record<string, (config: any) => any> = ServicesMap[T],
-  ConfigMap = { [K in keyof TagedMap]?: Partial<Parameters<TagedMap[K]>[0]> },
->(_: T, configMap: ConfigMap) => configMap;
+  ConfigMap = { [K in keyof TagedMap]?: Partial<Parameters<TagedMap[K]>[0]> }
+>(
+  _: T,
+  configMap: ConfigMap
+) => configMap;

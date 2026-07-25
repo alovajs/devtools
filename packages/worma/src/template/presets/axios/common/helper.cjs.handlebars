@@ -23,10 +23,19 @@ function buildPayload(url, defaultConfig, apiName, config) {
 }
 
 /**
- * @template {Record<string, (config: any) => any>} TagedMap
- * @template \{{ [K in keyof TagedMap]?: Partial<Parameters<TagedMap[K]>[0]> }} ConfigMap
- * @param {TagedMap} _ - tagged api map (unused at runtime)
- * @param {ConfigMap} configMap - default config per api name
+ * @typedef {{#raw "{{" }}{{/raw}}
+{{#each tagedApis}}
+ *  {{{tagName}}}: typeof import('./services/{{{tagName}}}.cjs')
+{{/each}}
+ * {{#raw "}}" }}{{/raw}} ServicesMap
+ */
+
+/**
+ * @template {keyof ServicesMap} T
+ * @template {Record<string, (config: any) => any>} [TagedMap = ServicesMap[T]]
+ * @template [ConfigMap = { [K in keyof TagedMap]?: Partial<Parameters<TagedMap[K]>[0]> }]
+ * @param {T} _
+ * @param {ConfigMap} configMap
  * @returns {ConfigMap}
  */
 const setDefaultConfig = (_, configMap) => configMap;

@@ -30,7 +30,7 @@ const mountApis = (Apis) => {
 {{> withConfigType-jsdoc}}
 /**
  * @typedef {{#raw "{{ " }}{{/raw}}
- *  [P in keyof typeof import('./apiDefinitions')]?: MethodConfig<
+ *  [P in keyof typeof import('./apiDefinitions.cjs')]?: MethodConfig<
  *    P extends `${infer Tag}.${infer Url}`
  *      ? Parameters<NonNullable<APISofParameters<Tag,Url>[0]>['transform']>[0]
  *      : any

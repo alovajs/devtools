@@ -1,7 +1,7 @@
 /**
  * @template T
  * @typedef {import('alova').AlovaMethodCreateConfig<
- *  typeof import('./index')['alovaInstance'] extends import('alova').Alova<infer AG>
+ *  typeof import('./index{{#if (eq type "commonjs")}}.cjs{{/if}}')['alovaInstance'] extends import('alova').Alova<infer AG>
  *   ? AG
  *   : any,
  *  any,
