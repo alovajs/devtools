@@ -11,6 +11,9 @@ out
 dist
 docs/.source/
 dist-ssr
+*.tsbuildinfo
+tsc_out.txt
+**/tsc_out.txt
 *.vsix
 .vscode-test
 .vite-ssg-dist
