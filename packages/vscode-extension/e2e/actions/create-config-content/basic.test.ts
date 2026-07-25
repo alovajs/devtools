@@ -1,4 +1,4 @@
-import { Commands, executeCommand, expect, openFile, setupTest } from '../../ctx'
+import { Commands, executeCommand, expect, openFile, setupTest } from '../../ctx.js'
 
 // The harness launches this action once per declared fixture and tells us
 // which one via `E2E_FIXTURE`. The expected config file name follows the

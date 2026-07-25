@@ -1,5 +1,5 @@
 import sinon from 'sinon'
-import { Commands, executeCommand, expect, MockWorma, setupTest } from '../../ctx'
+import { Commands, executeCommand, expect, MockWorma, setupTest } from '../../ctx.js'
 
 setupTest('create-config command', () => {
   it('invokes worma.createConfig exactly once', async () => {

@@ -1,5 +1,5 @@
 import sinon from 'sinon'
-import { Commands, executeCommand, expect, getExt, is, MockWorma, openFile, setupTest } from '../../ctx'
+import { Commands, executeCommand, expect, getExt, is, MockWorma, openFile, setupTest } from '../../ctx.js'
 
 setupTest('monorepo', () => {
   it('opens entry file', async () => {

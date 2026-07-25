@@ -4,8 +4,8 @@ import { runTests } from '@vscode/test-electron'
 import chalk from 'chalk'
 import fg from 'fast-glob'
 import fs from 'fs-extra'
-import { projectRoot, root } from './path'
-import { logger, run } from './utils'
+import { projectRoot, root } from './path.js'
+import { logger, run } from './utils.js'
 
 async function main() {
   const extensionDevelopmentPath = projectRoot

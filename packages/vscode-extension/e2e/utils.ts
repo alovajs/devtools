@@ -2,7 +2,7 @@
 import { spawn } from 'node:child_process'
 import chalk from 'chalk'
 import Pino from 'pino'
-import { projectRoot } from './path'
+import { projectRoot } from './path.js'
 
 interface RunOptons {
   cwd?: string

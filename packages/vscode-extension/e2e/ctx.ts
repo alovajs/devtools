@@ -4,10 +4,10 @@ import Chai from 'chai'
 import Snapshot from 'chai-jest-snapshot'
 import sinon from 'sinon'
 import { commands, extensions, Uri, window, workspace } from 'vscode'
-import { Meta } from './test'
+import { Meta } from './test.js'
 
 Chai.use(Snapshot)
-export * from './test'
+export * from './test.js'
 export const expect = Chai.expect
 export { is, not }
 export function timeout(ms = 1000) {
