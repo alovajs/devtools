@@ -52,7 +52,10 @@ function resetMocks() {
   // Re-apply default implementations
   vi.mocked(readConfig).mockImplementation(() => Promise.resolve(generatingConfig) as any)
   vi.mocked(resolveWorkspaces).mockImplementation(() => Promise.resolve(['./packages/test-pkg-1', './packages/test-pkg-2']) as any)
-  mockMultiGenRenderer.mockImplementation(() => {
+  // Vitest 4 requires the mock implementation to be a `function`/`class`
+  // (not an arrow) because `actions.ts` instantiates it with `new`.
+  // eslint-disable-next-line prefer-arrow-callback
+  mockMultiGenRenderer.mockImplementation(function () {
     return {
       setActive: vi.fn(),
       setProgress: vi.fn(),
@@ -62,7 +65,8 @@ function resetMocks() {
       finalize: vi.fn(),
     }
   })
-  mockMultiProjRenderer.mockImplementation(() => {
+  // eslint-disable-next-line prefer-arrow-callback
+  mockMultiProjRenderer.mockImplementation(function () {
     return {
       onProjectEvent: vi.fn(),
       finalize: vi.fn(),
