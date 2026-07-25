@@ -12,7 +12,7 @@ export default function Cta() {
     try {
       await navigator.clipboard.writeText(AGENT_PROMPT)
       setToast(true)
-      setTimeout(() => setToast(false), 2500)
+      setTimeout(setToast, 2500, false)
     }
     catch {
       // ignore clipboard errors
