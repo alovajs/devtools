@@ -18,7 +18,7 @@
     "pnpm": ">=9.1.0"
   },
   "scripts": {
-    "test": "run-s test:*",
+    "test": "run-s \"test:*\"",
     "test:e2e": "nr build && nr --filter=./packages/vscode-extension test:e2e",
     "test:unit": "vitest run --exclude '**/e2e*/**'",
     "test:unit:coverage": "vitest run --exclude '**/e2e*/**' --coverage",
