@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.2.1
+
+### Patch Changes
+
+- [#175](https://github.com/alovajs/devtools/pull/175) [`47b9962`](https://github.com/alovajs/devtools/commit/47b996219397818b01ca4f3708024c2ace188d74) Thanks [@JOU-amjs](https://github.com/JOU-amjs)! - Fix OpenAPI circular-reference detection by replacing `Object.prototype.hasOwnProperty.call` with the native `Object.hasOwn`, and stabilize unit tests. Update VS Code extension to use `Date.now()` for id generation, fix import ordering, and adjust publish script order.
+
 ## 0.2.0
 
 ### Minor Changes
