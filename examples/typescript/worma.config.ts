@@ -1,5 +1,5 @@
 import { defineConfig } from 'wormajs'
-import { aiDoc, alovaGlobals, swagger } from 'wormajs/plugin'
+import { alova, alovaGlobals, axios, fetch, ky, swagger } from 'wormajs/plugin'
 
 // ─── Worma TypeScript 示例 ──────────────────────────
 // 本文件展示了单项目中配置 5 个 generator 的方式，
@@ -10,18 +10,44 @@ import { aiDoc, alovaGlobals, swagger } from 'wormajs/plugin'
 export default defineConfig({
   generator: [
 
-    /* ───── ② alovaGlobals 全局式模板 ─────
-     *   • 所有 API 挂在全局对象 MyApis 上
-     *   • 无需 import，直接 MyApis.getPetById() 调用
-     */
+    // ① alova function template
+    //   Generates standalone API functions, each exported separately
+    {
+      output: 'src/api/alova',
+      serverName: 'Alova Functional',
+      plugins: [swagger('petstore.json'), alova()],
+    },
+
+    // ② alovaGlobals global template
+    //   Registers all APIs on a global object, usable without import
     {
       output: 'src/api/alova-globals',
       serverName: 'Alova Globals',
-      plugins: [
-        swagger('C:/Users/Administrator/Desktop/api-docs.json'),
-        alovaGlobals({ global: 'MyApis' }),
-        aiDoc(),
-      ],
+      plugins: [swagger('petstore.json'), alovaGlobals({ global: 'MyApis' })],
+    },
+
+    // ③ axios template
+    //   Based on axios instance, automatically injects axios interceptors
+    {
+      output: 'src/api/axios',
+      serverName: 'Axios',
+      plugins: [swagger('petstore.json'), axios()],
+    },
+
+    // ④ fetch template
+    //   Zero dependencies, based on native fetch, suitable for lightweight projects
+    {
+      output: 'src/api/fetch',
+      serverName: 'Fetch',
+      plugins: [swagger('petstore.json'), fetch()],
+    },
+
+    // ⑤ ky template
+    //   Based on ky request library, auto JSON parsing and error handling
+    {
+      output: 'src/api/ky',
+      serverName: 'Ky',
+      plugins: [swagger('petstore.json'), ky()],
     },
   ],
 })

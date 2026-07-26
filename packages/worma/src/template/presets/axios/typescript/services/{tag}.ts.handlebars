@@ -19,7 +19,7 @@ type {{{name}}}ExtraConfig = Omit<AxiosRequestConfig, 'data' | 'params'> & {
 {{> api-jsdoc}}
 export function {{{name}}}(config: {{{name}}}ExtraConfig): Promise<{{{name}}}Response> {
   const { url, mergedConfig } = buildPayload('{{{path}}}', {{{tag}}}DefaultConfig, {{{name}}}.name, config);
-  return axiosInstance<{{{name}}}Response>({
+  return axiosInstance<unknown, {{{name}}}Response>({
     method: '{{method}}',
     url,
     ...mergedConfig,{{#if (eq response "Blob")}}
