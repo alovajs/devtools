@@ -1,5 +1,11 @@
 # worma
 
+## 0.2.4
+
+### Patch Changes
+
+- [#177](https://github.com/alovajs/devtools/pull/177) [`923cf21`](https://github.com/alovajs/devtools/commit/923cf21a2c10fb719ab077cb2763aadd29fbb2e8) Thanks [@czhlin](https://github.com/czhlin)! - fix: add explicit unknown generic to axios service template for correct response typing
+
 ## 0.2.3
 
 ### Patch Changes
