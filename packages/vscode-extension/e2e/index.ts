@@ -91,8 +91,15 @@ async function main() {
       let fixtures: string[] = ['commonjs']
       try {
         const mod = await import(join(actionsDir, action, 'fixtures.js'))
-        const value = mod.default ?? mod
-        fixtures = Array.isArray(value) ? value : [value]
+        // Under `module: nodenext` the e2e is compiled to CommonJS, and Node's
+        // native ESM `import()` of a CJS module exposes `module.exports` as
+        // `default`, which itself carries the real `default` export. Unwrap one
+        // level so `export default X` resolves to `X` for both scalar and array
+        // fixture declarations.
+        let value: unknown = mod.default ?? mod
+        if (value && typeof value === 'object' && !Array.isArray(value) && 'default' in value)
+          value = (value as { default?: unknown }).default
+        fixtures = Array.isArray(value) ? value : [String(value)]
       }
       catch {
         fixtures = ['commonjs']
