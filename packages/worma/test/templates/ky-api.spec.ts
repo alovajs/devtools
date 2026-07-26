@@ -12,7 +12,7 @@ describe('ky template — API call execution', () => {
   })
 
   describe('typescript', () => {
-    it('gET with searchParams: params forwarded, returns data', async () => {
+    it('get with searchParams: params forwarded, returns data', async () => {
       let receivedParams: Record<string, string> = {}
       getServer().use(
         http.get(`${BASE}/pet/findByStatus`, ({ request }) => {
@@ -26,7 +26,7 @@ describe('ky template — API call execution', () => {
       expect(result).toEqual([{ id: 1, name: 'dog', status: 'available' }])
     })
 
-    it('gET with path params: substitutes {petId}', async () => {
+    it('get with path params: substitutes {petId}', async () => {
       let receivedId = ''
       getServer().use(
         http.get(`${BASE}/pet/:petId`, ({ params }) => {
@@ -40,7 +40,7 @@ describe('ky template — API call execution', () => {
       expect(result).toEqual({ id: 5, name: 'cat' })
     })
 
-    it('pUT with json body: sends and returns response', async () => {
+    it('put with json body: sends and returns response', async () => {
       let receivedBody: any = null
       getServer().use(
         http.put(`${BASE}/pet`, async ({ request }) => {
@@ -74,7 +74,7 @@ describe('ky template — API call execution', () => {
   })
 
   describe('module', () => {
-    it('gET with searchParams: returns data', async () => {
+    it('get with searchParams: returns data', async () => {
       let receivedParams: Record<string, string> = {}
       getServer().use(
         http.get(`${BASE}/pet/findByStatus`, ({ request }) => {
@@ -88,7 +88,7 @@ describe('ky template — API call execution', () => {
       expect(result).toEqual([{ id: 2, name: 'bird', status: 'sold' }])
     })
 
-    it('pUT with json body: returns response', async () => {
+    it('put with json body: returns response', async () => {
       let receivedBody: any = null
       getServer().use(
         http.put(`${BASE}/pet`, async ({ request }) => {

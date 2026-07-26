@@ -21,7 +21,7 @@ describe('plugins/importType', () => {
     })
 
     const cfg: any = { externalTypes: ['Existing'] }
-    const returned = plugin.config?.({ config: cfg, projectPath: '' })
+    const returned = plugin.config?.({ config: cfg, projectPath: '', reportProgress: () => {} })
 
     expect(returned).toBe(cfg)
     expect(cfg.externalTypes).toEqual([
@@ -33,7 +33,7 @@ describe('plugins/importType', () => {
     ])
 
     // Calling config twice should not duplicate
-    plugin.config?.({ config: cfg, projectPath: '' })
+    plugin.config?.({ config: cfg, projectPath: '', reportProgress: () => {} })
     expect(cfg.externalTypes).toEqual([
       'Existing',
       'Apis',

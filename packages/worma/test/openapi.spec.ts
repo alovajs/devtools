@@ -297,7 +297,9 @@ describe('generate with OpenAPI file', () => {
     )
   })
 
-  it.skip('should auto detect generating module codes if not set `type`', async () => {
+  it.skip('should auto detect generating module codes if not set `type`', {
+    timeout: 10 * 1000,
+  }, async () => {
     // default type: auto
     // generate ts modules
     const outputDir = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`)
@@ -369,8 +371,6 @@ describe('generate with OpenAPI file', () => {
     )
 
     unlinkSync(tempPkgFile)
-  }, {
-    timeout: 10 * 1000,
   })
 
   it.skip('should generate corresponding module codes dependent to `type`', async () => {

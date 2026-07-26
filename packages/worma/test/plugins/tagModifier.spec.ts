@@ -25,7 +25,7 @@ describe('tagModifier plugin tests', () => {
   function getHandleApi(handler: ModifierHandler) {
     const plugin = tagModifier(handler)
     expect(plugin.name).toBe(PluginName.TAG_MODIFIER)
-    const configured = plugin.config!({ config: {} as any })
+    const configured = plugin.config!({ config: {} as any, projectPath: '', reportProgress: () => {} }) as any
     return configured.handleApi as (api: ApiDescriptor) => ApiDescriptor | null
   }
 

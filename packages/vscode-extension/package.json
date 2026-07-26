@@ -177,7 +177,7 @@
     "lint": "eslint .",
     "lintf": "eslint . --fix",
     "vscode:prepublish": "nr build",
-    "publish": "vsce publish --no-dependencies && ovsx publish --no-dependencies",
+    "publish": "ovsx publish --no-dependencies && vsce publish --no-dependencies",
     "pack": "vsce package --no-dependencies",
     "pack:pre": "vsce package --no-dependencies --pre-release",
     "test": "vitest",
@@ -186,8 +186,8 @@
     "test:unit": "vitest",
     "typecheck": "vue-tsc --noEmit",
     "sizecheck": "npx vite-bundle-visualizer",
-    "release:pre": "vsce publish --no-dependencies --pre-release && ovsx publish --no-dependencies --pre-release",
-    "release": "vsce publish --no-dependencies && ovsx publish --no-dependencies"
+    "release:pre": "ovsx publish --no-dependencies --pre-release && vsce publish --no-dependencies --pre-release",
+    "release": "ovsx publish --no-dependencies && vsce publish --no-dependencies"
   },
   "dependencies": {
     "@unhead/vue": "catalog:frontend",

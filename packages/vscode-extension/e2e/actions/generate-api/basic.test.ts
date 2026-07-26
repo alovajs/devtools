@@ -1,5 +1,5 @@
 import sinon from 'sinon'
-import { Commands, executeCommand, expect, MockWorma, setupTest } from '../../ctx'
+import { Commands, executeCommand, expect, MockWorma, setupTest } from '../../ctx.js'
 
 setupTest('generate-api command', () => {
   it('runs the generator through the refresh action', async () => {

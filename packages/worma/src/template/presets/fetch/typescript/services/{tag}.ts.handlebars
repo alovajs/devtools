@@ -16,7 +16,7 @@ type {{{name}}}ExtraConfig = Omit<RequestInit, 'body'> & {
   {{/if}}
 };
 {{> api-jsdoc}}
-export async function {{{name}}}(config: {{{name}}}ExtraConfig): Promise<{{{name}}}Response> {
+export async function {{{name}}}(config{{#or pathParameters queryParameters requestBody }}{{else}}?{{/or}}: {{{name}}}ExtraConfig): Promise<{{{name}}}Response> {
   const { url, mergedConfig } = buildPayload('{{{path}}}', {{{tag}}}DefaultConfig, {{{name}}}.name, config);
   return fetchClient.request(url, { method: '{{method}}', ...mergedConfig{{#if (eq response "Blob")}}, blob: true{{/if}} }) as Promise<{{{name}}}Response>;
 }

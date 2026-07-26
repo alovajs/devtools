@@ -1,10 +1,9 @@
+import type { YapiOptions } from '@/plugins/presets/platform'
 import type { GeneratorConfig } from '@/type'
 import { describe, expect, it } from 'vitest'
 import { alovaGlobals } from '@/plugins'
 import { fastapi, knife4j, swagger, yapi } from '@/plugins/presets/platform'
 
-// eslint-disable-next-line unused-imports/no-unused-vars
-interface Req { config: GeneratorConfig, projectPath: string, reportProgress: () => void }
 function noop() { }
 
 function makeConfig(overrides?: Partial<GeneratorConfig>): GeneratorConfig {
@@ -123,14 +122,14 @@ describe('platform preset plugins - config', () => {
     })
 
     it('should throw when url is missing', async () => {
-      const plugin = yapi({ pid: 123, cookie: 'x' })
+      const plugin = yapi({ pid: 123, cookie: 'x' } as YapiOptions)
       await expect(
         plugin.config!({ config: makeConfig(), projectPath: '', reportProgress: noop }),
       ).rejects.toThrow(/url/)
     })
 
     it('should throw when pid is missing', async () => {
-      const plugin = yapi({ url: yapiBase, cookie: 'x' })
+      const plugin = yapi({ url: yapiBase, cookie: 'x' } as YapiOptions)
       await expect(
         plugin.config!({ config: makeConfig(), projectPath: '', reportProgress: noop }),
       ).rejects.toThrow(/pid/)

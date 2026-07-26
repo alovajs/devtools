@@ -14,11 +14,11 @@
     "url": "https://github.com/alovajs/devtools/issues"
   },
   "engines": {
-    "node": ">=20.19.0",
+    "node": ">=22.0.0",
     "pnpm": ">=9.1.0"
   },
   "scripts": {
-    "test": "run-s test:*",
+    "test": "run-s \"test:*\"",
     "test:e2e": "nr build && nr --filter=./packages/vscode-extension test:e2e",
     "test:unit": "vitest run --exclude '**/e2e*/**'",
     "test:unit:coverage": "vitest run --exclude '**/e2e*/**' --coverage",
@@ -33,7 +33,7 @@
     "changeset:beta": "changeset pre enter beta",
     "changeset:pre.exit": "changeset pre exit",
     "changeset:version": "tsx scripts/version.ts",
-    "build": "nr --filter=./packages/* build",
+    "build": "nr --filter=\"./packages/*\" build",
     "release": "tsx scripts/release.ts"
   },
   "devDependencies": {
@@ -76,7 +76,8 @@
   "resolutions": {
     "unplugin": "catalog:build",
     "vite": "catalog:build",
-    "vite-plugin-inspect": "catalog:build"
+    "vite-plugin-inspect": "catalog:build",
+    "wormajs": "workspace:*"
   },
   "lint-staged": {
     "*": "npm run lintf"

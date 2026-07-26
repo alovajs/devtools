@@ -1,1 +1,1 @@
-export declare function {{{name}}}(config: {{{name}}}ExtraConfig): Promise<{{{name}}}Response>;
+export declare function {{{name}}}(config{{#or pathParameters queryParameters requestBody }}{{else}}?{{/or}}: {{{name}}}ExtraConfig): Promise<{{{name}}}Response>;

@@ -301,7 +301,9 @@ describe('generate API', () => {
   })
 
   // Skipped: module-type template generation does not work correctly with the memfs mock in this test environment
-  it.skip('should auto detect generating module codes if not set `type`', async () => {
+  it.skip('should auto detect generating module codes if not set `type`', {
+    timeout: 10 * 1000,
+  }, async () => {
     // default type: auto
     // generate ts modules
     const outputDir = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`)
@@ -373,8 +375,6 @@ describe('generate API', () => {
     )
 
     unlinkSync(tempPkgFile)
-  }, {
-    timeout: 10 * 1000,
   })
 
   // Skipped: module-type template generation does not work correctly with the memfs mock in this test environment

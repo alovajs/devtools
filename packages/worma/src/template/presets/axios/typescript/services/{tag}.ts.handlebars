@@ -17,7 +17,7 @@ type {{{name}}}ExtraConfig = Omit<AxiosRequestConfig, 'data' | 'params'> & {
   {{/if}}
 };
 {{> api-jsdoc}}
-export function {{{name}}}(config: {{{name}}}ExtraConfig): Promise<{{{name}}}Response> {
+export function {{{name}}}(config{{#or pathParameters queryParameters requestBody }}{{else}}?{{/or}}: {{{name}}}ExtraConfig): Promise<{{{name}}}Response> {
   const { url, mergedConfig } = buildPayload('{{{path}}}', {{{tag}}}DefaultConfig, {{{name}}}.name, config);
   return axiosInstance<unknown, {{{name}}}Response>({
     method: '{{method}}',
