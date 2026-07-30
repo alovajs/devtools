@@ -13,7 +13,7 @@ export const prettierConfig: PrettierConfig = {
   trailingComma: 'none',
   bracketSpacing: true,
   insertPragma: false,
-  endOfLine: 'auto',
+  endOfLine: 'lf',
   bracketSameLine: true,
   arrowParens: 'avoid',
   vueIndentScriptAndStyle: false,
