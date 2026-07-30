@@ -65,6 +65,11 @@ interface ModifierConfig {
    */
   scope: ModifierScope
   /**
+   * 接口路径过滤：仅当 `apiDescriptor.url` 命中时才应用本配置；
+   * 省略则对所有接口生效。匹配规则与 `match` 一致（字符串子串 / 正则 / 函数）。
+   */
+  path?: string | RegExp | ((url: string) => boolean)
+  /**
    * Match rule. Only matched fields are transformed; when omitted, all fields are transformed.
    * - string: the original field name contains this string
    * - RegExp: the original field name matches this pattern

@@ -880,4 +880,76 @@ describe('payloadModifier plugin tests', () => {
       expect(() => handleApi(api())).not.toThrow()
     })
   })
+
+  describe('feature: path filter', () => {
+    it('applies config only when apiDescriptor.url matches (string substring)', () => {
+      const handleApi = getHandleApi([
+        {
+          path: '/pets',
+          scope: 'data',
+          match: 'userId',
+          handler: () => ({ required: true, type: 'string' }),
+        },
+      ])
+
+      const matchedApi: ApiDescriptor = {
+        url: '/pets/{id}',
+        method: 'post',
+        parameters: [],
+        requestBody: { type: 'object', properties: { userId: { type: 'integer' } }, required: ['userId'] },
+        responses: { type: 'object', properties: {}, required: [] },
+      }
+      const unmatchedApi: ApiDescriptor = { ...matchedApi, url: '/orders' }
+
+      const matched = handleApi(matchedApi)!
+      const rb = matched.requestBody as SchemaObject
+      // 命中：userId 被改写
+      expect((rb.properties?.userId as SchemaObject)?.type).toBe('string')
+      // 未命中：原样返回（引用不变）
+      const unmatched = handleApi(unmatchedApi)!
+      expect(unmatched).toBe(unmatchedApi)
+    })
+
+    it('path supports RegExp and function matchers', () => {
+      const handleApi = getHandleApi([
+        {
+          path: /^\/admin/,
+          scope: 'params',
+          match: 'token',
+          handler: () => ({ required: true, type: 'string' }),
+        },
+        {
+          path: (url: string) => url.includes('internal'),
+          scope: 'params',
+          match: 'secret',
+          handler: () => ({ required: true, type: 'string' }),
+        },
+      ])
+
+      const adminApi: ApiDescriptor = {
+        url: '/admin/users',
+        method: 'get',
+        parameters: [
+          { name: 'token', in: 'query', required: false, schema: { type: 'string' } },
+          { name: 'secret', in: 'query', required: false, schema: { type: 'string' } },
+        ],
+        requestBody: { type: 'object', properties: {}, required: [] },
+        responses: { type: 'object', properties: {}, required: [] },
+      }
+      const internalApi: ApiDescriptor = { ...adminApi, url: '/internal/x' }
+      const otherApi: ApiDescriptor = { ...adminApi, url: '/public/x' }
+
+      const admin = handleApi(adminApi)!
+      expect((admin.parameters!.find(p => p.name === 'token')!.schema as SchemaObject)?.type).toBe('string')
+      // admin 路径下 secret 不匹配（path 函数要求 url 含 'internal'）
+      expect((admin.parameters!.find(p => p.name === 'secret')!.schema as SchemaObject)?.type).toBe('string')
+
+      const internal = handleApi(internalApi)!
+      expect((internal.parameters!.find(p => p.name === 'secret')!.schema as SchemaObject)?.type).toBe('string')
+
+      // 都不命中：原样返回
+      const other = handleApi(otherApi)!
+      expect(other).toBe(otherApi)
+    })
+  })
 })

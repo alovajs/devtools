@@ -342,6 +342,52 @@ describe('rename plugin', () => {
     expect(result.requestBody.properties.tags.items.properties.tagName).toBeDefined()
   })
 
+  describe('path filter', () => {
+    it('should keep descriptor unchanged (same reference) when path does not match', () => {
+      const descriptor = {
+        url: '/orders',
+        method: 'get',
+        parameters: [{ name: 'page_num', in: 'query' }],
+      }
+      const result = runRename(descriptor, {
+        path: '/pets',
+        scope: 'params',
+        style: 'camelCase',
+      })
+      // 未命中 path：本配置不生效，接口原样返回（引用不变）
+      expect(result).toBe(descriptor)
+      expect(result.parameters[0].name).toBe('page_num')
+    })
+
+    it('should apply rename when path matches', () => {
+      const descriptor = {
+        url: '/pets',
+        method: 'get',
+        parameters: [{ name: 'page_num', in: 'query' }],
+      }
+      const result = runRename(descriptor, {
+        path: '/pets',
+        scope: 'params',
+        style: 'camelCase',
+      })
+      expect(result.parameters[0].name).toBe('pageNum')
+    })
+
+    it('should keep descriptor unchanged when path function returns false', () => {
+      const descriptor = {
+        url: '/orders',
+        method: 'get',
+        parameters: [{ name: 'page_num', in: 'query' }],
+      }
+      const result = runRename(descriptor, {
+        path: url => url.startsWith('/pets'),
+        scope: 'params',
+        style: 'camelCase',
+      })
+      expect(result).toBe(descriptor)
+    })
+  })
+
   it('should pass nesting level to match function (level starts at 0)', () => {
     const levels: number[] = []
     const descriptor = {

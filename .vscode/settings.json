@@ -139,5 +139,8 @@
   "files.associations": {
     "*.mdx": "markdown"
   },
-  "worma.autoUpdate": false
+  "worma.autoUpdate": false,
+  // Use the project's local TypeScript (6.0.x) so tsconfig options such as
+  // `ignoreDeprecations` are recognized by the editor's language service.
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
