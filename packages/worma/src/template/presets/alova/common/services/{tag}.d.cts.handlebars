@@ -1,6 +1,6 @@
 import type { Alova2Method, Alova2MethodConfig } from '../typed.d.cts';
 {{#each tagedApis}}
-import type { {{{tagName}}}DefaultConfig } from '.';
+import { {{{tagName}}}DefaultConfig } from './_defaults.cjs';
 {{/each}}
 import type * as ComponentTypes from '../components.d.cts';
 

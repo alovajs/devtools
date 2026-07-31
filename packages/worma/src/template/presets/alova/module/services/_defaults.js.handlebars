@@ -1,0 +1,6 @@
+{{> comment}}
+import * as userConfig from './index.js';
+
+{{#each tagedApis}}
+export const {{{tagName}}}DefaultConfig = userConfig.{{{tagName}}}DefaultConfig ?? {};
+{{/each}}

@@ -1,0 +1,9 @@
+import type { ServicesMap } from '../helper.js';
+
+type TagDefaultConfig<T extends keyof ServicesMap> = {
+  [K in keyof ServicesMap[T]]?: Partial<Parameters<ServicesMap[T][K]>[0]>
+};
+
+{{#each tagedApis}}
+export const {{{tagName}}}DefaultConfig: TagDefaultConfig<'{{{tagName}}}'>;
+{{/each}}

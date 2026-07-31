@@ -1,0 +1,10 @@
+{{> comment}}
+const _userConfig = require('./index.cjs');
+
+{{#each tagedApis}}
+const {{{tagName}}}DefaultConfig = _userConfig.{{{tagName}}}DefaultConfig ?? {};
+{{/each}}
+
+{{#each tagedApis}}
+module.exports.{{{tagName}}}DefaultConfig = {{{tagName}}}DefaultConfig;
+{{/each}}

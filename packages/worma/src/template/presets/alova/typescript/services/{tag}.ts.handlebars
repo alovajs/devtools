@@ -3,7 +3,7 @@ import { alovaInstance } from '../index';
 import { buildPayload } from '../helper';
 import type { Alova2Method, Alova2MethodConfig } from '../typed';
 {{#each tagedApis}}
-import { {{{tagName}}}DefaultConfig } from '.';
+import { {{{tagName}}}DefaultConfig } from './_defaults';
 {{/each}}
 import type * as ComponentTypes from '../components';
 

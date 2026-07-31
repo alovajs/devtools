@@ -30,11 +30,17 @@ describe('alova template', () => {
     const serviceFiles = vol.readdirSync(resolve(outputDir, 'services')) as string[]
     const tagFiles = serviceFiles.filter(f => f.endsWith('.ts') && !f.endsWith('.d.ts') && f !== 'index.ts')
     expect(tagFiles.length).toBeGreaterThan(0)
-    const content = vol.readFileSync(resolve(outputDir, 'services/index.ts'), 'utf-8') as string
+    const indexContent = vol.readFileSync(resolve(outputDir, 'services/index.ts'), 'utf-8') as string
+    const defaultsContent = vol.readFileSync(resolve(outputDir, 'services/_defaults.ts'), 'utf-8') as string
     const helperContent = vol.readFileSync(resolve(outputDir, 'helper.ts'), 'utf-8') as string
-    expect(content).toContain(`import { setMethodDefaultConfig } from '../helper'`)
-    expect(content).not.toMatch(/^import (?:type )?\* as /m)
-    expect(content).toMatch(/DefaultConfig = setMethodDefaultConfig\('\w+', \{\}\)/)
+    // _defaults.ts 是合并层，不调用 setMethodDefaultConfig
+    expect(defaultsContent).not.toMatch(/setMethodDefaultConfig/)
+    expect(defaultsContent).toContain(`import * as userConfig from './index'`)
+    // services/index.ts 是用户编辑区，包含真实的 setMethodDefaultConfig 调用
+    expect(indexContent).toContain(`import { setMethodDefaultConfig } from '../helper'`)
+    expect(indexContent).toMatch(/DefaultConfig = setMethodDefaultConfig\('\w+', \{\}\)/)
+    // services/index.ts 不再是纯转发
+    expect(indexContent).not.toMatch(/export \* from '\.\/_defaults'/)
     expect(helperContent).toMatch(/\w+: typeof import\('\.\/services\/\w+'\)/)
     expect(helperContent).toContain('ConfigMap = {')
   })
