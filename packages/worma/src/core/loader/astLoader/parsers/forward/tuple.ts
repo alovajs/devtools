@@ -3,9 +3,9 @@ import type { MaybeSchemaObject, TupleSchemaObject } from '@/type'
 
 export default <Forwarder>{
   is(schema): boolean {
-    // 判断是否为元组类型
-    // 1. type 为 'array'
-    // 2. 且 items 是数组（老版 JSON Schema 元组语法）或存在 prefixItems（OpenAPI 3.1 / JSON Schema 2020-12 元组语法）
+    // check whether it is a tuple type
+    // 1. type is 'array'
+    // 2. items is an array (legacy JSON Schema tuple syntax) or prefixItems exists (OpenAPI 3.1 / JSON Schema 2020-12 tuple syntax)
     if (!schema)
       return false
     const tuple = schema as TupleSchemaObject

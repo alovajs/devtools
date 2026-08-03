@@ -388,7 +388,7 @@ declare global {
       /**
        * ---
        *
-       * [POST] 你好Generates the intermediate model ("bundle") and returns it as a JSON. body.
+       * [POST] Generates the intermediate model ("bundle") and returns it as a JSON. body.
        *
        * **path:** /model
        *

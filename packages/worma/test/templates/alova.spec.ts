@@ -31,16 +31,20 @@ describe('alova template', () => {
     const tagFiles = serviceFiles.filter(f => f.endsWith('.ts') && !f.endsWith('.d.ts') && f !== 'index.ts')
     expect(tagFiles.length).toBeGreaterThan(0)
     const indexContent = vol.readFileSync(resolve(outputDir, 'services/index.ts'), 'utf-8') as string
-    const defaultsContent = vol.readFileSync(resolve(outputDir, 'services/_defaults.ts'), 'utf-8') as string
     const helperContent = vol.readFileSync(resolve(outputDir, 'helper.ts'), 'utf-8') as string
-    // _defaults.ts 是合并层，不调用 setMethodDefaultConfig
-    expect(defaultsContent).not.toMatch(/setMethodDefaultConfig/)
-    expect(defaultsContent).toContain(`import * as userConfig from './index'`)
-    // services/index.ts 是用户编辑区，包含真实的 setMethodDefaultConfig 调用
+    // approach B: the _defaults intermediate layer is no longer generated
+    expect(serviceFiles).not.toContain('_defaults.ts')
+    // services/index.ts is the user-editable area and contains the real setMethodDefaultConfig call
     expect(indexContent).toContain(`import { setMethodDefaultConfig } from '../helper'`)
     expect(indexContent).toMatch(/DefaultConfig = setMethodDefaultConfig\('\w+', \{\}\)/)
-    // services/index.ts 不再是纯转发
     expect(indexContent).not.toMatch(/export \* from '\.\/_defaults'/)
+    // helper provides resolveTagDefaultConfig
+    expect(helperContent).toContain('resolveTagDefaultConfig')
+    // {tag}.ts resolves defaultConfig from '.' via the helper
+    const tagContent = vol.readFileSync(resolve(outputDir, 'services', tagFiles[0]), 'utf-8') as string
+    expect(tagContent).toContain(`import * as defaultConfig from '.'`)
+    expect(tagContent).toContain('resolveTagDefaultConfig(defaultConfig')
+    expect(tagContent).not.toContain('./_defaults')
     expect(helperContent).toMatch(/\w+: typeof import\('\.\/services\/\w+'\)/)
     expect(helperContent).toContain('ConfigMap = {')
   })

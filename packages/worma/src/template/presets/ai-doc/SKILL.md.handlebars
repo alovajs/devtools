@@ -7,7 +7,7 @@ description: >-
   Use this skill whenever you need to: call {{{serverName}}} backend APIs,
   look up endpoint details and parameter requirements, understand request/response
   data structures, or integrate frontend code with {{{serverName}}} services.
-  Key domains covered: {{#each tagedApis}}{{{tagName}}}{{#unless @last}}, {{/unless}}{{/each}}.
+  Key domains covered: {{#each tagedApis}}{{{tag}}}{{#unless @last}}, {{/unless}}{{/each}}.
 ---
 
 > version {{{version}}}
@@ -22,8 +22,8 @@ request/response formats, and usage examples.
 ## API Directory ({{{serverName}}})
 
 {{#each tagedApis}}
-- **{{{tagName}}}**
+- **{{{tag}}}**
 {{#each apis}}
-  - [{{{summary}}}](./references/{{{../tagName}}}/{{{name}}}.md) `[{{{method}}}] {{{path}}}`
+  - [{{{summary}}}](./references/{{{../tag}}}/{{{name}}}.md) `[{{{method}}}] {{{path}}}`
 {{/each}}
 {{/each}}

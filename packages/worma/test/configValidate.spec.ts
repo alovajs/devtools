@@ -9,7 +9,7 @@ const baseConfig = {
 }
 
 /**
- * 验证配置参数合法（通过校验后进入文件读取阶段，不再抛出运行时错误）
+ * Validate that config parameters are legal (after validation passes it moves to the file-reading stage and no longer throws runtime errors)
  * `generate()` now catches per-generator runtime errors and returns `false` instead of throwing.
  * This helper asserts that config-level validation passed (result is an array).
  */

@@ -4,7 +4,7 @@ import { commands, ThemeIcon, window, workspace } from 'vscode'
 import { Commands } from '@/commands'
 import autocomplete from '@/functions/autocomplete'
 import { registerCommand } from '@/utils/vscode'
-// 代码片段类型定义
+// code snippet type definition
 export interface CodeSnippet {
   id: string
   name: string
@@ -29,18 +29,18 @@ class SnippetManager {
   private quickPick?: QuickPick<QuickPickItem>
 
   constructor() {
-    // 初始化示例代码片段
+    // initialize example code snippets
     this.loadSnippets()
   }
 
-  // 加载代码片段
+  // load code snippets
   async loadSnippets(text?: string) {
     const filePath = useActiveTextEditor().value?.document.uri.fsPath ?? ''
     this.snippets = await getAutocompleteCodeSnippet(text ?? '', filePath)
     return this.snippets
   }
 
-  // 打开搜索面板
+  // open the search panel
   public openSnippetSearch() {
     if (!this.quickPick) {
       this.quickPick = window.createQuickPick()
@@ -48,7 +48,7 @@ class SnippetManager {
       this.quickPick.matchOnDescription = true
       this.quickPick.matchOnDetail = true
 
-      // 设置面板标题和图标
+      // set the panel title and icon
       this.quickPick.title = 'Snippet Search'
       this.quickPick.buttons = [
         {
@@ -57,10 +57,10 @@ class SnippetManager {
         },
       ]
 
-      // 监听输入变化
+      // listen for input changes
       this.quickPick.onDidChangeValue(this.filterSnippets.bind(this))
 
-      // 监听选择事件
+      // listen for selection events
       this.quickPick.onDidAccept(() => {
         const selection = this.quickPick?.selectedItems[0]
         if (selection) {
@@ -69,30 +69,30 @@ class SnippetManager {
         }
       })
 
-      // 监听按钮点击
+      // listen for button clicks
       this.quickPick.onDidTriggerButton(() => {
         this.createNewSnippet()
       })
 
-      // 面板关闭时清理
+      // clean up when the panel closes
       this.quickPick.onDidHide(() => {
         this.quickPick?.dispose()
         this.quickPick = undefined
       })
     }
 
-    // 初始显示所有片段
+    // initially show all snippets
     this.filterSnippets('')
     this.quickPick.show()
   }
 
-  // 过滤代码片段
+  // filter code snippets
   private async filterSnippets(query: string) {
     if (!this.quickPick) {
       return
     }
     const filtered = await this.loadSnippets(query)
-    // 转换为QuickPickItem
+    // convert to QuickPickItem
     this.quickPick.items = filtered.map(snippet => ({
       label: snippet.name,
       description: snippet.description,
@@ -100,7 +100,7 @@ class SnippetManager {
     }))
   }
 
-  // 插入代码片段
+  // insert code snippet
 
   private async insertSnippet(item: QuickPickItem) {
     const snippet = (item as any).snippet as CodeSnippet
@@ -111,7 +111,7 @@ class SnippetManager {
       return
     }
 
-    // 检查语言是否匹配
+    // check whether the language matches
     const currentLanguage = editor.document.languageId
     if (snippet.language !== '*' && snippet.language !== currentLanguage) {
       const response = await window.showWarningMessage(
@@ -125,19 +125,19 @@ class SnippetManager {
       }
     }
 
-    // 插入代码片段
+    // insert code snippet
     editor
       .edit((editBuilder) => {
         const position = editor.selection.active
         editBuilder.insert(position, snippet.code)
       })
       .then(() => {
-        // 可选：触发代码片段完成（让VS Code处理Tab位）
+        // optional: trigger snippet completion (let VS Code handle tab stops)
         commands.executeCommand('editor.action.triggerSuggest')
       })
   }
 
-  // 创建新代码片段
+  // create a new code snippet
   private async createNewSnippet() {
     const name = await window.showInputBox({
       prompt: 'Enter snippet name',
@@ -182,7 +182,7 @@ class SnippetManager {
       .map(tag => tag.trim())
       .filter(tag => tag)
 
-    // 打开新编辑器用于输入代码
+    // open a new editor for entering the code
     const document = await workspace.openTextDocument({
       content: '// Enter your code snippet here\n// Use $1, $2, etc. as cursor positions',
       language: 'javascript',
@@ -190,13 +190,13 @@ class SnippetManager {
 
     await window.showTextDocument(document)
 
-    // 监听编辑器关闭以保存代码片段
+    // listen for editor close to save the code snippet
     const disposable = workspace.onDidCloseTextDocument(async (doc) => {
       if (doc === document) {
         const code = document.getText()
 
         if (code.trim().length > 10) {
-          // 简单验证
+          // simple validation
           const newSnippet: CodeSnippet = {
             id: `custom-${Date.now()}`,
             name,
@@ -218,7 +218,7 @@ class SnippetManager {
     })
   }
 
-  // 获取所有片段（用于命令面板）
+  // get all snippets (for the command palette)
   public getSnippetsForCommandPalette() {
     return this.snippets.map(snippet => ({
       label: snippet.name,

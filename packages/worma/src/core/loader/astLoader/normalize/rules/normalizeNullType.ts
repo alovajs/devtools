@@ -2,7 +2,7 @@ import type { SchemaObject, SchemaObjectV3 } from '@/type'
 
 const NULL_TYPE = [null, 'null']
 export default function normalizeNullType(schema: SchemaObject): SchemaObject | void {
-  // 兼容openai3.0的nullable
+  // compatible with OpenAPI 3.0 nullable
   if ((schema as SchemaObjectV3).nullable) {
     delete (schema as SchemaObjectV3).nullable
     const currentType = schema.type || []

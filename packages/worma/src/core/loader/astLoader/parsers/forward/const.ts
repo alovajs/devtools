@@ -1,9 +1,9 @@
 import type { Forwarder } from './type'
 
 /**
- * 带有 const 关键字的 schema 优先路由到 const 解析器，
- * 即使 schema 同时声明了 type（如 `{ "type": "string", "const": "email" }`），
- * 也能正确产出字面量类型。
+ * Schemas with a const keyword are routed to the const parser first.
+ * This works even when the schema also declares a type (e.g. `{ "type": "string", "const": "email" }`),
+ * producing the correct literal type.
  */
 export default <Forwarder>{
   is(schema): boolean {

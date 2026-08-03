@@ -205,7 +205,7 @@ describe('plugins/aiDoc', () => {
         config: {},
         tagedApis: [
           {
-            tagName: 'pets',
+            tag: 'pets',
             apis: [apiListPets, apiCreatePet],
           },
         ],
@@ -289,7 +289,7 @@ describe('plugins/aiDoc', () => {
         config: {},
         tagedApis: [
           {
-            tagName: 'test',
+            tag: 'test',
             apis: [apiTest],
           },
         ],
@@ -342,7 +342,7 @@ describe('plugins/aiDoc', () => {
         config: {},
         tagedApis: [
           {
-            tagName: 'default',
+            tag: 'default',
             apis: [apiHello],
           },
         ],
@@ -397,7 +397,7 @@ describe('plugins/aiDoc', () => {
         config: {},
         tagedApis: [
           {
-            tagName: 'users',
+            tag: 'users',
             apis: [apiGetUser],
           },
         ],
@@ -498,7 +498,7 @@ describe('plugins/aiDoc', () => {
         config: {},
         tagedApis: [
           {
-            tagName: 'test',
+            tag: 'test',
             apis: [apiTest],
           },
         ],
@@ -602,7 +602,7 @@ describe('plugins/aiDoc', () => {
         config: {},
         tagedApis: [
           {
-            tagName: 'test',
+            tag: 'test',
             apis: [apiTest],
           },
         ],
@@ -700,7 +700,7 @@ describe('plugins/aiDoc', () => {
         config: {},
         tagedApis: [
           {
-            tagName: 'test',
+            tag: 'test',
             apis: [apiTest],
           },
         ],
@@ -761,7 +761,7 @@ describe('plugins/aiDoc', () => {
         config: {},
         tagedApis: [
           {
-            tagName: 'test',
+            tag: 'test',
             apis: [apiTest],
           },
         ],
@@ -820,7 +820,7 @@ describe('plugins/aiDoc', () => {
         config: {},
         tagedApis: [
           {
-            tagName: 'test',
+            tag: 'test',
             apis: [apiTest],
           },
         ],
@@ -880,7 +880,7 @@ describe('plugins/aiDoc', () => {
         config: {},
         tagedApis: [
           {
-            tagName: 'test',
+            tag: 'test',
             apis: [apiTest],
           },
         ],

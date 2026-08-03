@@ -74,7 +74,7 @@ function splitIntoWords(str: string) {
     const char = str[i]
     const lastChar = str[i - 1] ?? ''
     const nextChar = str[i + 1] ?? ''
-    // 如果遇到非单词字符，结束当前单词
+    // if a non-word character is encountered, end the current word
     if (/[^\w$]/.test(char) || ['_'].includes(char)) {
       if (currentWord) {
         words.push(currentWord)

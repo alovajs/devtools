@@ -2,7 +2,7 @@ import type { TemplateConfigResult } from '@/helper/config/type'
 import type { ApiDescriptor, ApiPlugin, GeneratorConfig } from '@/type'
 import type { FetchOptions } from '@/utils/base'
 import path from 'node:path'
-import { z } from 'zod/v3' // v4版本不稳定，暂时使用v3
+import { z } from 'zod/v3' // v4 is unstable, temporarily using v3
 /**
  * Find the corresponding input attribute value
  */

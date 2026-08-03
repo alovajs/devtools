@@ -37,9 +37,9 @@ function hanldeThemeKind(target: HTMLElement) {
 const theme = computed(() => isDark.value ? darkTheme : null)
 
 onMounted(async () => {
-  // 设置初始化主题
+  // set the initial theme
   hanldeThemeKind(document.body)
-  // 加载语言
+  // load language
   handleLanguageChange(await handlers.getLanguage())
 })
 

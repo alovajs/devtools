@@ -3,18 +3,18 @@ import path from 'node:path'
 import { PluginName, PresetTemplateName } from '@/constant'
 
 /**
- * 获取预设模板的完整路径
+ * Get the full path of a preset template
  */
 export function getPresetTemplatePath(presetName: string): string {
-  // 预设模板在 src/template/presets 目录中
-  // 编译后在 dist/template/presets 目录
+  // preset templates are in the src/template/presets directory
+  // after build they are in the dist/template/presets directory
   return path.join(__dirname, 'presets', presetName)
 }
 
 // ========== Template Preset Plugins ==========
 
 /**
- * worma.config 模板预设 - plugin mode
+ * worma.config template preset - plugin mode
  */
 export function config(): ApiPlugin {
   return {
@@ -29,8 +29,8 @@ export function config(): ApiPlugin {
 }
 
 /**
- * globals 模板预设 - plugin mode
- * 全局模板，现有的全局模板，通过全局挂载的方式使用
+ * globals template preset - plugin mode
+ * Global template: an existing global template, used via global mounting
  */
 export function alovaGlobals(opts?: GlobalsTemplateOptions): ApiPlugin {
   return {
@@ -63,8 +63,8 @@ export function alovaGlobals(opts?: GlobalsTemplateOptions): ApiPlugin {
 }
 
 /**
- * functional 模板预设 - plugin mode
- * 函数式模板，生成函数式API调用，支持tree-shaking，仅支持alova v3
+ * functional template preset - plugin mode
+ * Functional template that generates functional API calls, supports tree-shaking, only for alova v3
  */
 export function alova(opts?: FunctionalTemplateOptions): ApiPlugin {
   return {
@@ -83,8 +83,8 @@ export function alova(opts?: FunctionalTemplateOptions): ApiPlugin {
 }
 
 /**
- * axios 模板预设 - plugin mode
- * Axios相关模板
+ * axios template preset - plugin mode
+ * Axios-related template
  */
 export function axios(opts?: RequestLibTemplateOptions): ApiPlugin {
   return {
@@ -103,8 +103,8 @@ export function axios(opts?: RequestLibTemplateOptions): ApiPlugin {
 }
 
 /**
- * fetch 模板预设 - plugin mode
- * Fetch相关模板
+ * fetch template preset - plugin mode
+ * Fetch-related template
  */
 export function fetch(opts?: RequestLibTemplateOptions): ApiPlugin {
   return {
@@ -123,8 +123,8 @@ export function fetch(opts?: RequestLibTemplateOptions): ApiPlugin {
 }
 
 /**
- * ky 模板预设 - plugin mode
- * Ky相关模板
+ * ky template preset - plugin mode
+ * Ky-related template
  */
 export function ky(opts?: RequestLibTemplateOptions): ApiPlugin {
   return {
@@ -142,7 +142,7 @@ export function ky(opts?: RequestLibTemplateOptions): ApiPlugin {
   }
 }
 
-// 导出类型
+// export types
 export type {
   FunctionalTemplateOptions,
   GlobalsTemplateOptions,

@@ -320,11 +320,11 @@ function findNodeBySuffix(nodes: TreeOption[], suffix: string): TreeOption | nul
 
 defineExpose({
   getApi(key: string) {
-    // 优先精确匹配（新格式: projectName/serverIndex/global.name）
+    // prefer exact match (new format: projectName/serverIndex/global.name)
     const exact = treeHelper.getNodeById(key, data.value).result
     if (exact?.api)
       return exact.api as Api | null
-    // 回退：按后缀模糊匹配（兼容旧格式: .global.name）
+    // fallback: suffix-based fuzzy match (compatible with the old format: .global.name)
     return findNodeBySuffix(data.value, key)?.api as Api | null
   },
   selectApi(key: string) {
@@ -333,7 +333,7 @@ defineExpose({
       selectNode(key, data.value)
     }
     else {
-      // 回退：按后缀模糊匹配
+      // fallback: suffix-based fuzzy match
       const node = findNodeBySuffix(data.value, key)
       if (node?.key) {
         selectNode(node.key as string, data.value)

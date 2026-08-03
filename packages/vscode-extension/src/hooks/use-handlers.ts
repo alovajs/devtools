@@ -3,10 +3,10 @@ import type { DataType, HandlersType, MessageType } from '#/handlers'
 import { JsonrpcClient, wrap } from '@jsonrpc-rx/client'
 import { getVscodeApi } from '~/utils/vscode'
 
-// 消息发送者：给 extension 发送消息
+// message sender: sends messages to the extension
 const msgSender: MessageSender = message =>
   getVscodeApi()?.postMessage(message)
-// 消息接收者：接受消息，不一定来自 extension，但是 jsonrpc-rx 会自动鉴别
+// message receiver: receives messages (not necessarily from the extension; jsonrpc-rx identifies them automatically)
 const msgReceiver: MessageReceiver = handler =>
   globalThis?.addEventListener?.('message', ({ data }) => {
     if (typeof data === 'string') {
@@ -14,7 +14,7 @@ const msgReceiver: MessageReceiver = handler =>
     }
   })
 
-// 初始化一个 Jsonrpc 的“客户端”，与 extension 的“服务端”对应
+// initialize a Jsonrpc "client" that pairs with the extension's "server"
 const jsonrpcClient = new JsonrpcClient(msgSender, msgReceiver)
 
 export const useHandlers = () => wrap<HandlersType>(jsonrpcClient)

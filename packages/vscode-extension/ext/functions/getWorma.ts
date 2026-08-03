@@ -9,7 +9,7 @@ import { Log } from '@/utils'
 import { getWorkspacePaths } from '@/utils/vscode'
 
 type Worma = typeof import('wormajs')
-// 用于mock测试
+// for mock testing
 export const MockWorma = {
 
 } as Worma

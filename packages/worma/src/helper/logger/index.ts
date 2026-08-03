@@ -84,12 +84,12 @@ class Logger {
   }
 }
 
-// 导出单例实例
+// export the singleton instance
 export const logger = new Logger().configure({
   level: 'info',
   timestamp: true,
   colors: true,
 })
 
-// 导出类型定义，方便用户扩展
+// export type definitions for user extension
 export type { Logger }

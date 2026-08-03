@@ -55,7 +55,7 @@ my-template/
 └── {tag}.ts.handlebars       # → user.ts, article.ts, order.ts ...
 ```
 
-在 `{tag}` 模板中可访问 `currentTag` 对象（类型为 [`ApiDoc`](#tagedApis)），通过 `currentTag.tagName` 访问当前 tag 名称，通过 `currentTag.apis` 访问当前 tag 下的接口列表。
+在 `{tag}` 模板中可访问 `currentTag` 对象（类型为 [`ApiDoc`](#tagedApis)），通过 `currentTag.tag` 访问当前 tag 名称，通过 `currentTag.apis` 访问当前 tag 下的接口列表。
 
 ### `{api}` 动态文件名
 
@@ -259,8 +259,8 @@ type {{{name}}}Response = {{addNamespace response @root.componentNames "Types"}}
 
 ```typescript
 interface ApiDoc {
-  /** 该分组的 tag 名称（原 tag 字段更名为 tagName） */
-  tagName: string;
+  /** 该分组的 tag 名称 */
+  tag: string;
   /** 该 tag 下的所有 API */
   apis: Api[];
 }
@@ -302,7 +302,7 @@ interface Api {
 ```handlebars
 {{#each tagedApis}}
   // tag:
-  {{tagName}}
+  {{tag}}
   {{#each apis}}
     export function
     {{{name}}}(params:

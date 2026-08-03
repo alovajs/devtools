@@ -5,16 +5,16 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { readConfig } from '@/index'
 
 /**
- * 回归测试：readConfig 用 path.resolve 生成绝对 outfile，并用 try/finally 保证清理。
+ * Regression test: readConfig uses path.resolve to produce an absolute outfile, and try/finally to guarantee cleanup.
  *
- * 修复前：
- *   1. `path.join(projectPath, 'alova_tmp_xxx.cjs')` 在相对 projectPath 下产出相对路径，
- *      `require()` 把它当裸模块查找 → `Cannot find module 'alova_tmp_xxx.cjs'`。
- *      （`worma gen -p .` 即触发此路径）
- *   2. `require(outfile)` 抛错后 `unlink(outfile)` 不会执行 → 临时文件残留。
+ * Before the fix:
+ *   1. `path.join(projectPath, 'alova_tmp_xxx.cjs')` produced a relative path under the relative projectPath,
+ *      `require()` treated it as a bare module lookup → `Cannot find module 'alova_tmp_xxx.cjs'`.
+ *      (`worma gen -p .` triggered this path)
+ *   2. after `require(outfile)` threw, `unlink(outfile)` was not executed → temp file left behind.
  *
- * config.spec.ts 用 memfs + esbuild mock 预填充 Module._cache，绕过了 require 的真实
- * 路径解析，无法捕获本回归；故此处使用真实文件系统 + 真实 esbuild。
+ * config.spec.ts uses memfs + esbuild mock to pre-fill Module._cache, bypassing the real require
+ * path resolution, so it cannot catch this regression; this test therefore uses the real filesystem + real esbuild.
  */
 
 const tmpRoot = join(tmpdir(), `worma-readconfig-${Date.now()}`)
@@ -32,7 +32,7 @@ afterAll(() => {
   }
 })
 
-/** 写一个不依赖外部包的最小 cjs 配置到指定目录 */
+/** Write a minimal cjs config that does not depend on external packages to the given directory */
 function writeMinimalConfig(dir: string) {
   writeFileSync(
     join(dir, 'worma.config.cjs'),
@@ -50,7 +50,7 @@ function writeMinimalConfig(dir: string) {
   )
 }
 
-/** 断言目录下没有残留的 alova_tmp_*.cjs 临时打包文件 */
+/** Assert that no leftover alova_tmp_*.cjs temp bundle files exist in the directory */
 function expectNoTempLeftovers(dir: string) {
   const leftovers = readdirSync(dir).filter(f => f.startsWith('alova_tmp_'))
   expect(leftovers, `unexpected temp files left behind: ${leftovers.join(', ')}`).toEqual([])
@@ -68,19 +68,19 @@ describe('readConfig (real fs)', () => {
   })
 
   it('cleans up temp bundle even when require throws (try/finally)', async () => {
-    // 构造一个会编译成功但运行时抛错的配置文件，验证 require 抛错时 unlink 仍执行
+    // construct a config that compiles successfully but throws at runtime, to verify unlink still runs when require throws
     const projectDir = join(tmpRoot, 'throw-project')
     mkdirSync(projectDir, { recursive: true })
     writeFileSync(
       join(projectDir, 'worma.config.cjs'),
-      // 配置文件加载时立即抛错，require(outfile) 会 reject
+      // the config throws immediately on load, so require(outfile) rejects
       `throw new Error('intentional config load failure');\nmodule.exports = {};\n`,
     )
 
     await expect(readConfig(projectDir)).rejects.toThrow('intentional config load failure')
 
-    // 关键：require 抛错后，try/finally 仍应清理临时文件
-    // 修复前（unlink 在 require 之后、无 try/finally）：require 抛错 → unlink 不执行 → 残留
+    // key: after require throws, try/finally should still clean up the temp file
+    // before the fix (unlink after require, without try/finally): require throws → unlink not executed → leftover
     expectNoTempLeftovers(projectDir)
   })
 })

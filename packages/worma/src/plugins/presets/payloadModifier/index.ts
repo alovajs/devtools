@@ -164,7 +164,7 @@ function applyToSchemaField(
 function payloadModifierApiDescriptor(apiDescriptor: ApiDescriptor, config: PayloadModifierConfig) {
   if (!apiDescriptor)
     return null
-  // 接口路径过滤：未命中 path 则原样返回，本配置不生效
+  // API path filter: if path does not match, return as-is and this config does not apply
   if (!isMatch(apiDescriptor.url, config.path))
     return apiDescriptor
   const newDescriptor = { ...apiDescriptor }

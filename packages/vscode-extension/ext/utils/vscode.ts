@@ -34,7 +34,7 @@ export function registerCommand<U = [], T = void>(command: CommandType<U, T>, ct
   return vscode.commands.registerCommand(command.commandId, command.handler(ctx))
 }
 export async function focusView(viewId: string) {
-  // 聚焦到目标视图
+  // focus the target view
   await vscode.commands.executeCommand(`${viewId}.focus`)
 }
 

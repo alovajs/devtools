@@ -107,7 +107,7 @@ beforeEach(() => {
   vol.mkdirSync(process.cwd(), { recursive: true })
 })
 
-// 比较配置，plugins 函数单独断言
+// compare configs; plugin functions are asserted separately
 function expectConfigEqual(actual: Config, expected: Config) {
   expect(actual.generator.length).toBe(expected.generator.length)
   actual.generator.forEach((gen, idx) => {
@@ -422,7 +422,7 @@ describe('config', () => {
     expectConfigEqual(tsConfig, configMap.tsWithoutImport.expectedConfig)
   })
 
-  // readConfig 的相对路径 / try-finally 清理回归测试见 test/readConfig.spec.ts
-  // （需真实文件系统 + 真实 esbuild，memfs 的 esbuild mock 会预填充 Module._cache
-  //  绕过 require 的路径解析，无法捕获相关回归）
+  // the relative-path / try-finally cleanup regression test for readConfig lives in test/readConfig.spec.ts
+  // (it needs the real filesystem + real esbuild; the memfs esbuild mock pre-fills Module._cache,
+  //  bypassing require's path resolution, so it cannot catch the related regression)
 })

@@ -1,15 +1,15 @@
 // ============================================================
-// 枚举常量定义 — 统一管理项目中所有硬编码的字符串/数字常量
+// Enumeration constant definitions — centrally manage all hardcoded string/number constants in the project
 // ============================================================
 
-/** 模板代码生成类型 */
+/** Template code generation type */
 export enum TemplateTypeEnum {
   TYPESCRIPT = 'typescript',
   MODULE = 'module',
   COMMONJS = 'commonjs',
 }
 
-/** 配置中的 type 字段值（比 TemplateTypeEnum 多了 auto/ts 选项） */
+/** The type field value in config (adds auto/ts options over TemplateTypeEnum) */
 export enum ConfigTypeEnum {
   AUTO = 'auto',
   TS = 'ts',
@@ -18,7 +18,7 @@ export enum ConfigTypeEnum {
   COMMONJS = 'commonjs',
 }
 
-/** 支持的 OpenAPI 平台 */
+/** Supported OpenAPI platforms */
 export enum PlatformTypeEnum {
   SWAGGER = 'swagger',
   KNIFE4J = 'knife4j',
@@ -26,13 +26,13 @@ export enum PlatformTypeEnum {
   YAPI = 'yapi',
 }
 
-/** 模块体系类型 */
+/** Module system type */
 export enum ModuleKind {
   ES_MODULE = 'ESModule',
   COMMON_JS = 'commonJs',
 }
 
-/** 前端框架名称 */
+/** Frontend framework names */
 export enum FrameworkName {
   VUE = 'vue',
   REACT = 'react',
@@ -41,7 +41,7 @@ export enum FrameworkName {
   NUXT = 'nuxt',
 }
 
-/** 模板文件扩展名 */
+/** Template file extensions */
 export enum FileExtension {
   HBS = '.hbs',
   HANDLEBARS = '.handlebars',
@@ -56,10 +56,10 @@ export enum FileExtension {
   D_MTS = '.d.mts',
 }
 
-/** Handlebars 模板文件扩展名列表（不含普通 ts/js 扩展） */
+/** List of Handlebars template file extensions (excluding plain ts/js extensions) */
 export const TEMPLATE_EXTENSIONS = Object.values(FileExtension)
 
-/** OpenAPI 参数位置 */
+/** OpenAPI parameter locations */
 export enum ParameterIn {
   QUERY = 'query',
   PATH = 'path',
@@ -67,7 +67,7 @@ export enum ParameterIn {
   COOKIE = 'cookie',
 }
 
-/** 重命名的 scope 类型 */
+/** Rename scope types */
 export enum RenameScope {
   URL = 'url',
   PARAMS = 'params',
@@ -78,13 +78,13 @@ export enum RenameScope {
   NAME = 'name',
 }
 
-/** 过滤 scope 类型 */
+/** Filter scope types */
 export enum FilterScope {
   URL = 'url',
   TAG = 'tag',
 }
 
-/** 内建插件名称 */
+/** Built-in plugin names */
 export enum PluginName {
   TAG_MODIFIER = 'tagModifier',
   FILTER_API = 'filterApi',
@@ -105,19 +105,19 @@ export enum PluginName {
   TEMPLATE_CONFIG = 'templateConfig',
 }
 
-/** 模板占位符 */
+/** Template placeholders */
 export enum TemplatePlaceholder {
   TAG = '{tag}',
   API = '{api}',
 }
 
-/** 模板扫描时跳过的目录 */
+/** Directories skipped during template scanning */
 export enum TemplateSkipDir {
   PARTIALS = 'partials',
   TAG_DIR = '{tag}',
 }
 
-/** 预设模板名称 */
+/** Preset template names */
 export enum PresetTemplateName {
   ALOVA = 'alova',
   AXIOS = 'axios',
@@ -128,30 +128,30 @@ export enum PresetTemplateName {
   AI_DOC = 'ai-doc',
 }
 
-/** 模板目录名（与 config.type 不同：commonjs -> common） */
+/** Template directory name (differs from config.type: commonjs -> common) */
 export enum ModuleTypeDir {
   TYPESCRIPT = 'typescript',
   MODULE = 'module',
   COMMON = 'common',
 }
 
-/** 模块类型目录名数组 */
+/** Array of module-type directory names */
 export const MODULE_TYPE_DIRS = [ModuleTypeDir.TYPESCRIPT, ModuleTypeDir.MODULE, ModuleTypeDir.COMMON] as const
 export type ModuleTypeKey = (typeof MODULE_TYPE_DIRS)[number]
 
-/** 模块类型 -> ModuleKind 映射 */
+/** Module type -> ModuleKind mapping */
 export const MODULE_TYPE_TO_KIND: Record<string, ModuleKind> = {
   [TemplateTypeEnum.TYPESCRIPT]: ModuleKind.ES_MODULE,
   [TemplateTypeEnum.MODULE]: ModuleKind.ES_MODULE,
   [TemplateTypeEnum.COMMONJS]: ModuleKind.COMMON_JS,
 }
 
-/** 文件扩展名 -> 输出文件名映射 */
+/** File extension -> output file name mapping */
 export function getTypeFileExtension(type: TemplateTypeEnum | string): string {
   return type === TemplateTypeEnum.TYPESCRIPT ? FileExtension.TS : FileExtension.JS
 }
 
-/** 框架名称列表 */
+/** Framework name list */
 export const FRAMEWORK_NAMES: string[] = [
   FrameworkName.VUE,
   FrameworkName.REACT,

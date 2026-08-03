@@ -3,19 +3,19 @@ import { PluginName } from '@/constant'
 import { normalizeBase, withCookie } from './shared'
 
 export interface YapiOptions {
-  /** YApi 服务基础地址，例如 `https://yapi.xxx.com` */
+  /** YApi server base address, e.g. `https://yapi.xxx.com` */
   url: string
-  /** 项目 ID，必填，用于拼装导出地址 */
+  /** Project ID, required, used to build the export address */
   pid: string | number
-  /** OpenAPI 类型，默认 `OpenAPIV2` */
+  /** OpenAPI type, defaults to `OpenAPIV2` */
   type?: string
-  /** 接口状态，默认 `all` */
+  /** API status, defaults to `all` */
   status?: string
-  /** 是否包含 wiki，默认 `true` */
+  /** Whether to include wiki, defaults to `true` */
   isWiki?: boolean
-  /** 登录 cookie。也可通过 fetchOptions.headers.cookie 传入 */
+  /** Login cookie. Can also be passed via fetchOptions.headers.cookie */
   cookie?: string
-  /** 额外的 fetch 超时（毫秒） */
+  /** Extra fetch timeout in milliseconds */
   timeout?: number
 }
 

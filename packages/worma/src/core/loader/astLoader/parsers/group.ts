@@ -33,7 +33,7 @@ export function groupTypeParser(schema: SchemaObject, ctx: ParserCtx) {
     } as TUnion
   }
   if (schema.allOf) {
-    // 显式检查 allOf
+    // explicitly check allOf
     return {
       ...result,
       type: ASTType.INTERSECTION,

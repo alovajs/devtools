@@ -2,15 +2,15 @@ import { vol } from 'memfs'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 /**
- * 回归测试：apiCount > 200 时 templateParser 启用 worker 池，sharedContext 通过
- * workerData 传给 worker 线程。Node 对 workerData 做 structured clone，函数无法克隆。
+ * Regression test: when apiCount > 200, templateParser enables the worker pool and passes
+ * sharedContext via workerData to the worker thread. Node applies structured clone to workerData, so functions cannot be cloned.
  *
- * 修复前：templateParser 把完整 generatorConfig（含 plugins 函数）作为 sharedContext.config
- *   传入 → `DataCloneError: ... could not be cloned` → 生成 0 文件。
- * 修复后：sharedContext.config 只含可序列化字段（defaultRequire / externalTypes）。
+ * Before the fix: templateParser passed the full generatorConfig (including plugin functions) as sharedContext.config
+ *   → `DataCloneError: ... could not be cloned` → 0 files generated.
+ * After the fix: sharedContext.config contains only serializable fields (defaultRequire / externalTypes).
  *
- * 本测试 mock 掉 WorkerPool 以捕获调用方传入的 sharedContext，并用 >200 接口的 spec
- * 触发 worker 池分支，断言捕获到的 sharedContext 可被 structuredClone（不含函数）。
+ * This test mocks WorkerPool to capture the sharedContext passed by the caller, and uses a spec with >200 endpoints
+ * to trigger the worker pool branch, asserting the captured sharedContext can be structuredClone'd (no functions).
  */
 
 let capturedSharedContext: any
@@ -20,7 +20,7 @@ vi.mock('@/core/WorkerPool', async (importActual) => {
   const actual = await importActual<typeof import('@/core/WorkerPool')>()
   return {
     ...actual,
-    // 强制启用 worker 池分支（无需依赖真实 CPU 核数 / apiCount 阈值）
+    // force the worker pool branch (no need to depend on real CPU cores / apiCount threshold)
     pickPoolSize: () => 1,
     WorkerPool: class FakeWorkerPool<Task, Result> {
       constructor(opts: any) {
@@ -29,7 +29,7 @@ vi.mock('@/core/WorkerPool', async (importActual) => {
       }
 
       async processBatch(tasks: Task[]): Promise<Result[]> {
-        // 返回与任务一一对应的空结果，保证调用方后续流程可继续
+        // return empty results one-to-one with tasks so the caller can continue
         return tasks.map((t: any) => ({ key: t.key, result: '' }) as unknown as Result)
       }
 
@@ -41,7 +41,7 @@ vi.mock('@/core/WorkerPool', async (importActual) => {
 vi.mock('node:fs')
 vi.mock('node:fs/promises')
 
-/** 程序化生成一个超过 200 个接口的 OpenAPI 3.0 文档以触发 worker 池分支 */
+/** Programmatically generate an OpenAPI 3.0 document with more than 200 endpoints to trigger the worker pool branch */
 function makeBigSpec(endpointCount: number) {
   const paths: Record<string, any> = {}
   for (let i = 0; i < endpointCount; i++) {
@@ -74,7 +74,7 @@ function makeBigSpec(endpointCount: number) {
   }
 }
 
-/** 递归检测对象中是否包含函数 */
+/** Recursively detect whether an object contains a function */
 function containsFunction(obj: any, seen = new WeakSet()): boolean {
   if (typeof obj === 'function')
     return true
@@ -97,7 +97,7 @@ describe('templateParser worker pool sharedContext (regression: could not be clo
   })
 
   it('passes only serializable config fields to WorkerPool sharedContext', async () => {
-    const spec = makeBigSpec(250) // > 200 触发 worker 池
+    const spec = makeBigSpec(250) // > 200 triggers the worker pool
     const specPath = '/project/big.json'
     vol.writeFileSync(specPath, JSON.stringify(spec))
     const outputDir = '/project/output'
@@ -106,8 +106,8 @@ describe('templateParser worker pool sharedContext (regression: could not be clo
     const { generate } = await import('@/index')
     const { alova } = await import('@/plugins')
 
-    // alova() 返回的 plugin 含函数（getTemplate 等）；若调用方把完整 config 传入
-    // sharedContext，将无法被 structured clone。
+    // the plugin returned by alova() contains functions (getTemplate, etc.); if the caller passes the full config into
+    // sharedContext, it cannot be structured-cloned.
     await generate({
       generator: [
         {
@@ -121,17 +121,17 @@ describe('templateParser worker pool sharedContext (regression: could not be clo
       ],
     }, { force: true, projectPath: '/project' })
 
-    // worker 池分支确实被触发
+    // the worker pool branch is indeed triggered
     expect(workerSpawned).toBe(true)
     expect(capturedSharedContext).toBeDefined()
 
-    // sharedContext 必须可被 structured clone（等价于 Node 传给 workerData 的要求）
+    // sharedContext must be structured-cloneable (equivalent to what Node requires for workerData)
     expect(() => structuredClone(capturedSharedContext)).not.toThrow()
 
-    // sharedContext 不含任何函数（修复前会携带 plugins 函数数组）
+    // sharedContext must not contain any function (before the fix it carried the plugins function array)
     expect(containsFunction(capturedSharedContext)).toBe(false)
 
-    // sharedContext.config 只应包含可序列化字段，不得携带 plugins 等含函数的字段
+    // sharedContext.config should contain only serializable fields, not function-bearing fields like plugins
     const config = capturedSharedContext.config
     expect(config).toBeDefined()
     expect(config.defaultRequire).toBe(false)
@@ -140,7 +140,7 @@ describe('templateParser worker pool sharedContext (regression: could not be clo
   }, 30000)
 
   it('does not spawn worker pool when apiCount <= 200', async () => {
-    const spec = makeBigSpec(50) // <= 200，worker 池不启用
+    const spec = makeBigSpec(50) // <= 200, worker pool not enabled
     const specPath = '/project/small.json'
     vol.writeFileSync(specPath, JSON.stringify(spec))
     const outputDir = '/project/output-small'
@@ -160,9 +160,9 @@ describe('templateParser worker pool sharedContext (regression: could not be clo
       ],
     }, { force: true, projectPath: '/project' })
 
-    // apiCount <= 200 时不应触发 worker 池（pickPoolSize 被我们 mock 成始终返回 1，
-    // 但 collectSchemaTasks 是否有任务、tasks.length>0 才会真正 new WorkerPool；
-    // 50 个接口仍可能产生 schema 任务，因此这里只验证：即便触发，sharedContext 也安全）
+    // when apiCount <= 200, the worker pool should not be triggered (pickPoolSize is mocked to always return 1,
+    // but collectSchemaTasks only spawns a WorkerPool when it has tasks, i.e. tasks.length > 0;
+    // 50 endpoints may still produce schema tasks, so here we only verify: even if triggered, sharedContext is safe)
     if (workerSpawned) {
       expect(() => structuredClone(capturedSharedContext)).not.toThrow()
       expect(containsFunction(capturedSharedContext)).toBe(false)

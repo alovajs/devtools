@@ -3,9 +3,9 @@ import { isMaybeArraySchemaObject } from '@/utils'
 
 export default <Forwarder>{
   is(schema): boolean {
-    // 判断是否为数组类型
-    // 1. type 为 'array'
-    // 2. 或者有 items 字段
+    // check whether it is an array type
+    // 1. type is 'array'
+    // 2. or has an items field
     return schema && (schema.type === 'array' || isMaybeArraySchemaObject(schema))
   },
   to: 'array',

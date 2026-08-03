@@ -16,7 +16,7 @@ setGlobalConfig({ Error })
 
 interface WorkerSetup {
   document: OpenAPIDocument
-  /** 仅包含 worker 所需的可序列化字段（避免传递含函数的 plugins/fetchOptions） */
+  /** Contains only the serializable fields needed by the worker (avoid passing plugins/fetchOptions that contain functions) */
   config: Pick<GeneratorConfig, 'defaultRequire' | 'externalTypes'>
   refNameMapEntries: [string, string][]
 }

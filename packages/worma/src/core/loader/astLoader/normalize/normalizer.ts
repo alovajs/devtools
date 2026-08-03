@@ -2,11 +2,11 @@ import type { MaybeSchemaObject, SchemaObject } from '@/type'
 import { cloneDeep, isEqual } from 'lodash'
 import { isMaybeArraySchemaObject, isReferenceObject } from '@/utils'
 /**
- * 规则处理函数类型
+ * Rule handler function type
  */
 export type RuleHandler = (schema: SchemaObject) => SchemaObject | void
 /**
- * 规则定义
+ * Rule definition
  */
 export interface NormalizationRule {
   name: string
@@ -18,7 +18,7 @@ export class SchemaNormalizer {
   private rules: NormalizationRule[] = []
 
   /**
-   * 添加新规则
+   * Add a new rule
    */
   addRule(rule: NormalizationRule) {
     this.rules.push(rule)
@@ -26,11 +26,11 @@ export class SchemaNormalizer {
   }
 
   /**
-   * 规范化 JSON Schema
-   * M1-A3: 循环检测从 JSON.stringify 改为 WeakSet，消除每节点 O(s) 序列化开销
+   * Normalize JSON Schema
+   * M1-A3: replaced JSON.stringify-based cycle detection with WeakSet, eliminating the O(s) serialization cost per node
    */
   normalize(schema: MaybeSchemaObject): MaybeSchemaObject {
-    // 深度优先遍历
+    // depth-first traversal
     const visited = new WeakSet<object>()
 
     const process = (s: MaybeSchemaObject): MaybeSchemaObject => {
@@ -39,7 +39,7 @@ export class SchemaNormalizer {
       }
       visited.add(s as object)
 
-      // 处理组合模式
+      // process combinatory keywords
       if (s.anyOf) {
         s.anyOf = s.anyOf.map(item => process(item))
       }
@@ -50,12 +50,12 @@ export class SchemaNormalizer {
         s.allOf = s.allOf.map(item => process(item))
       }
 
-      // 处理数组类型
+      // process array type
       if (isMaybeArraySchemaObject(s)) {
         s.items = process(s.items)
       }
 
-      // 处理对象属性
+      // process object properties
       if (s.properties) {
         const newProps: Record<string, SchemaObject> = {}
         for (const [key, value] of Object.entries(s.properties)) {
@@ -64,7 +64,7 @@ export class SchemaNormalizer {
         s.properties = newProps
       }
       let result = s
-      // 应用规则
+      // apply rules
       for (const rule of this.rules) {
         const newResult = rule.handler(result)
         if (newResult && !visited.has(newResult as object)) {

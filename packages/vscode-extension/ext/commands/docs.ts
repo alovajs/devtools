@@ -9,7 +9,7 @@ export class AppiDocs {
   static async openDocs(apiRefs: ApiRef[] | string) {
     let selectedRef: ApiRef | undefined
 
-    // 兼容旧格式 (string key)
+    // compatible with the old format (string key)
     if (typeof apiRefs === 'string') {
       Log.info(`Open docs: ${apiRefs}`)
       expandView('api-docs-sidebar')
@@ -17,15 +17,15 @@ export class AppiDocs {
       return
     }
 
-    // 新格式: ApiRef[]
+    // new format: ApiRef[]
     if (apiRefs.length === 0)
       return
     if (apiRefs.length === 1) {
-      // 只有一个来源，直接打开
+      // only one source, open directly
       selectedRef = apiRefs[0]
     }
     else {
-      // 多个来源，弹出 QuickPick 让用户选择
+      // multiple sources, pop up a QuickPick for the user to choose
       const items = apiRefs.map(ref => ({
         label: `${ref.method.toUpperCase()} ${ref.path}`,
         description: ref.summary ?? '',

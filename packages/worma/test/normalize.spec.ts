@@ -5,7 +5,7 @@ describe('schema Normalizer', () => {
   describe('validateSchema rule', () => {
     it('should fix invalid type field', () => {
       const schema: SchemaObject = {
-        type: {} as any, // 无效的类型
+        type: {} as any, // invalid type
         title: 'Test',
       }
 
@@ -16,7 +16,7 @@ describe('schema Normalizer', () => {
 
     it('should remove invalid enum field', () => {
       const schema: SchemaObject = {
-        enum: 'invalid' as any, // 无效的枚举
+        enum: 'invalid' as any, // invalid enum
         type: 'string',
       }
 
@@ -299,7 +299,7 @@ describe('schema Normalizer', () => {
 
       const result = normalizer.normalize(schema) as SchemaObject
       expect(result.anyOf).toBeDefined()
-      // 同一 type 的两个对象，且无判别式冲突 → 合并为 1 个
+      // two objects of the same type with no discriminator conflict -> merged into 1
       expect(result.anyOf).toHaveLength(1)
       const merged = result.anyOf![0] as SchemaObject
       expect(merged.properties).toBeDefined()
@@ -333,7 +333,7 @@ describe('schema Normalizer', () => {
       }
 
       const result = normalizer.normalize(schema) as SchemaObject
-      // oneOf 也走 mergeAnyOf（保持原 oneOf 数组），分支数应保持为 2
+      // oneOf also goes through mergeAnyOf (preserving the original oneOf array); branch count should stay 2
       expect(result.oneOf).toBeDefined()
       expect(result.oneOf).toHaveLength(2)
     })
@@ -358,7 +358,7 @@ describe('schema Normalizer', () => {
       }
 
       const result = normalizer.normalize(schema) as SchemaObject
-      expect(result.type).toEqual(['string', 'integer', 'boolean']) // 不应该推断类型
+      expect(result.type).toEqual(['string', 'integer', 'boolean']) // type should not be inferred
       expect(result.enum).toEqual(['a', 1, true])
     })
   })
@@ -418,8 +418,8 @@ describe('schema Normalizer', () => {
       const schema: SchemaObject = {
         type: 'string',
         minLength: 5,
-        minimum: 0, // 不适用于字符串
-        minItems: 1, // 不适用于字符串
+        minimum: 0, // not applicable to string
+        minItems: 1, // not applicable to string
         title: 'Test',
       }
 

@@ -4,8 +4,8 @@ export type ExtractResponded<
   Default,
 > = UserDefinedConfig extends { transform: (...args: any[]) => any }
   ? Awaited<ReturnType<UserDefinedConfig['transform']>>
-  : UnifiedConfigKey extends keyof typeof {{{tagName}}}DefaultConfig
-    ? typeof {{{tagName}}}DefaultConfig[UnifiedConfigKey] extends { transform: (...args: any[]) => any }
-      ? Awaited<ReturnType<typeof {{{tagName}}}DefaultConfig[UnifiedConfigKey]['transform']>>
+  : UnifiedConfigKey extends keyof typeof {{{currentTag.tag}}}DefaultConfig
+    ? typeof {{{currentTag.tag}}}DefaultConfig[UnifiedConfigKey] extends { transform: (...args: any[]) => any }
+      ? Awaited<ReturnType<typeof {{{currentTag.tag}}}DefaultConfig[UnifiedConfigKey]['transform']>>
       : Default
     : Default;

@@ -3,7 +3,7 @@ import { HttpMethod } from '@/type'
 import { findBy$ref, isReferenceObject } from '@/utils'
 
 /**
- * 支持的API方法列表
+ * List of supported API methods
  * @see https://github.com/alovajs/alova/blob/main/packages/alova/typings/index.d.ts#L640
  */
 export const supportedApiMethods: HttpMethod[] = [
@@ -56,12 +56,12 @@ export class OpenApiHelper {
   }
 
   /**
-   * 将 ApiMethods 数组写回到 openapi document 的 paths 中。
-   * 仅更新传入的 url+method 对应的 operationObject，保留其它未涉及的内容。
+   * Write the ApiMethods array back into the openapi document's paths.
+   * Only updates the operationObject for the passed url+method, keeping the rest untouched.
    */
   public saveApiMethods(apiMethods: ApiMethod[]) {
     this.document.paths = {} as any
-    // 构建 url -> { method -> operationObject } 映射，后写入覆盖前者
+    // build a url -> { method -> operationObject } map; later writes overwrite earlier ones
     const grouped: Record<string, Record<string, any>> = {}
     for (const item of apiMethods || []) {
       if (!item || !item.url || !item.method || !item.operationObject) {
@@ -69,7 +69,7 @@ export class OpenApiHelper {
       }
       const method = String(item.method).toLowerCase() as HttpMethod
       if (!supportedApiMethods.includes(method)) {
-        // 跳过不支持的 http 方法
+        // skip unsupported http methods
         continue
       }
       if (!grouped[item.url]) {
@@ -78,7 +78,7 @@ export class OpenApiHelper {
       grouped[item.url][method] = item.operationObject
     }
 
-    // 将分组后的方法写回到 document.paths
+    // write the grouped methods back into document.paths
     for (const [url, methodsMap] of Object.entries(grouped)) {
       const pathInfo = (this.document.paths?.[url] || {}) as Record<string, any>
       for (const [method, operationObject] of Object.entries(methodsMap)) {
@@ -88,14 +88,14 @@ export class OpenApiHelper {
         this.document.paths[url] = pathInfo
       }
     }
-    // 更新后清除引用缓存，确保后续计算的使用引用为最新
+    // clear the reference cache after updating, ensuring subsequent used-reference computations are up to date
     this.usedRefsCache.clear()
     return this
   }
 
   /**
-   * 判断某个引用是否在文档中被使用
-   * @param ref ReferenceObject 或其 `$ref` 路径字符串
+   * Check whether a reference is used in the document
+   * @param ref ReferenceObject or its `$ref` path string
    */
   public isReferenceUsed(ref: string | ReferenceObject): boolean {
     const refPath = typeof ref === 'string' ? ref : ref.$ref
@@ -104,7 +104,7 @@ export class OpenApiHelper {
   }
 
   /**
-   * 预计算并返回已使用的 `$ref` 集合，仅从 paths 可达
+   * Precompute and return the set of used `$ref`s, reachable only from paths
    */
   public getUsedReferenceSet(): Set<string> {
     if (this.usedRefsCache.size > 0) {
@@ -153,7 +153,7 @@ export class OpenApiHelper {
   }
 
   /**
-   * 过滤掉未使用的引用，返回仍被使用的引用列表
+   * Filter out unused references and return the list of still-used references
    */
   public filterUsedReferences<T extends string | ReferenceObject>(refs: Array<T>): Array<T> {
     const usedSet = this.getUsedReferenceSet()

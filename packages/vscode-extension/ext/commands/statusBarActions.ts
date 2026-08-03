@@ -35,7 +35,7 @@ async function pickProject(projects: string[]): Promise<string[] | undefined> {
   if (projects.length <= 1) {
     return projects
   }
-  // 将绝对路径转为相对于 workspace 根目录的相对路径显示
+  // convert the absolute path to a relative path relative to the workspace root for display
   const workspaceRoots = getWorkspacePaths()
   function toLabel(p: string): string {
     for (const root of workspaceRoots) {

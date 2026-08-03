@@ -1,11 +1,9 @@
 import type { AxiosRequestConfig } from 'axios';
 import type * as ComponentTypes from '../components';
 
-{{#each tagedApis}}
-{{#each apis}}
+{{#each currentTag.apis}}
 {{> dts-types}}
 {{> api-jsdoc}}
 {{> dts-fn-declare}}
 
-{{/each}}
 {{/each}}

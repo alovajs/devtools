@@ -18,10 +18,10 @@ import { computePerTagHashes, readCacheApis, writeCacheEntry } from '@/functions
 import { logger } from '@/helper/logger'
 import { existsPromise, format, registerCommonHelpers, registerPartials } from '@/utils'
 
-/** M1-A2: Handlebars 实例缓存 —— 同 templatePath 复用编译好的 partials 和 helpers */
+/** M1-A2: Handlebars instance cache — reuse compiled partials and helpers for the same templatePath */
 const hbsInstanceCache = new Map<string, typeof HandlebarsType>()
 
-/** M1-A2: Handlebars 模板编译缓存 —— 同文件路径复用编译结果 */
+/** M1-A2: Handlebars template compile cache — reuse compiled result for the same file path */
 type HbsTemplateFn = (context?: any, options?: any) => string
 const templateCompileCache = new Map<string, HbsTemplateFn>()
 
@@ -29,7 +29,7 @@ function cacheKey(projectPath: string, output: string) {
   return `${projectPath}::${output}`
 }
 
-/** 模块类型目录名（与 config.type 不同：commonjs -> common） */
+/** module-type directory name (differs from config.type: commonjs -> common) */
 export const MODULE_TYPES = [ModuleTypeDir.TYPESCRIPT, ModuleTypeDir.MODULE, ModuleTypeDir.COMMON] as const
 export type ModuleTypeKey = (typeof MODULE_TYPES)[number]
 
@@ -144,7 +144,7 @@ export class TemplateHelper {
     return MODULE_TYPE_TO_KIND[type] ?? ModuleKind.ES_MODULE
   }
 
-  // ============ 缓存 ============
+  // ============ cache ============
 
   static async readData(projectPath: string, output: string) {
     const key = cacheKey(projectPath, output)
@@ -204,7 +204,7 @@ export class TemplateHelper {
     }))
   }
 
-  // ============ 模板解析 ============
+  // ============ template resolution ============
 
   async resolveTemplateFiles(templatePath: string): Promise<TemplateFileInfo[]> {
     const absolute = path.isAbsolute(templatePath) ? templatePath : path.resolve(process.cwd(), templatePath)
@@ -302,7 +302,7 @@ export class TemplateHelper {
     }
   }
 
-  // ============ 渲染 & 输出 ============
+  // ============ render & output ============
 
   async renderTemplate(templateFilePath: string, data: any): Promise<string> {
     const p = path.isAbsolute(this.config.templatePath)
@@ -324,7 +324,7 @@ export class TemplateHelper {
     return template(data)
   }
 
-  /** M1-A2: 清除 Handlebars 编译和实例缓存（供测试与 watch 模式使用） */
+  /** M1-A2: clear Handlebars compile and instance caches (used by tests and watch mode) */
   static clearTemplateCache() {
     hbsInstanceCache.clear()
     templateCompileCache.clear()
@@ -476,10 +476,10 @@ export class TemplateHelper {
     const { changedTags, beforeFileWrite, writeConcurrency = 32, formatFile = true } = options ?? {}
 
     const hbs = await this.createHbs()
-    const tags = data.tagedApis?.map(item => item.tagName) || []
+    const tags = data.tagedApis?.map(item => item.tag) || []
     const apis = data.allApis || []
     const tagApisMap = new Map<string, typeof data.tagedApis[0]>()
-    data.tagedApis?.forEach(item => tagApisMap.set(item.tagName, item))
+    data.tagedApis?.forEach(item => tagApisMap.set(item.tag, item))
 
     // Collect all file paths for codeGenerated notification
     const allFilePaths: string[] = []
@@ -607,7 +607,7 @@ export class TemplateHelper {
 
   private async renderOne(hbs: typeof HandlebarsType, tf: TemplateFileInfo, data: any, outputDir: string, placeholders?: { tag?: string, api?: string }): Promise<Record<string, string>> {
     const renderData = data.config ? { ...data.config, ...data } : data
-    const content = await this.renderTemplateFromPath(hbs, tf.absolutePath, renderData)
+    const content = await this.renderTemplateFromPath(hbs, tf.absolutePath, { ...renderData, noOverwrite: tf.isNoOverwrite })
 
     let relPath = tf.relativePath
     if (placeholders?.tag)

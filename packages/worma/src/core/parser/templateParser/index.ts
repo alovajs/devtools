@@ -10,7 +10,7 @@ import { OpenApiHelper } from '@/helper/document'
 import { getResponseSuccessKey, optimizeRefsMap, parseReference } from '@/utils/openapi'
 import { getContentKey, parseParameters, parseRequestBody, parseResponse, transformApiMethods } from './helper'
 
-/** M2-B4: 轻量并发 limiter，无额外依赖 */
+/** M2-B4: lightweight concurrency limiter, no extra dependencies */
 async function pMap<T, R>(items: T[], fn: (item: T) => Promise<R>, concurrency: number): Promise<R[]> {
   const results: R[] = Array.from({ length: items.length })
   let idx = 0
@@ -24,7 +24,7 @@ async function pMap<T, R>(items: T[], fn: (item: T) => Promise<R>, concurrency: 
   return results
 }
 
-/** 根据 CPU 核数自动计算合理并发上限 */
+/** Automatically compute a reasonable concurrency limit based on CPU core count */
 function autoConcurrency(): number {
   const cpuCount = Math.max(1, cpus().length)
   return Math.min(64, Math.max(8, cpuCount * 4))
@@ -41,8 +41,8 @@ export class TemplateParser implements Parser<OpenAPIDocument, TemplateData, Tem
   private operationIdSet = new Set<string>()
   private pathMap: Array<[string, any]> = []
   private refNameMap = new Map<string, string>()
-  /** M1-A4: 用 Map 索引替代 tagedApis.find() 线性查找，O(n·t) → O(n+t) */
-  private tagMap = new Map<string, { tagName: string, apis: Api[] }>()
+  /** M1-A4: replaced tagedApis.find() linear lookup with a Map index, O(n·t) → O(n+t) */
+  private tagMap = new Map<string, { tag: string, apis: Api[] }>()
   private document: OpenAPIDocument
   private options: TemplateParserOptions
   private openApiHelper = new OpenApiHelper()
@@ -156,7 +156,7 @@ export class TemplateParser implements Parser<OpenAPIDocument, TemplateData, Tem
       })
     templateData.components = [...new Set(this.schemasMap.values())]
     templateData.componentNames = [...this.schemasMap.keys()]
-    // 按名称字典序排序，确保输出顺序确定性（避免并发场景下 Map 插入顺序漂移）
+    // sort by name lexicographically to ensure deterministic output order (avoid Map insertion-order drift under concurrency)
     const sorted = [...this.schemasMap.entries()].sort(([a], [b]) => a.localeCompare(b))
     templateData.componentNames = sorted.map(([k]) => k)
     templateData.components = sorted.map(([, v]) => v)
@@ -303,7 +303,7 @@ export class TemplateParser implements Parser<OpenAPIDocument, TemplateData, Tem
     let tagApis = this.tagMap.get(api.tag)
     if (!tagApis) {
       tagApis = {
-        tagName: api.tag,
+        tag: api.tag,
         apis: [],
       }
       this.tagMap.set(api.tag, tagApis)

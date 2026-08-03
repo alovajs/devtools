@@ -1,4 +1,4 @@
-import type { alovaInstance } from './index{{#if (eq type "commonjs")}}.cjs{{/if}}';
+import type { alovaInstance } from './index{{#if (eq type "commonjs")}}.cjs{{else if (eq type "module")}}.js{{/if}}';
 import type { Alova, AlovaGenerics, AlovaMethodCreateConfig, Method } from 'alova';
 
 type CollapsedAlova = typeof alovaInstance;
@@ -41,3 +41,5 @@ export type Alova2Method<Responded> = CollapsedAlova extends Alova<
       AlovaGenerics<Responded, any, RequestConfig, Response, ResponseHeader, L1Cache, L2Cache, SE>
     >
   : never;
+
+export type TagDefaultConfig<C, Key extends string> = C extends { [K in Key]: infer V } ? V : {}

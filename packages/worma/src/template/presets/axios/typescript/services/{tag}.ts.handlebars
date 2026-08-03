@@ -1,14 +1,13 @@
 {{> comment}}
 import type { AxiosRequestConfig } from 'axios';
 import { axiosInstance } from '../index';
-import { buildPayload } from '../helper';
+import { buildPayload, resolveTagDefaultConfig } from '../helper';
+import * as defaultConfig from './index';
 import type * as ComponentTypes from '../components';
-{{#each tagedApis}}
-import { {{{tagName}}}DefaultConfig } from '.';
-{{/each}}
 
-{{#each tagedApis}}
-{{#each apis}}
+const {{{currentTag.tag}}}DefaultConfig = resolveTagDefaultConfig(defaultConfig, '{{{currentTag.tag}}}DefaultConfig');
+
+{{#each currentTag.apis}}
 type {{{name}}}Response = {{addNamespace response @root.componentNames}};
 type {{{name}}}ExtraConfig = Omit<AxiosRequestConfig, 'data' | 'params'> & {
   {{#if pathParameters}}pathParams: {{addNamespace pathParameters @root.componentNames}};
@@ -18,7 +17,7 @@ type {{{name}}}ExtraConfig = Omit<AxiosRequestConfig, 'data' | 'params'> & {
 };
 {{> api-jsdoc}}
 export function {{{name}}}(config{{#or pathParameters queryParameters requestBody }}{{else}}?{{/or}}: {{{name}}}ExtraConfig): Promise<{{{name}}}Response> {
-  const { url, mergedConfig } = buildPayload('{{{path}}}', {{{tag}}}DefaultConfig, {{{name}}}.name, config);
+  const { url, mergedConfig } = buildPayload('{{{path}}}', {{../currentTag.tag}}DefaultConfig, {{{name}}}.name, config);
   return axiosInstance<unknown, {{{name}}}Response>({
     method: '{{method}}',
     url,
@@ -27,5 +26,4 @@ export function {{{name}}}(config{{#or pathParameters queryParameters requestBod
   }){{#if (eq response "Blob")}}.then((data: any) => data instanceof Blob ? data : new Blob([data])){{/if}};
 }
 
-{{/each}}
 {{/each}}

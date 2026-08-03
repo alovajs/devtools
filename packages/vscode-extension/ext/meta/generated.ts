@@ -4,7 +4,7 @@
 // Meta info
 export const publisher = 'worma'
 export const name = 'worma-vscode'
-export const version = '0.0.1'
+export const version = '0.2.1'
 export const displayName = 'Worma'
 export const description = 'Generate and search APIs without API documentation any more'
 export const extensionId = `${publisher}.${name}`
@@ -29,54 +29,59 @@ export const commands = {
    * Generate APIs
    * @value `worma.refresh`
    */
-  wormaRefresh: 'worma.refresh',
+  refresh: 'worma.refresh',
   /**
    * Force Generate APIs
    * @value `worma.generateApi.force`
    */
-  wormaGenerateApiForce: 'worma.generateApi.force',
+  generateApiForce: 'worma.generateApi.force',
   /**
    * Create worma config
    * @value `worma.create.config`
    */
-  wormaCreateConfig: 'worma.create.config',
+  createConfig: 'worma.create.config',
   /**
    * Refresh View
    * @value `worma.apiDocs.refresh`
    */
-  wormaApiDocsRefresh: 'worma.apiDocs.refresh',
+  apiDocsRefresh: 'worma.apiDocs.refresh',
   /**
-   * 打开代码片段搜索
+   * Open Snippet Search
    * @value `worma.snippetSearch.open`
    */
-  wormaSnippetSearchOpen: 'worma.snippetSearch.open',
+  snippetSearchOpen: 'worma.snippetSearch.open',
   /**
-   * 插入代码片段
+   * Insert Snippet
    * @value `worma.snippetSearch.insert`
    */
-  wormaSnippetSearchInsert: 'worma.snippetSearch.insert',
+  snippetSearchInsert: 'worma.snippetSearch.insert',
   /**
-   * 显示快捷键帮助
+   * Show Shortcut Help
    * @value `worma.snippetSearch.showHelp`
    */
-  wormaSnippetSearchShowHelp: 'worma.snippetSearch.showHelp',
+  snippetSearchShowHelp: 'worma.snippetSearch.showHelp',
 } satisfies Record<string, CommandKey>
 
 /**
  * Type union of all configs
  */
-export type ConfigKey = 'worma.autoUpdate'
+export type ConfigKey
+  = | 'worma.autoUpdate'
+    | 'worma.enableViewApiLens'
 
 export interface ConfigKeyTypeMap {
-  'worma.autoUpdate': boolean | { launchEditor?: boolean, interval?: number }
+  'worma.autoUpdate': unknown
+  'worma.enableViewApiLens': boolean
 }
 
 export interface ConfigShorthandMap {
   autoUpdate: 'worma.autoUpdate'
+  enableViewApiLens: 'worma.enableViewApiLens'
 }
 
 export interface ConfigShorthandTypeMap {
-  autoUpdate: boolean | { launchEditor?: boolean, interval?: number }
+  autoUpdate: unknown
+  enableViewApiLens: boolean
 }
 
 export interface ConfigItem<T extends keyof ConfigKeyTypeMap> {
@@ -89,26 +94,48 @@ export interface ConfigItem<T extends keyof ConfigKeyTypeMap> {
  */
 export const configs = {
   /**
-   * Whether to automatically update APIs.
+   *
    * @key `worma.autoUpdate`
    * @default `true`
+   * @type `undefined`
    */
-  autoUpdate: 'worma.autoUpdate',
-} satisfies Record<string, ConfigKey>
+  autoUpdate: {
+    key: 'worma.autoUpdate',
+    default: true,
+  } as ConfigItem<'worma.autoUpdate'>,
+  /**
+   *
+   * @key `worma.enableViewApiLens`
+   * @default `true`
+   * @type `boolean`
+   */
+  enableViewApiLens: {
+    key: 'worma.enableViewApiLens',
+    default: true,
+  } as ConfigItem<'worma.enableViewApiLens'>,
+}
 
 export interface ScopedConfigKeyTypeMap {
-  autoUpdate: boolean | { launchEditor?: boolean, interval?: number }
+  autoUpdate: unknown
+  enableViewApiLens: boolean
 }
 
 export const scopedConfigs = {
-  scope: 'worma-vscode',
+  scope: 'worma',
   defaults: {
     autoUpdate: true,
+    enableViewApiLens: true,
   } satisfies ScopedConfigKeyTypeMap,
 }
 
 export interface NestedConfigs {
   worma: {
-    autoUpdate: boolean | { launchEditor?: boolean, interval?: number }
+    autoUpdate: unknown
+    enableViewApiLens: boolean
   }
+}
+
+export interface NestedScopedConfigs {
+  autoUpdate: unknown
+  enableViewApiLens: boolean
 }

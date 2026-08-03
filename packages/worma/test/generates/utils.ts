@@ -5,9 +5,9 @@ export function normalizeString(str?: string) {
   if (!str)
     return ''
   return str
-    .replace(/\s+/g, ' ') // 合并连续空格
-    .replace(/\n/g, '') // 删除换行
-    .trim() // 去除首尾空格
+    .replace(/\s+/g, ' ') // merge consecutive spaces
+    .replace(/\n/g, '') // remove newlines
+    .trim() // trim leading/trailing whitespace
 }
 
 export async function normalizeGeneratorResult(result: GeneratorResult): Promise<GeneratorResult> {

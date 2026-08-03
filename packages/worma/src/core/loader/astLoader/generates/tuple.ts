@@ -16,7 +16,7 @@ export function tupleTypeGenerator(ast: TTuple, ctx: GeneratorCtx) {
   const spreadParam = ast.spreadParam ?? {
     type: ASTType.ANY,
   }
-  // 封闭元组（禁止额外项）时不展开剩余项
+  // for closed tuples (no extra items allowed), do not spread the rest param
   const isClosed = spreadParam.type === ASTType.NEVER
 
   if (!isClosed) {

@@ -38,17 +38,17 @@ export type AST
 
 export type CommentType = 'line' | 'doc'
 export interface AbstractAST {
-  // 节点类型
+  // node type
   type: ASTType
-  // 注释
+  // comment
   comment?: string
-  // 深度注释
+  // deep comment
   deepComment?: string
-  // 外部引用
+  // external reference
   keyName?: string
-  // 类型名
+  // type name
   name?: string
-  // 是否弃用
+  // whether deprecated
   deprecated?: boolean
 }
 

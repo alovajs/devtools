@@ -128,7 +128,8 @@ exports[`generate API > should generate code from an url 2`] = `
  *
  * https://worma.js.org
  *
- * **Do not edit the file manually.**
+ * NOTE: This file is generated only once and will NOT be overwritten on regeneration.
+ * You can safely customize it to fit your needs.
  */
 import { createAlova } from 'alova';
 import fetchAdapter from 'alova/fetch';
@@ -1385,7 +1386,8 @@ exports[`generate API > should generate code from an url 6`] = `
  *
  * https://worma.js.org
  *
- * **Do not edit the file manually.**
+ * NOTE: This file is generated only once and will NOT be overwritten on regeneration.
+ * You can safely customize it to fit your needs.
  */
 import { createAlova } from 'alova';
 import fetchAdapter from 'alova/fetch';
@@ -2649,7 +2651,8 @@ exports[`generate API > should generate code from an url 10`] = `
  *
  * https://worma.js.org
  *
- * **Do not edit the file manually.**
+ * NOTE: This file is generated only once and will NOT be overwritten on regeneration.
+ * You can safely customize it to fit your needs.
  */
 import { createAlova } from 'alova';
 import fetchAdapter from 'alova/fetch';
@@ -5582,7 +5585,8 @@ exports[`generate API > should generate code with a variant of openapi file form
  *
  * https://worma.js.org
  *
- * **Do not edit the file manually.**
+ * NOTE: This file is generated only once and will NOT be overwritten on regeneration.
+ * You can safely customize it to fit your needs.
  */
 import { createAlova } from 'alova';
 import fetchAdapter from 'alova/fetch';
@@ -8508,7 +8512,8 @@ exports[`generate API > should generate code with a variant of openapi file form
  *
  * https://worma.js.org
  *
- * **Do not edit the file manually.**
+ * NOTE: This file is generated only once and will NOT be overwritten on regeneration.
+ * You can safely customize it to fit your needs.
  */
 import { createAlova } from 'alova';
 import fetchAdapter from 'alova/fetch';
@@ -9765,7 +9770,8 @@ exports[`generate API > should generate code with a variant of openapi file form
  *
  * https://worma.js.org
  *
- * **Do not edit the file manually.**
+ * NOTE: This file is generated only once and will NOT be overwritten on regeneration.
+ * You can safely customize it to fit your needs.
  */
 import { createAlova } from 'alova';
 import fetchAdapter from 'alova/fetch';
@@ -11111,7 +11117,8 @@ exports[`generate API > should generate target versioned code 2`] = `
  *
  * https://worma.js.org
  *
- * **Do not edit the file manually.**
+ * NOTE: This file is generated only once and will NOT be overwritten on regeneration.
+ * You can safely customize it to fit your needs.
  */
 import { createAlova } from 'alova';
 import fetchAdapter from 'alova/fetch';

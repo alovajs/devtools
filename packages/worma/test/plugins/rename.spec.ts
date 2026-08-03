@@ -354,7 +354,7 @@ describe('rename plugin', () => {
         scope: 'params',
         style: 'camelCase',
       })
-      // 未命中 path：本配置不生效，接口原样返回（引用不变）
+      // path not matched: this config does not apply, the API is returned as-is (same reference)
       expect(result).toBe(descriptor)
       expect(result.parameters[0].name).toBe('page_num')
     })

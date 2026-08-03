@@ -65,7 +65,7 @@ export function aiDoc(config?: AiDocConfig): ApiPlugin {
           ...group,
           apis: group.apis.map(api => ({
             ...api,
-            ...(isGlobals ? {} : { fileLocation: `${outputRel.replace(/\\/g, '/')}/${group.tagName}` }),
+            ...(isGlobals ? {} : { fileLocation: `${outputRel.replace(/\\/g, '/')}/${group.tag}` }),
           })),
         })),
       }

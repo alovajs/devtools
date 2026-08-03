@@ -348,7 +348,7 @@ export interface Api {
 }
 export interface ApiDoc {
 	apis: Api[];
-	tagName: string;
+	tag: string;
 }
 export type ApiDescriptor = Omit<OperationObject, "requestBody" | "parameters" | "responses"> & {
 	url: string;
