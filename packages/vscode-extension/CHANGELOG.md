@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.3.0
+
+### Minor Changes
+
+- [#184](https://github.com/alovajs/devtools/pull/184) [`0612f00`](https://github.com/alovajs/devtools/commit/0612f001c9df6ead2d54a61743eb04fb209fd66f) Thanks [@JOU-amjs](https://github.com/JOU-amjs)! - add `worma.enableViewApiLens` parameter
+
 ## 0.2.1
 
 ### Patch Changes
