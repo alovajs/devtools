@@ -226,7 +226,7 @@ describe('serverName effectiveness (cache persistence)', () => {
       version: '1.0.0',
       baseUrl: 'http://localhost',
       allApis: [{ tag: 'test', method: 'GET', summary: 'test', path: '/t', pathParameters: '', queryParameters: '', name: 'test', response: 'Test' }],
-      tagedApis: [{ tagName: 'test', apis: [] }],
+      tagedApis: [{ tag: 'test', apis: [] }],
       components: [],
       type: 'typescript' as const,
       config: {},

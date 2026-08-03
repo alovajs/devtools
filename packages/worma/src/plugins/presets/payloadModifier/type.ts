@@ -65,6 +65,11 @@ interface ModifierConfig {
    */
   scope: ModifierScope
   /**
+   * API path filter: this config applies only when `apiDescriptor.url` matches;
+   * when omitted it applies to all APIs. Matching rules are the same as `match` (string substring / RegExp / function).
+   */
+  path?: string | RegExp | ((url: string) => boolean)
+  /**
    * Match rule. Only matched fields are transformed; when omitted, all fields are transformed.
    * - string: the original field name contains this string
    * - RegExp: the original field name matches this pattern

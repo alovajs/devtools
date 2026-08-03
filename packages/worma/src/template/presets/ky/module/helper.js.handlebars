@@ -1,4 +1,5 @@
 {{> comment}}
+
 export function buildPayload(url, defaultConfig, apiName, config) {
   const mergedConfig = { ...defaultConfig[apiName], ...config };
   const pathParams = mergedConfig.pathParams;
@@ -27,7 +28,7 @@ export function buildPayload(url, defaultConfig, apiName, config) {
 /**
  * @typedef {{#raw "{{" }}{{/raw}}
 {{#each tagedApis}}
- *  {{{tagName}}}: typeof import('./services/{{{tagName}}}')
+ *  {{{tag}}}: typeof import('./services/{{{tag}}}')
 {{/each}}
  * {{#raw "}}" }}{{/raw}} ServicesMap
  */
@@ -40,4 +41,18 @@ export function buildPayload(url, defaultConfig, apiName, config) {
  * @param {ConfigMap} configMap
  * @returns {ConfigMap}
  */
-export const setDefaultConfig = (_, configMap) => configMap;
+export function setDefaultConfig(_, configMap) {
+  return configMap;
+}
+
+/**
+ * @template {object} C
+ * @template {string} Key
+ * @param {C} defaultConfig
+ * @param {Key} tagName
+ * @returns {C extends { [K in Key]: infer V } ? V : {}}
+ */
+export function resolveTagDefaultConfig(defaultConfig, tagName) {
+  const raw = defaultConfig[tagName];
+  return raw || {};
+}

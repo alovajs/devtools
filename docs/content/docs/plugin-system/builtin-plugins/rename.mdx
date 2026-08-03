@@ -49,6 +49,12 @@ interface RenameConfig {
   scope?: 'url' | 'params' | 'pathParams' | 'data' | 'response' | 'refName';
 
   /**
+   * 接口路径过滤（apiDescriptor.url 精确/包含匹配、正则或自定义函数）。
+   * 未命中 path 时本配置不生效，接口原样返回。
+   */
+  path?: string | RegExp | ((url: string) => boolean);
+
+  /**
    * 匹配规则，不指定则转换全部
    * - string: 包含此字符串
    * - RegExp: 匹配此正则
@@ -68,7 +74,7 @@ interface RenameConfig {
   /**
    * 自定义转换函数，会在 style 转换前执行
    */
-  transform?: (apiDescriptor: any) => string;
+  transform?: (apiDescriptor: any, value: string) => string;
 }
 
 function rename(config: RenameConfig | RenameConfig[]): ApiPlugin;
@@ -76,7 +82,7 @@ function rename(config: RenameConfig | RenameConfig[]): ApiPlugin;
 
 > **注意：**
 > 1. `refName` 和 `kebabCase` 不能同时配置，因为类型名不能设置为中划线形式。
-> 2. `params`、`pathParams`、`data` 和 `response` 只转换第一层的名称。
+> 2. `params`、`pathParams`、`data` 和 `response` 会**递归**处理嵌套对象与数组元素中的字段名（深度重命名）。
 
 ## 多规则配置
 
@@ -118,12 +124,12 @@ rename({
 rename({
   scope: 'data',
   match: ['user_info', 'order_list'],
-  transform: api => {
+  transform: (api, value) => {
     const map = {
       user_info: 'user',
       order_list: 'orders',
     };
-    return map[api.key] || api.key;
+    return map[value] || value;
   },
 });
 ```

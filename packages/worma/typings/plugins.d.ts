@@ -368,7 +368,7 @@ export interface Api {
 }
 export interface ApiDoc {
 	apis: Api[];
-	tagName: string;
+	tag: string;
 }
 export type ApiDescriptor = Omit<OperationObject, "requestBody" | "parameters" | "responses"> & {
 	url: string;
@@ -590,6 +590,11 @@ export interface ModifierConfig {
 	 */
 	scope: ModifierScope;
 	/**
+	 * API path filter: this config applies only when `apiDescriptor.url` matches;
+	 * when omitted it applies to all APIs. Matching rules are the same as `match` (string substring / RegExp / function).
+	 */
+	path?: string | RegExp | ((url: string) => boolean);
+	/**
 	 * Match rule. Only matched fields are transformed; when omitted, all fields are transformed.
 	 * - string: the original field name contains this string
 	 * - RegExp: the original field name matches this pattern
@@ -665,19 +670,19 @@ export declare const knife4j: (input: string | string[]) => ApiPlugin;
  */
 export declare const swagger: (input: string | string[]) => ApiPlugin;
 export interface YapiOptions {
-	/** YApi 服务基础地址，例如 `https://yapi.xxx.com` */
+	/** YApi server base address, e.g. `https://yapi.xxx.com` */
 	url: string;
-	/** 项目 ID，必填，用于拼装导出地址 */
+	/** Project ID, required, used to build the export address */
 	pid: string | number;
-	/** OpenAPI 类型，默认 `OpenAPIV2` */
+	/** OpenAPI type, defaults to `OpenAPIV2` */
 	type?: string;
-	/** 接口状态，默认 `all` */
+	/** API status, defaults to `all` */
 	status?: string;
-	/** 是否包含 wiki，默认 `true` */
+	/** Whether to include wiki, defaults to `true` */
 	isWiki?: boolean;
-	/** 登录 cookie。也可通过 fetchOptions.headers.cookie 传入 */
+	/** Login cookie. Can also be passed via fetchOptions.headers.cookie */
 	cookie?: string;
-	/** 额外的 fetch 超时（毫秒） */
+	/** Extra fetch timeout in milliseconds */
 	timeout?: number;
 }
 /**
@@ -726,6 +731,12 @@ export interface RenameConfig {
 	 * Target scope for renaming, defaults to 'url'
 	 */
 	scope?: "url" | "params" | "pathParams" | "data" | "response" | "refName" | "name";
+	/**
+	 * API path filter. When set, this config only takes effect on descriptors
+	 * whose `url` matches the rule; otherwise the descriptor is returned unchanged.
+	 * The rule can be a string (substring match), RegExp, or (url: string) => boolean.
+	 */
+	path?: string | RegExp | ((url: string) => boolean);
 	/**
 	 * Matching rule for selective renaming:
 	 * - string: target contains this string
@@ -789,32 +800,32 @@ export declare function processApiTags(apiDescriptor: ApiDescriptor, handler: Mo
  */
 export declare function tagModifier(handler: ModifierHandler): ApiPlugin;
 /**
- * worma.config 模板预设 - plugin mode
+ * worma.config template preset - plugin mode
  */
 export declare function config(): ApiPlugin;
 /**
- * globals 模板预设 - plugin mode
- * 全局模板，现有的全局模板，通过全局挂载的方式使用
+ * globals template preset - plugin mode
+ * Global template: an existing global template, used via global mounting
  */
 export declare function alovaGlobals(opts?: GlobalsTemplateOptions): ApiPlugin;
 /**
- * functional 模板预设 - plugin mode
- * 函数式模板，生成函数式API调用，支持tree-shaking，仅支持alova v3
+ * functional template preset - plugin mode
+ * Functional template that generates functional API calls, supports tree-shaking, only for alova v3
  */
 export declare function alova(opts?: FunctionalTemplateOptions): ApiPlugin;
 /**
- * axios 模板预设 - plugin mode
- * Axios相关模板
+ * axios template preset - plugin mode
+ * Axios-related template
  */
 export declare function axios(opts?: RequestLibTemplateOptions): ApiPlugin;
 /**
- * fetch 模板预设 - plugin mode
- * Fetch相关模板
+ * fetch template preset - plugin mode
+ * Fetch-related template
  */
 declare function fetch$1(opts?: RequestLibTemplateOptions): ApiPlugin;
 /**
- * ky 模板预设 - plugin mode
- * Ky相关模板
+ * ky template preset - plugin mode
+ * Ky-related template
  */
 export declare function ky(opts?: RequestLibTemplateOptions): ApiPlugin;
 

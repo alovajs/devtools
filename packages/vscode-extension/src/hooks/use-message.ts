@@ -5,10 +5,10 @@ const MESSAGE_CHANNEL = 'view-app'
 const REACT_MESSAGE_CHANNEL = 'ext-server'
 
 const handlers = useHandlers()
-// 注册一个 channel
+// register a channel
 handlers.registerChannel(MESSAGE_CHANNEL)
 
-// 发送消息
+// send message
 function sendMessage<T = any>(channel: string, value: DataType<T>) {
   const msgBody: MessageType<T> = {
     from: MESSAGE_CHANNEL,

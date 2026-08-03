@@ -20,43 +20,43 @@ export class ConfigManager {
   }
 
   /**
-   * 加载并验证配置
+   * Load and validate the configuration
    */
   public async load(config: Partial<Config>, projectPath: string = process.cwd(), tracker?: ProgressTracker): Promise<void> {
-    // 处理配置
+    // process config
     const userConfig = await this.handleConfig(config, projectPath, tracker)
-    // 验证配置
+    // validate config
     const validatedConfig = this.validateConfig(userConfig)
 
-    // 更新配置
+    // update config
     this.config = validatedConfig
     this.readConfig = Object.freeze(this.config)
     logger.debug('Configuration loaded successfully', this.config)
   }
 
   /**
-   * 获取完整配置
+   * Get the full configuration
    */
   public getConfig() {
     return this.readConfig
   }
 
   /**
-   * 更新配置
+   * Update configuration
    */
   public async update(partialConfig: Partial<Config>): Promise<void> {
     await this.load({ ...this.config, ...partialConfig })
   }
 
   private async handleConfig(config: Partial<Config>, projectPath: string = process.cwd(), tracker?: ProgressTracker) {
-    // 合并配置
+    // merge config
     const userConfig = this.mergeConfig(this.defaultConfig, config)
-    // 处理插件的config配置
+    // process plugin config configurations
     userConfig.generator = await Promise.all(userConfig.generator.map(item => prepareConfig(item, projectPath, tracker)))
     return userConfig
   }
   /**
-   * 验证配置
+   * Validate configuration
    */
 
   private validateConfig(config: unknown): Config {
@@ -72,7 +72,7 @@ export class ConfigManager {
   }
 
   /**
-   * 合并配置（浅拷贝）
+   * Merge configuration (shallow copy)
    */
   private mergeConfig<T extends Config>(defaultConfig: T, userConfig: Partial<T>): T {
     const result = { ...defaultConfig, ...userConfig } as T

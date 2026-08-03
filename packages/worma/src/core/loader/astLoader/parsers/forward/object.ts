@@ -2,10 +2,10 @@ import type { Forwarder } from './type'
 
 export default <Forwarder>{
   is(schema): boolean {
-    // 判断是否为对象类型
-    // 1. type 为 'object'
-    // 2. 或者有 properties 字段
-    // 3. 或者有 additionalProperties 字段
+    // check whether it is an object type
+    // 1. type is 'object'
+    // 2. or has a properties field
+    // 3. or has an additionalProperties field
     return schema && (schema.type === 'object' || !!schema.properties || !!schema.additionalProperties)
   },
   to: 'object',

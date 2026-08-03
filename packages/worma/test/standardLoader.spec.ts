@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { makeIdentifier } from '@/core/loader/standardLoader/helper'
 
 describe('makeIdentifier', () => {
-  // 测试camelCase风格
+  // test camelCase style
   describe('camelCase style', () => {
     it('should convert simple string to camelCase', () => {
       expect(makeIdentifier('hello world', 'camelCase')).toBe('helloWorld')
@@ -37,7 +37,7 @@ describe('makeIdentifier', () => {
     })
   })
 
-  // 测试snakeCase风格
+  // test snakeCase style
   describe('snakeCase style', () => {
     it('should convert simple string to snake_case', () => {
       expect(makeIdentifier('hello world', 'snakeCase')).toBe('hello_world')
@@ -72,7 +72,7 @@ describe('makeIdentifier', () => {
     })
   })
 
-  // 测试边界情况
+  // test edge cases
   describe('edge cases', () => {
     it('should handle strings with only special characters', () => {
       expect(makeIdentifier('!@#$%^&*()', 'camelCase')).toBe('$')

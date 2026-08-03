@@ -2,5 +2,5 @@
 import { setDefaultConfig } from '../helper';
 
 {{#each tagedApis}}
-export const {{{tagName}}}DefaultConfig = setDefaultConfig('{{{tagName}}}', {});
+export const {{{tag}}}DefaultConfig = setDefaultConfig('{{{tag}}}', {});
 {{/each}}

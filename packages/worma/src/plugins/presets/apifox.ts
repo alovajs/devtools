@@ -73,10 +73,10 @@ export function apifox({
     moduleId,
   }
 
-  // 根据不同的 scope 类型设置相应的参数
+  // set the corresponding params based on the scope type
   switch (scopeType) {
     case 'ALL':
-      // 导出全部不需要额外参数
+      // exporting all does not require extra params
       break
     case 'SELECTED_ENDPOINTS':
       body.scope!.selectedEndpointIds = selectedEndpointIds

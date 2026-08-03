@@ -47,12 +47,12 @@ describe('payloadModifier plugin tests', () => {
     }
 
     const result = handleApi(api)!
-    // 可选普通类型入参被包裹为 { required: false, type }
+    // optional plain-type input is wrapped as { required: false, type }
     expect(ageInput).toEqual({ required: false, type: 'number' })
-    // 必填普通类型入参为原始字符串
+    // required plain-type input is the original string
     expect(idInput).toBe('number')
 
-    // age 转为 string|number|boolean 联合类型，且 required 为 true
+    // age becomes the string|number|boolean union type, and required is true
     const ageParam = result.parameters!.find(p => p.in === 'query' && p.name === 'age')!
     expect(ageParam.schema).toEqual({
       description: 'hello age',
@@ -60,15 +60,15 @@ describe('payloadModifier plugin tests', () => {
     })
     expect(ageParam.required).toBeTruthy()
 
-    // debug 被移除
+    // debug is removed
     expect(result.parameters!.some(p => p.name === 'debug')).toBe(false)
 
-    // path id 为 string 且 required 为 false
+    // path id is string and required is false
     const idParam = result.parameters!.find(p => p.in === 'path' && p.name === 'id')!
     expect((idParam.schema as SchemaObject)?.type).toBe('string')
     expect(idParam.required).toBe(false)
 
-    // q 保持不变
+    // q stays unchanged
     const qParam = result.parameters!.find(p => p.in === 'query' && p.name === 'q')!
     expect((qParam.schema as SchemaObject)?.type).toBe('string')
     expect(qParam.required).toBe(false)
@@ -101,9 +101,9 @@ describe('payloadModifier plugin tests', () => {
     const rb = result.requestBody as SchemaObject
     expect((rb.properties?.name as SchemaObject)?.type).toBe('number')
     expect(rb.properties?.count).toBeUndefined()
-    // 返回原生数组应生成 array 类型
+    // returning a native array should produce an array type
     expect(rb.properties?.tags).toEqual({ type: 'array', items: { type: 'string' } })
-    // required 现在包含 name 和 tags（tags handler 返回非SchemaOptional的['string']，默认 required: true）
+    // required now includes name and tags (the tags handler returns ['string'] which is not a SchemaOptional, so required defaults to true)
     expect(rb.required).toEqual(['name', 'tags'])
   })
 
@@ -169,7 +169,7 @@ describe('payloadModifier plugin tests', () => {
   it('applies multiple configs sequentially', () => {
     const handleApi = getHandleApi([
       { scope: 'params', match: 'age', handler: () => { return 'string' } },
-      { scope: 'params', match: 'age', handler: () => { return 'number' } }, // 被第二个 config 覆盖
+      { scope: 'params', match: 'age', handler: () => { return 'number' } }, // overridden by the second config
       { scope: 'data', match: 'flag', handler: () => { return { required: true, type: 'boolean' } } },
     ])
 
@@ -183,7 +183,7 @@ describe('payloadModifier plugin tests', () => {
 
     const result = handleApi(api)!
     const ageParam = result.parameters![0]
-    expect((ageParam.schema as SchemaObject)?.type).toBe('number') // 被第二个 config 覆盖
+    expect((ageParam.schema as SchemaObject)?.type).toBe('number') // overridden by the second config
     const rb = result.requestBody!
     expect((rb.properties?.flag as SchemaObject)?.type).toBe('boolean')
     expect(rb.required).toEqual(['flag'])
@@ -197,12 +197,12 @@ describe('payloadModifier plugin tests', () => {
         match: 'data',
         handler: (schema) => {
           input = schema
-          // 基于入参做转换：id 改为 string，去掉 name，新增 createdAt
+          // transform based on the input: change id to string, drop name, add createdAt
           const spec = schema as Record<string, any>
           const next: Record<string, any> = {}
           for (const key of Object.keys(spec)) {
             const val = spec[key]
-            // 解包 SchemaOptional（可选字段的入参形式）
+            // unwrap SchemaOptional (the input form of an optional field)
             const isOpt = val && typeof val === 'object' && !Array.isArray(val)
               && typeof val.required === 'boolean' && 'type' in val
             const unwrapped = isOpt ? val.type : val
@@ -245,9 +245,9 @@ describe('payloadModifier plugin tests', () => {
     }
 
     const result = handleApi(api)!
-    // 入参为 data 子对象的 SchemaReference（可选属性用 SchemaOptional 包装）
+    // the input is the SchemaReference of the data sub-object (optional props are wrapped in SchemaOptional)
     expect(input).toEqual({ id: 'number', name: { required: false, type: 'string' } })
-    // data 字段被转换：id -> string，name 移除，新增 createdAt 且均为必填
+    // the data field is transformed: id -> string, name removed, createdAt added and all required
     const res = result.responses as SchemaObject
     expect(res.properties?.data).toEqual({
       type: 'object',
@@ -257,7 +257,7 @@ describe('payloadModifier plugin tests', () => {
       },
       required: ['id', 'createdAt'],
     })
-    // code 字段未受影响
+    // the code field is unaffected
     expect((res.properties?.code as SchemaObject)?.type).toBe('number')
   })
 
@@ -269,7 +269,7 @@ describe('payloadModifier plugin tests', () => {
         match: 'tags',
         handler: (schema) => {
           input = schema
-          // 入参为 ['string']，基于它把元素类型改为 number
+          // the input is ['string']; based on it, change the element type to number
           return ['number']
         },
       },
@@ -288,10 +288,10 @@ describe('payloadModifier plugin tests', () => {
     }
 
     const result = handleApi(api)!
-    // 入参为原生数组 ['string']
+    // the input is the native array ['string']
     expect(input).toEqual(['string'])
     const rb = result.requestBody as SchemaObject
-    // 返回 ['number'] 生成 array 类型
+    // returning ['number'] produces an array type
     expect(rb.properties?.tags).toEqual({ type: 'array', items: { type: 'number' } })
   })
 
@@ -320,7 +320,7 @@ describe('payloadModifier plugin tests', () => {
     }
 
     const result = handleApi(api)!
-    // 入参为 oneOf 对象
+    // the input is a oneOf object
     expect(input).toEqual({ oneOf: ['string', 'number'] })
     const idParam = result.parameters!.find(p => p.name === 'id')!
     expect((idParam.schema as SchemaObject).oneOf).toEqual([
@@ -355,7 +355,7 @@ describe('payloadModifier plugin tests', () => {
     }
 
     const result = handleApi(api)!
-    // 入参为 enum 对象
+    // the input is an enum object
     expect(input).toEqual({ enum: ['a', 'b'], type: 'string' })
     const kindParam = result.parameters!.find(p => p.name === 'kind')!
     expect(kindParam.schema).toEqual({ enum: ['a', 'b', 'c'], type: 'string' })
@@ -369,7 +369,7 @@ describe('payloadModifier plugin tests', () => {
         match: 'internalId',
         handler: (schema) => {
           input = schema
-          // 入参为 string 普通类型 -> 移除该字段
+          // the input is a plain string type -> remove this field
           return typeof schema === 'string' ? null : schema
         },
       },
@@ -403,7 +403,7 @@ describe('payloadModifier plugin tests', () => {
         match: 'page',
         handler: (schema) => {
           input = schema
-          // 入参被包裹为 { required: false, type: 'number' }
+          // the input is wrapped as { required: false, type: 'number' }
           const opt = schema as { required: boolean, type: string }
           if (opt.required === false && opt.type === 'number') {
             return { required: true, type: 'number' }
@@ -438,7 +438,7 @@ describe('payloadModifier plugin tests', () => {
         match: 'data',
         handler: (schema) => {
           input = schema
-          // 入参形如 { list: { required: false, type: [ { id: {required:false,type:'number'}, name: {required:false,type:'string'} } ] } }
+          // the input is shaped like { list: { required: false, type: [ { id: {required:false,type:'number'}, name: {required:false,type:'string'} } ] } }
           return {
             list: [{ id: 'string', name: 'string' }],
           }
@@ -470,7 +470,7 @@ describe('payloadModifier plugin tests', () => {
     }
 
     const result = handleApi(api)!
-    // 入参形如 { list: { required: false, type: [ { id: {required:false,type:'number'}, name: {required:false,type:'string'} } ] } }（list 与 item 字段均为可选）
+    // the input is shaped like { list: { required: false, type: [ { id: {required:false,type:'number'}, name: {required:false,type:'string'} } ] } } (both list and item fields are optional)
     expect(input).toEqual({
       list: {
         required: false,
@@ -501,11 +501,11 @@ describe('payloadModifier plugin tests', () => {
         handler: () => ({
           required: true,
           type: {
-            // 内层 required=false 被忽略，type 为完整对象表达
+            // inner required=false is ignored; type is the full object representation
             required: false,
             type: {
-              id: 'number', // 未包装 -> 默认必填
-              name: { required: false, type: 'string' }, // 可选
+              id: 'number', // not wrapped -> required by default
+              name: { required: false, type: 'string' }, // optional
             },
           },
         }),
@@ -655,7 +655,7 @@ describe('payloadModifier plugin tests', () => {
           calls++
           receivedKey = key
           received = schema
-          // 在整体对象上把每个字段都改成 boolean，保留可选标记
+          // set every field on the whole object to boolean, preserving the optional flag
           const s = schema as Record<string, any>
           const next: Record<string, any> = {}
           for (const k of Object.keys(s)) {
@@ -686,13 +686,13 @@ describe('payloadModifier plugin tests', () => {
     }
 
     const result = handleApi(api)!
-    // 整个 scope 只调用一次
+    // the whole scope is called only once
     expect(calls).toBe(1)
-    // match 省略时 key 为 undefined
+    // when match is omitted, key is undefined
     expect(receivedKey).toBeUndefined()
-    // 入参为整个 requestBody 对象，可选属性用 SchemaOptional 包装（integer 规范为 number）
+    // the input is the whole requestBody object, optional props wrapped in SchemaOptional (integer normalized to number)
     expect(received).toEqual({ a: 'string', b: { required: false, type: 'number' }, c: { required: false, type: 'boolean' } })
-    // 每个字段都被改成 boolean，必填关系保持不变
+    // every field is changed to boolean; the required relationship is preserved
     const rb = result.requestBody as SchemaObject
     expect((rb.properties?.a as SchemaObject)?.type).toBe('boolean')
     expect((rb.properties?.b as SchemaObject)?.type).toBe('boolean')
@@ -729,13 +729,13 @@ describe('payloadModifier plugin tests', () => {
     }
 
     const result = handleApi(api)!
-    // 整个 query scope 只调用一次
+    // the whole query scope is called only once
     expect(calls).toBe(1)
-    // match 省略时 key 为 undefined
+    // when match is omitted, key is undefined
     expect(receivedKey).toBeUndefined()
-    // 入参为整个 query 对象（仅 query 参数，path 参数不在此列），可选属性用 SchemaOptional 包装（integer 规范为 number）
+    // the input is the whole query object (only query params, path params excluded), optional props wrapped in SchemaOptional (integer normalized to number)
     expect(received).toEqual({ a: 'string', b: { required: false, type: 'number' } })
-    // 原结构保持不变，path 参数不受影响（integer 经 Schema 表示往返后规范为 number）
+    // the original structure stays unchanged; path params are unaffected (integer is normalized to number after the Schema round-trip)
     const getType = (n: string) => (result.parameters!.find(p => p.name === n)!.schema as SchemaObject).type
     expect(getType('a')).toBe('string')
     expect(getType('b')).toBe('number')
@@ -745,17 +745,17 @@ describe('payloadModifier plugin tests', () => {
   it('match set: handler receives the matched key as the 2nd argument', () => {
     const keys: string[] = []
     const handleApi = getHandleApi([
-      // 字符串精确匹配
+      // exact string match
       { scope: 'params', match: 'age', handler: (_s, key) => {
         keys.push(key as string)
         return 'string'
       } },
-      // 正则匹配
+      // regex match
       { scope: 'params', match: /At$/, handler: (_s, key) => {
         keys.push(key as string)
         return 'string'
       } },
-      // 函数匹配
+      // function match
       {
         scope: 'data',
         match: (k: string) => k.startsWith('user'),
@@ -784,7 +784,7 @@ describe('payloadModifier plugin tests', () => {
     }
 
     handleApi(api)
-    // 命中的字段按顺序记录，未命中的 name/other 不在其中
+    // matched fields are recorded in order; unmatched name/other are not included
     expect(keys).toEqual(['age', 'createdAt', 'updatedAt', 'user_name', 'user_age'])
   })
 
@@ -878,6 +878,78 @@ describe('payloadModifier plugin tests', () => {
         { scope: 'params', match: 'age', handler: () => 'number' },
       ])
       expect(() => handleApi(api())).not.toThrow()
+    })
+  })
+
+  describe('feature: path filter', () => {
+    it('applies config only when apiDescriptor.url matches (string substring)', () => {
+      const handleApi = getHandleApi([
+        {
+          path: '/pets',
+          scope: 'data',
+          match: 'userId',
+          handler: () => ({ required: true, type: 'string' }),
+        },
+      ])
+
+      const matchedApi: ApiDescriptor = {
+        url: '/pets/{id}',
+        method: 'post',
+        parameters: [],
+        requestBody: { type: 'object', properties: { userId: { type: 'integer' } }, required: ['userId'] },
+        responses: { type: 'object', properties: {}, required: [] },
+      }
+      const unmatchedApi: ApiDescriptor = { ...matchedApi, url: '/orders' }
+
+      const matched = handleApi(matchedApi)!
+      const rb = matched.requestBody as SchemaObject
+      // matched: userId is rewritten
+      expect((rb.properties?.userId as SchemaObject)?.type).toBe('string')
+      // unmatched: returned as-is (same reference)
+      const unmatched = handleApi(unmatchedApi)!
+      expect(unmatched).toBe(unmatchedApi)
+    })
+
+    it('path supports RegExp and function matchers', () => {
+      const handleApi = getHandleApi([
+        {
+          path: /^\/admin/,
+          scope: 'params',
+          match: 'token',
+          handler: () => ({ required: true, type: 'string' }),
+        },
+        {
+          path: (url: string) => url.includes('internal'),
+          scope: 'params',
+          match: 'secret',
+          handler: () => ({ required: true, type: 'string' }),
+        },
+      ])
+
+      const adminApi: ApiDescriptor = {
+        url: '/admin/users',
+        method: 'get',
+        parameters: [
+          { name: 'token', in: 'query', required: false, schema: { type: 'string' } },
+          { name: 'secret', in: 'query', required: false, schema: { type: 'string' } },
+        ],
+        requestBody: { type: 'object', properties: {}, required: [] },
+        responses: { type: 'object', properties: {}, required: [] },
+      }
+      const internalApi: ApiDescriptor = { ...adminApi, url: '/internal/x' }
+      const otherApi: ApiDescriptor = { ...adminApi, url: '/public/x' }
+
+      const admin = handleApi(adminApi)!
+      expect((admin.parameters!.find(p => p.name === 'token')!.schema as SchemaObject)?.type).toBe('string')
+      // under the admin path, secret does not match (the path function requires the url to contain 'internal')
+      expect((admin.parameters!.find(p => p.name === 'secret')!.schema as SchemaObject)?.type).toBe('string')
+
+      const internal = handleApi(internalApi)!
+      expect((internal.parameters!.find(p => p.name === 'secret')!.schema as SchemaObject)?.type).toBe('string')
+
+      // none matched: returned as-is
+      const other = handleApi(otherApi)!
+      expect(other).toBe(otherApi)
     })
   })
 })

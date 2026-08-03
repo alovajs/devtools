@@ -2,8 +2,8 @@ import type { Forwarder } from './type'
 
 export default <Forwarder>{
   is(schema): boolean {
-    // 判断是否为枚举类型
-    // 有 enum 字段且不为空数组
+    // check whether it is an enum type
+    // has an enum field that is a non-empty array
     return schema && !!schema.enum && Array.isArray(schema.enum) && schema.enum.length > 0
   },
   to: 'enum',

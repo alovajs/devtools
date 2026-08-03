@@ -120,12 +120,12 @@ export function get$refName(path: string, toUpperCase: boolean = true) {
  * @returns Removed $ref object
  */
 /**
- * M2-B1: $ref 解引用缓存优化 —— 命中 searchMap 时跳过 cloneDeep
+ * M2-B1: $ref dereference cache optimization — skip cloneDeep when searchMap is hit
  */
 export function removeAll$ref<T = SchemaObject>(schemaOrigin: any, openApi: OpenAPIDocument, optons?: { searchMap?: Map<string, SchemaObject>, refNameMap?: Map<string, string> }) {
   const { searchMap = new Map(), refNameMap = new Map() } = optons ?? {}
 
-  // 先检查缓存，命中则直接返回（避免 cloneDeep 开销）
+  // check the cache first; return directly on hit (avoid cloneDeep overhead)
   if (isReferenceObject(schemaOrigin)) {
     if (searchMap.has(schemaOrigin.$ref)) {
       return searchMap.get(schemaOrigin.$ref) as T
@@ -143,7 +143,7 @@ export function removeAll$ref<T = SchemaObject>(schemaOrigin: any, openApi: Open
     return schema as T
   }
 
-  // 非 $ref 节点：仍需 cloneDeep 防止污染原始文档，但子节点走 searchMap 去重
+  // non-$ref nodes: still cloneDeep to avoid mutating the original document, but children go through searchMap for deduplication
   const deepSchemaOrigin = cloneDeep(schemaOrigin)
   for (const key of Object.keys(deepSchemaOrigin)) {
     if (deepSchemaOrigin[key] && typeof deepSchemaOrigin[key] === 'object') {
@@ -237,10 +237,10 @@ export function next$ref() {
 }
 
 /**
- * 根据 usedRefs 优化 refsMap：
- * 1) 移除未使用的 key；
- * 2) 同组（相同 basePath+onlyName）内按版本升序将值左移，
- *    即剩余键依次接收原始值的前 N 个（N 为剩余键数量）。
+ * Optimize refsMap based on usedRefs:
+ * 1) remove unused keys;
+ * 2) within the same group (same basePath+onlyName), shift values left in ascending version order,
+ *    i.e. remaining keys receive the first N original values (N = number of remaining keys).
  */
 export function optimizeRefsMap(
   refsMap: Record<string, string>,
@@ -359,7 +359,7 @@ function unCircular(
 ) {
   const { openApi, map = [], objPath = '$', seen = new WeakMap(), refNameMap = new Map() } = options
   if (typeof obj !== 'object' || obj === null) {
-    return obj // 原始值直接返回
+    return obj // return the primitive value directly
   }
   if (seen.has(obj)) {
     return seen.get(obj)
@@ -433,7 +433,7 @@ export function mergeObject<T>(objValue: any, srcValue: any, options: {
     }
     return srcValue
   }
-  // M2-B1: mergeWith 自身不污染首参（返回新对象），去掉冗余 cloneDeep
+  // M2-B1: mergeWith does not mutate the first argument (returns a new object), removed redundant cloneDeep
   return mergeWith(objValue, srcValue, customizer)
 }
 

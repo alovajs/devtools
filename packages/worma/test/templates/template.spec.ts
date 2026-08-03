@@ -18,7 +18,7 @@ function makeData(overrides: any = {}) {
     config: {},
     tagedApis: [
       {
-        tagName: 'pets',
+        tag: 'pets',
         apis: [
           {
             tag: 'pets',
@@ -35,7 +35,7 @@ function makeData(overrides: any = {}) {
         ],
       },
       {
-        tagName: 'users',
+        tag: 'users',
         apis: [
           {
             tag: 'users',

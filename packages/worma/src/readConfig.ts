@@ -32,20 +32,20 @@ export async function readConfig(projectPath = process.cwd()) {
     return config
   }
 
-  // 获取用户已安装的依赖
+  // get the dependencies installed by the user
   const userDependencies = await getUserInstalledDependencies(projectPath)
-  // 始终将 worma 自身作为外部依赖，防止 esbuild 打包 worma 源码进入临时文件
-  // 否则 __dirname 会指向用户项目目录，导致预设模板路径解析失败
-  // monorepo 子包可能不直接依赖 wormajs，但 config 文件会 import from 'wormajs'
+  // always treat worma itself as an external dependency to prevent esbuild from bundling worma source into the temp file
+  // otherwise __dirname would point to the user project directory, causing preset template path resolution to fail
+  // monorepo sub-packages may not directly depend on wormajs, but the config file imports from 'wormajs'
   const allExternals = [...new Set([...userDependencies, 'worma', 'wormajs/plugin'])]
   const configTmpFileName = `worma_tmp_${Date.now()}.cjs`
-  // 使用绝对路径：esbuild 写入相对 outfile 时按 cwd 解析，
-  // 而 require() 解析相对路径时基于调用模块所在目录，二者不一致会导致 require 失败。
-  // 绝对路径可保证写入与 require 指向同一文件。
+  // use an absolute path: esbuild resolves relative outfile against cwd,
+  // while require() resolves relative paths against the calling module's directory, and the mismatch would cause require to fail.
+  // an absolute path ensures writing and require point to the same file.
   const outfile = path.resolve(projectPath, configTmpFileName)
   await esbuild.build({
     entryPoints: [configFile],
-    // 排除用户已安装的依赖，避免打包进最终文件
+    // exclude dependencies installed by the user to avoid bundling them into the final file
     external: allExternals,
     bundle: true,
     format: 'cjs',
@@ -53,7 +53,7 @@ export async function readConfig(projectPath = process.cwd()) {
     outfile,
     logLevel: 'silent',
   })
-  // try/finally 保证临时文件在任何情况下（require 抛错）都被清理
+  // try/finally ensures the temp file is cleaned up in all cases (including require errors)
   let module
   try {
     // eslint-disable-next-line ts/no-require-imports

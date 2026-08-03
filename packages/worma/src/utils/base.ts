@@ -119,13 +119,13 @@ export function strHashCode(str: string) {
 }
 
 export function getType(value: unknown) {
-  // 处理 null 和 undefined
+  // handle null and undefined
   if (value === null)
     return 'null'
   if (value === undefined)
     return 'undefined'
 
-  // 基本类型
+  // primitive types
   const type = typeof value
   if (type !== 'object' && type !== 'function') {
     if (type === 'number' && Number.isNaN(value))
@@ -139,7 +139,7 @@ export function getType(value: unknown) {
     return type
   }
 
-  // 特殊对象类型
+  // special object types
   if (Array.isArray(value))
     return 'Array'
   if (value instanceof Date)
@@ -155,7 +155,7 @@ export function getType(value: unknown) {
   if (value instanceof Error)
     return 'Error'
 
-  // 函数类型
+  // function types
   if (typeof value === 'function') {
     if (value.constructor.name === 'AsyncFunction')
       return 'AsyncFunction'
@@ -164,22 +164,22 @@ export function getType(value: unknown) {
     return 'Function'
   }
 
-  // 其他对象类型
+  // other object types
   const tag = Object.prototype.toString.call(value).slice(8, -1)
   if (tag !== 'Object')
     return tag
 
-  // 自定义类实例
+  // custom class instances
   if (value.constructor && value.constructor !== Object) {
     return `Class (${value.constructor.name})`
   }
 
-  // 普通对象
+  // plain object
   return 'Object'
 }
 
 /**
- * 获取用户已安装的依赖列表
+ * Get the list of dependencies installed by the user
  */
 export async function getUserInstalledDependencies(projectPath: string): Promise<string[]> {
   const { readPackageJson } = await import('@/utils/readPackageJson')
@@ -192,6 +192,6 @@ export async function getUserInstalledDependencies(projectPath: string): Promise
   const devDependencies = Object.keys(packageJson.devDependencies || {})
   const peerDependencies = Object.keys(packageJson.peerDependencies || {})
 
-  // 合并所有依赖并去重
+  // merge all dependencies and deduplicate
   return [...new Set([...dependencies, ...devDependencies, ...peerDependencies])]
 }

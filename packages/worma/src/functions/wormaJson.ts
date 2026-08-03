@@ -83,17 +83,17 @@ export function computeApiHash(api: Api): string {
  */
 export function computePerTagHashes(
   allApis: Api[],
-  tagedApis?: { tagName: string, apis: Api[] }[],
+  tagedApis?: { tag: string, apis: Api[] }[],
 ): { hash: string, tags: Record<string, string> } {
   const tags: Record<string, string> = {}
   const allHashes: string[] = []
 
   if (tagedApis) {
     // P2: Use pre-grouped tagedApis to avoid O(n) re-grouping loop
-    for (const { tagName, apis: groupApis } of tagedApis) {
+    for (const { tag, apis: groupApis } of tagedApis) {
       const hashes = groupApis.map(computeApiHash).sort()
       allHashes.push(...hashes)
-      tags[tagName] = createHash('sha256').update(hashes.join('')).digest('hex').slice(0, 16)
+      tags[tag] = createHash('sha256').update(hashes.join('')).digest('hex').slice(0, 16)
     }
   }
   else {

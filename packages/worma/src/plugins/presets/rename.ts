@@ -16,6 +16,13 @@ export interface RenameConfig {
   scope?: 'url' | 'params' | 'pathParams' | 'data' | 'response' | 'refName' | 'name'
 
   /**
+   * API path filter. When set, this config only takes effect on descriptors
+   * whose `url` matches the rule; otherwise the descriptor is returned unchanged.
+   * The rule can be a string (substring match), RegExp, or (url: string) => boolean.
+   */
+  path?: string | RegExp | ((url: string) => boolean)
+
+  /**
    * Matching rule for selective renaming:
    * - string: target contains this string
    * - RegExp: target matches this pattern
@@ -327,6 +334,12 @@ function transformRefNameMap(refNameMap: Record<string, string>, config: RenameC
 function renameApiDescriptor(apiDescriptor: ApiDescriptor, config: RenameConfig): ApiDescriptor {
   if (!apiDescriptor)
     return apiDescriptor
+
+  // API path filter: when `path` is set and the url does not match, this config
+  // is a no-op and the descriptor is returned unchanged (same reference).
+  if (config.path && !isMatch(apiDescriptor.url, config.path)) {
+    return apiDescriptor
+  }
 
   const newDescriptor = { ...apiDescriptor }
   const scope = config.scope || RenameScope.URL

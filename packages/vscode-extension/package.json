@@ -68,6 +68,11 @@
             }
           ],
           "default": true
+        },
+        "worma.enableViewApiLens": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Whether to show the `📖 View Api` CodeLens above matched API function calls. Set to `false` to hide it."
         }
       }
     },
@@ -172,7 +177,7 @@
     "build": "vite build -m vscode && (pnpm run build:dts || true)",
     "build:dts": "dts-bundle-generator -o dist/extension/index.d.ts ext/index.ts --no-check --no-banner --project tsconfig.node.json",
     "build:handlers": "dts-bundle-generator -o typings/handlers.d.ts ext/handlers/index.ts --no-check --no-banner --project tsconfig.node.json",
-    "buld:meta": "vscode-ext-gen --output ext/meta/generated.ts && eslint ext/meta/generated.ts --fix",
+    "buld:meta": "vscode-ext-gen --scope worma --output ext/meta/generated.ts && eslint ext/meta/generated.ts --fix",
     "update": "run-p build:meta build:handlers",
     "lint": "eslint .",
     "lintf": "eslint . --fix",

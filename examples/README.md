@@ -1,10 +1,10 @@
 # Worma Examples
 
-在线体验 worma 代码生成能力。每个项目可一键在 [StackBlitz](https://stackblitz.com) 中打开，无需本地安装任何环境。
+Try out worma's code generation online. Each project can be opened in [StackBlitz](https://stackblitz.com) with one click, no local setup required.
 
-## 快速体验
+## Quick Start
 
-直接在浏览器中点击下方按钮，选择一个你感兴趣的项目开始：
+Click the button below in your browser and pick a project you're interested in to get started:
 
 [![TypeScript](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/alovajs/devtools/tree/main/examples/typescript)
 &nbsp;
@@ -12,82 +12,82 @@
 &nbsp;
 [![CommonJS](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/alovajs/devtools/tree/main/examples/commonjs)
 
-## 项目概览
+## Project Overview
 
-| 项目                            | 语言       | 模块规范  | 模板数 | 特色亮点                                            |
-| ------------------------------- | ---------- | --------- | ------ | --------------------------------------------------- |
-| [**typescript**](./typescript/) | TypeScript | ESM       | 6      | 全模板 + aiDoc + input fallback + .wormarc 极简配置 |
-| [**esm**](./esm/)               | JavaScript | ES Module | 5      | 全模板、纯 JS、JSDoc 类型提示                       |
-| [**commonjs**](./commonjs/)     | JavaScript | CommonJS  | 4      | CJS 规范、ky 以外全模板                             |
+| Project                         | Language   | Module system | Templates | Highlights                                                       |
+| ------------------------------- | ---------- | ------------- | --------- | ---------------------------------------------------------------- |
+| [**typescript**](./typescript/) | TypeScript | ESM           | 6         | All templates + aiDoc + input fallback + minimal .wormarc config |
+| [**esm**](./esm/)               | JavaScript | ES Module     | 5         | All templates, pure JS, JSDoc type hints                         |
+| [**commonjs**](./commonjs/)     | JavaScript | CommonJS      | 4         | CJS format, all templates except ky                              |
 
-## 模板 × 项目类型 对照矩阵
+## Template × Project type matrix
 
-| 模板                      | typescript | esm | commonjs |
+| Template                  | typescript | esm | commonjs |
 | ------------------------- | :--------: | :-: | :------: |
-| `alova()` — 函数式        |     ✅     | ✅  |    ✅    |
-| `alovaGlobals()` — 全局式 |     ✅     | ✅  |    ✅    |
+| `alova()` — functional    |     ✅     | ✅  |    ✅    |
+| `alovaGlobals()` — global |     ✅     | ✅  |    ✅    |
 | `axios()` — Axios         |     ✅     | ✅  |    ✅    |
-| `fetch()` — 原生 fetch    |     ✅     | ✅  |    ✅    |
+| `fetch()` — native fetch  |     ✅     | ✅  |    ✅    |
 | `ky()` — ky               |     ✅     | ✅  |  ❌ \*   |
-| Input 数组 fallback       |     ✅     |  —  |    —     |
-| `aiDoc()` 插件            |     ✅     |  —  |    —     |
-| `.wormarc` 极简配置       |     ✅     |  —  |    —     |
+| Input array fallback      |     ✅     |  —  |    —     |
+| `aiDoc()` plugin          |     ✅     |  —  |    —     |
+| `.wormarc` minimal config |     ✅     |  —  |    —     |
 
-> \* ky 为纯 ESM 包，不支持 CommonJS 格式。
+> \* ky is a pure ESM package and does not support the CommonJS format.
 
-## 本地运行
+## Run locally
 
-每个示例项目都是**自包含**的，依赖已写死直接版本号，可单独克隆安装运行（无需完整 monorepo 环境）。
+Each example project is **self-contained**, with pinned dependency versions, so it can be cloned and run on its own (no full monorepo environment needed).
 
 ```bash
-# 方式一：从完整 monorepo 进入（可联调本地 wormajs）
+# Option 1: enter from the full monorepo (enables local wormajs linkage)
 git clone https://github.com/alovajs/devtools.git
-cd devtools/examples/typescript   # 或 esm / commonjs
+cd devtools/examples/typescript   # or esm / commonjs
 npm install
 npm run gen
 
-# 方式二：单独克隆某个示例目录（复制/下载该文件夹即可）
-cd examples/typescript            # 或 esm / commonjs
+# Option 2: clone a single example directory (just copy/download that folder)
+cd examples/typescript            # or esm / commonjs
 npm install
 npm run gen
 
-# 查看生成的 API 代码
+# View the generated API code
 ls src/api/
 ```
 
-> 注意：示例内通过 `worma` 命令调用代码生成器，其底层依赖包名为 `wormajs`（`npm install` 会自动安装）。在完整 monorepo 内运行时会使用本地 `packages/worma`，独立克隆时则使用 npm 上发布的 `wormajs`。
+> Note: the examples invoke the code generator via the `worma` command; its underlying dependency package is `wormajs` (installed automatically by `npm install`). Running inside the full monorepo uses the local `packages/worma`, while a standalone clone uses the published `wormajs` from npm.
 
-## 目录结构
+## Directory structure
 
 ```
 examples/
-├── README.md                    # ← 你在这里
-├── _petstore.json               # 共享 OpenAPI 规范（Petstore 3.0）
+├── README.md                    # ← you are here
+├── _petstore.json               # shared OpenAPI spec (Petstore 3.0)
 │
-├── typescript/                  # TypeScript 旗舰项目
+├── typescript/                  # TypeScript flagship project
 │   ├── package.json
-│   ├── worma.config.ts          # 6 个 generator，含注释
+│   ├── worma.config.ts          # 6 generators, with comments
 │   ├── tsconfig.json
-│   ├── .wormarc.example         # 极简 JSON 配置示例
+│   ├── .wormarc.example         # minimal JSON config example
 │   ├── petstore.json
 │   └── src/demo.ts
 │
-├── esm/                         # ES Module 项目
+├── esm/                         # ES Module project
 │   ├── package.json
-│   ├── worma.config.js          # 5 个 generator
+│   ├── worma.config.js          # 5 generators
 │   ├── petstore.json
 │   └── src/demo.js
 │
-└── commonjs/                    # CommonJS 项目
+└── commonjs/                    # CommonJS project
     ├── package.json
-    ├── worma.config.js          # 4 个 generator
+    ├── worma.config.js          # 4 generators
     ├── petstore.json
     └── src/demo.js
 ```
 
-## StackBlitz 使用提示
+## StackBlitz tips
 
-1. 点击上方按钮打开项目后，等待依赖自动安装
-2. 打开终端，运行 `npm run gen` 生成 API 客户端代码
-3. 在 `src/api/` 下查看各模板的生成结果
-4. 编辑 `worma.config.ts` 实时试验不同配置
+1. After opening the project via the button above, wait for dependencies to install automatically
+2. Open a terminal and run `npm run gen` to generate the API client code
+3. Check the generated results of each template under `src/api/`
+4. Edit `worma.config.ts` to experiment with different configs live

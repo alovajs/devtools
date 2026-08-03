@@ -2,6 +2,7 @@ import type { CancellationToken, CodeLensProvider, ExtensionContext, TextDocumen
 import type { ApiRef, ApiWithSource } from '~/types'
 import { CodeLens, EventEmitter, languages, Position, Range, workspace } from 'vscode'
 import { commandsMap } from '@/commands'
+import { config } from '@/config'
 import { getApisWithContext } from '@/functions/getApis'
 
 interface CodeLensMatch {
@@ -19,34 +20,39 @@ export class ApiCodeLensProvider implements CodeLensProvider {
   public readonly onDidChangeCodeLenses = this._onDidChangeCodeLenses.event
 
   constructor(private context: ExtensionContext) {
-    // 当文档变化时刷新 CodeLens
+    // refresh CodeLens when the document changes
     workspace.onDidChangeTextDocument(() => {
       this._onDidChangeCodeLenses.fire()
     })
+    // refresh when the toggle config changes, so show/hide takes effect immediately without restart
+    workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration('worma.enableViewApiLens'))
+        this._onDidChangeCodeLenses.fire()
+    })
   }
 
-  // 刷新 CodeLens
+  // refresh CodeLens
   public refresh(): void {
     this._onDidChangeCodeLenses.fire()
   }
 
   private createTargetRegex(target: string): RegExp {
-    // 转义特殊字符
+    // escape special characters
     const escaped = target.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    // 允许点前后有空格和换行
+    // allow spaces and newlines around the dot
     const withSpaces = escaped.replace(/\\./g, `\\s*\\.\\s*`)
 
-    // Pattern 1: 带点调用匹配  obj.addPet( / .addPet( / Apis.addPet(
+    // Pattern 1: dotted-call match  obj.addPet( / .addPet( / Apis.addPet(
     let pattern = `${withSpaces}\\s*\\(`
 
-    // Pattern 2: 无命名空间时(target 以 "." 开头)，增加裸函数名调用匹配
-    // (?<![.\w]) 负向 lookbehind 确保前一个字符不是 . 或单词字符(\w)
-    //   ✅ 可匹配: addPet( | =addPet( | <空格>addPet( | ;addPet( | !addPet(
-    //   ✅ 可匹配: await addPet( | return addPet( | const x = addPet(
-    //   ✅ 可匹配: fn(addPet()) | if(addPet()) | [addPet()] | ${addPet()}
-    //   ✅ 可匹配: void addPet( | condition ? addPet( : ...
-    //   ❌ 排除: obj.addPet( → 由 Pattern 1 覆盖，不重复匹配
-    //   ❌ 排除: myAddPet( / _addPet( → 不同标识符子串，正确拒绝
+    // Pattern 2: with no namespace (target starts with "."), also match bare function-name calls
+    // (?<![.\w]) negative lookbehind ensures the previous character is not . or a word character (\w)
+    //   ✅ matches: addPet( | =addPet( | <space>addPet( | ;addPet( | !addPet(
+    //   ✅ matches: await addPet( | return addPet( | const x = addPet(
+    //   ✅ matches: fn(addPet()) | if(addPet()) | [addPet()] | ${addPet()}
+    //   ✅ matches: void addPet( | condition ? addPet( : ...
+    //   ❌ excluded: obj.addPet( -> covered by Pattern 1, not matched again
+    //   ❌ excluded: myAddPet( / _addPet( -> different identifier substrings, correctly rejected
     if (target.startsWith('.')) {
       const bareName = target.slice(1)
       const escapedBare = bareName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -57,10 +63,10 @@ export class ApiCodeLensProvider implements CodeLensProvider {
   }
 
   private getMatchesWithPositionAndLine(text: string, target: string) {
-    // 分割文本为行数组
+    // split the text into an array of lines
     const lines = text.split('\n')
     const regex = this.createTargetRegex(target)
-    // 计算每行的起始位置和长度
+    // compute the start position and length of each line
     const lineStarts: number[] = []
     const lineLengths: number[] = []
     let currentPosition = 0
@@ -72,15 +78,15 @@ export class ApiCodeLensProvider implements CodeLensProvider {
     })
 
     const matches: CodeLensMatch[] = []
-    // 重置正则表达式的lastIndex
+    // reset the regex's lastIndex
     regex.lastIndex = 0
     let match: RegExpExecArray | null = regex.exec(text)
-    // 遍历所有匹配项
+    // iterate over all matches
     while (match !== null) {
       const start = match.index
       const end = match.index + match[0].length
       const matchText = match[0]
-      // 查找起始行
+      // find the start line
       let startLine = -1
       for (let i = 0; i < lines.length; i += 1) {
         if (start >= lineStarts[i] && start < lineStarts[i] + lineLengths[i] + 1) {
@@ -89,7 +95,7 @@ export class ApiCodeLensProvider implements CodeLensProvider {
         }
       }
 
-      // 查找结束行
+      // find the end line
       let endLine = startLine
       for (let i = startLine; i < lines.length; i += 1) {
         if (end <= lineStarts[i] + lineLengths[i]) {
@@ -98,7 +104,7 @@ export class ApiCodeLensProvider implements CodeLensProvider {
         }
       }
 
-      // 计算行内位置
+      // compute the in-line position
       const startCol = start - lineStarts[startLine]
       const endCol = end - lineStarts[endLine]
 
@@ -113,7 +119,7 @@ export class ApiCodeLensProvider implements CodeLensProvider {
         lineLengths,
       })
 
-      // 防止无限循环
+      // prevent infinite loop
       if (match.index === regex.lastIndex) {
         regex.lastIndex += 1
       }
@@ -122,13 +128,17 @@ export class ApiCodeLensProvider implements CodeLensProvider {
     return matches
   }
 
-  // 提供 CodeLens 项
+  // provide CodeLens items
   async provideCodeLenses(document: TextDocument, _token: CancellationToken) {
+    // decide whether to show the View Api CodeLens based on the config toggle; shown by default
+    if (!config.enableViewApiLens)
+      return []
+
     const codeLenses: CodeLens[] = []
     const filePath = document.uri.fsPath
     const apis = await getApisWithContext(filePath)
 
-    // 按 target key (global.name) 分组
+    // group by target key (global.name)
     const apiGroups = new Map<string, ApiWithSource[]>()
     for (const api of apis) {
       const targetKey = `.${api.name}`
@@ -140,19 +150,19 @@ export class ApiCodeLensProvider implements CodeLensProvider {
 
     const documentText = document.getText()
 
-    // 对每个唯一的 target key 进行匹配
+    // match each unique target key
     for (const [targetKey, apiGroup] of apiGroups) {
       const matches = this.getMatchesWithPositionAndLine(documentText, targetKey)
       if (matches.length === 0)
         continue
 
-      // 构建标题
+      // build the title
       const sourceCount = apiGroup.length
       const title = sourceCount === 1
         ? `📖 View Api: ${targetKey}`
         : `📖 View Api: ${targetKey} (${sourceCount} sources)`
 
-      // 构建参数：传递所有匹配 API 的必要信息
+      // build arguments: pass the necessary info of all matched APIs
       const apiRefs: ApiRef[] = apiGroup.map(api => ({
         uniqueKey: `${api.projectName}/${api.serverIndex}/${api.name}`,
         serverName: api.serverName,
@@ -183,6 +193,6 @@ export class ApiCodeLensProvider implements CodeLensProvider {
 
 export default <ExtensionModule> function (ctx) {
   const apiCodeLensProvider = new ApiCodeLensProvider(ctx)
-  // 注册CodeLens提供器
+  // register the CodeLens provider
   return languages.registerCodeLensProvider('*', apiCodeLensProvider)
 }

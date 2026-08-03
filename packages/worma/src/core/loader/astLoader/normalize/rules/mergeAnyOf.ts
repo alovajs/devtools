@@ -1,9 +1,10 @@
 import type { SchemaObject } from '@/type'
 
 /**
- * 检测两个 schema 在某个共享属性上是否构成判别式。
- * 当不同分支对同一字段使用不同的 const 或 enum 时，合并这些分支会
- * 丢掉判别信息，因此应保留为独立的联合分支。
+ * Detect whether two schemas form a discriminator on a shared property.
+ * When different branches use different const or enum values for the same field,
+ * merging them would lose the discriminant information, so they should be kept
+ * as separate union branches.
  */
 function hasDiscriminatorConflict(a: SchemaObject, b: SchemaObject): boolean {
   const aProps = (a.properties ?? {}) as Record<string, SchemaObject>
@@ -14,15 +15,15 @@ function hasDiscriminatorConflict(a: SchemaObject, b: SchemaObject): boolean {
     }
     const ap = aProps[key]
     const bp = bProps[key]
-    // 不同的 const 值 → 判别式
+    // different const values -> discriminator
     if (ap.const !== undefined && bp.const !== undefined && ap.const !== bp.const) {
       return true
     }
-    // 一个 const、一个 enum → 判别式
+    // one const, one enum -> discriminator
     if ((ap.const !== undefined && bp.enum) || (bp.const !== undefined && ap.enum)) {
       return true
     }
-    // 不同的 enum 值 → 判别式
+    // different enum values -> discriminator
     if (ap.enum && bp.enum) {
       const aKey = JSON.stringify([...(ap.enum as any[])].sort())
       const bKey = JSON.stringify([...(bp.enum as any[])].sort())
@@ -35,7 +36,7 @@ function hasDiscriminatorConflict(a: SchemaObject, b: SchemaObject): boolean {
 }
 
 /**
- * 组内任意两个分支存在判别式冲突即视为有冲突。
+ * A group is considered to have a conflict if any two of its branches have a discriminator conflict.
  */
 function groupHasDiscriminatorConflict(group: SchemaObject[]): boolean {
   for (let i = 0; i < group.length; i++) {
@@ -67,7 +68,7 @@ export default function mergeAnyOf(schema: SchemaObject): SchemaObject | void {
       continue
     }
 
-    // 组内分支之间只要存在判别式冲突，就保留原始分支不做合并
+    // if any discriminator conflict exists within the group, keep the original branches unmerged
     if (groupHasDiscriminatorConflict(group)) {
       mergedAnyOf.push(...group)
       continue

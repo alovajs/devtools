@@ -7,26 +7,26 @@ export interface ApiProject {
 }
 
 export interface ApiWithSource extends Api {
-  /** 服务器显示名称 */
+  /** Display name of the server */
   serverName: string
-  /** 服务器路径 (e.g. "https://petstore.swagger.io/v2") */
+  /** Server path (e.g. "https://petstore.swagger.io/v2") */
   serverPath: string
-  /** 项目名称 */
+  /** Project name */
   projectName: string
-  /** 服务器在项目中的索引 */
+  /** Index of the server within the project */
   serverIndex: number
 }
 
-/** CodeLens 命令参数中传递的 API 引用，用于精确路由到树节点 */
+/** API reference passed in CodeLens command args, used to route precisely to the tree node */
 export interface ApiRef {
-  /** 树节点唯一标识，格式: projectName/serverIndex/global.name */
+  /** Unique identifier of the tree node, format: projectName/serverIndex/global.name */
   uniqueKey: string
   serverName: string
   serverPath: string
   method: string
   path: string
   summary: string
-  /** 代码中的匹配键，如 ".addPet" */
+  /** Match key in code, e.g. ".addPet" */
   targetKey: string
 }
 

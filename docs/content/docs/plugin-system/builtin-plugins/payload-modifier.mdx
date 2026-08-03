@@ -13,6 +13,7 @@ description: 灵活修改 API 接口的请求和响应参数，支持增加、�
 - 支持增加、删除、修改参数类型
 - 支持修改参数层级（`flat`）
 - 通过 `match` 规则精确控制需要修改的字段
+- 通过 `path` 规则限定仅对匹配的接口路径生效
 - 通过 `handler` 函数动态修改参数的类型和必填性
 
 ## 基本使用
@@ -74,6 +75,8 @@ type ModifierScope = 'params' | 'pathParams' | 'data' | 'response';
 interface Config {
   /** 生效范围 */
   scope: ModifierScope;
+  /** 接口路径过滤：仅当 apiDescriptor.url 命中时才生效；省略则对所有接口生效。匹配规则与 match 一致 */
+  path?: string | RegExp | ((url: string) => boolean);
   /** 匹配规则，不指定则匹配全部 */
   match?: string | RegExp | ((key: string) => boolean);
   /**
@@ -81,10 +84,12 @@ interface Config {
    * - 返回 Schema 表示修改类型
    * - 返回 { required: boolean; type: Schema } 表示修改必填性（以 type 字段为准）
    * - 返回 void | null | undefined 表示移除字段
+   * handler 第一个参数为当前字段的 Schema，第二个参数为命中的字段名 key（未配置 match 时为 undefined）
    * handler 参数默认类型为 Schema，如需更精确的类型可在 handler 内部进行断言（as）
    */
   handler: (
     schema: Schema,
+    key?: string,
   ) => Schema | { required: boolean; type: Schema } | void | null | undefined;
 }
 ```
@@ -170,6 +175,87 @@ payloadModifier([
 
 `SchemaEnum` 也可用于接收入参时的判断：当字段在 OpenAPI 中本身就是枚举时，handler 收到的 `schema` 即为 `{ enum: [...], type?: ... }`，可据此再转换。
 
+## 常用场景示例
+
+以下为日常使用中高频出现的组合配置，可直接复制并按需调整。
+
+### 数字 id 统一改为 string（避免前端精度丢失）
+
+后端 `id` 多为 `integer`，前端用 `number` 接收会丢失精度。用正则把以 `id`/`Id` 结尾的字段统一改为 `string`：
+
+```javascript
+payloadModifier([
+  { scope: 'response', match: /[Ii]d$/, handler: () => 'string' },
+  { scope: 'params', match: /[Ii]d$/, handler: () => 'string' },
+]);
+```
+
+### 时间字段统一改为 number 时间戳
+
+把以 `time`/`at` 结尾的字段（如 `createTime`、`updated_at`）统一改为 `number`：
+
+```javascript
+payloadModifier([
+  { scope: 'data', match: /(time|at)$/i, handler: () => 'number' },
+  { scope: 'response', match: /(time|at)$/i, handler: () => 'number' },
+]);
+```
+
+### 批量移除内部 / 调试字段
+
+移除以 `debug`、`_`、`internal` 开头的响应字段：
+
+```javascript
+payloadModifier([
+  { scope: 'response', match: /^(debug|_|internal)/i, handler: () => undefined },
+]);
+```
+
+### 必填与可选互转
+
+把 `nickname` 改为可选、把 `phone` 改为必填：
+
+```javascript
+payloadModifier([
+  { scope: 'data', match: 'nickname', handler: () => ({ required: false, type: 'string' }) },
+  { scope: 'data', match: 'phone', handler: () => ({ required: true, type: 'string' }) },
+]);
+```
+
+### 根据原类型动态改写（handler 接收 schema）
+
+把疑似数组（以 `list`/`List` 结尾）的响应字段统一规整为 `string[]`：
+
+```javascript
+payloadModifier([
+  {
+    scope: 'response',
+    match: /list$/i,
+    handler: (schema) => ({ type: ['string'] }),
+  },
+]);
+```
+
+### 组合多个 scope / path 的实战配置
+
+一个真实项目中常见的完整配置，兼顾路径过滤与类型修正：
+
+```javascript
+payloadModifier([
+  // 1) 仅对 /api/admin 下的接口，给请求体增加内部字段
+  {
+    path: /^\/api\/admin/,
+    scope: 'data',
+    match: 'operatorId',
+    handler: () => ({ required: true, type: 'string' }),
+  },
+  // 2) 所有接口：数字 id 转 string
+  { scope: 'response', match: /[Ii]d$/, handler: () => 'string' },
+  // 3) 所有接口：移除调试字段
+  { scope: 'response', match: /^(debug|internal)/i, handler: () => undefined },
+]);
+```
+
 ## 高级用法
 
 ### 动态修改必填性
@@ -236,4 +322,27 @@ handler: () => ({
 ```javascript
 handler: () => (['string']); // string[]
 handler: () => (['string', 'number']); // 元组 [string, number]
+```
+
+### 指定接口路径（path 过滤）
+
+通过 `path` 限定配置仅对匹配的接口路径生效，未命中的接口将原样返回、不受影响。匹配规则与 `match` 一致，支持字符串子串、正则、函数三种形式：
+
+```javascript
+payloadModifier([
+  // 仅对路径包含 /pets 的接口生效
+  {
+    path: '/pets',
+    scope: 'data',
+    match: 'userId',
+    handler: () => ({ required: true, type: 'string' }),
+  },
+  // 仅对 /admin 开头的接口生效（正则）
+  {
+    path: /^\/admin/,
+    scope: 'params',
+    match: 'token',
+    handler: () => ({ required: true, type: 'string' }),
+  },
+]);
 ```

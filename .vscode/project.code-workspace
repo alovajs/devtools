@@ -115,6 +115,10 @@
     "search.exclude": {
       "out": true // set this to false to include "out" folder in search results
     },
+    // Use the project's local TypeScript (6.0.x) so tsconfig options such as
+    // `ignoreDeprecations` are recognized by the editor's language service.
+    // Path is relative to this .code-workspace file's directory (.vscode/).
+    "typescript.tsdk": "../node_modules/typescript/lib",
     "[handlebars]": {
       "editor.defaultFormatter": "monosans.djlint"
     },

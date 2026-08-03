@@ -1,11 +1,11 @@
 import { defineConfig } from 'wormajs'
 import { alova, alovaGlobals, axios, fetch, ky, swagger } from 'wormajs/plugin'
 
-// ─── Worma TypeScript 示例 ──────────────────────────
-// 本文件展示了单项目中配置 5 个 generator 的方式，
-// 一次性生成多套模板代码，方便对比选择。
+// ─── Worma TypeScript example ──────────────────────────
+// This file shows how to configure 5 generators in a single project,
+// generating multiple template sets at once for easy comparison.
 //
-// 运行 `pnpm gen` 即可生成所有 API 客户端代码。
+// Run `pnpm gen` to generate all API client code.
 
 export default defineConfig({
   generator: [

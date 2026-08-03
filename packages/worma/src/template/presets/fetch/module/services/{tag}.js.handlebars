@@ -1,15 +1,15 @@
 {{> comment}}
 import { fetchClient } from '../index.js';
-import { buildPayload } from '../helper.js';
-import { {{currentTag.tagName}}DefaultConfig } from './index.js';
+import { buildPayload, resolveTagDefaultConfig } from '../helper.js';
+import * as defaultConfig from './index.js';
 
-{{#each tagedApis}}
-{{#each apis}}
+const {{currentTag.tag}}DefaultConfig = resolveTagDefaultConfig(defaultConfig, '{{currentTag.tag}}DefaultConfig');
+
+{{#each currentTag.apis}}
 {{> api-jsdoc}}
 export async function {{{name}}}(config = {}) {
-  const { url, mergedConfig } = buildPayload('{{{path}}}', {{{tag}}}DefaultConfig, {{{name}}}.name, config);
+  const { url, mergedConfig } = buildPayload('{{{path}}}', {{../currentTag.tag}}DefaultConfig, {{{name}}}.name, config);
   return fetchClient.request(url, { method: '{{method}}', ...mergedConfig{{#if (eq response "Blob")}}, blob: true{{/if}} });
 }
 
-{{/each}}
 {{/each}}

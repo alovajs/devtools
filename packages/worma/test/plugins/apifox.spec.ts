@@ -182,11 +182,11 @@ describe('apifox preset plugin - config', () => {
       projectId: 'proj-123',
       apifoxToken: 'token-abc',
       scopeType: 'SELECTED_TAGS',
-      // 注意这里没有提供 selectedTags
+      // note: selectedTags is not provided here
     })
 
     const next = (await plugin.config!({ config: baseInputConfig, projectPath: '', reportProgress: () => {} })) ?? baseInputConfig
-    // 在新版插件中，selectedTags 有默认值 []，并且在 scopeType 为 SELECTED_TAGS 时始终会被设置
+    // in the new plugin, selectedTags defaults to [] and is always set when scopeType is SELECTED_TAGS
     const data = next.fetchOptions?.data as Record<string, any>
     expect(data.scope.selectedTags).toEqual([])
   })
@@ -200,7 +200,7 @@ describe('apifox preset plugin - config', () => {
     } as ApifoxOptions)
 
     const next = (await plugin.config!({ config: baseInputConfig, projectPath: '', reportProgress: () => {} })) ?? baseInputConfig
-    // 即使显式设置为 undefined，TypeScript 默认参数也会将其转换为空数组
+    // even if explicitly set to undefined, the TypeScript default parameter converts it to an empty array
     const data = next.fetchOptions?.data as Record<string, any>
     expect(data.scope.selectedTags).toEqual([])
   })
@@ -219,7 +219,7 @@ describe('apifox preset plugin - config', () => {
   })
 
   it('should correctly infer scopeType when not explicitly provided', async () => {
-    // 新版插件中不再根据 selectedTags 自动推断 scopeType，而是默认使用 ALL
+    // the new plugin no longer infers scopeType from selectedTags; it defaults to ALL
     const plugin1 = apifox({
       projectId: 'proj-123',
       apifoxToken: 'token-abc',
@@ -227,11 +227,11 @@ describe('apifox preset plugin - config', () => {
     })
 
     const next1 = (await plugin1.config!({ config: baseInputConfig, projectPath: '', reportProgress: () => {} })) ?? baseInputConfig
-    // 新版插件默认 scopeType 是 ALL，不会根据 selectedTags 自动推断
+    // the new plugin defaults scopeType to ALL and does not infer it from selectedTags
     const data1 = next1.fetchOptions?.data as Record<string, any>
     expect(data1.scope.type).toBe('ALL')
 
-    // 当没有提供 selectedTags 也没有指定 scopeType 时，应该默认为 ALL
+    // when neither selectedTags nor scopeType is provided, it should default to ALL
     const plugin2 = apifox({
       projectId: 'proj-123',
       apifoxToken: 'token-abc',
@@ -242,7 +242,7 @@ describe('apifox preset plugin - config', () => {
   })
 
   it('should behave like old version when scopeType is not specified but selectedTags is provided (backward compatibility)', async () => {
-    // 为了向后兼容，如果需要根据 selectedTags 推断 scopeType，需要显式设置
+    // for backward compatibility, if scopeType must be inferred from selectedTags, it must be set explicitly
     const plugin = apifox({
       projectId: 'proj-123',
       apifoxToken: 'token-abc',

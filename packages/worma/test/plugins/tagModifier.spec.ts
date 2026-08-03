@@ -146,7 +146,7 @@ describe('tagModifier plugin tests', () => {
     expect(result?.tags).toEqual([])
   })
 
-  // ---- 插件装配路径 / 集成测试 ----
+  // ---- plugin wiring / integration tests ----
 
   it('handleApi should transform tags through the plugin wiring', () => {
     const handleApi = getHandleApi(t => t.toUpperCase())
@@ -159,7 +159,7 @@ describe('tagModifier plugin tests', () => {
     expect(handleApi(null as any)).toBeNull()
   })
 
-  // ---- 边界与语义测试 ----
+  // ---- edge cases & semantics tests ----
 
   it('should remove tag when handler returns void', () => {
     const handler: ModifierHandler = () => {}
@@ -187,13 +187,13 @@ describe('tagModifier plugin tests', () => {
     expect(result?.tags).toEqual(['prefix-a-名称', 'prefix-b-名称', 'prefix-c-名称'])
   })
 
-  // ---- 生成内容有效性（方案 B：原始非法 tag 兜底剔除）----
+  // ---- generated content validity (approach B: fall back to dropping the original invalid tag) ----
 
   it('should drop original tag when it is invalid and the modification is invalid', () => {
     const descriptor: ApiDescriptor = { ...mockApiDescriptor, tags: ['user.service', 'api', 'management'] }
     const handler: ModifierHandler = (tag: string) => `${tag}@invalid`
     const result = processApiTags(descriptor, handler)
-    // 'user.service' 非法，回退到同样非法的原始 tag -> 剔除
+    // 'user.service' is invalid, falls back to the same invalid original tag -> dropped
     expect(result?.tags).toEqual(['api', 'management'])
   })
 
@@ -215,7 +215,7 @@ describe('tagModifier plugin tests', () => {
     for (const t of result.tags!) {
       expect(t).toMatch(/^[\u4E00-\u9FA5\w-]+$/)
     }
-    // 'user.service' 非法被剔除；'api' 回退到合法原始值；'management' 保持不变
+    // 'user.service' invalid -> dropped; 'api' falls back to the valid original value; 'management' unchanged
     expect(result.tags).toEqual(['api', 'management'])
   })
 })

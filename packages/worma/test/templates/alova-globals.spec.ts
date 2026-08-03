@@ -300,7 +300,9 @@ describe('generate API', () => {
     )
   })
 
-  // Skipped: module-type template generation does not work correctly with the memfs mock in this test environment
+  // Skipped: module/commonjs template generation fails in vitest fs mock environment.
+  // The auto-detect (ESM/CJS) steps require generate() with inferred 'module'/'commonjs' type, which
+  // returns false due to template loading failure. This is a test infrastructure limitation.
   it.skip('should auto detect generating module codes if not set `type`', {
     timeout: 10 * 1000,
   }, async () => {
@@ -319,16 +321,14 @@ describe('generate API', () => {
     })
     await expect(fs.readFile(resolve(outputDir, 'createApis.ts'), 'utf-8')).resolves.not.toBeUndefined()
 
-    // auto: esm
-    const packageJson = {
+    // auto: esm - write package.json using mocked fs (same fs generate() uses)
+    const autoDirEsm = resolve(__dirname, `./mock_output/auto_detect${getSalt()}`)
+    await fs.mkdir(autoDirEsm, { recursive: true })
+    await fs.writeFile(resolve(autoDirEsm, 'package.json'), JSON.stringify({
       name: 'test-pkg',
-      type: undefined as string | undefined,
       version: '1.0.0',
       devDependencies: {},
-    }
-    const tempPkgFile = resolve(__dirname, './package.json')
-    const { writeFileSync, unlinkSync } = await vi.importActual<typeof import('node:fs')>('node:fs')
-    writeFileSync(tempPkgFile, JSON.stringify(packageJson))
+    }))
     const outputDir2 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`)
     await generate(
       {
@@ -341,15 +341,21 @@ describe('generate API', () => {
         ],
       },
       {
-        projectPath: __dirname,
+        projectPath: autoDirEsm,
       },
     )
     const fileContentEsm = await fs.readFile(resolve(outputDir2, 'createApis.js'), 'utf-8')
     expect(fileContentEsm).toMatch('export const createApis')
 
     // auto: cjs
-    packageJson.type = 'commonjs'
-    writeFileSync(tempPkgFile, JSON.stringify(packageJson))
+    const autoDirCjs = resolve(__dirname, `./mock_output/auto_detect${getSalt()}`)
+    await fs.mkdir(autoDirCjs, { recursive: true })
+    await fs.writeFile(resolve(autoDirCjs, 'package.json'), JSON.stringify({
+      name: 'test-pkg',
+      type: 'commonjs',
+      version: '1.0.0',
+      devDependencies: {},
+    }))
     const outputDir3 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`)
     await generate(
       {
@@ -362,7 +368,7 @@ describe('generate API', () => {
         ],
       },
       {
-        projectPath: __dirname,
+        projectPath: autoDirCjs,
       },
     )
     const fileContentCjs = await fs.readFile(resolve(outputDir3, 'createApis.js'), 'utf-8')
@@ -373,13 +379,9 @@ describe('generate API', () => {
   mountApis
 };`),
     )
-
-    unlinkSync(tempPkgFile)
   })
 
-  // Skipped: module-type template generation does not work correctly with the memfs mock in this test environment
-  it.skip('should generate corresponding module codes dependent to `type`', async () => {
-    // ts
+  it('should generate typescript module codes', async () => {
     const outputDir = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`)
     await generate({
       generator: [
@@ -392,7 +394,9 @@ describe('generate API', () => {
       ],
     })
     await expect(fs.readFile(resolve(outputDir, 'createApis.ts'), 'utf-8')).resolves.not.toBeUndefined()
+  })
 
+  it('should generate ts module codes', async () => {
     const outputDirTs = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`)
     await generate({
       generator: [
@@ -405,9 +409,14 @@ describe('generate API', () => {
       ],
     })
     await expect(fs.readFile(resolve(outputDirTs, 'createApis.ts'), 'utf-8')).resolves.not.toBeUndefined()
+  })
 
-    // esm
+  // Skipped: 'module' type template generation fails in vitest fs mock environment.
+  // generate() returns false because template loading via the mocked fs cannot properly
+  // resolve the 'module' subdirectory templates. This is a test infrastructure limitation.
+  it.skip('should generate esm module codes', async () => {
     const outputDir2 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`)
+    vol.mkdirSync(outputDir2, { recursive: true })
     await generate({
       generator: [
         {
@@ -420,9 +429,13 @@ describe('generate API', () => {
     })
     const fileContentEsm = await fs.readFile(resolve(outputDir2, 'createApis.js'), 'utf-8')
     expect(fileContentEsm).toMatch('export const createApis')
+  })
 
-    // cjs
+  // Skipped: 'commonjs' type template generation fails in vitest fs mock environment.
+  // Same root cause as the esm test above.
+  it.skip('should generate commonjs module codes', async () => {
     const outputDir3 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`)
+    vol.mkdirSync(outputDir3, { recursive: true })
     await generate({
       generator: [
         {
@@ -1010,7 +1023,7 @@ describe('generate API', () => {
 
     const globalsFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8')
 
-    // 检查生成的类型定义是否正确处理了 nullable 属性 (prettier adds blank lines after JSDoc */)
+    // check whether the generated type definitions handle nullable properties correctly (prettier adds blank lines after JSDoc */)
     expect(globalsFile).toMatch(
       createStrReg(`interface Pet {
   /**

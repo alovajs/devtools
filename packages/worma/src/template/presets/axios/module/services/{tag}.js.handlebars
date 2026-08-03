@@ -1,13 +1,14 @@
 {{> comment}}
 import { axiosInstance } from '../index.js';
-import { buildPayload } from '../helper.js';
-import { {{currentTag.tagName}}DefaultConfig } from './index.js';
+import { buildPayload, resolveTagDefaultConfig } from '../helper.js';
+import * as defaultConfig from './index.js';
 
-{{#each tagedApis}}
-{{#each apis}}
+const {{currentTag.tag}}DefaultConfig = resolveTagDefaultConfig(defaultConfig, '{{currentTag.tag}}DefaultConfig');
+
+{{#each currentTag.apis}}
 {{> api-jsdoc}}
 export function {{{name}}}(config = {}) {
-  const { url, mergedConfig } = buildPayload('{{{path}}}', {{{tag}}}DefaultConfig, {{{name}}}.name, config);
+  const { url, mergedConfig } = buildPayload('{{{path}}}', {{../currentTag.tag}}DefaultConfig, {{{name}}}.name, config);
   return axiosInstance({
     method: '{{method}}',
     url,
@@ -16,5 +17,4 @@ export function {{{name}}}(config = {}) {
   }){{#if (eq response "Blob")}}.then(data => data instanceof Blob ? data : new Blob([data])){{/if}};
 }
 
-{{/each}}
 {{/each}}

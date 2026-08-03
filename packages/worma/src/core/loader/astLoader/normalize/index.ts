@@ -12,7 +12,7 @@ import validateSchema from './rules/validateSchema'
 
 const normalizer = new SchemaNormalizer()
 
-// ================= 注册规则 =================
+// ================= Register rules =================
 normalizer
   .addRule({
     name: 'inferType',

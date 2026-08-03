@@ -2,9 +2,9 @@
 const { setMethodDefaultConfig } = require('../helper.cjs');
 
 {{#each tagedApis}}
-const {{{tagName}}}DefaultConfig = setMethodDefaultConfig('{{{tagName}}}', {});
+const {{{tag}}}DefaultConfig = setMethodDefaultConfig('{{{tag}}}', {});
 {{/each}}
 
 {{#each tagedApis}}
-module.exports.{{{tagName}}}DefaultConfig = {{{tagName}}}DefaultConfig;
+module.exports.{{{tag}}}DefaultConfig = {{{tag}}}DefaultConfig;
 {{/each}}

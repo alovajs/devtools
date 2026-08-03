@@ -164,6 +164,9 @@ function applyToSchemaField(
 function payloadModifierApiDescriptor(apiDescriptor: ApiDescriptor, config: PayloadModifierConfig) {
   if (!apiDescriptor)
     return null
+  // API path filter: if path does not match, return as-is and this config does not apply
+  if (!isMatch(apiDescriptor.url, config.path))
+    return apiDescriptor
   const newDescriptor = { ...apiDescriptor }
   const { scope } = config
   switch (scope) {

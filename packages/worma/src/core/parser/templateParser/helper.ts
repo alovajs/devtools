@@ -148,14 +148,14 @@ export async function parseRequestBody(requestBody: RequestBodyObject | Referenc
 export function getContentKey(content: Record<string, any> = {}, requireKey: string | string[] = 'application/json') {
   const requireKeys = Array.isArray(requireKey) ? requireKey : [requireKey]
 
-  // 按数组顺序依次查找存在的 mediaType
+  // search for an existing mediaType in array order
   for (const key of requireKeys) {
     if (content[key]) {
       return key
     }
   }
 
-  // 如果都不存在，返回第一个 key 或默认值
+  // if none exists, return the first key or the default value
   return Object.keys(content)[0] || requireKeys[0]
 }
 
@@ -265,7 +265,7 @@ export async function transformApiMethods(apiMethod: ApiMethod, options: {
     return apiMethod
   }
   const { apiDescriptor, apiInfo } = apiMethod2ApiDescriptor(apiMethod, options)
-  // M2-B1: apiDescriptor 来自 apiMethod2ApiDescriptor 已做过 cloneDeep，无需二次克隆
+  // M2-B1: apiDescriptor comes from apiMethod2ApiDescriptor which already did cloneDeep, no second clone needed
   let newApiDescriptor: ApiDescriptor | void | undefined | null = apiDescriptor
 
   try {
@@ -305,7 +305,7 @@ export function apiMethod2ApiDescriptor(apiMethod: ApiMethod, options: {
 }) {
   const { url, method } = apiMethod
   const { document, config } = options
-  // 需要深拷贝：handleApi 可能修改 tags/security 等嵌套字段，浅拷贝会污染原始 operationObject
+  // deep copy required: handleApi may mutate nested fields like tags/security; a shallow copy would pollute the original operationObject
   const operationObject = cloneDeep(apiMethod.operationObject)
   const { requestBody, responses, parameters } = operationObject
   const apiDescriptor: ApiDescriptor = {
@@ -368,7 +368,7 @@ export function apiDescriptor2apiMethod(apiDescriptor: ApiDescriptor, options: {
   }
 }) {
   const apiDescriptorValue = { ...apiDescriptor }
-  const operationObject = cloneDeep(options.operationObject) // 仍需深拷贝：content[key].schema 等深路径赋值后通过 mergeObject 回写
+  const operationObject = cloneDeep(options.operationObject) // still needs deep copy: deep-path assignments like content[key].schema are written back via mergeObject
   const { url, method } = apiDescriptorValue
   const { successKey, requestKey, responseKey, hasResponse, hasParameters, hasRequestBody, requestBody, response }
     = options.oldApiInfo

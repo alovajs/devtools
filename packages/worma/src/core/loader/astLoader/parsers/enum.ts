@@ -15,18 +15,18 @@ export function enumTypeParser(schema: SchemaObject, ctx: ParserCtx): AST {
   const enumArray = schema.enum ?? []
   let typeArray = [schema.type ?? []].flat() as string[]
 
-  // 如果没有指定type，从enum值中推断类型
+  // if type is not specified, infer it from the enum values
   if (typeArray.length === 0 && enumArray.length > 0) {
     typeArray = [...new Set(enumArray.map(item => getType(item)))]
   }
 
-  // 类型兼容性检查函数
+  // type compatibility check function
   const isTypeCompatible = (itemType: string, allowedTypes: string[]): boolean => {
     return allowedTypes.includes(itemType)
       || (allowedTypes.includes('number') && itemType === 'integer')
   }
 
-  // 验证所有枚举值的类型
+  // validate the type of all enum values
   const hasInvalidType = enumArray.some(item => !isTypeCompatible(getType(item), typeArray))
   if (hasInvalidType) {
     throw logger.throwError(`enum ${schema.title ?? 'undefined'} type error`, {

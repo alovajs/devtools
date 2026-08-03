@@ -1,13 +1,14 @@
 {{> comment}}
 import { alovaInstance } from '../index.js';
-import { buildPayload } from '../helper.js';
-import { {{currentTag.tagName}}DefaultConfig } from './index.js';
+import { buildPayload, resolveTagDefaultConfig } from '../helper.js';
+import * as defaultConfig from './index.js';
 
-{{#each tagedApis}}
-{{#each apis}}
+const {{{currentTag.tag}}}DefaultConfig = resolveTagDefaultConfig(defaultConfig, '{{{currentTag.tag}}}DefaultConfig');
+
+{{#each currentTag.apis}}
 {{> api-jsdoc}}
 export function {{{name}}}(config) {
-  const { url, data, mergedConfig } = buildPayload('{{{path}}}', {{{tag}}}DefaultConfig, {{{name}}}.name, config);
+  const { url, data, mergedConfig } = buildPayload('{{{path}}}', {{../currentTag.tag}}DefaultConfig, {{{name}}}.name, config);
   return alovaInstance.Request({
     ...mergedConfig,
     url,
@@ -17,5 +18,4 @@ export function {{{name}}}(config) {
   });
 }
 
-{{/each}}
 {{/each}}
