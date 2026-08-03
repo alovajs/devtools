@@ -143,3 +143,56 @@ const user = await getUserInfo({ pathParams: { id: "123" } });
 ![API 调用文档智能提示](/img/vscode-api-call-doc.png)
 
 如果关闭了 API 文档弹框，可将光标放在 API 函数上并通过快捷键 `Shift+Ctrl+Space`（Mac: `Shift+Command+Space`）再次唤起。
+
+## 📖 View Api CodeLens
+
+扩展会在匹配到的 API 函数调用上方显示 `📖 View Api` CodeLens，点击即可快速查看对应 API 文档，无需悬停或搜索：
+
+```typescript
+import { getUserInfo } from "./api/user";
+
+const user = await getUserInfo({ pathParams: { id: "123" } });
+// 📖 View Api: .getUserInfo   <- 点击此处查看 API 文档
+```
+
+## 扩展配置
+
+扩展支持以下 VSCode 设置项（均配置在 VSCode 的 `settings.json` 文件中，即"设置"面板里的**用户设置**或**工作区设置**，工作区设置文件位于项目根目录的 `.vscode/settings.json`）：
+
+### 自动更新 APIs
+
+通过 `worma.autoUpdate` 配置项控制是否自动检测并更新 APIs。
+
+- 设为 `false` 禁用自动更新
+- 设为 `true`（默认）使用默认策略：每 5 分钟自动更新一次
+- 也可以传入对象进行详细配置：
+
+```json
+// .vscode/settings.json
+{
+  "worma.autoUpdate": {
+    "launchEditor": false,
+    "interval": 300000
+  }
+}
+```
+
+| 配置项 | 类型 | 默认值 | 说明 |
+| ------ | ---- | ------ | ---- |
+| `launchEditor` | `boolean` | `false` | 编辑器启动时立即更新 |
+| `interval` | `number` | `300000` | 自动更新间隔（毫秒） |
+
+### 显示/隐藏 View Api CodeLens
+
+通过 `worma.enableViewApiLens` 配置项控制是否在匹配的 API 函数调用上方显示 `📖 View Api` CodeLens，默认开启。
+
+将其设为 `false` 即可隐藏该 CodeLens：
+
+```json
+// .vscode/settings.json
+{
+  "worma.enableViewApiLens": false
+}
+```
+
+修改配置后立即生效，无需重启 VSCode。
