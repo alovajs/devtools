@@ -14,6 +14,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
  */
 
 let capturedSharedContext: any
+let capturedSharedContexts: any[] = []
 let workerSpawned = false
 
 vi.mock('@/core/WorkerPool', async (importActual) => {
@@ -25,6 +26,7 @@ vi.mock('@/core/WorkerPool', async (importActual) => {
     WorkerPool: class FakeWorkerPool<Task, Result> {
       constructor(opts: any) {
         capturedSharedContext = opts.sharedContext
+        capturedSharedContexts.push(opts.sharedContext)
         workerSpawned = true
       }
 
@@ -42,7 +44,7 @@ vi.mock('node:fs')
 vi.mock('node:fs/promises')
 
 /** Programmatically generate an OpenAPI 3.0 document with more than 200 endpoints to trigger the worker pool branch */
-function makeBigSpec(endpointCount: number) {
+function makeBigSpec(endpointCount: number, schemaName = 'Item', title = 'Big Spec') {
   const paths: Record<string, any> = {}
   for (let i = 0; i < endpointCount; i++) {
     paths[`/api/item${i}`] = {
@@ -52,7 +54,7 @@ function makeBigSpec(endpointCount: number) {
         responses: {
           200: {
             description: 'ok',
-            content: { 'application/json': { schema: { $ref: '#/components/schemas/Item' } } },
+            content: { 'application/json': { schema: { $ref: `#/components/schemas/${schemaName}` } } },
           },
         },
       },
@@ -60,12 +62,12 @@ function makeBigSpec(endpointCount: number) {
   }
   return {
     openapi: '3.0.0',
-    info: { title: 'Big Spec', version: '1.0.0' },
+    info: { title, version: '1.0.0' },
     servers: [{ url: 'https://example.com' }],
     paths,
     components: {
       schemas: {
-        Item: {
+        [schemaName]: {
           type: 'object',
           properties: { id: { type: 'integer', format: 'int64' }, name: { type: 'string' } },
         },
@@ -93,6 +95,7 @@ describe('templateParser worker pool sharedContext (regression: could not be clo
     vol.reset()
     vol.mkdirSync('/project', { recursive: true })
     capturedSharedContext = undefined
+    capturedSharedContexts = []
     workerSpawned = false
   })
 
@@ -137,6 +140,45 @@ describe('templateParser worker pool sharedContext (regression: could not be clo
     expect(config.defaultRequire).toBe(false)
     expect(config.externalTypes).toEqual(['File'])
     expect(config.plugins).toBeUndefined()
+  }, 30000)
+
+  it('isolates worker contexts for generators with different outputs', async () => {
+    const mallSpec = makeBigSpec(25, 'MallActivity', 'Mall API')
+    const adminSpec = makeBigSpec(25, 'AdminUser', 'Admin API')
+    const mallSpecPath = '/project/mall.json'
+    const adminSpecPath = '/project/admin.json'
+    vol.writeFileSync(mallSpecPath, JSON.stringify(mallSpec))
+    vol.writeFileSync(adminSpecPath, JSON.stringify(adminSpec))
+
+    const { generate } = await import('@/index')
+    const { alova } = await import('@/plugins')
+
+    await generate({
+      generator: [
+        {
+          input: mallSpecPath,
+          output: '/project/api/mall',
+          type: 'ts',
+          plugins: [alova()],
+        },
+        {
+          input: adminSpecPath,
+          output: '/project/api/admin',
+          type: 'ts',
+          plugins: [alova()],
+        },
+      ],
+    }, { force: true, projectPath: '/project' })
+
+    expect(capturedSharedContexts).toHaveLength(2)
+    expect(capturedSharedContexts.map(context => context.document.info.title).sort()).toEqual([
+      'Admin API',
+      'Mall API',
+    ])
+    expect(capturedSharedContexts.map(context => Object.keys(context.document.components.schemas)[0]).sort()).toEqual([
+      'AdminUser',
+      'MallActivity',
+    ])
   }, 30000)
 
   it('does not spawn worker pool when apiCount <= 200', async () => {
