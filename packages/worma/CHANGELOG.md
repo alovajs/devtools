@@ -1,5 +1,11 @@
 # worma
 
+## 0.2.7
+
+### Patch Changes
+
+- [#187](https://github.com/alovajs/devtools/pull/187) [`0215b15`](https://github.com/alovajs/devtools/commit/0215b15ea0e71aba5bcd39a346af3e6d6c147068) Thanks [@LittleTurtle2333](https://github.com/LittleTurtle2333)! - Isolate schema worker pools by generator output so concurrent OpenAPI documents cannot resolve references against another generator's document.
+
 ## 0.2.6
 
 ### Patch Changes

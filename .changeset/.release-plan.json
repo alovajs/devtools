@@ -1,12 +1,7 @@
 [
   {
     "name": "wormajs",
-    "version": "0.2.6",
+    "version": "0.2.7",
     "type": "patch"
-  },
-  {
-    "name": "worma-vscode",
-    "version": "0.3.0",
-    "type": "minor"
   }
 ]
