@@ -1503,4 +1503,13 @@ worma.config.js
 ### 缓存产出物
 
 生成的缓存文件从 `.alova-cache/` 目录改为 `.worma-cache/`，建议更新 `.gitignore`（若之前有配置）。
+
+## 多 Generator 的 Schema Worker 隔离
+
+同一次 `generate()` 可以并行处理多个 generator。Schema worker 会在创建时通过 `workerData` 固定持有当前 generator 的 OpenAPI 文档、类型映射和生成配置，因此 worker 池的缓存身份必须包含 generator 的输出目录，不能只使用项目目录。
+
+- 同一 `projectPath` 下，不同 `output` 的 generator 必须创建独立的 schema worker 池。
+- worker 池 key 使用规范化后的绝对输出路径，避免 mall、admin 等多个 OpenAPI 文档复用错误的文档上下文。
+- 保留不同 generator 的并行生成能力，不通过串行化或关闭 worker 池规避上下文污染。
+- 增加双 generator 回归测试，确保两个 worker 分别持有各自的 OpenAPI 文档。
 ````
