@@ -128,9 +128,11 @@ export class TemplateParser implements Parser<OpenAPIDocument, TemplateData, Tem
         const { existsSync: fex } = await import('node:fs')
         const workerScript = fex(jsWp) ? jsWp : tsWp
 
-        // P2: Reuse worker pool via PoolManager singleton — avoids create/destroy overhead across repeated generate() calls
+        // Reuse workers only within the same generator output. The workerData document is immutable after spawn,
+        // so generators in the same project must not share a pool.
+        const outputDir = path.resolve(this.options.projectPath, this.options.generatorConfig.output!)
         const pool = PoolManager.getInstance().get<{ key: string, schema: SchemaObject }, { key: string, result: string }>({
-          key: `schemaWorker_${this.options.projectPath}`,
+          key: `schemaWorker_${outputDir}`,
           workerScript,
           sharedContext: {
             document: this.document,

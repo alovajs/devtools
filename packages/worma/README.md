@@ -85,8 +85,8 @@ Effective contributions will win you a certain reputation in the worma community
 
 ## Contributors
 
-<a href="https://github.com/alovajs/alova/graphs/contributors">
-<img src="https://contrib.rocks/image?repo=alovajs/alova&max=30&columns=10" />
+<a href="https://github.com/alovajs/devtools/graphs/contributors">
+<img src="https://contrib.rocks/image?repo=alovajs/devtools&max=30&columns=10" />
 </a>
 
 ## LICENSE

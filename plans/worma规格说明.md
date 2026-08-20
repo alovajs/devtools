@@ -792,3 +792,24 @@ workspace 模式下若 `resolveWorkspaces()` 返回空数组，打印错误信�
 - 提案：`./worma@2新特性提案.md`
 - 现有实现：`packages/worma/src/{config,readConfig,generate}.ts`、`helper/config/{ConfigHelper,GeneratorHelper,type,zType}.ts`、`helper/template/index.ts`、`core/parser/templateParser/index.ts`、`template/presets/*`
 - VSCode 扩展集成点：`packages/vscode-extension/ext/functions/getWorma.ts`、`ext/views/api-server.ts`
+
+---
+
+## 16. 多 Generator Schema Worker 隔离 ✅
+
+### 16.1 问题
+
+多个 generator 在同一项目中并行运行时，schema worker 池不能仅以 `projectPath` 作为缓存键。worker 的 `sharedContext.document` 在创建时固定；若不同 generator 复用同一 worker，后续 generator 的 `$ref` 会在错误的 OpenAPI 文档中解析。
+
+### 16.2 规格
+
+- schema worker 池 key 必须包含 `path.resolve(projectPath, generator.output)`。
+- 相同项目、不同输出目录的 generator 必须获得不同的 worker 实例和 `sharedContext`。
+- 保持 `generate()` 的并行执行方式不变。
+- 回归测试必须构造两份包含不同 schema 的 OpenAPI 文档，并验证两个 worker 上下文互不复用。
+
+### 16.3 验收状态
+
+- [x] worker 池按 generator 输出目录隔离。
+- [x] 双 generator 回归测试通过。
+- [x] worma 单元测试与类型检查通过。
