@@ -37,7 +37,10 @@ export default defineConfig({
 // 编码助手名称（与 skills 包支持的助手对应）。skills 为纯 CLI 包且不导出类型，
 // 故此处自行维护一份；亦可使用 string 直接传入。
 type SkillAgent =
-  | 'cursor' | 'claude-code' | 'codex' | 'windsurf' /* …其余助手见类型定义 */ ;
+  | "cursor"
+  | "claude-code"
+  | "codex"
+  | "windsurf" /* …其余助手见类型定义 */;
 
 interface AiDocConfig {
   /** 自定义模板路径，不传则使用内置模板 */
@@ -60,11 +63,11 @@ function aiDoc(config?: AiDocConfig): ApiPlugin;
 
 ### 参数说明
 
-| 参数名         | 类型               | 默认值  | 描述                                                                     |
-| -------------- | ------------------ | ------- | ------------------------------------------------------------------------ |
-| `template`     | `string`           | —       | 自定义模板路径，不传则使用内置模板                                       |
-| `outputDir`    | `string`           | `'aidocs'` | 输出目录名                                                         |
-| `agent` | `SkillAgent \| SkillAgent[] \| string` | — | 要安装 Skill 的编码助手：省略则不安装；`SkillAgent`/`SkillAgent[]` 直接指定目标；字符串则作为逗号分隔的安装目标（自动去重） |
+| 参数名      | 类型                                   | 默认值     | 描述                                                                                                                        |
+| ----------- | -------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `template`  | `string`                               | —          | 自定义模板路径，不传则使用内置模板                                                                                          |
+| `outputDir` | `string`                               | `'aidocs'` | 输出目录名                                                                                                                  |
+| `agent`     | `SkillAgent \| SkillAgent[] \| string` | —          | 要安装 Skill 的编码助手：省略则不安装；`SkillAgent`/`SkillAgent[]` 直接指定目标；字符串则作为逗号分隔的安装目标（自动去重） |
 
 ## 生成结构
 
@@ -98,15 +101,13 @@ function aiDoc(config?: AiDocConfig): ApiPlugin;
 - `string`：以逗号分隔的编码助手名称，直接作为安装目标，例如 `"cursor"` 或 `"cursor, claude-code"`。
 
 ```typescript
-aiDoc({ agent: 'cursor' })              // 安装到 cursor
-aiDoc({ agent: 'cursor, claude-code' }) // 安装到多个助手（自动去重）
+aiDoc({ agent: "cursor" }); // 安装到 cursor
+aiDoc({ agent: "cursor, claude-code" }); // 安装到多个助手（自动去重）
 ```
-
-> worma 不再自动读取或创建任何本地配置文件（如 `node_modules/.worma/skills.local`）。安装目标完全由你通过 `agent` 字符串指定，多个助手之间自动去重。
 
 ### 通过配置文件指定编码助手
 
-如果你希望把编码助手维护在独立配置文件里（便于按用户 / 环境区分），可使用导出的 `parseAgentFile` 解析 `key=value` 格式的文件（与环境变量文件相同，`#` 开头的行会被忽略）。省略路径时，默认读取项目根目录下的 `.wormaagent.local`：
+如果你希望把编码助手维护在独立配置文件里（便于按用户 / 环境区分），可使用导出的 `parseAgentFile(filePath?)` 解析 `key=value` 格式的文件（与环境变量文件相同，`#` 开头的行会被忽略）。可传入文件路径读取指定文件（例如读取 `.env.local`）；省略路径时，默认读取项目根目录下的 `.wormaagent.local`：
 
 ```ini
 # .wormaagent.local
@@ -114,10 +115,13 @@ agent=cursor, claude-code
 ```
 
 ```typescript
-import { aiDoc, parseAgentFile } from '@alova/worma'
+import { aiDoc, parseAgentFile } from "@alova/worma";
 
-const cfg = parseAgentFile() // 默认读取 ./.wormaagent.local -> cfg.agent === 'cursor, claude-code'
-aiDoc({ agent: cfg.agent })
+const cfg = parseAgentFile(); // 默认读取 ./.wormaagent.local -> cfg.agent === 'cursor, claude-code'
+aiDoc({ agent: cfg.agent });
+
+const cfg2 = parseAgentFile('.env.local'); // 传入路径读取指定文件
+aiDoc({ agent: cfg2.agent });
 ```
 
 `parseAgentFile` 返回 `{ [key]: string }` 键值对，便于把其它自定义字段一并读取后再传入配置。
@@ -125,10 +129,11 @@ aiDoc({ agent: cfg.agent })
 <Callout type="warning" title="把 .wormaagent.local 加入 .gitignore">
 `.wormaagent.local` 通常包含**个人**的编码助手偏好（如你本地使用的 `cursor`、`claude-code` 等）。请把它加入项目的 `.gitignore`，避免提交到仓库、覆盖或干扰团队其他成员的 `agent` 设置：
 
-```gitignore
+```plaintext
 # .gitignore
 .wormaagent.local
 ```
+
 </Callout>
 
 ### 运行生成命令
