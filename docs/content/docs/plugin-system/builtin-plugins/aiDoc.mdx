@@ -122,6 +122,14 @@ aiDoc({ agent: cfg.agent })
 
 `parseAgentFile` 返回 `{ [key]: string }` 键值对，便于把其它自定义字段一并读取后再传入配置。
 
+> [!WARNING]
+> `.wormaagent.local` 通常包含**个人**的编码助手偏好（如你本地使用的 `cursor`、`claude-code` 等）。请把它加入项目的 `.gitignore`，避免提交到仓库、覆盖或干扰团队其他成员的 `agent` 设置：
+>
+> ```gitignore
+> # .gitignore
+> .wormaagent.local
+> ```
+
 ### 运行生成命令
 
 ```bash
