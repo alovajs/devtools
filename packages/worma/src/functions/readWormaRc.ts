@@ -144,7 +144,7 @@ export async function readWormaRc(projectPath: string): Promise<Config | null> {
       const generatorConfig: GeneratorConfig = {
         input: url,
         output,
-        plugins: [PRESET_TEMPLATES[template](), aiDoc({ installSkill: true })],
+        plugins: [PRESET_TEMPLATES[template](), aiDoc({ agent: 'codex' })],
       }
 
       generators.push(generatorConfig)

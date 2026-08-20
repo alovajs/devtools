@@ -12,7 +12,7 @@ description: 生成 AI 可读的接口知识文档，让编码助手准确感知
 - 自动生成 `SKILL.md` 总览索引和按 tag 分组的 API 参考文档
 - 支持自定义模板路径和输出目录
 - 支持自动安装 Skill 到主流编码助手（Cursor、Claude Code、Windsurf 等）
-- 支持在 `.env.local` 中通过逗号分隔配置多个编码助手，一次生成同时安装到多个助手
+- 支持通过 `agent` 指定单个或多个编码助手，一次生成可同时安装到多个助手（自动去重）
 
 ## 基本使用
 
@@ -34,13 +34,25 @@ export default defineConfig({
 ## 配置参数
 
 ```typescript
+// 编码助手名称（与 skills 包支持的助手对应）。skills 为纯 CLI 包且不导出类型，
+// 故此处自行维护一份；亦可使用 string 直接传入。
+type SkillAgent =
+  | 'cursor' | 'claude-code' | 'codex' | 'windsurf' /* …其余助手见类型定义 */ ;
+
 interface AiDocConfig {
   /** 自定义模板路径，不传则使用内置模板 */
   template?: string;
   /** 输出目录名，默认为 'aidocs' */
   outputDir?: string;
-  /** 是否自动安装 Skill 到编码助手，默认 false */
-  installSkill?: boolean;
+  /**
+   * 要安装 Skill 的编码助手。
+   * - 省略（默认）：不安装 Skill。
+   * - `SkillAgent` / `SkillAgent[]`：直接指定安装目标。
+   * - `string`：以逗号分隔的编码助手名称，直接作为安装目标，
+   *   例如 `"cursor"` 或 `"cursor, claude-code"`。
+   * 也可结合 `parseAgentFile` 从配置文件读取助手名称。
+   */
+  agent?: SkillAgent | SkillAgent[] | string;
 }
 
 function aiDoc(config?: AiDocConfig): ApiPlugin;
@@ -48,11 +60,11 @@ function aiDoc(config?: AiDocConfig): ApiPlugin;
 
 ### 参数说明
 
-| 参数名         | 类型      | 默认值     | 描述                               |
-| -------------- | --------- | ---------- | ---------------------------------- |
-| `template`     | `string`  | —          | 自定义模板路径，不传则使用内置模板 |
-| `outputDir`    | `string`  | `'aidocs'` | 输出目录名                         |
-| `installSkill` | `boolean` | `false`    | 是否自动安装 Skill 到编码助手      |
+| 参数名         | 类型               | 默认值  | 描述                                                                     |
+| -------------- | ------------------ | ------- | ------------------------------------------------------------------------ |
+| `template`     | `string`           | —       | 自定义模板路径，不传则使用内置模板                                       |
+| `outputDir`    | `string`           | `'aidocs'` | 输出目录名                                                         |
+| `agent` | `SkillAgent \| SkillAgent[] \| string` | — | 要安装 Skill 的编码助手：省略则不安装；`SkillAgent`/`SkillAgent[]` 直接指定目标；字符串则作为逗号分隔的安装目标（自动去重） |
 
 ## 生成结构
 
@@ -80,28 +92,40 @@ function aiDoc(config?: AiDocConfig): ApiPlugin;
 
 ## 自动安装 Skill
 
-启用 `installSkill: true` 后，执行 `worma gen` 时会自动将生成的 Skill 安装到编码助手中。
+`agent` 支持以下取值，执行 `worma gen` 时会按配置将生成的 Skill 安装到对应编码助手：
 
-### 配置步骤
+- 省略（默认）：不安装。
+- `string`：以逗号分隔的编码助手名称，直接作为安装目标，例如 `"cursor"` 或 `"cursor, claude-code"`。
 
-1. **在项目根目录创建 `.env.local`**，配置编码助手名称：
-
-```ini
-# Worma aiDoc skill installer configuration
-# Please set the coding agent(s) you are using (e.g. cursor, claude-code, windsurf).
-# You can configure multiple agents comma-separated, e.g. agent=cursor,claude-code.
-# Supported agents list: https://www.npmjs.com/package/skills#supported-agents
-agent=cursor
+```typescript
+aiDoc({ agent: 'cursor' })              // 安装到 cursor
+aiDoc({ agent: 'cursor, claude-code' }) // 安装到多个助手（自动去重）
 ```
 
-> 如需同时安装到多个编码助手，使用逗号分隔即可，例如 `agent=cursor,claude-code,windsurf`。worma 会自动去重，并为每个助手执行一次安装。
+> worma 不再自动读取或创建任何本地配置文件（如 `node_modules/.worma/skills.local`）。安装目标完全由你通过 `agent` 字符串指定，多个助手之间自动去重。
 
-2. **运行生成命令**：
+### 通过配置文件指定编码助手
+
+如果你希望把编码助手维护在独立配置文件里（便于按用户 / 环境区分），可使用导出的 `parseAgentFile` 解析 `key=value` 格式的文件（与环境变量文件相同，`#` 开头的行会被忽略）。省略路径时，默认读取项目根目录下的 `.wormaagent.local`：
+
+```ini
+# .wormaagent.local
+agent=cursor, claude-code
+```
+
+```typescript
+import { aiDoc, parseAgentFile } from '@alova/worma'
+
+const cfg = parseAgentFile() // 默认读取 ./.wormaagent.local -> cfg.agent === 'cursor, claude-code'
+aiDoc({ agent: cfg.agent })
+```
+
+`parseAgentFile` 返回 `{ [key]: string }` 键值对，便于把其它自定义字段一并读取后再传入配置。
+
+### 运行生成命令
 
 ```bash
 worma gen
 ```
 
-worma 会读取 `.env.local` 中的 `agent` 配置，自动将生成的 Skill 安装到对应助手中。支持的主流编码助手列表请参考 [skills 文档](https://www.npmjs.com/package/skills#supported-agents)。
-
-> `.env.local` 首次运行时如不存在会自动创建，并在 `.gitignore` 中追加 `*.local` 规则，避免敏感配置被提交。
+worma 会按上述配置把生成的 Skill 安装到对应助手中。支持的主流编码助手列表请参考 [skills 文档](https://www.npmjs.com/package/skills#supported-agents)。

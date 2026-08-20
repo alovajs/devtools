@@ -9,20 +9,111 @@ import { getPresetTemplatePath } from '@/template'
 
 const nodeRequire = createRequire(__filename)
 
+/**
+ * Coding agents that the generated skill can be installed into.
+ *
+ * The `skills` package (`https://www.npmjs.com/package/skills`) is CLI-only and
+ * ships no TypeScript types, so this union mirrors the agent names it supports
+ * (its documented "supported agents" list). The transitive `@vercel/detect-agent`
+ * package does export a `KnownAgentNames` type, but it only covers a small subset
+ * of agents (e.g. it is missing `claude-code` and `windsurf`), so it cannot be
+ * reused directly here.
+ */
+export type SkillAgent
+  = | 'aider-desk'
+    | 'amp'
+    | 'antigravity'
+    | 'antigravity-cli'
+    | 'astrbot'
+    | 'augment'
+    | 'autohand-code'
+    | 'bob'
+    | 'claude-code'
+    | 'cline'
+    | 'codearts-agent'
+    | 'codebuddy'
+    | 'codemaker'
+    | 'codestudio'
+    | 'codex'
+    | 'command-code'
+    | 'continue'
+    | 'cortex'
+    | 'crush'
+    | 'cursor'
+    | 'deepagents'
+    | 'devin'
+    | 'dexto'
+    | 'droid'
+    | 'eve'
+    | 'firebender'
+    | 'forgecode'
+    | 'gemini-cli'
+    | 'github-copilot'
+    | 'goose'
+    | 'hermes-agent'
+    | 'iflow-cli'
+    | 'inference-sh'
+    | 'jazz'
+    | 'junie'
+    | 'kilo'
+    | 'kiro-cli'
+    | 'kimi-code-cli'
+    | 'kode'
+    | 'lingma'
+    | 'loaf'
+    | 'mcpjam'
+    | 'mistral-vibe'
+    | 'moxby'
+    | 'mux'
+    | 'ona'
+    | 'opencode'
+    | 'openhands'
+    | 'openclaw'
+    | 'pi'
+    | 'pochi'
+    | 'promptscript'
+    | 'qoder'
+    | 'qoder-cn'
+    | 'qwen-code'
+    | 'reasonix'
+    | 'replit'
+    | 'rovodev'
+    | 'roo'
+    | 'tabnine-cli'
+    | 'terramind'
+    | 'tinycloud'
+    | 'trae'
+    | 'trae-cn'
+    | 'universal'
+    | 'warp'
+    | 'windsurf'
+    | 'zed'
+    | 'zencoder'
+    | 'zenflow'
+    | 'neovate'
+    | 'adal'
+
 export interface AiDocConfig {
   template?: string
   outputDir?: string
-  installSkill?: boolean
+  /**
+   * Which coding agent(s) to install the generated skill into.
+   * - omitted: do NOT install the skill.
+   * - `SkillAgent` / `SkillAgent[]`: install to the given agent(s) directly.
+   * - `string`: comma (English or Chinese) separated agent names, used directly
+   *   as the target agent(s), e.g. `"cursor"` or `"cursor, claude-code"`.
+   *   This is handy when the agent list comes from a config file parsed via
+   *   `parseAgentFile`, e.g. `aiDoc({ agent: parseAgentFile('.myrc').agent })`.
+   */
+  agent?: SkillAgent | (SkillAgent | (string & {}))[] | (string & {})
 }
-
-const SKILLS_SUPPORTED_AGENTS_URL = 'https://www.npmjs.com/package/skills#supported-agents'
 
 const prefix = '[plugin: aiDoc]'
 
 export function aiDoc(config?: AiDocConfig): ApiPlugin {
   const outputDirName = config?.outputDir ?? 'aidocs'
   const customTemplatePath = config?.template
-  const installSkillEnabled = config?.installSkill ?? false
+  const agentValue = config?.agent
 
   let capturedOutput = ''
   let capturedServerName = ''
@@ -80,9 +171,9 @@ export function aiDoc(config?: AiDocConfig): ApiPlugin {
         } as TemplateData,
       })
 
-      if (installSkillEnabled) {
-        const { agents } = resolveAgents(projectPath)
-        for (const agent of agents) {
+      if (agentValue) {
+        const agentsToInstall = resolveInstallAgents(agentValue)
+        for (const agent of agentsToInstall) {
           installSkill(aidocsDir, agent, projectPath)
         }
       }
@@ -91,40 +182,20 @@ export function aiDoc(config?: AiDocConfig): ApiPlugin {
 }
 
 /**
- * Resolve the target coding agents from `.env.local` in the project root.
+ * Resolve the list of coding agents to install the generated skill into.
  *
- * Multiple agents can be configured as a comma-separated list, e.g.
- * `agent=cursor, claude-code, windsurf`. Both commas and surrounding
- * whitespace are tolerated.
+ * @param agent the raw `agent` config value
+ *  - `SkillAgent` / `SkillAgent[]`: used directly as the target agent(s).
+ *  - `string`: parsed as a comma (English or Chinese) separated agent list,
+ *    e.g. `"cursor"` or `"cursor, claude-code"`.
  *
- * If the file does not exist, it will be created and `.gitignore` will be
- * updated to ignore `*.local` files. An error is then thrown asking the user
- * to set `agent=<coding-agent>` (optionally multiple, comma-separated).
- *
- * If `agent` is missing or empty, an error is thrown with guidance.
+ * The agent list is no longer read from `node_modules/.worma/skills.local`.
+ * Instead, callers pass the agent(s) explicitly via the `agent`
+ * option (optionally sourced from their own config file via `parseAgentFile`).
  */
-function resolveAgents(projectPath: string): { agents: string[] } {
-  const envFilePath = path.join(projectPath, '.env.local')
-
-  if (!fs.existsSync(envFilePath)) {
-    createEnvLocalFile(envFilePath)
-    ensureGitIgnoreLocal(projectPath)
-    throw logger.throwError(
-      `${prefix}Created .env.local at project root. Please set the coding agent you are using, e.g. agent=cursor or multiple agents comma-separated: agent=cursor,claude-code. Supported agents list: ${SKILLS_SUPPORTED_AGENTS_URL}`,
-    )
-  }
-
-  const content = fs.readFileSync(envFilePath, 'utf-8')
-  const raw = parseEnvValue(content, 'agent') ?? ''
-  const agents = parseAgentList(raw)
-
-  if (agents.length === 0) {
-    throw logger.throwError(
-      `${prefix}Missing "agent" in .env.local at project root. Please set the coding agent you are using, e.g. agent=cursor or multiple agents comma-separated: agent=cursor,claude-code. Supported agents list: ${SKILLS_SUPPORTED_AGENTS_URL}`,
-    )
-  }
-
-  return { agents }
+function resolveInstallAgents(agent: NonNullable<AiDocConfig['agent']>): string[] {
+  const raw = Array.isArray(agent) ? agent.join(',') : agent
+  return parseAgentList(raw)
 }
 
 /**
@@ -184,55 +255,49 @@ function installSkill(skillPath: string, agent: string, projectPath: string) {
   }
 }
 
-function createEnvLocalFile(envFilePath: string) {
-  const content = `# Worma aiDoc skill installer configuration
-# Please set the coding agent(s) you are using (e.g. cursor, claude-code, windsurf).
-# You can configure multiple agents comma-separated, e.g. agent=cursor,claude-code.
-# Supported agents list: ${SKILLS_SUPPORTED_AGENTS_URL}
-agent=
-`
-  fs.writeFileSync(envFilePath, content, 'utf-8')
-}
-
-function ensureGitIgnoreLocal(projectPath: string) {
-  const gitignorePath = path.join(projectPath, '.gitignore')
-  const pattern = '*.local'
-  let content = ''
-
-  if (fs.existsSync(gitignorePath)) {
-    content = fs.readFileSync(gitignorePath, 'utf-8')
-    const lines = content.split(/\r?\n/)
-    if (lines.some(line => line.trim() === pattern || line.trim() === '*.local/')) {
-      return
-    }
-  }
-
-  const prefix = content === '' || content.endsWith('\n') ? '' : '\n'
-  fs.writeFileSync(gitignorePath, `${content}${prefix}${pattern}\n`, 'utf-8')
-}
-
-function parseEnvValue(content: string, key: string): string | undefined {
-  const lines = content.split(/\r?\n/)
-  for (const line of lines) {
+/**
+ * Parse a `key=value` configuration file (same format as an environment file).
+ *
+ * Lines starting with `#` are treated as comments and ignored; blank lines and
+ * lines without `=` are skipped. Surrounding single/double quotes around values
+ * are stripped. Returns a map of keys to their (string) values.
+ *
+ * When `filePath` is omitted, the file is read from `.wormaagent.local` in the
+ * current working directory (project root).
+ *
+ * This makes it easy to keep the target coding agent(s) in a config file and
+ * feed them into the `agent` option:
+ *
+ * @example
+ * ```ts
+ * // .wormaagent.local  ->  agent=cursor, claude-code
+ * const cfg = parseAgentFile() // reads ./.wormaagent.local by default
+ * aiDoc({ agent: cfg.agent })
+ * ```
+ */
+export function parseAgentFile(filePath?: string): Record<string, string> {
+  const target = filePath ?? path.resolve(process.cwd(), '.wormaagent.local')
+  const content = fs.readFileSync(target, 'utf-8')
+  const result: Record<string, string> = {}
+  for (const line of content.split(/\r?\n/)) {
     const trimmed = line.trim()
-    if (trimmed.startsWith('#') || !trimmed.includes('=')) {
+    if (trimmed === '' || trimmed.startsWith('#') || !trimmed.includes('=')) {
       continue
     }
 
     const eqIndex = trimmed.indexOf('=')
-    const k = trimmed.slice(0, eqIndex).trim()
-    let v = trimmed.slice(eqIndex + 1).trim()
+    const key = trimmed.slice(0, eqIndex).trim()
+    let value = trimmed.slice(eqIndex + 1).trim()
 
     // Remove surrounding quotes if present
-    if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith('\'') && v.endsWith('\''))) {
-      v = v.slice(1, -1)
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith('\'') && value.endsWith('\''))) {
+      value = value.slice(1, -1)
     }
 
-    if (k === key) {
-      return v
-    }
+    if (key)
+      result[key] = value
   }
-  return undefined
+  return result
 }
 
 export default aiDoc
