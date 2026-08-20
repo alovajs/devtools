@@ -1,5 +1,5 @@
 import { defineConfig } from 'wormajs'
-import { alova, alovaGlobals, axios, fetch, ky, swagger } from 'wormajs/plugin'
+import { aiDoc, alova, alovaGlobals, axios, fetch, ky, swagger } from 'wormajs/plugin'
 
 // ─── Worma TypeScript example ──────────────────────────
 // This file shows how to configure 5 generators in a single project,
