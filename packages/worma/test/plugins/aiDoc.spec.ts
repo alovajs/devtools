@@ -3,7 +3,7 @@ import type { RenderTemplateParams } from '@/helper/config/type'
 import { resolve } from 'node:path'
 import { logger } from '@/helper/logger'
 import { TemplateHelper } from '@/helper/template'
-import { aiDoc, parseAgentList } from '@/plugins/presets/aiDoc'
+import { aiDoc, parseAgentFile, parseAgentList } from '@/plugins/presets/aiDoc'
 import { generateWithPlugin } from '../util'
 
 // Hoisted: create the shared memfs volume before any module imports
@@ -425,205 +425,175 @@ describe('plugins/aiDoc', () => {
       expect(refContent).toContain('id: user ID')
     })
 
-    it('should create .env.local and throw when installSkill is enabled without config', async () => {
-      const { execSync } = await import('node:child_process')
-      const plugin = aiDoc({ installSkill: true })
-      const outputPath = 'src/api-skill-missing'
-      plugin.config?.({ config: { output: outputPath } as any, projectPath: process.cwd(), reportProgress: vi.fn() })
-
-      const data: any = {
-        title: 'Skill Missing Test',
-        version: '1.0.0',
-        openapi: '3.0.1',
-        baseUrl: '/api',
-        allApis: [],
-        components: [],
-        componentNames: [],
-        type: 'typescript',
-        config: {},
-        tagedApis: [],
-      }
-
-      await expect(
-        plugin.codeGenerated?.({
-          config: {} as any,
-          data,
-          filePaths: [],
-          outputDir: resolve(process.cwd(), outputPath),
-          projectPath: process.cwd(),
-          reportProgress: vi.fn(),
-          renderTemplate: renderTemplateFn,
-        }),
-      ).rejects.toThrow(/Created \.env\.local at project root/)
-
-      const envContent = readVolFile(resolve(process.cwd(), '.env.local'), 'utf-8')
-      expect(envContent).toContain('agent=')
-      expect(envContent).toContain('https://www.npmjs.com/package/skills#supported-agents')
-
-      const gitignoreContent = readVolFile(resolve(process.cwd(), '.gitignore'), 'utf-8')
-      expect(gitignoreContent).toContain('*.local')
-
-      expect(execSync).not.toHaveBeenCalled()
+    // ---- skill install (agent) helpers ----
+    const minimalData = (title = 'Skill Test'): any => ({
+      title,
+      version: '1.0.0',
+      openapi: '3.0.1',
+      baseUrl: '/api',
+      allApis: [],
+      components: [],
+      componentNames: [],
+      type: 'typescript',
+      config: {},
+      tagedApis: [],
     })
 
-    it('should install skill via skills CLI when installSkill is enabled and agent is configured', async () => {
+    const getInstalledAgents = async (): Promise<string[]> => {
       const { execSync } = await import('node:child_process')
-      testVol.writeFileSync(resolve(process.cwd(), '.env.local'), 'agent=cursor\n', 'utf-8')
+      const calls = (execSync as ReturnType<typeof vi.fn>).mock.calls as any[]
+      return calls
+        .map((c) => {
+          const match = (c[0] as string).match(/-a\s+"([^"]+)"/)
+          return match ? match[1] : undefined
+        })
+        .filter(Boolean) as string[]
+    }
 
-      const plugin = aiDoc({ installSkill: true })
-      const outputPath = 'src/api-skill-install'
+    const runInstallTest = async (
+      agent: string | any[] | any,
+      outputPath = 'src/api-skill',
+    ) => {
+      const plugin = aiDoc({ agent })
       plugin.config?.({ config: { output: outputPath } as any, projectPath: process.cwd(), reportProgress: vi.fn() })
-
-      const apiTest = {
-        tag: 'test',
-        method: 'GET',
-        summary: 'Test',
-        path: '/test',
-        name: 'testApi',
-        response: 'void',
-        pathKey: 'test.testApi',
-        pathParameters: '',
-        queryParameters: '',
-        callingCode: '',
-      }
-      const data: any = {
-        title: 'Skill Install Test',
-        version: '1.0.0',
-        openapi: '3.0.1',
-        baseUrl: '/api',
-        allApis: [apiTest],
-        components: [],
-        componentNames: [],
-        type: 'typescript',
-        config: {},
-        tagedApis: [
-          {
-            tag: 'test',
-            apis: [apiTest],
-          },
-        ],
-      }
-
       await plugin.codeGenerated?.({
         config: {} as any,
-        data,
+        data: minimalData(),
         filePaths: [],
         outputDir: resolve(process.cwd(), outputPath),
         projectPath: process.cwd(),
         reportProgress: vi.fn(),
         renderTemplate: renderTemplateFn,
       })
+    }
 
-      expect(execSync).toHaveBeenCalledWith(
-        expect.stringContaining('cli.mjs'),
-        expect.objectContaining({ cwd: process.cwd(), stdio: 'pipe' }),
-      )
-      expect(execSync).toHaveBeenCalledWith(
-        expect.stringContaining('add'),
-        expect.objectContaining({ cwd: process.cwd(), stdio: 'pipe' }),
-      )
+    it('should install to codex when agent is the string "codex"', async () => {
+      const { execSync } = await import('node:child_process')
+      const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+
+      await runInstallTest('codex', 'src/api-skill-default')
+
+      // No local config file is created anymore
+      expect(testVol.existsSync(resolve(process.cwd(), 'node_modules', '.worma', 'skills.local'))).toBe(false)
+      expect(execSync).toHaveBeenCalledTimes(1)
+      const callArg = (execSync as ReturnType<typeof vi.fn>).mock.calls[0][0] as string
+      expect(callArg).toContain('-a "codex"')
+      expect(callArg).toContain('cli.mjs')
+      expect(callArg).toContain('add')
+
+      // Agent is explicit -> no default-agent warning
+      expect(warnSpy).not.toHaveBeenCalled()
+
+      warnSpy.mockRestore()
     })
 
-    it('should throw via logger when .env.local exists but agent is missing', async () => {
+    it('should NOT warn when an explicit agent string is given', async () => {
       const { execSync } = await import('node:child_process')
-      const throwErrorSpy = vi.spyOn(logger, 'throwError').mockReturnValue(new Error('mock missing agent'))
+      const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {})
 
-      testVol.writeFileSync(resolve(process.cwd(), '.env.local'), '# agent=\n', 'utf-8')
+      await runInstallTest('cursor', 'src/api-skill-cursor-no-warn')
 
-      const plugin = aiDoc({ installSkill: true })
-      const outputPath = 'src/api-skill-empty-agent'
-      plugin.config?.({ config: { output: outputPath } as any, projectPath: process.cwd(), reportProgress: vi.fn() })
+      expect(execSync).toHaveBeenCalledTimes(1)
+      expect(warnSpy).not.toHaveBeenCalled()
 
-      const data: any = {
-        title: 'Skill Empty Agent Test',
-        version: '1.0.0',
-        openapi: '3.0.1',
-        baseUrl: '/api',
-        allApis: [],
-        components: [],
-        componentNames: [],
-        type: 'typescript',
-        config: {},
-        tagedApis: [],
-      }
+      warnSpy.mockRestore()
+    })
 
-      await expect(
-        plugin.codeGenerated?.({
-          config: {} as any,
-          data,
-          filePaths: [],
-          outputDir: resolve(process.cwd(), outputPath),
-          projectPath: process.cwd(),
-          reportProgress: vi.fn(),
-          renderTemplate: renderTemplateFn,
-        }),
-      ).rejects.toThrow('mock missing agent')
+    it('should accept a typed SkillAgent and install to it', async () => {
+      const { execSync } = await import('node:child_process')
+      const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {})
 
-      expect(throwErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Please set the coding agent you are using'),
-      )
-      expect(throwErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining('https://www.npmjs.com/package/skills#supported-agents'),
-      )
-      expect(execSync).not.toHaveBeenCalled()
+      await runInstallTest('claude-code' as any, 'src/api-skill-typed-agent')
 
-      throwErrorSpy.mockRestore()
+      expect(execSync).toHaveBeenCalledTimes(1)
+      expect((execSync as ReturnType<typeof vi.fn>).mock.calls[0][0] as string).toContain('-a "claude-code"')
+      expect(warnSpy).not.toHaveBeenCalled()
+
+      warnSpy.mockRestore()
+    })
+
+    it('should accept a SkillAgent[] and install to each agent', async () => {
+      await runInstallTest(['cursor', 'claude-code', 'windsurf'] as any, 'src/api-skill-typed-array')
+
+      expect(await getInstalledAgents()).toEqual(['cursor', 'claude-code', 'windsurf'])
+    })
+
+    it('should dedupe a SkillAgent[] with repeated entries', async () => {
+      await runInstallTest(['cursor', 'cursor', 'windsurf'] as any, 'src/api-skill-typed-array-dedupe')
+
+      expect(await getInstalledAgents()).toEqual(['cursor', 'windsurf'])
+    })
+
+    it('should install to the agent specified by the agent string', async () => {
+      const { execSync } = await import('node:child_process')
+
+      await runInstallTest('cursor', 'src/api-skill-cursor')
+
+      expect(execSync).toHaveBeenCalledTimes(1)
+      const callArg = (execSync as ReturnType<typeof vi.fn>).mock.calls[0][0] as string
+      expect(callArg).toContain('-a "cursor"')
+      expect(callArg).toContain('cli.mjs')
+      expect(callArg).toContain('add')
+    })
+
+    it('should not create node_modules/.worma/skills.local', async () => {
+      await runInstallTest('cursor', 'src/api-skill-no-local')
+
+      expect(testVol.existsSync(resolve(process.cwd(), 'node_modules', '.worma', 'skills.local'))).toBe(false)
     })
 
     it('should not validate agent support and pass any agent value to skills CLI', async () => {
       const { execSync } = await import('node:child_process')
-      testVol.writeFileSync(resolve(process.cwd(), '.env.local'), 'agent=unknown-agent\n', 'utf-8')
 
-      const plugin = aiDoc({ installSkill: true })
-      const outputPath = 'src/api-skill-no-validate'
-      plugin.config?.({ config: { output: outputPath } as any, projectPath: process.cwd(), reportProgress: vi.fn() })
+      await runInstallTest('unknown-agent', 'src/api-skill-no-validate')
 
-      const apiTest = {
-        tag: 'test',
-        method: 'GET',
-        summary: 'Test',
-        path: '/test',
-        name: 'testApi',
-        response: 'void',
-        pathKey: 'test.testApi',
-        pathParameters: '',
-        queryParameters: '',
-        callingCode: '',
-      }
-      const data: any = {
-        title: 'Skill No Validate Test',
-        version: '1.0.0',
-        openapi: '3.0.1',
-        baseUrl: '/api',
-        allApis: [apiTest],
-        components: [],
-        componentNames: [],
-        type: 'typescript',
-        config: {},
-        tagedApis: [
-          {
-            tag: 'test',
-            apis: [apiTest],
-          },
-        ],
-      }
+      expect(execSync).toHaveBeenCalledTimes(1)
+      expect((execSync as ReturnType<typeof vi.fn>).mock.calls[0][0] as string).toContain('-a "unknown-agent"')
+    })
 
-      await plugin.codeGenerated?.({
-        config: {} as any,
-        data,
-        filePaths: [],
-        outputDir: resolve(process.cwd(), outputPath),
-        projectPath: process.cwd(),
-        reportProgress: vi.fn(),
-        renderTemplate: renderTemplateFn,
+    it('should install skill into every comma-separated agent in the agent string', async () => {
+      await runInstallTest('cursor, claude-code, windsurf', 'src/api-skill-multi-agent')
+
+      expect(await getInstalledAgents()).toEqual(['cursor', 'claude-code', 'windsurf'])
+    })
+
+    it('should dedupe repeated agents when installing skill', async () => {
+      await runInstallTest('cursor, cursor, claude-code', 'src/api-skill-dedupe')
+
+      expect(await getInstalledAgents()).toEqual(['cursor', 'claude-code'])
+    })
+
+    it('should install skill into agents separated by a Chinese comma', async () => {
+      await runInstallTest('cursor，claude-code', 'src/api-skill-cn-comma')
+
+      expect(await getInstalledAgents()).toEqual(['cursor', 'claude-code'])
+    })
+
+    it('should NOT install when the agent string yields no agent', async () => {
+      const { execSync } = await import('node:child_process')
+
+      // A string with only separators parses to no usable agent -> nothing installed
+      await runInstallTest('，', 'src/api-skill-empty-string')
+
+      expect(execSync).not.toHaveBeenCalled()
+    })
+
+    it('should throw via logger when skills CLI fails', async () => {
+      const { execSync } = await import('node:child_process')
+      const throwErrorSpy = vi.spyOn(logger, 'throwError').mockReturnValue(new Error('mock install failed'))
+      ;(execSync as ReturnType<typeof vi.fn>).mockImplementationOnce(() => {
+        throw new Error('skills add failed')
       })
 
-      expect(execSync).toHaveBeenCalledWith(
-        expect.stringContaining('cli.mjs'),
-        expect.objectContaining({ cwd: process.cwd(), stdio: 'pipe' }),
+      await expect(
+        runInstallTest('cursor', 'src/api-skill-install-fail'),
+      ).rejects.toThrow('mock install failed')
+
+      expect(throwErrorSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'skills add failed' }),
       )
-      const callArg = (execSync as ReturnType<typeof vi.fn>).mock.calls[0][0] as string
-      expect(callArg).toContain('-a "unknown-agent"')
+
+      throwErrorSpy.mockRestore()
     })
 
     it('parseAgentList should split comma-separated agents, trim and dedupe', () => {
@@ -664,245 +634,69 @@ describe('plugins/aiDoc', () => {
       expect(parseAgentList('"cursor", "claude-code"')).toEqual(['"cursor"', '"claude-code"'])
     })
 
-    it('should install skill into every comma-separated agent in .env.local', async () => {
-      const { execSync } = await import('node:child_process')
-      testVol.writeFileSync(
-        resolve(process.cwd(), '.env.local'),
-        'agent=cursor, claude-code, windsurf\n',
-        'utf-8',
-      )
+    describe('parseAgentFile', () => {
+      it('parses key=value pairs, ignoring # comments and blank lines', () => {
+        const p = resolve(process.cwd(), '.myagents')
+        testVol.writeFileSync(p, [
+          '# this is a comment',
+          'agent=cursor, claude-code',
+          '',
+          '  # indented comment',
+          'token="abc123"',
+          'name=\'my skill\'',
+        ].join('\n'), 'utf-8')
 
-      const plugin = aiDoc({ installSkill: true })
-      const outputPath = 'src/api-skill-multi-agent'
-      plugin.config?.({ config: { output: outputPath } as any, projectPath: process.cwd(), reportProgress: vi.fn() })
-
-      const apiTest = {
-        tag: 'test',
-        method: 'GET',
-        summary: 'Test',
-        path: '/test',
-        name: 'testApi',
-        response: 'void',
-        pathKey: 'test.testApi',
-        pathParameters: '',
-        queryParameters: '',
-        callingCode: '',
-      }
-      const data: any = {
-        title: 'Skill Multi Agent Test',
-        version: '1.0.0',
-        openapi: '3.0.1',
-        baseUrl: '/api',
-        allApis: [apiTest],
-        components: [],
-        componentNames: [],
-        type: 'typescript',
-        config: {},
-        tagedApis: [
-          {
-            tag: 'test',
-            apis: [apiTest],
-          },
-        ],
-      }
-
-      await plugin.codeGenerated?.({
-        config: {} as any,
-        data,
-        filePaths: [],
-        outputDir: resolve(process.cwd(), outputPath),
-        projectPath: process.cwd(),
-        reportProgress: vi.fn(),
-        renderTemplate: renderTemplateFn,
+        const result = parseAgentFile(p)
+        expect(result.agent).toBe('cursor, claude-code')
+        expect(result.token).toBe('abc123')
+        expect(result.name).toBe('my skill')
+        expect(result).not.toHaveProperty('# this is a comment')
       })
 
-      // One execSync call per configured agent
-      const calls = (execSync as ReturnType<typeof vi.fn>).mock.calls
-      expect(calls.length).toBe(3)
-      const args = calls.map(c => c[0] as string)
-      expect(args.some(arg => arg.includes('-a "cursor"'))).toBe(true)
-      expect(args.some(arg => arg.includes('-a "claude-code"'))).toBe(true)
-      expect(args.some(arg => arg.includes('-a "windsurf"'))).toBe(true)
-    })
-
-    it('should dedupe repeated agents when installing skill', async () => {
-      const { execSync } = await import('node:child_process')
-      testVol.writeFileSync(
-        resolve(process.cwd(), '.env.local'),
-        'agent=cursor, cursor, claude-code\n',
-        'utf-8',
-      )
-
-      const plugin = aiDoc({ installSkill: true })
-      const outputPath = 'src/api-skill-dedupe'
-      plugin.config?.({ config: { output: outputPath } as any, projectPath: process.cwd(), reportProgress: vi.fn() })
-
-      const apiTest = {
-        tag: 'test',
-        method: 'GET',
-        summary: 'Test',
-        path: '/test',
-        name: 'testApi',
-        response: 'void',
-        pathKey: 'test.testApi',
-        pathParameters: '',
-        queryParameters: '',
-        callingCode: '',
-      }
-      const data: any = {
-        title: 'Skill Dedupe Test',
-        version: '1.0.0',
-        openapi: '3.0.1',
-        baseUrl: '/api',
-        allApis: [apiTest],
-        components: [],
-        componentNames: [],
-        type: 'typescript',
-        config: {},
-        tagedApis: [
-          {
-            tag: 'test',
-            apis: [apiTest],
-          },
-        ],
-      }
-
-      await plugin.codeGenerated?.({
-        config: {} as any,
-        data,
-        filePaths: [],
-        outputDir: resolve(process.cwd(), outputPath),
-        projectPath: process.cwd(),
-        reportProgress: vi.fn(),
-        renderTemplate: renderTemplateFn,
+      it('ignores lines without =', () => {
+        const p = resolve(process.cwd(), '.myagents2')
+        testVol.writeFileSync(p, ['just text', 'agent=cursor', '=novalue'].join('\n'), 'utf-8')
+        const result = parseAgentFile(p)
+        expect(result).toEqual({ agent: 'cursor' })
       })
 
-      const calls = (execSync as ReturnType<typeof vi.fn>).mock.calls
-      expect(calls.length).toBe(2)
-      const args = calls.map(c => c[0] as string)
-      expect(args.filter(arg => arg.includes('-a "cursor"')).length).toBe(1)
-      expect(args.some(arg => arg.includes('-a "claude-code"'))).toBe(true)
-    })
-
-    it('should install skill into agents separated by a Chinese comma', async () => {
-      const { execSync } = await import('node:child_process')
-      testVol.writeFileSync(
-        resolve(process.cwd(), '.env.local'),
-        'agent=cursor，claude-code\n',
-        'utf-8',
-      )
-
-      const plugin = aiDoc({ installSkill: true })
-      const outputPath = 'src/api-skill-cn-comma'
-      plugin.config?.({ config: { output: outputPath } as any, projectPath: process.cwd(), reportProgress: vi.fn() })
-
-      const apiTest = {
-        tag: 'test',
-        method: 'GET',
-        summary: 'Test',
-        path: '/test',
-        name: 'testApi',
-        response: 'void',
-        pathKey: 'test.testApi',
-        pathParameters: '',
-        queryParameters: '',
-        callingCode: '',
-      }
-      const data: any = {
-        title: 'Skill Cn Comma Test',
-        version: '1.0.0',
-        openapi: '3.0.1',
-        baseUrl: '/api',
-        allApis: [apiTest],
-        components: [],
-        componentNames: [],
-        type: 'typescript',
-        config: {},
-        tagedApis: [
-          {
-            tag: 'test',
-            apis: [apiTest],
-          },
-        ],
-      }
-
-      await plugin.codeGenerated?.({
-        config: {} as any,
-        data,
-        filePaths: [],
-        outputDir: resolve(process.cwd(), outputPath),
-        projectPath: process.cwd(),
-        reportProgress: vi.fn(),
-        renderTemplate: renderTemplateFn,
+      it('strips surrounding quotes from values', () => {
+        const p = resolve(process.cwd(), '.myagents3')
+        testVol.writeFileSync(p, 'agent="cursor, claude-code"\n', 'utf-8')
+        const result = parseAgentFile(p)
+        expect(result.agent).toBe('cursor, claude-code')
       })
 
-      const calls = (execSync as ReturnType<typeof vi.fn>).mock.calls
-      expect(calls.length).toBe(2)
-      const args = calls.map(c => c[0] as string)
-      expect(args.some(arg => arg.includes('-a "cursor"'))).toBe(true)
-      expect(args.some(arg => arg.includes('-a "claude-code"'))).toBe(true)
-    })
+      it('tolerates leading indentation and spaces around the equals sign', () => {
+        const p = resolve(process.cwd(), '.myagents-spaced')
+        testVol.writeFileSync(p, [
+          '  agent = cursor, claude-code', // indented + spaces around =
+          '  token   =   "abc123"', // spaces around = + quoted value with spaces
+          'name\t=  "my skill"', // tab indent + spaces around =
+          '# trailing comment line',
+        ].join('\n'), 'utf-8')
 
-    it('should throw via logger when skills CLI fails', async () => {
-      const { execSync } = await import('node:child_process')
-      const throwErrorSpy = vi.spyOn(logger, 'throwError').mockReturnValue(new Error('mock install failed'))
-      ;(execSync as ReturnType<typeof vi.fn>).mockImplementationOnce(() => {
-        throw new Error('skills add failed')
+        const result = parseAgentFile(p)
+        expect(result.agent).toBe('cursor, claude-code')
+        expect(result.token).toBe('abc123')
+        expect(result.name).toBe('my skill')
       })
 
-      testVol.writeFileSync(resolve(process.cwd(), '.env.local'), 'agent=cursor\n', 'utf-8')
+      it('can be fed into agent to set the agent for the current user', () => {
+        const p = resolve(process.cwd(), '.myagents4')
+        testVol.writeFileSync(p, 'agent=cursor, windsurf\n', 'utf-8')
+        const cfg = parseAgentFile(p)
+        const plugin = aiDoc({ agent: cfg.agent })
+        expect(plugin.name).toBe('aiDoc')
+      })
 
-      const plugin = aiDoc({ installSkill: true })
-      const outputPath = 'src/api-skill-install-fail'
-      plugin.config?.({ config: { output: outputPath } as any, projectPath: process.cwd(), reportProgress: vi.fn() })
-
-      const apiTest = {
-        tag: 'test',
-        method: 'GET',
-        summary: 'Test',
-        path: '/test',
-        name: 'testApi',
-        response: 'void',
-        pathKey: 'test.testApi',
-        pathParameters: '',
-        queryParameters: '',
-        callingCode: '',
-      }
-      const data: any = {
-        title: 'Skill Install Fail Test',
-        version: '1.0.0',
-        openapi: '3.0.1',
-        baseUrl: '/api',
-        allApis: [apiTest],
-        components: [],
-        componentNames: [],
-        type: 'typescript',
-        config: {},
-        tagedApis: [
-          {
-            tag: 'test',
-            apis: [apiTest],
-          },
-        ],
-      }
-
-      await expect(
-        plugin.codeGenerated?.({
-          config: {} as any,
-          data,
-          filePaths: [],
-          outputDir: resolve(process.cwd(), outputPath),
-          projectPath: process.cwd(),
-          reportProgress: vi.fn(),
-          renderTemplate: renderTemplateFn,
-        }),
-      ).rejects.toThrow('mock install failed')
-
-      expect(throwErrorSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ message: 'skills add failed' }),
-      )
-
-      throwErrorSpy.mockRestore()
+      it('falls back to .wormaagent.local in cwd when no path is given', () => {
+        const defaultPath = resolve(process.cwd(), '.wormaagent.local')
+        testVol.writeFileSync(defaultPath, 'agent=codex, cursor\n', 'utf-8')
+        const result = parseAgentFile()
+        expect(result.agent).toBe('codex, cursor')
+        testVol.rmSync(defaultPath, { force: true })
+      })
     })
   })
 

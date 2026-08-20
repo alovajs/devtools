@@ -16,16 +16,26 @@ interface WormaRcLine {
   url: string
   /** Template type (alova, axios, fetch, ky) */
   template?: keyof typeof PRESET_TEMPLATES
+  /**
+   * Coding agent(s) to install the generated AI skill into. Comma (English or
+   * Chinese) separated. Optional: when omitted, the `aiDoc` plugin is NOT added,
+   * so no AI skill document is generated or installed for this line.
+   */
+  agent?: string
 }
 
 /**
  * Parse a single line from .wormarc file
  *
  * Supported formats:
- * - `https://xxxx.com/openapi.json` -> generates in src/api, default alova template
- * - `https://yyyy.com/openapi.json, axios` -> generates in src/api2, axios template
- * - `myApi=https://zzzz.com/openapi.json` -> generates in src/myApi, default alova template
- * - `myApi=https://zzzz.com/openapi.json, fetch` -> generates in src/myApi, fetch template
+ * - `https://xxxx.com/openapi.json` -> generates in src/api, default alova template, no aiDoc plugin
+ * - `https://yyyy.com/openapi.json, axios` -> generates in src/api2, axios template, no aiDoc plugin
+ * - `myApi=https://zzzz.com/openapi.json, fetch` -> generates in src/myApi, fetch template, no aiDoc plugin
+ * - `https://xxxx.com/openapi.json, alova, cursor` -> alova template, aiDoc installed to `cursor`
+ * - `myApi=https://zzzz.com/openapi.json, fetch, cursor, claude-code` -> fetch template, aiDoc installed to both agents
+ *
+ * The optional third comma-separated segment is the `agent` list for the `aiDoc`
+ * plugin. When it is absent, the `aiDoc` plugin is skipped entirely for that line.
  */
 function parseLine(line: string): WormaRcLine | null {
   line = line.trim()
@@ -49,8 +59,6 @@ function parseLine(line: string): WormaRcLine | null {
   }
 
   let outputKey: string | undefined
-  let url: string
-  let template: string | undefined
 
   // Check for key=value format
   const equalIndex = line.indexOf('=')
@@ -59,15 +67,11 @@ function parseLine(line: string): WormaRcLine | null {
     line = line.substring(equalIndex + 1).trim()
   }
 
-  // Split by comma to get URL and template
-  const commaIndex = line.indexOf(',')
-  if (commaIndex !== -1) {
-    url = line.substring(0, commaIndex).trim()
-    template = line.substring(commaIndex + 1).trim() || undefined
-  }
-  else {
-    url = line.trim()
-  }
+  // Split by comma into at most three segments: url[, template][, agent]
+  const segments = line.split(',').map(s => s.trim()).filter(s => s !== '')
+  const url = segments[0] ?? ''
+  const template = segments[1]
+  const agent = segments[2]
 
   if (!url) {
     return null
@@ -77,6 +81,7 @@ function parseLine(line: string): WormaRcLine | null {
     outputKey,
     url,
     template: template as WormaRcLine['template'],
+    agent,
   }
 }
 
@@ -120,7 +125,7 @@ export async function readWormaRc(projectPath: string): Promise<Config | null> {
         continue
       }
 
-      const { outputKey, url, template = PresetTemplateName.ALOVA } = parsed
+      const { outputKey, url, template = PresetTemplateName.ALOVA, agent } = parsed
 
       // Determine output folder
       let output: string
@@ -140,11 +145,20 @@ export async function readWormaRc(projectPath: string): Promise<Config | null> {
           `Invalid template: ${template}. Available templates: ${Object.keys(PRESET_TEMPLATES).join(', ')}`,
         )
       }
+
+      // Build plugin list. The aiDoc plugin is only added when an agent is
+      // explicitly specified on the line; otherwise no AI skill doc is generated
+      // or installed for this entry.
+      const plugins: ApiPlugin[] = [PRESET_TEMPLATES[template]()]
+      if (agent) {
+        plugins.push(aiDoc({ agent }))
+      }
+
       // Build generator config
       const generatorConfig: GeneratorConfig = {
         input: url,
         output,
-        plugins: [PRESET_TEMPLATES[template](), aiDoc({ installSkill: true })],
+        plugins,
       }
 
       generators.push(generatorConfig)

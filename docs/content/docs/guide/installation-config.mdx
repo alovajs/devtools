@@ -189,21 +189,27 @@ export default defineConfig({
 
 ## 简易配置 [#wormarc]
 
-纯文本格式，每行一个 OpenAPI 文档地址：
+纯文本格式，每行一个 OpenAPI 文档地址，可选携带模板与编码助手（agent）：
 
 ```
-# 主服务，默认 alova 模板
+# 主服务，默认 alova 模板（不生成 AI 文档）
 https://api.example.com/v1/openapi.json
 
-# 管理后台，使用 axios 模板
-admin=https://api.admin.com/openapi.json, axios
+# 管理后台，使用 axios 模板，安装 AI Skill 到 cursor
+admin=https://api.admin.com/openapi.json, axios, cursor
 
-# 文件服务，使用 fetch 模板
-public/files=https://api.files.com/openapi.json, fetch
+# 文件服务，使用 fetch 模板，安装 AI Skill 到 cursor 和 claude-code
+public/files=https://api.files.com/openapi.json, fetch, cursor, claude-code
 ```
 
-`.wormarc` 模式下会自动添加以下插件：
+行格式为：`[outputKey=]url[, template][, agent]`
 
-- `aiDoc({ installSkill: true })` — 生成 AI Skill 文档并自动安装到编码助手中
+- `outputKey`（可选）：自定义输出目录，省略时按 `src/api`、`src/api2`… 递增。
+- `template`（可选）：模板类型，取值 `alova` / `axios` / `fetch` / `ky`，省略默认为 `alova`。
+- `agent`（可选）：要安装 AI Skill 的编码助手，以英文逗号或中文逗号 `，` 分隔，可指定多个（自动去重）。
+
+`.wormarc` 模式下 `aiDoc` 插件**仅在行内指定了 `agent` 时才会被添加**；未指定 `agent` 的行只生成对应模板代码，不会生成或安装 AI Skill 文档。
+
+> 若想在 `worma.config` 中复用个人编码助手偏好，可结合 `parseAgentFile` 从 `.wormaagent.local` 读取（详见 [AI 文档生成器](/plugin-system/builtin-plugins/aiDoc)）。
 
 > 同时存在 `.wormarc` 和 `worma.config` 时，`worma.config` 优先级更高。

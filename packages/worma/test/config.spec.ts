@@ -250,7 +250,7 @@ describe('config', () => {
     expect(initialTsConfig).toMatch(`import { defineConfig } from 'wormajs';`)
     expect(initialTsConfig).toMatch(`import { swagger, aiDoc, alova } from 'wormajs/plugin';`)
     expect(initialTsConfig).toMatch(`export default defineConfig({`)
-    expect(initialTsConfig).toMatch(`[swagger('http://localhost:3000'), aiDoc({ installSkill: true }), alova()]`)
+    expect(initialTsConfig).toMatch(`[swagger('http://localhost:3000'), aiDoc({ agent: 'codex' }), alova()]`)
 
     // generate commonjs file
     await fs.writeFile(resolve(process.cwd(), './package.json'), JSON.stringify({
@@ -273,7 +273,7 @@ describe('config', () => {
     expect(initialCjsConfig).toMatch(`const { defineConfig } = require('wormajs');`)
     expect(initialCjsConfig).toMatch(`const { swagger, aiDoc, alova } = require('wormajs/plugin');`)
     expect(initialCjsConfig).toMatch(`module.exports = defineConfig({`)
-    expect(initialCjsConfig).toMatch(`plugins: [swagger('http://localhost:3000'), aiDoc({ installSkill: true }), alova()]`)
+    expect(initialCjsConfig).toMatch(`plugins: [swagger('http://localhost:3000'), aiDoc({ agent: 'codex' }), alova()]`)
 
     // generate module file
     await fs.writeFile(resolve(process.cwd(), './package.json'), JSON.stringify({
@@ -294,7 +294,7 @@ describe('config', () => {
     expect(initialEsmoduleConfig).toMatch(`import { defineConfig } from 'wormajs';`)
     expect(initialEsmoduleConfig).toMatch(`import { swagger, aiDoc, alova } from 'wormajs/plugin';`)
     expect(initialEsmoduleConfig).toMatch(`export default defineConfig({`)
-    expect(initialEsmoduleConfig).toMatch(`plugins: [swagger('http://localhost:3000'), aiDoc({ installSkill: true }), alova()]`)
+    expect(initialEsmoduleConfig).toMatch(`plugins: [swagger('http://localhost:3000'), aiDoc({ agent: 'codex' }), alova()]`)
 
     // generate file with target type
     await createConfig({ type: 'typescript' })
@@ -304,7 +304,7 @@ describe('config', () => {
     expect(initialTypedConfig).toMatch(`import { defineConfig } from 'wormajs';`)
     expect(initialTypedConfig).toMatch(`import { swagger, aiDoc, alova } from 'wormajs/plugin';`)
     expect(initialTypedConfig).toMatch(`export default defineConfig({`)
-    expect(initialTypedConfig).toMatch(`plugins: [swagger('http://localhost:3000'), aiDoc({ installSkill: true }), alova()]`)
+    expect(initialTypedConfig).toMatch(`plugins: [swagger('http://localhost:3000'), aiDoc({ agent: 'codex' }), alova()]`)
   })
 
   it('should create config file with specified template preset', async () => {
@@ -323,14 +323,14 @@ describe('config', () => {
       encoding: 'utf-8',
     })
     expect(axiosConfig).toMatch(`import { swagger, aiDoc, axios } from 'wormajs/plugin';`)
-    expect(axiosConfig).toMatch(`plugins: [swagger('http://localhost:3000'), aiDoc({ installSkill: true }), axios()]`)
+    expect(axiosConfig).toMatch(`plugins: [swagger('http://localhost:3000'), aiDoc({ agent: 'codex' }), axios()]`)
 
     await createConfig({ template: 'fetch' })
     const fetchConfig = await fs.readFile(resolve(process.cwd(), 'worma.config.ts'), {
       encoding: 'utf-8',
     })
     expect(fetchConfig).toMatch(`import { swagger, aiDoc, fetch } from 'wormajs/plugin';`)
-    expect(fetchConfig).toMatch(`plugins: [swagger('http://localhost:3000'), aiDoc({ installSkill: true }), fetch()]`)
+    expect(fetchConfig).toMatch(`plugins: [swagger('http://localhost:3000'), aiDoc({ agent: 'codex' }), fetch()]`)
   })
 
   it('should create config file under a custom absolute path', async () => {

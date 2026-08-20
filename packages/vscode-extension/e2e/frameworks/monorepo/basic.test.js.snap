@@ -28,7 +28,7 @@ export default defineConfig({
        * swagger platform plugin: auto-resolves OpenAPI file URLs from the base URL.
        * The base URL is passed as the plugin argument (not config.input).
        */
-      plugins: [swagger('http://localhost:3000'), aiDoc({ installSkill: true }), alova()]
+      plugins: [swagger('http://localhost:3000'), aiDoc({ agent: 'codex' }), alova()]
 
       /**
        * the mediaType of the generated response data. default is \`application/json\`

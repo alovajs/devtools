@@ -131,7 +131,7 @@ export default defineConfig(({ mode }) => {
       isVscode && vscode({
         extension: { entry: 'ext/index.ts' },
         webview: {
-          csp: `<meta http-equiv="Content-Security-Policy" content="default-src 'none';  img-src 'self' data: base64;style-src {{cspSource}} 'unsafe-inline'; script-src 'nonce-{{nonce}}' 'unsafe-eval';">`,
+          csp: `<meta http-equiv="Content-Security-Policy" content="default-src 'none';  img-src 'self' data: base64;style-src {{cspSource}} 'unsafe-inline'; script-src 'nonce-{{nonce}}';">`,
         },
       }),
     ],

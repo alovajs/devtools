@@ -18,7 +18,7 @@ generator: [
       * swagger platform plugin: auto-resolves OpenAPI file URLs from the base URL.
       * The base URL is passed as the plugin argument (not config.input).
       */
-    plugins: [swagger('http://localhost:3000'), aiDoc({ installSkill: true }), {{{templateCall}}}],
+    plugins: [swagger('http://localhost:3000'), aiDoc({ agent: 'codex' }), {{{templateCall}}}],
 
     /**
       * the mediaType of the generated response data. default is `application/json`

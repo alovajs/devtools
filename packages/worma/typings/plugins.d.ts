@@ -424,10 +424,30 @@ export interface TemplateData {
  * });
  */
 export declare function createPlugin<T extends any[]>(plugin: (...args: T) => ApiPlugin): (...args: T) => ApiPlugin;
+/**
+ * Coding agents that the generated skill can be installed into.
+ *
+ * The `skills` package (`https://www.npmjs.com/package/skills`) is CLI-only and
+ * ships no TypeScript types, so this union mirrors the agent names it supports
+ * (its documented "supported agents" list). The transitive `@vercel/detect-agent`
+ * package does export a `KnownAgentNames` type, but it only covers a small subset
+ * of agents (e.g. it is missing `claude-code` and `windsurf`), so it cannot be
+ * reused directly here.
+ */
+export type SkillAgent = "aider-desk" | "amp" | "antigravity" | "antigravity-cli" | "astrbot" | "augment" | "autohand-code" | "bob" | "claude-code" | "cline" | "codearts-agent" | "codebuddy" | "codemaker" | "codestudio" | "codex" | "command-code" | "continue" | "cortex" | "crush" | "cursor" | "deepagents" | "devin" | "dexto" | "droid" | "eve" | "firebender" | "forgecode" | "gemini-cli" | "github-copilot" | "goose" | "hermes-agent" | "iflow-cli" | "inference-sh" | "jazz" | "junie" | "kilo" | "kiro-cli" | "kimi-code-cli" | "kode" | "lingma" | "loaf" | "mcpjam" | "mistral-vibe" | "moxby" | "mux" | "ona" | "opencode" | "openhands" | "openclaw" | "pi" | "pochi" | "promptscript" | "qoder" | "qoder-cn" | "qwen-code" | "reasonix" | "replit" | "rovodev" | "roo" | "tabnine-cli" | "terramind" | "tinycloud" | "trae" | "trae-cn" | "universal" | "warp" | "windsurf" | "zed" | "zencoder" | "zenflow" | "neovate" | "adal";
 export interface AiDocConfig {
 	template?: string;
 	outputDir?: string;
-	installSkill?: boolean;
+	/**
+	 * Which coding agent(s) to install the generated skill into.
+	 * - omitted: do NOT install the skill.
+	 * - `SkillAgent` / `SkillAgent[]`: install to the given agent(s) directly.
+	 * - `string`: comma (English or Chinese) separated agent names, used directly
+	 *   as the target agent(s), e.g. `"cursor"` or `"cursor, claude-code"`.
+	 *   This is handy when the agent list comes from a config file parsed via
+	 *   `parseAgentFile`, e.g. `aiDoc({ agent: parseAgentFile('.myrc').agent })`.
+	 */
+	agent?: SkillAgent | (SkillAgent | (string & {}))[] | (string & {});
 }
 export declare function aiDoc(config?: AiDocConfig): ApiPlugin;
 /**
@@ -438,6 +458,27 @@ export declare function aiDoc(config?: AiDocConfig): ApiPlugin;
  * either side. Empty entries are ignored.
  */
 export declare function parseAgentList(raw: string): string[];
+/**
+ * Parse a `key=value` configuration file (same format as an environment file).
+ *
+ * Lines starting with `#` are treated as comments and ignored; blank lines and
+ * lines without `=` are skipped. Surrounding single/double quotes around values
+ * are stripped. Returns a map of keys to their (string) values.
+ *
+ * When `filePath` is omitted, the file is read from `.wormaagent.local` in the
+ * current working directory (project root).
+ *
+ * This makes it easy to keep the target coding agent(s) in a config file and
+ * feed them into the `agent` option:
+ *
+ * @example
+ * ```ts
+ * // .wormaagent.local  ->  agent=cursor, claude-code
+ * const cfg = parseAgentFile() // reads ./.wormaagent.local by default
+ * aiDoc({ agent: cfg.agent })
+ * ```
+ */
+export declare function parseAgentFile(filePath?: string): Record<string, string>;
 export type ScopeType = "ALL" | "SELECTED_ENDPOINTS" | "SELECTED_TAGS" | "SELECTED_FOLDERS";
 export interface APIFoxBody {
 	scope?: {
