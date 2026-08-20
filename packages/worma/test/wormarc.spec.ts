@@ -44,6 +44,41 @@ describe('readWormaRc', () => {
     expect(result!.generator[0].plugins).toBeDefined()
   })
 
+  it('should NOT add aiDoc plugin when no agent is specified on the line', async () => {
+    vol.fromJSON({ '/project/.wormarc': 'https://a.com/api.json, axios\n' })
+    const { readWormaRc } = await import('@/functions/readWormaRc')
+    const { PluginName } = await import('@/constant')
+    const result = await readWormaRc('/project')
+    expect(result!.generator[0].plugins).toHaveLength(1)
+    expect(result!.generator[0].plugins!.some(p => p.name === PluginName.AI_DOC)).toBe(false)
+  })
+
+  it('should add aiDoc plugin with the line agent when a single agent is given', async () => {
+    vol.fromJSON({ '/project/.wormarc': 'https://a.com/api.json, alova, cursor\n' })
+    const { readWormaRc } = await import('@/functions/readWormaRc')
+    const { PluginName } = await import('@/constant')
+    const result = await readWormaRc('/project')
+    const plugins = result!.generator[0].plugins!
+    expect(plugins.some(p => p.name === PluginName.AI_DOC)).toBe(true)
+  })
+
+  it('should add aiDoc plugin with multiple comma-separated agents on the line', async () => {
+    vol.fromJSON({ '/project/.wormarc': 'myApi=https://a.com/api.json, fetch, cursor, claude-code\n' })
+    const { readWormaRc } = await import('@/functions/readWormaRc')
+    const { PluginName } = await import('@/constant')
+    const result = await readWormaRc('/project')
+    const plugins = result!.generator[0].plugins!
+    expect(plugins.some(p => p.name === PluginName.AI_DOC)).toBe(true)
+  })
+
+  it('should support Chinese comma as agent separator', async () => {
+    vol.fromJSON({ '/project/.wormarc': 'https://a.com/api.json, alova, cursor，claude-code\n' })
+    const { readWormaRc } = await import('@/functions/readWormaRc')
+    const { PluginName } = await import('@/constant')
+    const result = await readWormaRc('/project')
+    expect(result!.generator[0].plugins!.some(p => p.name === PluginName.AI_DOC)).toBe(true)
+  })
+
   it('should parse key=url format to set custom output folder', async () => {
     vol.fromJSON({ '/project/.wormarc': 'myApi=https://a.com/api.json\n' })
     const { readWormaRc } = await import('@/functions/readWormaRc')
