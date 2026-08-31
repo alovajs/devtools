@@ -812,6 +812,95 @@ describe('payloadModifier plugin tests', () => {
     expect(statusParam.schema).toEqual({ enum: ['active', 'inactive', 'pending'], type: 'string' })
   })
 
+  it('handler receives integer enum input (type: "integer") and round-trips it unchanged', () => {
+    let input: any
+    const handleApi = getHandleApi([
+      {
+        scope: 'params',
+        match: 'kind',
+        handler: (schema) => {
+          input = schema
+          return schema // pass through unchanged
+        },
+      },
+    ])
+
+    const api: ApiDescriptor = {
+      url: '/items',
+      method: 'get',
+      parameters: [
+        { name: 'kind', in: 'query', required: false, schema: { type: 'integer', enum: [1, 2, 3] } as any },
+      ],
+      requestBody: { type: 'object', properties: {}, required: [] },
+      responses: { type: 'object', properties: {}, required: [] },
+    }
+
+    const result = handleApi(api)!
+    // the input preserves the integer type (previously crashed with "Invalid schema type integer")
+    expect(input).toEqual({ enum: [1, 2, 3], type: 'integer' })
+    const kindParam = result.parameters!.find(p => p.name === 'kind')!
+    // the integer enum is preserved on output
+    expect(kindParam.schema).toEqual({ type: 'integer', enum: [1, 2, 3] })
+  })
+
+  it('handler can transform an integer enum (data scope)', () => {
+    let input: any
+    const handleApi = getHandleApi([
+      {
+        scope: 'data',
+        match: 'status',
+        handler: (schema) => {
+          input = schema
+          const spec = schema as { enum: number[], type?: string }
+          return { enum: [...spec.enum, 9], type: 'integer' }
+        },
+      },
+    ])
+
+    const api: ApiDescriptor = {
+      url: '/orders',
+      method: 'post',
+      parameters: [],
+      requestBody: {
+        type: 'object',
+        properties: { status: { type: 'integer', enum: [1, 2] } as any },
+        required: ['status'],
+      },
+      responses: { type: 'object', properties: {}, required: [] },
+    }
+
+    const result = handleApi(api)!
+    expect(input).toEqual({ enum: [1, 2], type: 'integer' })
+    const rb = result.requestBody as SchemaObject
+    expect(rb.properties?.status).toEqual({ type: 'integer', enum: [1, 2, 9] })
+  })
+
+  it('handler can return a SchemaEnum with type "integer" (response scope)', () => {
+    const handleApi = getHandleApi([
+      {
+        scope: 'response',
+        match: 'code',
+        handler: () => ({ enum: [100, 200, 300], type: 'integer' }),
+      },
+    ])
+
+    const api: ApiDescriptor = {
+      url: '/x',
+      method: 'get',
+      parameters: [],
+      requestBody: { type: 'object', properties: {}, required: [] },
+      responses: {
+        type: 'object',
+        properties: { code: { type: 'number' } },
+        required: ['code'],
+      } as any,
+    }
+
+    const result = handleApi(api)!
+    const res = result.responses as SchemaObject
+    expect(res.properties?.code).toEqual({ type: 'integer', enum: [100, 200, 300] })
+  })
+
   it('handler returns null when apiDescriptor is null', () => {
     const handleApi = getHandleApi([{ scope: 'params', match: 'x', handler: () => 'string' }])
     expect(handleApi(null as any)).toBeNull()

@@ -73,6 +73,7 @@ const VALID_PRIMITIVES: ReadonlySet<string> = new Set([
   'unknown',
   'any',
   'never',
+  'integer',
 ])
 
 function validatePrimitive(val: string): void {
