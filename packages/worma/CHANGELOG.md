@@ -1,5 +1,17 @@
 # worma
 
+## 0.3.1
+
+### Patch Changes
+
+- [#191](https://github.com/alovajs/devtools/pull/191) [`0cca9ee`](https://github.com/alovajs/devtools/commit/0cca9ee182d56ad2c6343b80b963bbdbb45247c5) Thanks [@JOU-amjs](https://github.com/JOU-amjs)! - Fix `payloadModifier` plugin so it can convert OpenAPI enums whose `type` is `integer`.
+
+  Previously, an enum with `type: "integer"` (e.g. `{ type: "integer", enum: [1, 2, 3] }`) caused the plugin to throw `Invalid schema type "integer"` during the schema round-trip, because `"integer"` was missing from the set of allowed primitive types. `"integer"` is now a valid `SchemaPrimitive` and is preserved on output.
+  - Add `"integer"` to `SchemaPrimitive` and to the internal `VALID_PRIMITIVES` allowlist in the modifier helper.
+  - Keep integer enums intact when a handler passes them through or returns a new integer enum.
+
+  Also update the editor extension install guide to point users to https://open-vsx.org/extension/worma/worma-vscode for manual installation when the extension cannot be found in the VSCode Marketplace.
+
 ## 0.3.0
 
 ### Minor Changes
