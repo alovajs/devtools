@@ -1,7 +1,6 @@
 import type { Config } from 'wormajs'
 import type Error from '@/components/error'
 import Global from '@/core/Global'
-import { refeshAutoUpdate } from '@/helper/autoUpdate'
 import worma from '@/helper/worma'
 import { getWorkspacePaths } from '@/utils/vscode'
 
@@ -34,7 +33,6 @@ export default async (workspaceRootPathArr?: string | string[]) => {
       continue
     }
     Global.setConfig(dir, config)
-    refeshAutoUpdate(dir, config)
     configNum += 1
   }
   Global.emitConfigChange()

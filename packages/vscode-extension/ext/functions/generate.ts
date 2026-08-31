@@ -8,7 +8,7 @@ export interface GenerateOption {
   force?: boolean
   projectPath?: string
   showError?: boolean
-  /** Triggered by the autoUpdate timer; suppresses the "up to date" popup. */
+  /** Suppresses the "up to date" popup when triggered non-interactively. */
   isAuto?: boolean
   onProgress?: (event: GeneratorProgressEvent) => void
 }

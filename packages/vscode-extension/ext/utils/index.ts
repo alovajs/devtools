@@ -1,24 +1,3 @@
-export function highPrecisionInterval(callback: () => void, intervalInMilliseconds: number, immediate = false) {
-  let isRunning = true
-  if (immediate) {
-    callback()
-  }
-  const MAX_TIME = 2147483648
-  const timer = setInterval(callback, Math.min(MAX_TIME, intervalInMilliseconds))
-
-  return {
-    isRunning() {
-      return isRunning
-    },
-    clear() {
-      isRunning = false
-      clearInterval(timer)
-    },
-    time: intervalInMilliseconds,
-    immediate,
-  }
-}
-export type Timer = ReturnType<typeof highPrecisionInterval>
 export function getFileNameByPath(path: string) {
   const [, name] = /[/\\]([^/\\]+)([/\\])?$/.exec(path) ?? []
   return name ?? ''

@@ -1,7 +1,7 @@
 {
-  "publisher": "worma",
-  "name": "worma-vscode",
-  "displayName": "Worma",
+  "publisher": "sighted2",
+  "name": "sighted2-vscode",
+  "displayName": "Sighted2",
   "version": "0.3.0",
   "private": true,
   "packageManager": "pnpm@10.13.1",
@@ -41,34 +41,8 @@
   ],
   "contributes": {
     "configuration": {
-      "title": "Worma",
+      "title": "mnjit",
       "properties": {
-        "worma.autoUpdate": {
-          "markdownDescription": "Whether to automatically update APIs. Set to `false` to disable, `true` for default (every 5 minutes), or an object for detailed configuration.",
-          "oneOf": [
-            {
-              "type": "boolean",
-              "default": true
-            },
-            {
-              "type": "object",
-              "properties": {
-                "launchEditor": {
-                  "type": "boolean",
-                  "default": false,
-                  "description": "Update immediately when the editor launches."
-                },
-                "interval": {
-                  "type": "number",
-                  "default": 300000,
-                  "description": "Auto-update interval in milliseconds."
-                }
-              },
-              "additionalProperties": false
-            }
-          ],
-          "default": true
-        },
         "worma.enableViewApiLens": {
           "type": "boolean",
           "default": true,
