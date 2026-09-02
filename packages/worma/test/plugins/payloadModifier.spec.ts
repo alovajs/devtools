@@ -812,7 +812,7 @@ describe('payloadModifier plugin tests', () => {
     expect(statusParam.schema).toEqual({ enum: ['active', 'inactive', 'pending'], type: 'string' })
   })
 
-  it('handler receives integer enum input (type: "integer") and round-trips it unchanged', () => {
+  it('normalizes an OpenAPI integer enum to the TS number type and converts it back', () => {
     let input: any
     const handleApi = getHandleApi([
       {
@@ -836,14 +836,14 @@ describe('payloadModifier plugin tests', () => {
     }
 
     const result = handleApi(api)!
-    // the input preserves the integer type (previously crashed with "Invalid schema type integer")
-    expect(input).toEqual({ enum: [1, 2, 3], type: 'integer' })
+    // the OpenAPI `integer` type is normalized to the TS `number` type for the handler
+    expect(input).toEqual({ enum: [1, 2, 3], type: 'number' })
     const kindParam = result.parameters!.find(p => p.name === 'kind')!
-    // the integer enum is preserved on output
+    // converted back into the OpenAPI `integer` type
     expect(kindParam.schema).toEqual({ type: 'integer', enum: [1, 2, 3] })
   })
 
-  it('handler can transform an integer enum (data scope)', () => {
+  it('handler can transform a numeric enum (data scope)', () => {
     let input: any
     const handleApi = getHandleApi([
       {
@@ -852,7 +852,7 @@ describe('payloadModifier plugin tests', () => {
         handler: (schema) => {
           input = schema
           const spec = schema as { enum: number[], type?: string }
-          return { enum: [...spec.enum, 9], type: 'integer' }
+          return { enum: [...spec.enum, 9], type: 'number' }
         },
       },
     ])
@@ -870,17 +870,17 @@ describe('payloadModifier plugin tests', () => {
     }
 
     const result = handleApi(api)!
-    expect(input).toEqual({ enum: [1, 2], type: 'integer' })
+    expect(input).toEqual({ enum: [1, 2], type: 'number' })
     const rb = result.requestBody as SchemaObject
     expect(rb.properties?.status).toEqual({ type: 'integer', enum: [1, 2, 9] })
   })
 
-  it('handler can return a SchemaEnum with type "integer" (response scope)', () => {
+  it('handler can return a SchemaEnum with type "number" (response scope)', () => {
     const handleApi = getHandleApi([
       {
         scope: 'response',
         match: 'code',
-        handler: () => ({ enum: [100, 200, 300], type: 'integer' }),
+        handler: () => ({ enum: [100, 200, 300], type: 'number' }),
       },
     ])
 
@@ -891,7 +891,7 @@ describe('payloadModifier plugin tests', () => {
       requestBody: { type: 'object', properties: {}, required: [] },
       responses: {
         type: 'object',
-        properties: { code: { type: 'number' } },
+        properties: { code: { type: 'integer' } },
         required: ['code'],
       } as any,
     }
@@ -899,6 +899,320 @@ describe('payloadModifier plugin tests', () => {
     const result = handleApi(api)!
     const res = result.responses as SchemaObject
     expect(res.properties?.code).toEqual({ type: 'integer', enum: [100, 200, 300] })
+  })
+
+  it('infers the OpenAPI type of an untyped enum from its values', () => {
+    const handleApi = getHandleApi([
+      { scope: 'data', match: () => true, handler: schema => schema },
+    ])
+
+    const api: ApiDescriptor = {
+      url: '/x',
+      method: 'post',
+      parameters: [],
+      requestBody: {
+        type: 'object',
+        properties: {
+          kind: { enum: ['a', 'b'] },
+          size: { enum: [1, 2] },
+          rate: { enum: [1.5, 2.5] },
+          enabled: { enum: [true, false] },
+        },
+        required: ['kind', 'size', 'rate', 'enabled'],
+      },
+      responses: { type: 'object', properties: {}, required: [] },
+    }
+
+    const result = handleApi(api)!
+    const rb = result.requestBody as SchemaObject
+    expect(rb.properties?.kind).toEqual({ type: 'string', enum: ['a', 'b'] })
+    expect(rb.properties?.size).toEqual({ type: 'integer', enum: [1, 2] })
+    expect(rb.properties?.rate).toEqual({ type: 'number', enum: [1.5, 2.5] })
+    expect(rb.properties?.enabled).toEqual({ type: 'boolean', enum: [true, false] })
+  })
+
+  it('leaves an enum untyped when its values are mixed', () => {
+    const handleApi = getHandleApi([
+      { scope: 'data', match: 'mixed', handler: schema => schema },
+    ])
+
+    const api: ApiDescriptor = {
+      url: '/x',
+      method: 'post',
+      parameters: [],
+      requestBody: {
+        type: 'object',
+        properties: { mixed: { enum: ['a', 1] } as any },
+        required: ['mixed'],
+      },
+      responses: { type: 'object', properties: {}, required: [] },
+    }
+
+    const result = handleApi(api)!
+    const rb = result.requestBody as SchemaObject
+    // mixed value types -> no type is written
+    expect(rb.properties?.mixed).toEqual({ enum: ['a', 1] })
+  })
+
+  it('preserves an OpenAPI 3.1 nullable type array on an enum', () => {
+    const handleApi = getHandleApi([
+      { scope: 'params', match: 'kind', handler: schema => schema },
+    ])
+
+    const api: ApiDescriptor = {
+      url: '/items',
+      method: 'get',
+      parameters: [
+        {
+          name: 'kind',
+          in: 'query',
+          required: false,
+          schema: { type: ['string', 'null'], enum: ['a', 'b', null] } as any,
+        },
+      ],
+      requestBody: { type: 'object', properties: {}, required: [] },
+      responses: { type: 'object', properties: {}, required: [] },
+    }
+
+    const result = handleApi(api)!
+    const kindParam = result.parameters!.find(p => p.name === 'kind')!
+    // the 3.1 `type: ['string', 'null']` is kept instead of being dropped
+    expect(kindParam.schema).toEqual({ type: ['string', 'null'], enum: ['a', 'b', null] })
+  })
+
+  it('replaces the type array when the handler specifies a type', () => {
+    const handleApi = getHandleApi([
+      {
+        scope: 'params',
+        match: 'kind',
+        handler: () => ({ enum: ['a', 'b'], type: 'string' }),
+      },
+    ])
+
+    const api: ApiDescriptor = {
+      url: '/items',
+      method: 'get',
+      parameters: [
+        {
+          name: 'kind',
+          in: 'query',
+          required: false,
+          schema: { type: ['string', 'null'], enum: ['a', 'b', null] } as any,
+        },
+      ],
+      requestBody: { type: 'object', properties: {}, required: [] },
+      responses: { type: 'object', properties: {}, required: [] },
+    }
+
+    const result = handleApi(api)!
+    const kindParam = result.parameters!.find(p => p.name === 'kind')!
+    expect(kindParam.schema).toEqual({ type: 'string', enum: ['a', 'b'] })
+  })
+
+  it('keeps a float enum as OpenAPI number instead of integer', () => {
+    const handleApi = getHandleApi([
+      {
+        scope: 'data',
+        match: 'rate',
+        handler: () => ({ enum: [1.5, 2.5], type: 'number' }),
+      },
+    ])
+
+    const api: ApiDescriptor = {
+      url: '/rates',
+      method: 'post',
+      parameters: [],
+      requestBody: {
+        type: 'object',
+        properties: { rate: { type: 'number', enum: [1.5, 2.5] } as any },
+        required: ['rate'],
+      },
+      responses: { type: 'object', properties: {}, required: [] },
+    }
+
+    const result = handleApi(api)!
+    const rb = result.requestBody as SchemaObject
+    // not every value is an integer -> stays `number`, the type matches the values
+    expect(rb.properties?.rate).toEqual({ type: 'number', enum: [1.5, 2.5] })
+  })
+
+  it('keeps a mixed integer/float enum as OpenAPI number', () => {
+    const handleApi = getHandleApi([
+      {
+        scope: 'data',
+        match: 'rate',
+        handler: () => ({ enum: [1, 2.5], type: 'number' }),
+      },
+    ])
+
+    const api: ApiDescriptor = {
+      url: '/rates',
+      method: 'post',
+      parameters: [],
+      requestBody: {
+        type: 'object',
+        properties: { rate: { type: 'number', enum: [1, 2.5] } as any },
+        required: ['rate'],
+      },
+      responses: { type: 'object', properties: {}, required: [] },
+    }
+
+    const result = handleApi(api)!
+    const rb = result.requestBody as SchemaObject
+    expect(rb.properties?.rate).toEqual({ type: 'number', enum: [1, 2.5] })
+  })
+
+  describe('feature: keep documentation (description) through the round-trip', () => {
+    it('preserves nested property descriptions when the handler returns an object', () => {
+      const handleApi = getHandleApi([
+        {
+          scope: 'data',
+          match: 'user',
+          handler: () => ({ id: 'string', name: 'string' }),
+        },
+      ])
+
+      const api: ApiDescriptor = {
+        url: '/users',
+        method: 'post',
+        parameters: [],
+        requestBody: {
+          type: 'object',
+          properties: {
+            user: {
+              type: 'object',
+              description: 'the user',
+              properties: {
+                id: { type: 'number', description: 'user id' },
+                name: { type: 'string', description: 'user name' },
+              },
+              required: ['id'],
+            },
+          },
+          required: ['user'],
+        },
+        responses: { type: 'object', properties: {}, required: [] },
+      }
+
+      const result = handleApi(api)!
+      const rb = result.requestBody as SchemaObject
+      expect(rb.properties?.user).toEqual({
+        type: 'object',
+        description: 'the user',
+        properties: {
+          id: { type: 'string', description: 'user id' },
+          name: { type: 'string', description: 'user name' },
+        },
+        required: ['id', 'name'],
+      })
+    })
+
+    it('preserves array item descriptions when the handler returns an array', () => {
+      const handleApi = getHandleApi([
+        {
+          scope: 'data',
+          match: 'list',
+          handler: () => ([{ id: 'string' }]),
+        },
+      ])
+
+      const api: ApiDescriptor = {
+        url: '/feed',
+        method: 'post',
+        parameters: [],
+        requestBody: {
+          type: 'object',
+          properties: {
+            list: {
+              type: 'array',
+              description: 'the list',
+              items: {
+                type: 'object',
+                description: 'an item',
+                properties: { id: { type: 'number', description: 'item id' } },
+                required: ['id'],
+              },
+            },
+          },
+          required: ['list'],
+        },
+        responses: { type: 'object', properties: {}, required: [] },
+      }
+
+      const result = handleApi(api)!
+      const rb = result.requestBody as SchemaObject
+      expect(rb.properties?.list).toEqual({
+        type: 'array',
+        description: 'the list',
+        items: {
+          type: 'object',
+          description: 'an item',
+          properties: { id: { type: 'string', description: 'item id' } },
+          required: ['id'],
+        },
+      })
+    })
+
+    it('preserves query parameter descriptions when match is omitted', () => {
+      const handleApi = getHandleApi([
+        { scope: 'params', handler: schema => schema },
+      ])
+
+      const api: ApiDescriptor = {
+        url: '/x',
+        method: 'get',
+        parameters: [
+          { name: 'a', in: 'query', required: true, schema: { type: 'string', description: 'param a' } },
+          { name: 'b', in: 'query', required: false, schema: { type: 'integer', description: 'param b' } },
+        ],
+        requestBody: { type: 'object', properties: {}, required: [] },
+        responses: { type: 'object', properties: {}, required: [] },
+      }
+
+      const result = handleApi(api)!
+      const a = result.parameters!.find(p => p.name === 'a')!.schema as SchemaObject
+      const b = result.parameters!.find(p => p.name === 'b')!.schema as SchemaObject
+      expect(a).toEqual({ type: 'string', description: 'param a' })
+      expect(b).toEqual({ type: 'number', description: 'param b' })
+    })
+
+    it('does not leak stale structural fields when the type is replaced', () => {
+      const handleApi = getHandleApi([
+        { scope: 'data', match: 'payload', handler: () => 'string' },
+        { scope: 'data', match: 'kind', handler: () => ({ enum: ['a', 'b'], type: 'string' }) },
+      ])
+
+      const api: ApiDescriptor = {
+        url: '/x',
+        method: 'post',
+        parameters: [],
+        requestBody: {
+          type: 'object',
+          properties: {
+            payload: {
+              type: 'object',
+              description: 'the payload',
+              properties: { inner: { type: 'number' } },
+              required: ['inner'],
+            },
+            kind: {
+              type: 'object',
+              description: 'the kind',
+              properties: { code: { type: 'number' } },
+              required: ['code'],
+            },
+          },
+          required: [],
+        },
+        responses: { type: 'object', properties: {}, required: [] },
+      }
+
+      const result = handleApi(api)!
+      const rb = result.requestBody as SchemaObject
+      // the description is kept, the obsolete properties/required are dropped
+      expect(rb.properties?.payload).toEqual({ type: 'string', description: 'the payload' })
+      expect(rb.properties?.kind).toEqual({ type: 'string', enum: ['a', 'b'], description: 'the kind' })
+    })
   })
 
   it('handler returns null when apiDescriptor is null', () => {
@@ -945,6 +1259,11 @@ describe('payloadModifier plugin tests', () => {
     it('throws on invalid type in SchemaEnum', () => {
       const handleApi = getHandleApi([{ scope: 'params', match: 'age', handler: () => ({ enum: ['a', 'b'], type: 'int64' as any }) }])
       expect(() => handleApi(api())).toThrow(/Invalid schema type "int64"/)
+    })
+
+    it('throws on the OpenAPI-only "integer" type in SchemaEnum (TS types only)', () => {
+      const handleApi = getHandleApi([{ scope: 'params', match: 'age', handler: () => ({ enum: [1, 2], type: 'integer' as any }) }])
+      expect(() => handleApi(api())).toThrow(/Invalid schema type "integer"/)
     })
 
     it('throws on invalid primitive in array element', () => {

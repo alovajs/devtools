@@ -175,6 +175,14 @@ payloadModifier([
 
 `SchemaEnum` 也可用于接收入参时的判断：当字段在 OpenAPI 中本身就是枚举时，handler 收到的 `schema` 即为 `{ enum: [...], type?: ... }`，可据此再转换。
 
+枚举在 OpenAPI 与 Schema 类型之间按如下规则转换：
+
+- `Schema` 层沿用 TS 类型，数字枚举的 `type` 写作 `'number'`，不写 `'integer'`。
+- 入参时，OpenAPI 的 `integer` 枚举会被归一为 `number`：`{ type: 'integer', enum: [1, 2] }` → `{ enum: [1, 2], type: 'number' }`。
+- 写回 OpenAPI 时，数字枚举按值判断：值全为整数则写为 `integer`，含浮点则写为 `number`。
+- 源文档与 handler 都未指定 `type` 时，按枚举值推断：全字符串 → `string`，全布尔 → `boolean`，全整数 → `integer`，含浮点 → `number`，混合或空则不写 `type`。
+- OpenAPI 3.1 可空枚举（`type: ['string', 'null']` 这类类型数组）在 handler 透传时原样保留，handler 显式指定 `type` 时才替换。
+
 ## 常用场景示例
 
 以下为日常使用中高频出现的组合配置，可直接复制并按需调整。
