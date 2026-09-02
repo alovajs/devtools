@@ -1,6 +1,6 @@
 export type ModifierScope = 'params' | 'pathParams' | 'data' | 'response'
 
-export type SchemaPrimitive = 'number' | 'string' | 'boolean' | 'undefined' | 'null' | 'unknown' | 'any' | 'never' | 'integer'
+export type SchemaPrimitive = 'number' | 'string' | 'boolean' | 'undefined' | 'null' | 'unknown' | 'any' | 'never'
 
 /**
  * Array type: a native JS array whose elements are Schemas.

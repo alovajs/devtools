@@ -73,7 +73,6 @@ const VALID_PRIMITIVES: ReadonlySet<string> = new Set([
   'unknown',
   'any',
   'never',
-  'integer',
 ])
 
 function validatePrimitive(val: string): void {
@@ -109,7 +108,11 @@ function toSchemaObject(base: SchemaObject, s: Schema): SchemaObject {
     const arr = s as Schema[]
     cleanType(result)
     result.type = 'array'
-    const items = arr.map(item => toSchemaObject({}, item))
+    // Pass the original `items` down as the base of each element so documentation
+    // fields (e.g. `description`) survive the round-trip.
+    const baseItems = (base as ArraySchemaObject).items
+    const baseItemsList = Array.isArray(baseItems) ? baseItems : (baseItems ? [baseItems] : [])
+    const items = arr.map((item, idx) => toSchemaObject((baseItemsList[idx] || {}) as SchemaObject, item))
     // single element -> items is a single schema object; multiple elements -> tuple array
     ;(result as ArraySchemaObject).items = (items.length === 1 ? items[0] : items) as any
     return result
@@ -118,6 +121,9 @@ function toSchemaObject(base: SchemaObject, s: Schema): SchemaObject {
   // Primitive types — validate against SchemaPrimitive set during conversion
   if (typeof s === 'string') {
     validatePrimitive(s)
+    // Drop the structural fields inherited from the base so they don't leak into the
+    // new type; documentation fields such as `description` are kept.
+    cleanType(result)
     result.type = s as SchemaType
     return result
   }
@@ -145,15 +151,28 @@ function toSchemaObject(base: SchemaObject, s: Schema): SchemaObject {
     return result
   }
 
-  // Enum: set enum and optional type
+  // Enum: write the enum values back, converting the TS primitive type from the
+  // handler into its OpenAPI counterpart (`number` -> `integer`/`number`, `string`, ...).
   if ((s as SchemaEnum).enum) {
     const spec = s as SchemaEnum
+    // Drop the structural fields inherited from the base; documentation fields are kept.
+    cleanType(result)
     result.enum = spec.enum
     if (spec.type) {
       if (typeof spec.type === 'string') {
         validatePrimitive(spec.type)
       }
-      result.type = spec.type as any
+      // `number` only becomes `integer` when every enum value is an integer.
+      result.type = enumTypeToSchemaType(spec.type, spec.enum)
+    }
+    else {
+      // No type from the handler: keep an OpenAPI 3.1 type array (e.g. `['string', 'null']`)
+      // as-is, otherwise infer the type from the enum values.
+      const fallback = Array.isArray(base.type) ? base.type : inferEnumType(spec.enum)
+      if (fallback) {
+        result.type = fallback
+      }
+      // otherwise the enum stays untyped (mixed or empty values)
     }
     return result
   }
@@ -163,9 +182,14 @@ function toSchemaObject(base: SchemaObject, s: Schema): SchemaObject {
   // scalar fields like description from base)
   const ref = s as SchemaReference
   if (ref && typeof ref === 'object') {
+    // Drop the structural fields inherited from the base; documentation fields are kept.
+    cleanType(result)
     result.type = 'object'
     const properties: Record<string, SchemaObject> = {}
     const requiredSet = new Set<string>()
+    // The base of each property is taken from the ORIGINAL `base.properties` (not from the
+    // object being built) so documentation fields like `description` survive the round-trip.
+    const baseProperties = (base.properties || {}) as Record<string, SchemaObject>
 
     for (const key in ref) {
       const val = ref[key]
@@ -186,7 +210,7 @@ function toSchemaObject(base: SchemaObject, s: Schema): SchemaObject {
         isOptional = false
         effectiveVal = val
       }
-      const baseProp = properties[key]
+      const baseProp = baseProperties[key]
       properties[key] = toSchemaObject(baseProp || {}, effectiveVal)
       if (isOptional) {
         requiredSet.delete(key)
@@ -218,6 +242,39 @@ function schemaTypeToPrimitiveType(t?: SchemaType): SchemaPrimitive {
   }
   return t as SchemaPrimitive
 }
+
+// Convert a SchemaPrimitive (the TS type used by the handler) back into the OpenAPI type
+// of an enum. A numeric enum is written as `integer` (the OpenAPI counterpart of the TS
+// `number`) only when every value is an integer, otherwise it stays `number` so the type
+// matches the values. `string`/`boolean` map 1:1, TS-only types are written through as-is.
+function enumTypeToSchemaType(t: SchemaPrimitive, enumValues: SchemaEnum['enum']): SchemaType {
+  if (t === 'number') {
+    return enumValues.every(v => typeof v === 'number' && Number.isInteger(v))
+      ? 'integer'
+      : 'number'
+  }
+  return t as SchemaType
+}
+
+// Infer the OpenAPI type of an enum from its values, used when no type is declared so the
+// enum does not stay untyped. Returns `undefined` for mixed or empty values so that no
+// (possibly wrong) type is written.
+function inferEnumType(enumValues: SchemaEnum['enum']): SchemaType | undefined {
+  if (!enumValues.length) {
+    return undefined
+  }
+  if (enumValues.every(v => typeof v === 'string')) {
+    return 'string'
+  }
+  if (enumValues.every(v => typeof v === 'boolean')) {
+    return 'boolean'
+  }
+  if (enumValues.every(v => typeof v === 'number')) {
+    return enumValues.every(v => Number.isInteger(v)) ? 'integer' : 'number'
+  }
+  // mixed value types -> leave the enum untyped
+  return undefined
+}
 // Convert existing OpenAPI SchemaObject -> Schema (best-effort, for handler input)
 function toSchemaSpec(obj: SchemaObject): Schema {
   if (!obj || typeof obj !== 'object') {
@@ -238,9 +295,12 @@ function toSchemaSpec(obj: SchemaObject): Schema {
     return { allOf: arr.map(item => toSchemaSpec(item)) }
   }
 
-  // Enum
+  // Enum: the OpenAPI type is normalized to its TS primitive counterpart
+  // (e.g. `integer` -> `number`), consistent with how plain primitives are converted.
   if (Array.isArray(obj.enum) && obj.enum.length > 0) {
-    const type = typeof obj.type === 'string' ? (obj.type as any) : undefined
+    const type = typeof obj.type === 'string'
+      ? schemaTypeToPrimitiveType(obj.type as SchemaType)
+      : undefined
     return { enum: obj.enum, type } as SchemaEnum
   }
 
