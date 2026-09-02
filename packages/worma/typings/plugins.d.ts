@@ -439,6 +439,12 @@ export interface AiDocConfig {
 	template?: string;
 	outputDir?: string;
 	/**
+	 * Name written into the generated skill's `SKILL.md` frontmatter. This is the
+	 * name the skill is installed/referenced under. When omitted, the skill keeps
+	 * its default name derived from the API title: `apis-<title>`.
+	 */
+	skillName?: string;
+	/**
 	 * Which coding agent(s) to install the generated skill into.
 	 * - omitted: do NOT install the skill.
 	 * - `SkillAgent` / `SkillAgent[]`: install to the given agent(s) directly.

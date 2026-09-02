@@ -97,6 +97,12 @@ export interface AiDocConfig {
   template?: string
   outputDir?: string
   /**
+   * Name written into the generated skill's `SKILL.md` frontmatter. This is the
+   * name the skill is installed/referenced under. When omitted, the skill keeps
+   * its default name derived from the API title: `apis-<title>`.
+   */
+  skillName?: string
+  /**
    * Which coding agent(s) to install the generated skill into.
    * - omitted: do NOT install the skill.
    * - `SkillAgent` / `SkillAgent[]`: install to the given agent(s) directly.
@@ -141,6 +147,10 @@ export function aiDoc(config?: AiDocConfig): ApiPlugin {
 
       const serverName = capturedServerName || templateData.title || 'API'
 
+      // Skill name written into SKILL.md frontmatter. Defaults to `apis-<title>`
+      // which is the historical name the generated skill used before this option existed.
+      const skillName = config?.skillName ?? `apis-${templateData.title ?? ''}`
+
       // Compute file location for each API (relative path from project root to generated file)
       // Skip fileLocation for alova-globals since APIs are called globally, not from a specific file
       const isGlobals = templateData.config?.templateName === 'alova-globals'
@@ -168,6 +178,7 @@ export function aiDoc(config?: AiDocConfig): ApiPlugin {
         data: {
           ...enrichedData,
           serverName,
+          skillName,
         } as TemplateData,
       })
 
