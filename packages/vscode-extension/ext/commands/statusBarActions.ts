@@ -4,6 +4,7 @@ import { ProgressLocation, window } from 'vscode'
 import { showError } from '@/components/event'
 import ApiGenerate from '@/core/ApiGenerate'
 import worma from '@/helper/worma'
+import { withProjectCwd } from '@/utils/cwd'
 import { getWorkspacePaths, registerCommand } from '@/utils/vscode'
 import { Commands } from './commands'
 import { endLoading, loading } from './statusBar'
@@ -85,7 +86,7 @@ export const showStatusBarActions: CommandType = {
     if (picked.action === 'createConfig') {
       for (const projectPath of targetProjects) {
         try {
-          await worma.createConfig({ projectPath })
+          await withProjectCwd(projectPath, () => worma.createConfig({ projectPath }))
         }
         catch (error) {
           showError(error)
@@ -119,7 +120,7 @@ export const showStatusBarActions: CommandType = {
             })
           },
         )
-        ApiGenerate.showError()
+        await ApiGenerate.showError()
       }
       catch (error) {
         showError(error)

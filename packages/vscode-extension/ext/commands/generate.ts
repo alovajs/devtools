@@ -32,7 +32,7 @@ export const refresh: CommandType = {
           })
         },
       )
-      ApiGenerate.showError()
+      await ApiGenerate.showError()
     }
     catch (error) {
       showError(error)
@@ -58,7 +58,7 @@ async function callGenerateApi(projectPath: string, force: boolean, isAuto?: boo
   try {
     await ApiGenerate.readConfig(projectPath)
     await ApiGenerate.generate({ projectPath, force, isAuto })
-    ApiGenerate.showError()
+    await ApiGenerate.showError()
   }
   catch (error) {
     showError(error)

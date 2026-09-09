@@ -2,6 +2,7 @@ import type { Config } from 'wormajs'
 import type Error from '@/components/error'
 import Global from '@/core/Global'
 import worma from '@/helper/worma'
+import { withProjectCwd } from '@/utils/cwd'
 import { getWorkspacePaths } from '@/utils/vscode'
 
 async function resolveWorkspaces(workspaceRootPaths?: string | string[]) {
@@ -21,7 +22,10 @@ export default async (workspaceRootPathArr?: string | string[]) => {
   for (const dir of dirs) {
     let config: Config | null = null
     try {
-      config = await worma.readConfig(dir)
+      // run inside the project context: `process.cwd()` in the extension host points
+      // to the VS Code installation dir, which breaks relative paths in the config
+      // (e.g. `parseAgentFile()`) and in custom plugins
+      config = await withProjectCwd(dir, () => worma.readConfig(dir))
     }
     catch (err) {
       const error = err as Error

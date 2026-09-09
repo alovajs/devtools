@@ -1,8 +1,9 @@
 import type { GeneratorProgressEvent } from 'wormajs'
-import type Error from '@/components/error'
 import { updateLoadingProgress } from '@/commands/statusBar'
+import Error from '@/components/error'
 import Global from '@/core/Global'
 import worma from '@/helper/worma'
+import { withProjectCwd } from '@/utils/cwd'
 
 export interface GenerateOption {
   force?: boolean
@@ -63,7 +64,9 @@ export default async (option?: GenerateOption) => {
 
     try {
       progressMap.set(projectPath, new Map())
-      const generateResult = await worma.generate(config, {
+      // run inside the project context: `process.cwd()` in the extension host points
+      // to the VS Code installation dir, which breaks relative paths in custom plugins
+      const generateResult = await withProjectCwd(projectPath, () => worma.generate(config, {
         force,
         projectPath,
         onProgress(event) {
@@ -89,11 +92,20 @@ export default async (option?: GenerateOption) => {
           else if (event.phase === 'failed') {
             stats.failed++
             stats.failedErrors.push(event.error)
+            // feed generator failures into the regular error pipeline too, otherwise
+            // a failed generator is only visible in the output channel and no
+            // notification pops up (the generate() promise itself resolves)
+            const isFirstOccurrence = stats.failedErrors.indexOf(event.error) === stats.failedErrors.length - 1
+            if (isFirstOccurrence) {
+              const error = new Error(event.error)
+              error.setPath(projectPath)
+              errorArr.push(error)
+            }
           }
           onProgress?.(event)
           mergeAndReport()
         },
-      })
+      }))
       resultArr.push([projectPath, generateResult?.some(item => !!item)])
     }
     catch (err) {

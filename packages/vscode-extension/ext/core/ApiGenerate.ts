@@ -5,6 +5,7 @@ import { showError } from '@/components/event'
 import generate from '@/functions/generate'
 import generateConfig from '@/functions/generateConfig'
 import readConfig from '@/functions/readConfig'
+import { displayName } from '@/meta'
 import { getFileNameByPath, Log } from '@/utils'
 import { getCurrentDirectory, getWorkspacePaths } from '@/utils/vscode'
 import Global from './Global'
@@ -65,6 +66,14 @@ export default class ApiGenerate {
       return
     }
 
+    // Never mask a real failure with a success / empty-state toast: the errors are
+    // reported (and the output channel revealed) by showError().
+    if (this.readErrorArr.length > 0 || generateInfo.errorArr.length > 0 || totalFailed > 0) {
+      VscodeClient.refreshDocs()
+      this.generateErrorArr.push(...generateInfo.errorArr)
+      return
+    }
+
     // Build per-project detail lines
     const lines: string[] = []
     for (const [workspaceRootDir] of generateInfo.resultArr) {
@@ -118,7 +127,14 @@ export default class ApiGenerate {
       summary = '👌 Nothing to generate'
     }
 
-    window.showInformationMessage(summary)
+    // no config could be loaded at all — an empty result then means "nothing
+    // configured", not "nothing to do"
+    if (this.configNum === 0) {
+      window.showWarningMessage(`⚠ ${displayName}: No worma config found`)
+    }
+    else {
+      window.showInformationMessage(summary)
+    }
 
     VscodeClient.refreshDocs()
     this.generateErrorArr.push(...generateInfo.errorArr)
@@ -128,9 +144,29 @@ export default class ApiGenerate {
     return [...this.readErrorArr, ...this.generateErrorArr]
   }
 
-  static showError() {
-    this.getErrorArr().forEach((error) => {
-      showError(error)
+  static async showError() {
+    const errors = this.getErrorArr()
+    if (errors.length === 0) {
+      return
+    }
+    // write every error to the output channel, then surface a single popup
+    errors.forEach((error) => {
+      showError(error, { prompt: false })
+    })
+
+    const [first] = errors
+    const rest = errors.length > 1 ? ` (+${errors.length - 1} more)` : ''
+    const openOutputButton = 'Show Logs'
+
+    // reveal the output channel right away so the details are visible even before
+    // the notification is dismissed
+    Log.show(true)
+    // intentionally not awaited: the popup lives until the user dismisses it, and
+    // blocking here would delay the caller's loading/cleanup
+    void window.showErrorMessage(`${displayName}: ${first.message}${rest}`, openOutputButton).then((picked) => {
+      if (picked === openOutputButton) {
+        Log.show()
+      }
     })
   }
 
@@ -231,7 +267,7 @@ export default class ApiGenerate {
     Log.divider()
 
     // Auto-show output panel only on failure
-    if (totalFailed > 0) {
+    if (totalFailed > 0 || this.readErrorArr.length > 0) {
       Log.show(true)
     }
   }
