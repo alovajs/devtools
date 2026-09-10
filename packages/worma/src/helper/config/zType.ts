@@ -1,5 +1,5 @@
 import type { TemplateConfigResult } from '@/helper/config/type'
-import type { ApiDescriptor, ApiPlugin, GeneratorConfig } from '@/type'
+import type { ApiDescriptor, ApiPlugin, GeneratorConfig, PerformanceConfig } from '@/type'
 import type { FetchOptions } from '@/utils/base'
 import path from 'node:path'
 import { z } from 'zod/v3' // v4 is unstable, temporarily using v3
@@ -35,6 +35,21 @@ export const zApiPlugin = z.object({
   getTemplate: z.function().optional(),
   onHandlebarsCreated: z.function().optional(),
 }) as z.ZodSchema<ApiPlugin>
+
+/**
+ * Performance tuning options. Declared explicitly so zod's default strip
+ * behavior does not drop `generator[].performance` during validation.
+ */
+export const zPerformanceConfig = z.object({
+  /** `'auto'` adapts the pool size to the API count, a number pins it, `false` disables workers */
+  workerPool: z.union([z.literal('auto'), z.number(), z.literal(false)]).optional(),
+  /** Max concurrency for the transform phase; defaults to `min(64, max(8, cpus*4))` */
+  transformConcurrency: z.number().optional(),
+  /** Max parallelism for file writes; default 32 */
+  writeConcurrency: z.number().optional(),
+  /** Sort components alphabetically for deterministic output; default true */
+  deterministicSort: z.boolean().optional(),
+}) as z.ZodSchema<PerformanceConfig>
 
 export const _zGeneratorConfig = z.object({
   /**
@@ -115,6 +130,10 @@ export const _zGeneratorConfig = z.object({
    */
   plugins: z.array(zApiPlugin).optional(),
   /**
+   * Performance tuning options for code generation.
+   */
+  performance: zPerformanceConfig.optional(),
+  /**
    * Filter or convert the generated api function and return a new `apiDescriptor` to generate the api.
    * When this function is not specified, `apiDescriptor` object is not converted.
    * The type of `apiDescriptor` is the same as the api item of openapi file.
@@ -150,6 +169,11 @@ export const _zGeneratorConfig = z.object({
 export const zGeneratorConfig = _zGeneratorConfig as z.ZodSchema<GeneratorConfig>
 
 export const zConfig = z.object({
+  /**
+   * 产物格式化配置（oxfmt）。不做结构校验：字段原样透传给 oxfmt，由 oxfmt 自行校验并报错。
+   * 声明在 schema 中仅为避免 zod 的默认 strip 行为把该字段丢弃。
+   */
+  format: z.any().optional(),
   /**
    * API generation settings are arrays. Each item represents an automatically generated rule, including the generated input and output directories, specification file addresses, etc.
    * Currently, only OpenAPI specifications are supported, including OpenAPI 2.0 and 3.0 specifications.

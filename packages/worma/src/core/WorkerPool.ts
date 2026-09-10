@@ -19,6 +19,20 @@ export function pickPoolSize(apiCount: number): number {
   return Math.max(2, cpu - 1)
 }
 
+/**
+ * Resolve the worker pool size from the user-facing `performance.workerPool` strategy:
+ * - `false` disables workers entirely (conversion stays on the main thread)
+ * - a number pins the pool size (clamped to >= 0)
+ * - `'auto'` / omitted uses the adaptive {@link pickPoolSize} heuristic
+ */
+export function resolvePoolSize(apiCount: number, strategy?: 'auto' | number | false): number {
+  if (strategy === false)
+    return 0
+  if (typeof strategy === 'number')
+    return Math.max(0, Math.floor(strategy))
+  return pickPoolSize(apiCount)
+}
+
 export class WorkerPool<Task, Result> {
   private workers: Worker[] = []
   private idleTimer: ReturnType<typeof setTimeout> | null = null

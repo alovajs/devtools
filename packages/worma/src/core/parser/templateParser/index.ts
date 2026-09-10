@@ -2,7 +2,7 @@ import type { Api, ApiMethod, GeneratorConfig, OpenAPIDocument, Parser, SchemaOb
 import { cpus } from 'node:os'
 import path from 'node:path'
 import { callingCodeLoader, standardLoader } from '@/core/loader'
-import { pickPoolSize } from '@/core/WorkerPool'
+import { resolvePoolSize } from '@/core/WorkerPool'
 import { PoolManager } from '@/core/workerPool/poolManager'
 import getFrameworkTag from '@/functions/getFrameworkTag'
 import { GeneratorHelper } from '@/helper'
@@ -24,8 +24,14 @@ async function pMap<T, R>(items: T[], fn: (item: T) => Promise<R>, concurrency: 
   return results
 }
 
-/** Automatically compute a reasonable concurrency limit based on CPU core count */
-function autoConcurrency(): number {
+/**
+ * Resolve the transform-phase concurrency limit.
+ * An explicit positive `performance.transformConcurrency` wins; otherwise it is
+ * computed from the CPU core count.
+ */
+function autoConcurrency(configured?: number): number {
+  if (typeof configured === 'number' && configured > 0)
+    return Math.max(1, Math.floor(configured))
   const cpuCount = Math.max(1, cpus().length)
   return Math.min(64, Math.max(8, cpuCount * 4))
 }
@@ -105,7 +111,8 @@ export class TemplateParser implements Parser<OpenAPIDocument, TemplateData, Tem
   }
 
   private async parseApiMethods(apiMethods: ApiMethod[], templateData: TemplateData) {
-    const concurrency = autoConcurrency()
+    const perf = this.options.generatorConfig.performance
+    const concurrency = autoConcurrency(perf?.transformConcurrency)
     const apiMethodArray = (await pMap(apiMethods, apiMethod => this.transformApiMethods(apiMethod), concurrency)).filter(
       apiMethod => !!apiMethod,
     )
@@ -118,7 +125,7 @@ export class TemplateParser implements Parser<OpenAPIDocument, TemplateData, Tem
     ))
 
     // M4-C1: Pre-process schemas via worker pool for parallel schema→TS conversion
-    const poolSize = pickPoolSize(apiMethodArray.length)
+    const poolSize = resolvePoolSize(apiMethodArray.length, perf?.workerPool)
     if (poolSize > 0) {
       const tasks = this.collectSchemaTasks(apiMethodArray)
       if (tasks.length > 0) {
@@ -129,10 +136,11 @@ export class TemplateParser implements Parser<OpenAPIDocument, TemplateData, Tem
         const workerScript = fex(jsWp) ? jsWp : tsWp
 
         // Reuse workers only within the same generator output. The workerData document is immutable after spawn,
-        // so generators in the same project must not share a pool.
+        // so generators in the same project must not share a pool. The pool size is part of the key so a
+        // reconfiguration never silently reuses a pool with a different size.
         const outputDir = path.resolve(this.options.projectPath, this.options.generatorConfig.output!)
         const pool = PoolManager.getInstance().get<{ key: string, schema: SchemaObject }, { key: string, result: string }>({
-          key: `schemaWorker_${outputDir}`,
+          key: `schemaWorker_${outputDir}_${poolSize}`,
           workerScript,
           sharedContext: {
             document: this.document,
@@ -156,12 +164,18 @@ export class TemplateParser implements Parser<OpenAPIDocument, TemplateData, Tem
       .forEach((api) => {
         this.parseApi(api, templateData)
       })
-    templateData.components = [...new Set(this.schemasMap.values())]
-    templateData.componentNames = [...this.schemasMap.keys()]
-    // sort by name lexicographically to ensure deterministic output order (avoid Map insertion-order drift under concurrency)
-    const sorted = [...this.schemasMap.entries()].sort(([a], [b]) => a.localeCompare(b))
-    templateData.componentNames = sorted.map(([k]) => k)
-    templateData.components = sorted.map(([, v]) => v)
+
+    if (perf?.deterministicSort === false) {
+      // Opt-out: keep the collection order, which may drift with worker scheduling.
+      templateData.components = [...new Set(this.schemasMap.values())]
+      templateData.componentNames = [...this.schemasMap.keys()]
+    }
+    else {
+      // sort by name lexicographically to ensure deterministic output order (avoid Map insertion-order drift under concurrency)
+      const sorted = [...this.schemasMap.entries()].sort(([a], [b]) => a.localeCompare(b))
+      templateData.componentNames = sorted.map(([k]) => k)
+      templateData.components = sorted.map(([, v]) => v)
+    }
   }
 
   /**

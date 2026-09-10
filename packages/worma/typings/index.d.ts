@@ -1,19 +1,73 @@
 import { MethodType, RequestBody } from 'alova';
 import { OpenAPIV3_1 } from 'openapi-types';
+import { FormatConfig as OxfmtFormatConfig } from 'oxfmt';
 import { z } from 'zod/v3';
 
-declare const DEFAULT_CONFIG: {
-	cacheDir: string;
-	/** Overrides cacheDir's parent directory for monorepo unified cache. */
-	cacheRoot: string | undefined;
-	Error: ErrorConstructor;
-	templateData: Map<string, any>;
-};
-export declare function setGlobalConfig(config: Partial<typeof DEFAULT_CONFIG>): void;
 export type OpenAPIDocument = OpenAPIV3_1.Document;
 export type SchemaObject = OpenAPIV3_1.SchemaObject;
 export type Parameter = OpenAPIV3_1.ParameterObject;
 export type OperationObject = OpenAPIV3_1.OperationObject;
+export interface Api {
+	tag: string;
+	method: string;
+	summary: string;
+	path: string;
+	pathParameters: string;
+	queryParameters: string;
+	pathParametersComment?: string;
+	queryParametersComment?: string;
+	responseComment?: string;
+	requestBodyComment?: string;
+	name: string;
+	response: string;
+	requestBody?: string;
+	callingCode?: string;
+}
+export interface ApiDoc {
+	apis: Api[];
+	tag: string;
+}
+export type ApiDescriptor = Omit<OperationObject, "requestBody" | "parameters" | "responses"> & {
+	url: string;
+	method: string;
+	parameters?: Parameter[];
+	refNameMap?: Record<string, string>;
+	requestBody?: SchemaObject;
+	responses?: SchemaObject;
+};
+export interface TemplateData {
+	title: OpenAPIDocument["info"]["title"];
+	openapi: OpenAPIDocument["openapi"];
+	version: OpenAPIDocument["info"]["version"];
+	description: OpenAPIDocument["info"]["description"];
+	contact: OpenAPIDocument["info"]["contact"];
+	/** Framework tag: vue | react | svelte | solid-js | nuxt */
+	framework?: string;
+	defaultKey?: boolean;
+	baseUrl: string;
+	/** Schema/Component definitions */
+	components: string[];
+	/** Names of all generated component schemas (keys of schemasMap) */
+	componentNames: string[];
+	/** All apis array */
+	allApis: Api[];
+	/** Apis grouped by tag */
+	tagedApis: ApiDoc[];
+	type: TemplateType;
+	/** Config passed from template configuration */
+	config: Record<string, any>;
+}
+/**
+ * Standardized cache data for VSCode extension
+ * Used for rendering sidebar API tree and quick search
+ */
+export interface CacheData {
+	path: string;
+	/** Server name displayed in sidebar */
+	serverName?: string;
+	/** All APIs as a flat array */
+	apis: Api[];
+}
 export interface FetchOptions {
 	headers?: Record<string, string>;
 	/** timeout in milliseconds */
@@ -203,10 +257,29 @@ export interface PerformanceConfig {
 	transformConcurrency?: number;
 	/** Max parallelism for file writes. Default 32 */
 	writeConcurrency?: number;
-	/** Apply prettier formatting to final files before write. Default true (schema-level prettier is always disabled) */
-	formatFile?: boolean;
 	/** Sort tags/APIs/components alphabetically for deterministic output. Default true */
 	deterministicSort?: boolean;
+}
+/**
+ * 生成产物的格式化配置。
+ *
+ * 除 `enabled` 外的所有字段都是 oxfmt 原生选项，worma 不做校验、原样透传给 oxfmt，
+ * 由 oxfmt 自行校验；类型提示直接来自 oxfmt，因此随 oxfmt 版本自动保持同步。
+ *
+ * @example
+ * ```js
+ * // 关闭格式化
+ * format: { enabled: false }
+ *
+ * // 自定义风格
+ * format: { printWidth: 100, trailingComma: 'all', semi: false }
+ * ```
+ */
+export interface FormatOptions extends OxfmtFormatConfig {
+	/**
+	 * 是否格式化生成的代码，默认 true。
+	 */
+	enabled?: boolean;
 }
 export interface GeneratorConfig {
 	/**
@@ -324,73 +397,38 @@ export interface Config {
 	 * Currently, only OpenAPI specifications are supported, including OpenAPI 2.0 and 3.0 specifications.
 	 */
 	generator: GeneratorConfig[];
+	/**
+	 * 生成产物的格式化配置（基于 oxfmt），对所有 generator 生效。
+	 * 除 `enabled` 外的字段原样透传给 oxfmt，worma 不做额外校验。
+	 *
+	 * @example
+	 * ```js
+	 * format: { enabled: false }
+	 * format: { printWidth: 100, trailingComma: 'all', semi: false }
+	 * ```
+	 */
+	format?: FormatOptions;
 }
 export type UserConfig = Config;
 export type UserConfigFnObject = () => UserConfig;
 export type UserConfigFnPromise = () => Promise<UserConfig>;
 export type UserConfigFn = () => UserConfig | Promise<UserConfig>;
 export type UserConfigExport = UserConfig | Promise<UserConfig> | UserConfigFnObject | UserConfigFnPromise | UserConfigFn;
-export interface Api {
-	tag: string;
-	method: string;
-	summary: string;
-	path: string;
-	pathParameters: string;
-	queryParameters: string;
-	pathParametersComment?: string;
-	queryParametersComment?: string;
-	responseComment?: string;
-	requestBodyComment?: string;
-	name: string;
-	response: string;
-	requestBody?: string;
-	callingCode?: string;
-}
-export interface ApiDoc {
-	apis: Api[];
-	tag: string;
-}
-export type ApiDescriptor = Omit<OperationObject, "requestBody" | "parameters" | "responses"> & {
-	url: string;
-	method: string;
-	parameters?: Parameter[];
-	refNameMap?: Record<string, string>;
-	requestBody?: SchemaObject;
-	responses?: SchemaObject;
+declare const DEFAULT_CONFIG: {
+	cacheDir: string;
+	/** Overrides cacheDir's parent directory for monorepo unified cache. */
+	cacheRoot: string | undefined;
+	/**
+	 * Maximum number of `changes/<NNNN>.json` records to keep.
+	 * `0` (or any non-positive value) keeps every record.
+	 */
+	changeHistoryLimit: number;
+	/** 用户自定义的产物格式化配置，未设置时使用内置默认值 */
+	format: FormatOptions | undefined;
+	Error: ErrorConstructor;
+	templateData: Map<string, any>;
 };
-export interface TemplateData {
-	title: OpenAPIDocument["info"]["title"];
-	openapi: OpenAPIDocument["openapi"];
-	version: OpenAPIDocument["info"]["version"];
-	description: OpenAPIDocument["info"]["description"];
-	contact: OpenAPIDocument["info"]["contact"];
-	/** Framework tag: vue | react | svelte | solid-js | nuxt */
-	framework?: string;
-	defaultKey?: boolean;
-	baseUrl: string;
-	/** Schema/Component definitions */
-	components: string[];
-	/** Names of all generated component schemas (keys of schemasMap) */
-	componentNames: string[];
-	/** All apis array */
-	allApis: Api[];
-	/** Apis grouped by tag */
-	tagedApis: ApiDoc[];
-	type: TemplateType;
-	/** Config passed from template configuration */
-	config: Record<string, any>;
-}
-/**
- * Standardized cache data for VSCode extension
- * Used for rendering sidebar API tree and quick search
- */
-export interface CacheData {
-	path: string;
-	/** Server name displayed in sidebar */
-	serverName?: string;
-	/** All APIs as a flat array */
-	apis: Api[];
-}
+export declare function setGlobalConfig(config: Partial<typeof DEFAULT_CONFIG>): void;
 /**
  * Per-generator progress event.
  *
@@ -438,11 +476,53 @@ export type GeneratorProgressEvent = {
 	error: string;
 });
 export interface GenerateApiOptions {
-	force?: boolean;
 	projectPath?: string;
 	/** Per-generator lifecycle callback. Receives a discriminated union of {@link GeneratorProgressEvent}. */
 	onProgress?: (event: GeneratorProgressEvent) => void;
 }
+export type SourceStatus = "unchanged" | "changed" | "new" | "error";
+export interface SourceUpdateInfo {
+	/** Index inside `config.generator` */
+	index: number;
+	output: string;
+	serverName?: string;
+	status: SourceStatus;
+	/** The URL / file that actually served the spec — also the cache key */
+	resolvedInput?: string;
+	/** Normalized hash of the raw spec text */
+	hash?: string;
+	error?: string;
+}
+export interface CheckUpdatesResult {
+	projectPath: string;
+	updates: SourceUpdateInfo[];
+	hasChanges: boolean;
+	/**
+	 * Whether the project already carries a generation baseline (any index entry
+	 * with a non-empty `tags` map). Lets callers decide whether a `new` source is
+	 * worth surfacing: a brand-new project must stay silent on its first run,
+	 * while an established project that gained a source should be noticed.
+	 */
+	hasGenerationBaseline: boolean;
+}
+/**
+ * Detect whether the configured OpenAPI sources changed since the last
+ * recorded baseline.
+ *
+ * This is a **source-level, side-effect free** check:
+ *
+ * - it only hashes the raw spec text — no parsing, no plugin hooks;
+ * - it only reads/writes the `source` sub-field of `index.json` entries, never
+ *   the generation-side `hash` / `tags`;
+ * - when no baseline exists yet (`new`) it writes the baseline silently and
+ *   does *not* report a change (first run must not nag the user).
+ *
+ * Nothing on the user's disk is rewritten — callers decide what to do with the
+ * result (the VS Code extension asks for confirmation before generating).
+ */
+export declare function checkUpdates(config: Config, options?: {
+	projectPath?: string;
+}): Promise<CheckUpdatesResult>;
 export type TemplatePreset = "alova" | "alovaGlobals" | "axios" | "fetch" | "ky";
 export interface ConfigCreationOptions {
 	projectPath?: string;
@@ -460,6 +540,77 @@ export declare function defineConfig(config: UserConfigFnObject): UserConfigFnOb
 export declare function defineConfig(config: UserConfigFnPromise): UserConfigFnPromise;
 export declare function defineConfig(config: UserConfigFn): UserConfigFn;
 export declare function defineConfig(config: UserConfigExport): UserConfigExport;
+/** A newly added or removed API (identified by `method` + `path`). */
+export interface ApiChange {
+	method: string;
+	path: string;
+	name?: string;
+	tag?: string;
+}
+/** An API that still exists but whose definition changed. */
+export interface ApiFieldChange extends ApiChange {
+	/** Names of the fields whose value differs between the two versions */
+	changedFields: string[];
+}
+export interface ApiDiffResult {
+	added: ApiChange[];
+	removed: ApiChange[];
+	modified: ApiFieldChange[];
+}
+/**
+ * Stable matching key for an API.
+ *
+ * `method` + `path` is used instead of `name` because it survives function
+ * renames: a renamed API is reported as *modified* rather than
+ * removed + added.
+ */
+export declare function apiDiffKey(api: Pick<Api, "method" | "path">): string;
+/**
+ * Diff two API lists at API level.
+ *
+ * @param oldApis API list as of the previous generation (from cache)
+ * @param newApis API list parsed from the current spec
+ */
+export declare function diffApis(oldApis?: Api[], newApis?: Api[]): ApiDiffResult;
+/** Alias accepted by {@link getChange} — resolves to the newest record. */
+export declare const LATEST_CHANGE_ID = "latest";
+/** One generator's (output's) contribution to a change record. */
+export interface ChangeItem {
+	output: string;
+	serverName?: string;
+	added: ApiChange[];
+	removed: ApiChange[];
+	modified: ApiFieldChange[];
+}
+/** Lightweight list entry returned by {@link listChanges}. */
+export interface ChangeSummary {
+	id: string;
+	createdAt: number;
+	summary: {
+		generators: number;
+		added: number;
+		removed: number;
+		modified: number;
+	};
+	outputs: string[];
+}
+/** A full change record — one `generate()` run aggregated. */
+export interface Change {
+	id: string;
+	createdAt: number;
+	projectPath: string;
+	generators: ChangeItem[];
+}
+/**
+ * List recorded changes, newest first.
+ */
+export declare function listChanges(projectPath: string): Promise<ChangeSummary[]>;
+/**
+ * Read a single change record.
+ *
+ * @param id `"0007"` or the alias `"latest"` (newest record)
+ */
+export declare function getChange(projectPath: string, id: string): Promise<Change | undefined>;
 /**
  * Generate relevant API information based on the configuration object.
  *
@@ -467,7 +618,7 @@ export declare function defineConfig(config: UserConfigExport): UserConfigExport
  * its lifecycle via {@link GeneratorProgressEvent} discriminated union events.
  *
  * @param config generating config
- * @param options config rules that contains `force`, `projectPath`, `onProgress`
+ * @param options config rules that contains `projectPath`, `onProgress`
  * @returns An array that contains the result of `generator` items in configuration whether generation is successful.
  */
 export declare function generate(config: Config, options?: GenerateApiOptions): Promise<boolean[]>;

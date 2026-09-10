@@ -1,0 +1,80 @@
+---
+title: 性能
+description: worma 针对大规模 OpenAPI 生成的性能优化设计
+---
+
+
+worma 经过多轮性能优化，可稳定支撑 **5000+ API** 量级的 OpenAPI 文档生成。仓库内置 `benchmark/` 基准工程，覆盖 **500 – 5000 API** 规模，可直接复现不同量级下的生成耗时与产物体积对比。
+
+## 多线程 Schema → TS 转换
+
+Schema 到 TypeScript 类型的转换是纯 CPU 计算、无外部副作用，天然适合并行化。worma 使用 `WorkerPool` 泛型线程池将转换任务分发到多个 Worker 线程。
+
+### 自适应池大小
+
+Worker 线程数由 `pickPoolSize(apiCount)` 根据接口数量自动计算：
+
+| 接口数 | Worker 数 |
+|--------|----------|
+| ≤ 20 | 0（主线程） |
+| ≤ 1000 | `min(2, CPU 核心数)` |
+| ≤ 3000 | `min(4, CPU 核心数)` |
+| ≤ 8000 | `min(⌈CPU 核心数 × 0.75⌉, CPU 核心数)` |
+| > 8000 | `max(2, CPU 核心数 − 1)` |
+
+- 小项目零额外开销，大项目充分利用多核
+- 懒启动（首批任务到达才 spawn）+ 30s 空闲自动回收
+- 池实例由 `PoolManager` 按输出目录在进程内复用，同一进程多次生成无需重复创建 Worker
+- 零依赖，全部基于 `node:worker_threads` 内置模块
+
+## 渲染与写盘管线
+
+模板生成分为 tag 阶段与全局阶段，tag 产物渲染完成后统一批量写盘：
+
+```
+解析 OpenAPI → Schema 并行转换（Worker 池）→ 按 tag 聚合
+  → 渲染全部 tag 文件 → 一次性批量并发写盘
+  → 渲染并写入全局模板 → 清理已消失 tag 的残留产物
+```
+
+- **tag 阶段**：按 tag 依次渲染并把产物收集到内存，此阶段即应用 `beforeFileWrite` 钩子；全部 tag 渲染完成后一次性批量写盘，充分压满写盘并发，避免多次小批量顺序写
+- **全局阶段**：`index.ts`、`types.ts` 等全局模板在 tag 阶段之后渲染并写入
+- 写盘前先收集并批量创建所需目录，再按 `writeConcurrency`（默认 32）分批并发写文件，避免同时打开过多文件句柄
+- 已从规范中移除的 tag 对应的旧产物（目录与文件）会被清理，避免残留
+
+## 增量生成
+
+通过哈希比对实现 tag 级增量渲染，二次生成显著提速：
+
+- 为每个 API 计算 SHA256 指纹（16 字符）
+- 缓存目录（默认 `.worma-cache/`）下存放两类数据：
+  - `index.json`：KB 级元数据，记录每个输出条目的聚合 hash 与 per-tag hash
+  - `data/<slug>/<tag>.json`：按 tag 拆分的 API 数据，按需加载
+  - 同时兼容读取旧格式 `data/<slug>.json` 单文件
+- 增量判断只需读取 `index.json`，无需加载全量 API 数据
+- 仅重渲 hash 变化的 tag，全局模板（index.ts、types.ts 等）始终渲染
+- 无「全量重建」开关：`generate()` 始终走增量渲染（仅重写 hash 变化的 tag，全局模板始终渲染）
+
+## 并发节流
+
+- `transform` 阶段并发上限自动计算：`min(64, max(8, cpus*4))`，避免一次性铺开 n 个 Promise 导致内存峰值
+- 写盘并发为 32，批量 mkdir 后分批并行写入
+
+## 其他优化
+
+- **Schema 规范化复用**：dual-output 路径对同一 schema 只做一次 normalize（结果按 schema 身份缓存在 `WeakMap` 中），类型与 JSDoc 注释的解析复用该规范化结果，避免重复的 clone + transform 开销
+- **Handlebars 缓存**：Handlebars 实例、模板编译结果与 partials 注册均按模板路径缓存，同进程多次生成零重复开销
+- **确定性输出排序**：收集到的 component 类型按名称字典序排列（由 `performance.deterministicSort` 控制，默认开启），避免 Worker 调度导致产物顺序漂移
+
+## 性能配置
+
+以上策略都可通过 `generator[].performance` 调整，不配置时的默认值即上文的自动推导结果：
+
+| 字段 | 默认值 | 作用 |
+|------|--------|------|
+| `workerPool` | `'auto'` | `'auto'` 按接口数量自适应池大小；数字则固定池大小；`false` 禁用 Worker |
+| `transformConcurrency` | auto | `transform` 阶段并发上限，默认 `min(64, max(8, cpus*4))` |
+| `writeConcurrency` | `32` | 写盘并发 |
+| `deterministicSort` | `true` | 是否对 component 输出做字典序排序 |
+
+详细取值范围请参阅 [配置对象 → PerformanceConfig](/docs/api/configuration#performanceconfig)。

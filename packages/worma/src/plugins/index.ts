@@ -5,6 +5,7 @@ export * from './presets/filterApi'
 export * from './presets/importType'
 export * from './presets/payloadModifier'
 export { fastapi, knife4j, swagger, yapi, type YapiOptions } from './presets/platform'
+export * from './presets/postman'
 export * from './presets/rename'
 export * from './presets/tagModifier'
 

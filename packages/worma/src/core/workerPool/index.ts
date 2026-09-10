@@ -1,1 +1,1 @@
-export { pickPoolSize, WorkerPool } from '../WorkerPool'
+export { pickPoolSize, resolvePoolSize, WorkerPool } from '../WorkerPool'

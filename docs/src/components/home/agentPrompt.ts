@@ -66,4 +66,5 @@ After generation, if \`@alova/wormhole\` is in \`package.json\`, ask the user wh
 
 **Note:** Don't overthink — just follow the steps above.`
 
-export const COPY_TOAST_MESSAGE = '已复制提示词，请直接发送给agent'
+export const COPY_TOAST_MESSAGE = 'Prompt copied — send it to your agent'
+export const COPY_TOAST_MESSAGE_ZH = '已复制提示词，请直接发送给 agent'

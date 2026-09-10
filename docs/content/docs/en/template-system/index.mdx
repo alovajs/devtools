@@ -1,0 +1,69 @@
+---
+title: Template System
+description: Understand the overall architecture of the template system
+---
+
+Templates determine the structure, style, and request method of the generated code. In worma, templates are resolved via the plugin's `getTemplate` hook and rendered with Handlebars syntax.
+
+## How it works
+
+The template system is built on the plugin's `getTemplate` lifecycle hook. Each plugin can return a **template config** (`TemplateConfigResult`) from `getTemplate`, specifying the template path:
+
+```typescript
+interface TemplateConfigResult {
+  // Template path; relative paths are resolved against process.cwd()
+  path: string;
+}
+```
+
+```javascript
+// A plugin returns the template config via getTemplate
+{
+  name: 'my-template-plugin',
+  getTemplate({ config, projectPath }) {
+    return { path: './templates/my-api' };
+  },
+}
+```
+
+Multiple plugins can all return a template config; the last valid return value wins. The built-in template plugins (e.g. `alova`, `axios`) already preset their `getTemplate` hook, so you just configure them in `plugins`:
+
+```javascript
+import { alova, axios } from 'wormajs/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      input: 'https://api.example.com/openapi.json',
+      output: 'src/api',
+      plugins: [alova()], // the alova plugin ships a getTemplate that returns the alova template
+    },
+  ],
+});
+```
+
+## Handlebars templates
+
+Templates are written with **Handlebars** syntax. During code generation, worma injects the parsed OpenAPI data as template variables and renders the final code. Core variables include:
+
+- `apis` — all API endpoint data
+- `config` — the generator config (plugins can inject extra data in `beforeCodeGenerate`)
+- `tags` — API grouping tags
+
+```handlebars
+{{! Example: iterate APIs to generate functions }}
+{{#each apis}}
+export function {{name}}(params: {{name}}Params) {
+  return request<{{name}}Response>('{{method}}', '{{path}}', params);
+}
+{{/each}}
+```
+
+Templates support dynamic file names (`{tag}`, `{api}`), partial references, and different template files per module type (index / api / types / ai-doc).
+
+## Two ways to use templates
+
+worma offers two template paths:
+
+- **[Predefined Templates](/docs/template-system/predefined-templates)** — built-in templates for mainstream request libraries like alova, alovaGlobals, axios, fetch, and ky, ready to use out of the box
+- **[Custom Templates](/docs/template-system/custom-templates)** — use Handlebars syntax to freely control the structure and content of the generated code for customization needs

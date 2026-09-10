@@ -1,0 +1,8 @@
+{
+  "pages": [
+    "builtin-plugins",
+    "custom-plugin",
+    "examples"
+  ],
+  "title": "Plugin System"
+}

@@ -47,6 +47,21 @@
           "type": "boolean",
           "default": true,
           "markdownDescription": "Whether to show the `📖 View Api` CodeLens above matched API function calls. Set to `false` to hide it."
+        },
+        "worma.autoUpdate.checkOnActivation": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Run one silent update check shortly after the extension activates."
+        },
+        "worma.autoUpdate.checkOnWindowFocus": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Re-check for source updates whenever the VS Code window regains focus."
+        },
+        "worma.autoUpdate.minInterval": {
+          "type": "number",
+          "default": 300000,
+          "markdownDescription": "Minimum interval in milliseconds between two automatic update checks."
         }
       }
     },
@@ -54,17 +69,18 @@
       {
         "command": "worma.refresh",
         "category": "Worma",
-        "title": "Generate APIs"
-      },
-      {
-        "command": "worma.generateApi.force",
-        "category": "Worma",
-        "title": "Force Generate APIs"
+        "title": "Generate APIs",
+        "icon": "$(sync)"
       },
       {
         "command": "worma.create.config",
         "category": "Worma",
         "title": "Create worma config"
+      },
+      {
+        "command": "worma.openChanges",
+        "category": "Worma",
+        "title": "Review API Changes"
       },
       {
         "command": "worma.apiDocs.refresh",
@@ -116,6 +132,13 @@
         "default": {
           "fontPath": "./res/logo.ttf",
           "fontCharacter": "\\E64F"
+        }
+      },
+      "worma-icon-update": {
+        "description": "worma update icon",
+        "default": {
+          "fontPath": "./res/logo.ttf",
+          "fontCharacter": "\\E651"
         }
       }
     },

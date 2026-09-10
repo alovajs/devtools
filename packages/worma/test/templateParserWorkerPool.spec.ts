@@ -22,7 +22,7 @@ vi.mock('@/core/WorkerPool', async (importActual) => {
   return {
     ...actual,
     // force the worker pool branch (no need to depend on real CPU cores / apiCount threshold)
-    pickPoolSize: () => 1,
+    resolvePoolSize: () => 1,
     WorkerPool: class FakeWorkerPool<Task, Result> {
       constructor(opts: any) {
         capturedSharedContext = opts.sharedContext
@@ -122,7 +122,7 @@ describe('templateParser worker pool sharedContext (regression: could not be clo
           plugins: [alova()],
         },
       ],
-    }, { force: true, projectPath: '/project' })
+    }, { projectPath: '/project' })
 
     // the worker pool branch is indeed triggered
     expect(workerSpawned).toBe(true)
@@ -168,7 +168,7 @@ describe('templateParser worker pool sharedContext (regression: could not be clo
           plugins: [alova()],
         },
       ],
-    }, { force: true, projectPath: '/project' })
+    }, { projectPath: '/project' })
 
     expect(capturedSharedContexts).toHaveLength(2)
     expect(capturedSharedContexts.map(context => context.document.info.title).sort()).toEqual([
@@ -200,11 +200,11 @@ describe('templateParser worker pool sharedContext (regression: could not be clo
           plugins: [alova()],
         },
       ],
-    }, { force: true, projectPath: '/project' })
+    }, { projectPath: '/project' })
 
-    // when apiCount <= 200, the worker pool should not be triggered (pickPoolSize is mocked to always return 1,
-    // but collectSchemaTasks only spawns a WorkerPool when it has tasks, i.e. tasks.length > 0;
-    // 50 endpoints may still produce schema tasks, so here we only verify: even if triggered, sharedContext is safe)
+    // resolvePoolSize is mocked to always return 1, but collectSchemaTasks only spawns a WorkerPool when it
+    // has tasks, i.e. tasks.length > 0; 50 endpoints may still produce schema tasks, so here we only verify:
+    // even if triggered, sharedContext stays serializable)
     if (workerSpawned) {
       expect(() => structuredClone(capturedSharedContext)).not.toThrow()
       expect(containsFunction(capturedSharedContext)).toBe(false)

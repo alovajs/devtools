@@ -1,20 +1,23 @@
 'use client'
 
+import type { Locale } from '@/lib/i18n'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { localePrefix } from '@/lib/i18n'
+import { getHomeDict } from '@/lib/i18n-home'
 import CornerPlus from './CornerPlus'
 import Icon from './Icon'
 import SectionHeader from './SectionHeader'
 
 /* ─── Tab definitions ─── */
-const ideTabs = [
-  { id: 'api-explorer', label: 'API 资源管理器', desc: '可视化浏览所有 API 端点', icon: 'account_tree' },
-  { id: 'hover-docs', label: '悬浮文档', desc: '悬浮鼠标即可查看 API 文档', icon: 'description' },
-  { id: 'quick-insert', label: '快速插入', desc: '一键插入 API 调用代码', icon: 'add_circle' },
-  { id: 'portal', label: '传送门', desc: '代码与 API 文档联动跳转', icon: 'open_in_new' },
-  { id: 'auto-detect', label: '自动检测', desc: '自动检测 OpenAPI 文件变更', icon: 'autorenew' },
-  { id: 'js-intellisense', label: 'JS IntelliSense', desc: '完整的类型推导与智能提示', icon: 'psychology' },
-]
+const ideTabMeta = [
+  { id: 'api-explorer', icon: 'account_tree' },
+  { id: 'hover-docs', icon: 'description' },
+  { id: 'quick-insert', icon: 'add_circle' },
+  { id: 'portal', icon: 'open_in_new' },
+  { id: 'auto-detect', icon: 'autorenew' },
+  { id: 'js-intellisense', icon: 'psychology' },
+] as const
 
 /* ─── Mock API Data ─── */
 interface APIEndpoint {
@@ -106,7 +109,7 @@ function EditorHeader({ filename }: { filename: string }) {
 }
 
 /* ─── API Tree Explorer ─── */
-function APITreeExplorer({ targetEndpointId }: { targetEndpointId?: string | null }) {
+function APITreeExplorer({ targetEndpointId, t }: { targetEndpointId?: string | null, t: ReturnType<typeof getHomeDict>['ideEditor'] }) {
   const [expandedTags, setExpandedTags] = useState<Set<string>>(new Set(['pet']))
   const [selectedEndpoint, setSelectedEndpoint] = useState<APIEndpoint>(mockAPIData[0].endpoints[0])
 
@@ -160,7 +163,7 @@ function APITreeExplorer({ targetEndpointId }: { targetEndpointId?: string | nul
 
       {/* Tree Panel */}
       <div className="w-60 shrink-0 overflow-y-auto tech-border-r bg-surface-variant/50 px-2 py-3">
-        <div className="mb-3 px-3"><p className="text-[10px] text-on-surface-variant font-data-mono font-semibold tracking-[0.15em] uppercase">API Endpoints</p></div>
+        <div className="mb-3 px-3"><p className="text-[10px] text-on-surface-variant font-data-mono font-semibold tracking-[0.15em] uppercase">{t.endpointsHeader}</p></div>
         {mockAPIData.map((tag) => {
           const isExpanded = expandedTags.has(tag.id)
           return (
@@ -206,16 +209,16 @@ function APITreeExplorer({ targetEndpointId }: { targetEndpointId?: string | nul
                 </div>
                 {selectedEndpoint.parameters && selectedEndpoint.parameters.length > 0 && (
                   <div className="mb-5">
-                    <p className="mb-2 text-xs text-on-surface-variant font-data-mono font-semibold tracking-[0.15em] uppercase">Parameters</p>
+                    <p className="mb-2 text-xs text-on-surface-variant font-data-mono font-semibold tracking-[0.15em] uppercase">{t.paramsTitle}</p>
                     <div className="overflow-hidden tech-border">
                       <table className="w-full text-left text-xs">
                         <thead>
                           <tr className="tech-border-b bg-surface-variant/50">
-                            <th className="px-3 py-2 text-on-surface-variant font-data-mono font-semibold">Name</th>
-                            <th className="px-3 py-2 text-on-surface-variant font-data-mono font-semibold">In</th>
-                            <th className="px-3 py-2 text-on-surface-variant font-data-mono font-semibold">Type</th>
-                            <th className="px-3 py-2 text-on-surface-variant font-data-mono font-semibold">Required</th>
-                            <th className="px-3 py-2 text-on-surface-variant font-data-mono font-semibold">Description</th>
+                            <th className="px-3 py-2 text-on-surface-variant font-data-mono font-semibold">{t.colName}</th>
+                            <th className="px-3 py-2 text-on-surface-variant font-data-mono font-semibold">{t.colIn}</th>
+                            <th className="px-3 py-2 text-on-surface-variant font-data-mono font-semibold">{t.colType}</th>
+                            <th className="px-3 py-2 text-on-surface-variant font-data-mono font-semibold">{t.colRequired}</th>
+                            <th className="px-3 py-2 text-on-surface-variant font-data-mono font-semibold">{t.colDescription}</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -235,7 +238,7 @@ function APITreeExplorer({ targetEndpointId }: { targetEndpointId?: string | nul
                 )}
                 {selectedEndpoint.responses && selectedEndpoint.responses.length > 0 && (
                   <div>
-                    <p className="mb-2 text-xs text-on-surface-variant font-data-mono font-semibold tracking-[0.15em] uppercase">Responses</p>
+                    <p className="mb-2 text-xs text-on-surface-variant font-data-mono font-semibold tracking-[0.15em] uppercase">{t.responsesTitle}</p>
                     {selectedEndpoint.responses.map(r => (
                       <div key={r.code} className="mb-3">
                         <div className="mb-1.5 flex items-center gap-2">
@@ -250,7 +253,7 @@ function APITreeExplorer({ targetEndpointId }: { targetEndpointId?: string | nul
               </div>
             )
           : (
-              <div className="flex flex-1 items-center justify-center text-sm text-on-surface-variant font-data-mono">选择一个端点以查看详情</div>
+              <div className="flex flex-1 items-center justify-center text-sm text-on-surface-variant font-data-mono">{t.selectEndpoint}</div>
             )}
       </div>
     </div>
@@ -375,7 +378,7 @@ function HoverDocsDemo() {
 }
 
 /* ─── Quick Insert Demo ─── */
-function QuickInsertDemo() {
+function QuickInsertDemo({ t }: { t: ReturnType<typeof getHomeDict>['ideEditor'] }) {
   const [search, setSearch] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
 
@@ -431,7 +434,7 @@ function QuickInsertDemo() {
           <div className="mt-6 flex items-center gap-2">
             <button className="inline-flex items-center gap-1.5 border border-primary/30 bg-primary/10 px-2.5 py-1 text-[11px] text-primary font-data-mono transition-colors hover:bg-primary/20">
               <Icon name="open_in_new" className="text-xs" />
-              View Api: getPetById (5 sources)
+              {t.viewApiSources}
             </button>
           </div>
         </div>
@@ -446,13 +449,13 @@ function QuickInsertDemo() {
         <div className="tech-border-b p-2">
           <div className="relative">
             <Icon name="search" className="absolute left-2.5 top-1/2 text-sm text-on-surface-variant -translate-y-1/2" />
-            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="搜索代码片段..." className="w-full tech-border bg-editor-bg py-1.5 pl-8 pr-3 text-[11px] text-on-surface outline-none font-data-mono placeholder:text-on-surface-variant focus:border-primary" />
+            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder={t.searchPlaceholder} className="w-full tech-border bg-editor-bg py-1.5 pl-8 pr-3 text-[11px] text-on-surface outline-none font-data-mono placeholder:text-on-surface-variant focus:border-primary" />
           </div>
         </div>
         <div className="max-h-[280px] overflow-y-auto">
           {filtered.length === 0
             ? (
-                <div className="px-3 py-4 text-center text-[11px] text-on-surface-variant">无结果</div>
+                <div className="px-3 py-4 text-center text-[11px] text-on-surface-variant">{t.noResults}</div>
               )
             : (
                 filtered.map((ep, idx) => (
@@ -473,7 +476,7 @@ function QuickInsertDemo() {
 }
 
 /* ─── Portal Demo ─── */
-function PortalDemo({ onViewApi }: { onViewApi: () => void }) {
+function PortalDemo({ onViewApi, t }: { onViewApi: () => void, t: ReturnType<typeof getHomeDict>['ideEditor'] }) {
   return (
     <div className="h-full min-h-[420px] flex flex-col tech-border bg-editor-bg overflow-hidden">
       <EditorHeader filename="src/services/pet.service.ts — Visual Studio Code" />
@@ -493,7 +496,7 @@ function PortalDemo({ onViewApi }: { onViewApi: () => void }) {
           ;
         </div>
         <div className="mt-4" />
-        <div className="text-on-surface-variant">// 点击下方按钮跳转到 API Explorer</div>
+        <div className="text-on-surface-variant">{t.clickToExplorer}</div>
         <div className="my-3 flex">
           <button
             onClick={onViewApi}
@@ -530,14 +533,14 @@ function PortalDemo({ onViewApi }: { onViewApi: () => void }) {
           );
         </div>
         <div className="mt-6" />
-        <div className="text-on-surface-variant">// View Api 按钮上方跳转到 API Explorer 标签页</div>
+        <div className="text-on-surface-variant">{t.clickToExplorerTab}</div>
       </div>
     </div>
   )
 }
 
 /* ─── Auto Detect Demo ─── */
-function AutoDetectDemo() {
+function AutoDetectDemo({ t }: { t: ReturnType<typeof getHomeDict>['ideEditor'] }) {
   const [toastVisible, setToastVisible] = useState(false)
   const [toastMsg, setToastMsg] = useState('Done! 5 modules updated')
   const toastMessages = ['Done! 5 modules updated', 'Done! 3 new endpoints detected', 'Done! API schema refreshed', 'Done! 2 services regenerated']
@@ -564,26 +567,26 @@ function AutoDetectDemo() {
           <div className="flex flex-col items-center justify-center h-full gap-6">
             <div className="flex items-center gap-3">
               <div className="w-3 h-3 bg-primary animate-pulse" />
-              <span className="text-on-surface text-sm">监听 OpenAPI 文件变更中...</span>
+              <span className="text-on-surface text-sm">{t.watching}</span>
             </div>
             <div className="tech-border bg-surface-variant p-6 max-w-md w-full">
-              <div className="text-[10px] text-on-surface-variant uppercase tracking-wider mb-3">检测配置</div>
+              <div className="text-[10px] text-on-surface-variant uppercase tracking-wider mb-3">{t.watchConfig}</div>
               <div className="space-y-2 text-xs text-on-surface-variant">
                 <div className="flex justify-between">
-                  <span>扫描间隔</span>
+                  <span>{t.scanInterval}</span>
                   <span className="text-primary">5 分钟</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>OpenAPI 路径</span>
+                  <span>{t.openApiPath}</span>
                   <span className="text-on-surface">./openapi.yaml</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>输出目录</span>
+                  <span>{t.outputDir}</span>
                   <span className="text-on-surface">./src/api/</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>上次检测</span>
-                  <span className="text-green-400">刚刚</span>
+                  <span>{t.lastCheck}</span>
+                  <span className="text-green-400">{t.justNow}</span>
                 </div>
               </div>
             </div>
@@ -602,20 +605,13 @@ function AutoDetectDemo() {
 }
 
 /* ─── JS IntelliSense Demo ─── */
-function JSIntelliSenseDemo() {
+function JSIntelliSenseDemo({ t }: { t: ReturnType<typeof getHomeDict>['ideEditor'] }) {
   return (
     <div className="h-full min-h-[420px] flex flex-col tech-border bg-editor-bg overflow-hidden">
       <EditorHeader filename="src/api/alova/services — Visual Studio Code" />
       <div className="flex-1 overflow-auto p-5 font-data-mono">
         <p className="mb-4 text-[12px] text-on-surface-variant">
-          每个
-          {' '}
-          <code className="bg-outline px-1.5 py-0.5 text-primary-light">.js</code>
-          {' '}
-          文件都配有
-          <code className="bg-outline px-1.5 py-0.5 text-primary-light"> .d.ts</code>
-          {' '}
-          声明文件，确保完整的类型安全。
+          {t.jsDesc}
         </p>
 
         {/* File tree */}
@@ -661,7 +657,7 @@ declare function addPet(config: Config): Response;
 declare function updatePet(config: Config): Response;
 declare function findPetsByStatus(config: Config): Response;
 declare function deletePet(config: Config): Response;`,
-            hint: '完整的类型推导：路径参数、查询、请求体与响应',
+            hint: t.jsHint,
           },
           {
             file: 'store.d.ts',
@@ -688,9 +684,25 @@ declare function getOrderById(config: Config): Response;`,
 }
 
 /* ─── Main IdeEditor Component ─── */
-export default function IdeEditor() {
+export default function IdeEditor({ lang }: { lang: Locale }) {
+  const t = getHomeDict(lang).ideEditor
   const [active, setActive] = useState('api-explorer')
   const [portalTargetEP, setPortalTargetEP] = useState<string | null>(null)
+
+  // ideTabMeta uses kebab-case ids; the dict keys are camelCase, so map them.
+  const tabKeyMap: Record<string, keyof typeof t.tabs> = {
+    'api-explorer': 'apiExplorer',
+    'hover-docs': 'hoverDocs',
+    'quick-insert': 'quickInsert',
+    'portal': 'portal',
+    'auto-detect': 'autoDetect',
+    'js-intellisense': 'jsIntelliSense',
+  }
+
+  const ideTabs = ideTabMeta.map(meta => ({
+    ...meta,
+    ...t.tabs[tabKeyMap[meta.id]],
+  }))
 
   const handlePortalViewApi = () => {
     setPortalTargetEP('getPetById')
@@ -706,12 +718,12 @@ export default function IdeEditor() {
 
   const renderContent = () => {
     switch (active) {
-      case 'api-explorer': return <APITreeExplorer targetEndpointId={portalTargetEP} />
+      case 'api-explorer': return <APITreeExplorer targetEndpointId={portalTargetEP} t={t} />
       case 'hover-docs': return <HoverDocsDemo />
-      case 'quick-insert': return <QuickInsertDemo />
-      case 'portal': return <PortalDemo onViewApi={handlePortalViewApi} />
-      case 'auto-detect': return <AutoDetectDemo />
-      case 'js-intellisense': return <JSIntelliSenseDemo />
+      case 'quick-insert': return <QuickInsertDemo t={t} />
+      case 'portal': return <PortalDemo onViewApi={handlePortalViewApi} t={t} />
+      case 'auto-detect': return <AutoDetectDemo t={t} />
+      case 'js-intellisense': return <JSIntelliSenseDemo t={t} />
       default: return null
     }
   }
@@ -722,9 +734,9 @@ export default function IdeEditor() {
         {/* Left Panel — Tab List */}
         <div className="lg:col-span-4 p-8 lg:p-12 lg:tech-border-r flex flex-col relative">
           <CornerPlus />
-          <SectionHeader label="05 // INTEGRATION" title="IDE 级深度集成" className="mb-6" />
+          <SectionHeader label={t.sectionLabel} title={t.title} className="mb-6" />
           <p className="font-body-md text-sm text-on-surface-variant mb-8 leading-relaxed">
-            在你的开发环境中直接获得上帝视角。强大的类型推导与悬浮文档，让 API 调用不再盲目。
+            {t.desc}
           </p>
           <div className="flex flex-col gap-2 mb-8">
             {ideTabs.map((tab) => {
@@ -747,11 +759,11 @@ export default function IdeEditor() {
             })}
           </div>
           <div className="mt-auto">
-            <Link href="/docs/guide/editor-docs" className="flex items-center gap-2 group text-primary font-data-mono text-xs uppercase tracking-widest">
+            <Link href={`${localePrefix(lang)}/docs/guide/editor-docs`} className="flex items-center gap-2 group text-primary font-data-mono text-xs uppercase tracking-widest">
               <span className="p-2 border border-primary group-hover:bg-primary group-hover:text-black transition-all">
                 <Icon name="open_in_new" className="text-sm" />
               </span>
-              前往文档中心
+              {t.docLink}
             </Link>
           </div>
         </div>

@@ -17,6 +17,9 @@ import { theme } from './theme'
 // eslint-disable-next-line ts/no-require-imports, perfectionist/sort-imports
 const pkg = require('../../package.json')
 
+// eslint-disable-next-line ts/no-require-imports, perfectionist/sort-imports
+const Table: any = require('cli-table3')
+
 export async function actionInit({ type, template, project }: { type?: TemplateType, template?: TemplatePreset, project?: string }) {
   const renderer = new InitRenderer(pkg.version)
 
@@ -120,11 +123,9 @@ interface ProjectEntry {
 
 export async function actionGen({
   project,
-  force,
   debug,
 }: {
   project?: string
-  force?: boolean
   debug?: boolean
 }) {
   if (debug) {
@@ -172,7 +173,7 @@ export async function actionGen({
   if (projects.length === 1) {
     // Single project: existing MultiGeneratorRenderer path — 100% unchanged behaviour
     const proj = projects[0]
-    await generateForProject(proj, force)
+    await generateForProject(proj)
   }
   else {
     // Multi-project: new MultiProjectRenderer + sequential execution
@@ -190,7 +191,6 @@ export async function actionGen({
       const proj = projects[pi]
       try {
         const results = await generate(proj.config, {
-          force,
           projectPath: proj.dir,
           onProgress(event) {
             renderer.onProjectEvent(pi, event)
@@ -213,7 +213,122 @@ export async function actionGen({
   }
 }
 
-async function generateForProject(entry: ProjectEntry, force?: boolean): Promise<void> {
+// ──────────────────────────────────────────────────────────────
+// `worma diff` — browse recorded API changes (requirement B)
+// ──────────────────────────────────────────────────────────────
+
+/**
+ * Format a timestamp in the **local** time zone (`YYYY-MM-DD HH:mm:ss`).
+ *
+ * `toISOString()` renders UTC, which made every record look ~8h off for anyone
+ * outside UTC and is the reason a record created at noon showed up as 04:xx.
+ */
+function formatTime(ts: number): string {
+  const date = new Date(ts)
+  if (Number.isNaN(date.getTime()))
+    return '-'
+  const pad = (value: number) => String(value).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+}
+
+/**
+ * Build a bordered `cli-table3` instance with our theme colours applied to the
+ * header (the library's own head/border colours are disabled so our `theme`
+ * palette wins). ANSI escape codes are measured as zero-width by cli-table3's
+ * internal `string-width` layout, so coloured cells stay aligned.
+ */
+function createTable(head: string[]): any {
+  return new Table({
+    head,
+    style: { head: [], border: [] },
+  })
+}
+
+/** `worma diff` / `worma diff <id>` / `worma diff latest` */
+export async function actionDiff(
+  id: string | undefined,
+  { list, project }: { list?: boolean, project?: string },
+): Promise<void> {
+  const projectPath = project
+    ? (path.isAbsolute(project) ? project : path.resolve(process.cwd(), project))
+    : process.cwd()
+
+  // Mirror `actionGen`: always resolve the cache from CWD so monorepo
+  // sub-packages share one unified cache root.
+  setGlobalConfig({ cacheRoot: process.cwd() })
+
+  const { getChange, listChanges } = await import('@/functions/changeReport')
+
+  if (!id || list) {
+    const summaries = await listChanges(projectPath)
+    if (summaries.length === 0) {
+      console.log(`\n  ${theme.dim('No change records found.')}`)
+      console.log(`  ${theme.dim('Run `worma gen` after changing your spec to create one.')}\n`)
+      return
+    }
+    const table = createTable([
+      theme.label('ID'),
+      theme.label('CREATED'),
+      theme.label('OUTPUTS'),
+      theme.label('CHANGES'),
+    ])
+    summaries.forEach(s => table.push([
+      s.id,
+      formatTime(s.createdAt),
+      s.outputs.join(', ') || '-',
+      `+${s.summary.added} / -${s.summary.removed} / ~${s.summary.modified}`,
+    ]))
+    console.log('')
+    console.log(table.toString())
+    console.log('')
+    return
+  }
+
+  const change = await getChange(projectPath, id)
+  if (!change) {
+    console.log(`\n  ${theme.warning('?')} No change record found for "${id}".\n`)
+    return
+  }
+
+  console.log('')
+  console.log(`  ${theme.label(`Change ${change.id}`)}  ${theme.dim(formatTime(change.createdAt))}`)
+  console.log('')
+
+  let totalAdded = 0
+  let totalRemoved = 0
+  let totalModified = 0
+
+  for (const gen of change.generators) {
+    totalAdded += gen.added.length
+    totalRemoved += gen.removed.length
+    totalModified += gen.modified.length
+
+    console.log(`  ${theme.header(gen.serverName ? `${gen.output}  (${gen.serverName})` : gen.output)}`)
+    const table = createTable([
+      '',
+      theme.label('METHOD'),
+      theme.label('PATH'),
+      theme.label('NAME'),
+      theme.label('CHANGED FIELDS'),
+    ])
+    gen.added.forEach(a => table.push([theme.success('+'), a.method, a.path, a.name ?? '-', '']))
+    gen.removed.forEach(a => table.push([theme.error('-'), a.method, a.path, a.name ?? '-', '']))
+    gen.modified.forEach(a => table.push([theme.warning('~'), a.method, a.path, a.name ?? '-', a.changedFields.join(', ')]))
+
+    if (gen.added.length + gen.removed.length + gen.modified.length === 0) {
+      console.log(`    ${theme.dim('no changes')}`)
+    }
+    else {
+      console.log(table.toString())
+    }
+    console.log('')
+  }
+
+  console.log(`  ${theme.label('Total:')} ${theme.success(`+${totalAdded} added`)}, ${theme.error(`-${totalRemoved} removed`)}, ${theme.warning(`~${totalModified} modified`)}`)
+  console.log('')
+}
+
+async function generateForProject(entry: ProjectEntry): Promise<void> {
   const { dir, configPath, config, generators } = entry
 
   // Initialize renderer — prints pre-flight (Phase 1), starts live-update (Phase 2)
@@ -230,7 +345,6 @@ async function generateForProject(entry: ProjectEntry, force?: boolean): Promise
 
   // Unified entry — generate() creates per-gen trackers internally
   const results = await generate(config, {
-    force,
     projectPath: dir,
     onProgress(event) {
       switch (event.phase) {

@@ -93,6 +93,7 @@ export enum PluginName {
   IMPORT_TYPE = 'importType',
   AI_DOC = 'aiDoc',
   APIFOX = 'apifox',
+  POSTMAN = 'postman',
   SWAGGER = 'swagger',
   KNIFE4J = 'knife4j',
   FASTAPI = 'fastapi',

@@ -1,4 +1,5 @@
 import type { MaybePromise, RenderTemplateParams } from './type'
+import type { ChangeItem } from '@/functions/changeReport'
 import type { ProgressTracker } from '@/helper/progress'
 import type { ApiPlugin, GeneratorConfig, TemplateType } from '@/type'
 import path from 'node:path'
@@ -6,10 +7,20 @@ import { fromError } from 'zod-validation-error'
 import { ConfigTypeEnum, TemplateTypeEnum } from '@/constant'
 import { openApiParser, TemplateParser } from '@/core/parser'
 import { getOpenApiDataWithUrl } from '@/core/parser/openApiParser/helper'
+import { diffApis, hasApiChanges } from '@/functions/diffApis'
 import getAutoTemplateType from '@/functions/getAutoTemplateType'
-import { computePerTagHashes, diffChangedTags, getCacheEntry } from '@/functions/wormaJson'
+import {
+  computePerTagHashes,
+  computeSpecHash,
+  diffChangedTags,
+  getCacheEntry,
+  hasGenerationBaseline,
+  readCacheApis,
+  updateSourceBaseline,
+} from '@/functions/wormaJson'
 import { logger, PluginDriver, TemplateHelper } from '@/helper'
 import { CORE_PROGRESS_SOURCE, noopReportProgress } from '@/helper/progress'
+import { isFormatEnabled } from '@/utils/format'
 import { zGeneratorConfig } from './zType'
 
 export class GeneratorHelper {
@@ -28,6 +39,15 @@ export class GeneratorHelper {
     bodyMediaType: 'application/json',
     type: ConfigTypeEnum.AUTO,
     defaultRequire: false,
+    /**
+     * `transformConcurrency` is intentionally omitted: leaving it unset means
+     * "auto" (`min(64, max(8, cpus*4))`), which the parser resolves at runtime.
+     */
+    performance: {
+      workerPool: 'auto' as const,
+      writeConcurrency: 32,
+      deterministicSort: true,
+    },
   })
 
   public static getInstance(): GeneratorHelper {
@@ -56,8 +76,13 @@ export class GeneratorHelper {
    * @returns GeneratorHelper instance
    */
   public async load(config: Partial<GeneratorConfig>) {
-    // Merge with default config
-    const mergedConfig = { ...this.defaultConfig, ...config }
+    // Merge with default config. `performance` is an object, so a plain spread
+    // would drop the per-field defaults as soon as the user sets only part of it.
+    const mergedConfig = {
+      ...this.defaultConfig,
+      ...config,
+      performance: { ...this.defaultConfig.performance, ...config.performance },
+    }
     // Validate configuration
     const validatedConfig = await GeneratorHelper.validateConfig(mergedConfig)
     // Update config
@@ -156,12 +181,16 @@ export class GeneratorHelper {
 
   static async generate(
     config: GeneratorConfig,
-    { projectPath, force, tracker }: {
+    { projectPath, tracker }: {
       projectPath: string
-      force?: boolean
       tracker?: ProgressTracker
     },
-  ): Promise<{ success: boolean, resolvedInput?: string }> {
+  ): Promise<{
+    success: boolean
+    resolvedInput?: string
+    /** API-level diff of this generator, only present when something changed */
+    change?: ChangeItem
+  }> {
     const reporter = (plugin: ApiPlugin) =>
       tracker?.reporterFor(plugin.name ?? 'plugin') ?? noopReportProgress
     const pluginDriver = new PluginDriver(config.plugins, { reporter })
@@ -173,7 +202,6 @@ export class GeneratorHelper {
     const pluginNames = (config.plugins || []).map(p => p.name).filter(Boolean)
     logger.debug('Starting generation process', {
       projectPath,
-      force,
       input: config.input,
       output: config.output,
       plugins: pluginCount,
@@ -288,24 +316,36 @@ export class GeneratorHelper {
     // P2: Pass tagedApis to avoid re-grouping; apiHashCache avoids re-hashing same Api objects
     const newApis = templateData.allApis || []
     const newHashInfo = computePerTagHashes(newApis, templateData.tagedApis)
-    let changedTags: Set<string> | undefined
 
-    if (!force) {
-      const oldEntry = await getCacheEntry(projectPath, config.output!)
-      if (oldEntry) {
-        if (oldEntry.hash === newHashInfo.hash) {
-          logger.debug('Template data unchanged (hash match), skipping generation')
-          reportCore(100, 'skipped: template data unchanged')
-          return { success: false, resolvedInput }
-        }
-        // Compute which tags changed for incremental rendering
-        changedTags = diffChangedTags(oldEntry.tags, newHashInfo.tags)
-        logger.debug('Incremental update detected', {
-          totalTags: Object.keys(newHashInfo.tags).length,
-          changedTags: changedTags.size,
-        })
-      }
+    // `generate()` is "call means generate": there is deliberately NO whole-run
+    // skip here any more. Change detection is `checkUpdates()`'s job; rendering
+    // stays incremental (only changed tags are re-rendered) as a pure
+    // optimization that does not alter the output.
+    const oldEntry = await getCacheEntry(projectPath, config.output!)
+    let changedTags: Set<string> | undefined
+    if (hasGenerationBaseline(oldEntry)) {
+      changedTags = diffChangedTags(oldEntry!.tags, newHashInfo.tags)
+      logger.debug('Incremental update detected', {
+        totalTags: Object.keys(newHashInfo.tags).length,
+        changedTags: changedTags.size,
+      })
     }
+    else {
+      logger.debug('No render baseline — rendering every tag')
+    }
+
+    // Requirement B: snapshot the API-level diff BEFORE the cache is rewritten.
+    const oldCache = await readCacheApis(projectPath, config.output!)
+    const apiDiff = diffApis(oldCache?.apis ?? [], newApis)
+    const change: ChangeItem | undefined = hasApiChanges(apiDiff)
+      ? {
+          output: config.output!,
+          serverName: config.serverName || templateData.title || oldCache?.serverName || '',
+          added: apiDiff.added,
+          removed: apiDiff.removed,
+          modified: apiDiff.modified,
+        }
+      : undefined
 
     reportCore(70, 'beforeCodeGenerate')
     logger.debug('Running beforeCodeGenerate hook')
@@ -336,7 +376,7 @@ export class GeneratorHelper {
       // 9.2.1: Unified streaming pipeline — render + beforeFileWrite hooks + write
       const perf = config.performance
       const writeConcurrency = perf?.writeConcurrency ?? 32
-      const formatFile = perf?.formatFile ?? true
+      const formatFile = isFormatEnabled()
       logger.debug('Starting template generation', {
         writeConcurrency,
         formatFile,
@@ -396,7 +436,18 @@ export class GeneratorHelper {
       throw codeGenError
     }
 
-    return { success: true, resolvedInput }
+    // Requirement A: refresh the source-level baseline with the very same raw
+    // text that was just parsed — zero extra requests. Only the `source`
+    // sub-field is touched, so the render baseline (`hash` / `tags`) is kept.
+    if (openApiResult.rawText) {
+      await updateSourceBaseline(projectPath, config.output!, {
+        resolvedInput,
+        rawHash: computeSpecHash(openApiResult.rawText),
+        updatedAt: Date.now(),
+      }, config.serverName ?? '')
+    }
+
+    return { success: true, resolvedInput, change }
   }
 }
 

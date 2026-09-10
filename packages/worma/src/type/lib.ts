@@ -45,7 +45,6 @@ export type GeneratorProgressEvent = {
 )
 
 export interface GenerateApiOptions {
-  force?: boolean
   projectPath?: string
   /** Per-generator lifecycle callback. Receives a discriminated union of {@link GeneratorProgressEvent}. */
   onProgress?: (event: GeneratorProgressEvent) => void

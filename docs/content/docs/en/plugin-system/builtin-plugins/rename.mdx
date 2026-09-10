@@ -1,0 +1,137 @@
+---
+title: Rename Plugin
+description: Rename API URLs and parameters, with multiple naming styles and custom rules
+---
+
+# Rename Plugin
+
+This plugin renames an API's URL and parameters, supporting multiple naming styles and custom transform rules.
+
+## Key features
+
+- Rename URLs, query params, path params, request body, response data, and referenced type names
+- Built-in camelCase, PascalCase, kebabCase, and snakeCase conversions
+- Custom match rules and transform functions
+- Multiple rules
+
+## Basic usage
+
+```javascript
+import { defineConfig } from 'wormajs';
+import { rename } from 'wormajs/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      // ...
+      plugins: [
+        // Convert underscores in URLs to camelCase
+        rename({ style: 'camelCase' }),
+      ],
+    },
+  ],
+});
+```
+
+## Config
+
+```typescript
+interface RenameConfig {
+  /**
+   * Scope, default 'url'
+   * - url: endpoint path
+   * - params: query params
+   * - pathParams: path params
+   * - data: request body
+   * - response: response data
+   * - refName: referenced type name
+   */
+  scope?: 'url' | 'params' | 'pathParams' | 'data' | 'response' | 'refName';
+
+  /**
+   * Endpoint path filter (exact/contains match on apiDescriptor.url, regex, or custom function).
+   * When path doesn't match, this config is skipped and the API is returned unchanged.
+   */
+  path?: string | RegExp | ((url: string) => boolean);
+
+  /**
+   * Match rule; converts everything when omitted
+   * - string: contains this string
+   * - RegExp: matches this regex
+   * - function: custom match function
+   */
+  match?: string | RegExp | ((key: string) => boolean);
+
+  /**
+   * Naming style
+   * - camelCase: lower camel case (userName)
+   * - PascalCase: upper camel case (UserName)
+   * - kebabCase: kebab case (user-name)
+   * - snakeCase: snake case (user_name)
+   */
+  style?: 'camelCase' | 'PascalCase' | 'kebabCase' | 'snakeCase';
+
+  /**
+   * Custom transform function, runs before the style conversion
+   */
+  transform?: (apiDescriptor: any, value: string) => string;
+}
+
+function rename(config: RenameConfig | RenameConfig[]): ApiPlugin;
+```
+
+> **Notes:**
+> 1. `refName` and `kebabCase` cannot be combined, since a type name cannot use kebab case.
+> 2. `params`, `pathParams`, `data`, and `response` are processed **recursively** — field names inside nested objects and array elements are also renamed (deep rename).
+
+## Multiple rules
+
+Configure several transform rules at once:
+
+```javascript
+// Before: /api/get_data/{item_id}
+// After:  /api/getData/{itemId}
+rename([
+  {
+    scope: 'url',
+    style: 'camelCase',
+    match: /_/, // only convert parts containing underscores
+  },
+  {
+    scope: 'pathParams',
+    style: 'camelCase',
+  },
+]);
+```
+
+## Custom match rule
+
+Only rename parameter names longer than 5 characters:
+
+```javascript
+rename({
+  scope: 'params',
+  match: key => key.length > 5,
+  style: 'camelCase',
+});
+```
+
+## Custom transform function
+
+Rename specific parameters:
+
+```javascript
+rename({
+  scope: 'data',
+  match: ['user_info', 'order_list'],
+  transform: (api, value) => {
+    const map = {
+      user_info: 'user',
+      order_list: 'orders',
+    };
+    return map[value] || value;
+  },
+});
+```
+
+> After transforming, check that the names follow your convention — especially with custom transforms.

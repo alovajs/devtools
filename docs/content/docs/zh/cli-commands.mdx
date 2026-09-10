@@ -1,0 +1,84 @@
+---
+title: CLI 命令
+description: worma init / gen / diff 命令参数详解
+---
+
+
+## worma init
+
+初始化配置文件。
+
+```bash
+# 在当前目录创建 worma.config.js
+worma init
+
+# 指定配置文件类型
+worma init -t typescript
+worma init --type commonjs
+
+# 指定模板预设
+worma init -T axios
+worma init --template ky
+
+# 指定项目目录
+worma init -p ./packages/app
+```
+
+### 参数详解
+
+| 参数 | 说明 | 可选值 |
+|------|------|--------|
+| `-t, --type <type>` | 配置文件类型 | `typescript` / `ts` / `commonjs` / `module` |
+| `-T, --template <template>` | 模板预设，默认 `alova` | `alova` / `functional` / `axios` / `fetch` / `ky` |
+| `-p, --project <path>` | 指定项目目录 | — |
+
+## worma gen
+
+根据配置生成 API 代码，命中缓存时仅增量渲染变更的 tag，无变化则不重写文件。
+
+```bash
+# 基本用法（默认 workspace 模式，扫描所有子项目）
+worma gen
+
+# 指定项目路径（单项目模式）
+worma gen -p ./packages/app
+worma gen --project ./packages/app
+```
+
+### 参数详解
+
+| 参数 | 说明 |
+|------|------|
+| `-d, --debug` | 输出调试日志 |
+| `-p, --project <path>` | 指定项目目录。传入后仅对该项目生成；未传入时以 workspace 模式扫描所有子项目 |
+
+### 行为逻辑
+
+```text
+worma gen
+  → 默认 workspace 模式：扫描所有子项目，逐一生成
+
+worma gen -p ./packages/app
+  → 单项目模式：仅对指定目录读取配置并生成
+```
+
+## worma diff
+
+浏览 `generate` 成功后写入的 API 变更记录（新增 / 删除 / 修改）。
+
+```bash
+worma diff              # 列出全部变更记录
+worma diff --list       # 同上，显式列出
+worma diff latest       # 查看最新一条记录的明细
+worma diff 0007         # 按序号查看某条记录
+worma diff -p ./packages/app   # 指定项目目录
+```
+
+### 参数详解
+
+| 参数 | 说明 |
+|------|------|
+| `[id]` | 变更记录序号（如 `0007`）或别名 `latest`；省略则列出全部 |
+| `-l, --list` | 列出全部变更记录 |
+| `-p, --project <path>` | 指定项目目录 |
+

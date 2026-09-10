@@ -23,8 +23,8 @@ export async function openFile(name: string) {
   await window.showTextDocument(doc)
   return doc.getText()
 }
-export async function executeCommand<T>(id: string) {
-  return commands.executeCommand<T>(id)
+export async function executeCommand<T>(id: string, ...args: any[]) {
+  return commands.executeCommand<T>(id, ...args)
 }
 
 export function setupTest(name: string, fn: () => void) {

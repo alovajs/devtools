@@ -1,3 +1,4 @@
+import type { FormatConfig as OxfmtFormatConfig } from 'oxfmt'
 import type { z } from 'zod/v3'
 import type { zConfigType, zTemplateType } from './zType'
 // import { ApiPlugin } from '@/type';
@@ -263,11 +264,34 @@ export interface PerformanceConfig {
   /** Max parallelism for file writes. Default 32 */
   writeConcurrency?: number
 
-  /** Apply prettier formatting to final files before write. Default true (schema-level prettier is always disabled) */
-  formatFile?: boolean
-
-  /** Sort tags/APIs/components alphabetically for deterministic output. Default true */
+  /**
+   * Sort the collected component types alphabetically so the output order stays
+   * stable regardless of worker scheduling. `false` keeps collection order.
+   * Default true
+   */
   deterministicSort?: boolean
+}
+
+/**
+ * 生成产物的格式化配置。
+ *
+ * 除 `enabled` 外的所有字段都是 oxfmt 原生选项，worma 不做校验、原样透传给 oxfmt，
+ * 由 oxfmt 自行校验；类型提示直接来自 oxfmt，因此随 oxfmt 版本自动保持同步。
+ *
+ * @example
+ * ```js
+ * // 关闭格式化
+ * format: { enabled: false }
+ *
+ * // 自定义风格
+ * format: { printWidth: 100, trailingComma: 'all', semi: false }
+ * ```
+ */
+export interface FormatOptions extends OxfmtFormatConfig {
+  /**
+   * 是否格式化生成的代码，默认 true。
+   */
+  enabled?: boolean
 }
 
 export interface GeneratorConfig {
@@ -398,6 +422,18 @@ export interface Config {
    * Currently, only OpenAPI specifications are supported, including OpenAPI 2.0 and 3.0 specifications.
    */
   generator: GeneratorConfig[]
+
+  /**
+   * 生成产物的格式化配置（基于 oxfmt），对所有 generator 生效。
+   * 除 `enabled` 外的字段原样透传给 oxfmt，worma 不做额外校验。
+   *
+   * @example
+   * ```js
+   * format: { enabled: false }
+   * format: { printWidth: 100, trailingComma: 'all', semi: false }
+   * ```
+   */
+  format?: FormatOptions
 }
 export type UserConfig = Config
 export type UserConfigFnObject = () => UserConfig

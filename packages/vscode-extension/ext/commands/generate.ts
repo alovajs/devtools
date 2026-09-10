@@ -1,6 +1,6 @@
 import type { GeneratorProgressEvent } from 'wormajs'
 import { ProgressLocation, window } from 'vscode'
-import { endLoading, loading } from '@/commands/statusBar'
+import { endLoading, loading, setUpdateIndicator } from '@/commands/statusBar'
 import { showError } from '@/components/event'
 import ApiGenerate from '@/core/ApiGenerate'
 import { registerCommand } from '@/utils/vscode'
@@ -21,7 +21,6 @@ export const refresh: CommandType = {
         },
         async (progress) => {
           await ApiGenerate.generate({
-            force: false,
             onProgress(event: GeneratorProgressEvent) {
               if (event.phase !== 'progress')
                 return
@@ -33,6 +32,8 @@ export const refresh: CommandType = {
         },
       )
       await ApiGenerate.showError()
+      // Generation succeeded → clear the persistent "update available" state.
+      setUpdateIndicator(0)
     }
     catch (error) {
       showError(error)
@@ -46,19 +47,21 @@ export const refresh: CommandType = {
 
 export const generateApi: CommandType<[string, boolean?]> = {
   commandId: Commands.generate_api,
-  handler: () => (projectPath: string, isAuto?: boolean) => callGenerateApi(projectPath, false, isAuto),
+  handler: () => (projectPath: string, isAuto?: boolean) => callGenerateApi(projectPath, isAuto),
 }
 
 export const generateApiForce: CommandType<[string]> = {
   commandId: Commands.generate_api_force,
-  handler: () => (projectPath: string) => callGenerateApi(projectPath, true),
+  handler: () => (projectPath: string) => callGenerateApi(projectPath),
 }
 
-async function callGenerateApi(projectPath: string, force: boolean, isAuto?: boolean) {
+async function callGenerateApi(projectPath: string, isAuto?: boolean) {
   try {
     await ApiGenerate.readConfig(projectPath)
-    await ApiGenerate.generate({ projectPath, force, isAuto })
+    await ApiGenerate.generate({ projectPath, isAuto })
     await ApiGenerate.showError()
+    // Generation succeeded → clear the persistent "update available" state.
+    setUpdateIndicator(0)
   }
   catch (error) {
     showError(error)

@@ -5,8 +5,14 @@ import Global from '@/core/Global'
 import worma from '@/helper/worma'
 import { withProjectCwd } from '@/utils/cwd'
 
+/** Aggregated API-diff counts produced by one `generate()` run. */
+export interface GenerateChangeSummary {
+  added: number
+  removed: number
+  modified: number
+}
+
 export interface GenerateOption {
-  force?: boolean
   projectPath?: string
   showError?: boolean
   /** Suppresses the "up to date" popup when triggered non-interactively. */
@@ -28,7 +34,8 @@ export default async (option?: GenerateOption) => {
   const resultArr: Array<[string, boolean]> = []
   const errorArr: Array<Error> = []
   const projectStatsMap = new Map<string, ProjectStats>()
-  const { force = false, projectPath: projectPathValue, showError = false, onProgress } = option ?? {}
+  const { projectPath: projectPathValue, showError = false, onProgress } = option ?? {}
+  const startedAt = Date.now()
 
   const allEntries = Global.getConfigs()
 
@@ -67,7 +74,6 @@ export default async (option?: GenerateOption) => {
       // run inside the project context: `process.cwd()` in the extension host points
       // to the VS Code installation dir, which breaks relative paths in custom plugins
       const generateResult = await withProjectCwd(projectPath, () => worma.generate(config, {
-        force,
         projectPath,
         onProgress(event) {
           const genMap = progressMap.get(projectPath)!
@@ -119,9 +125,39 @@ export default async (option?: GenerateOption) => {
       throw error
     })
   }
+
+  // Requirement B: read back the change records written during this run so the
+  // caller can surface a "View Changes" affordance. Only records created within
+  // this run (createdAt >= startedAt) are counted.
+  const changeSummary: Record<string, GenerateChangeSummary> = {}
+  for (const projectPath of projectStatsMap.keys()) {
+    try {
+      const list = await (worma as any).listChanges(projectPath)
+      if (!Array.isArray(list))
+        continue
+      let added = 0
+      let removed = 0
+      let modified = 0
+      for (const record of list) {
+        if ((record?.createdAt ?? 0) >= startedAt) {
+          added += record.summary?.added ?? 0
+          removed += record.summary?.removed ?? 0
+          modified += record.summary?.modified ?? 0
+        }
+      }
+      if (added || removed || modified) {
+        changeSummary[projectPath] = { added, removed, modified }
+      }
+    }
+    catch {
+      // change records are optional — never fail the run on this
+    }
+  }
+
   return {
     resultArr,
     errorArr,
     projectStats: projectStatsMap,
+    changeSummary,
   }
 }

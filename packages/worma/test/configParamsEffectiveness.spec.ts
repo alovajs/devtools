@@ -1,7 +1,7 @@
 /**
  * Tests that verify key GeneratorConfig parameters actually take effect during code generation.
  *
- * Covered fields: serverName, docComment, responseMediaType, bodyMediaType
+ * Covered fields: serverName, docComment, responseMediaType, bodyMediaType, performance
  */
 import type { GeneratorConfig, OpenAPIDocument, TemplateData } from '@/type'
 import { resolve } from 'node:path'
@@ -201,6 +201,91 @@ describe('templateParser integration: responseMediaType / bodyMediaType / docCom
       expect(api.queryParametersComment).toBe('')
       expect(api.pathParametersComment).toBe('')
     }
+  })
+})
+
+describe('performance config effectiveness', () => {
+  const projectPath = process.cwd()
+
+  it('should survive config validation instead of being stripped', async () => {
+    const config = await makeProcessedConfig({
+      performance: {
+        workerPool: false,
+        transformConcurrency: 3,
+        writeConcurrency: 8,
+        deterministicSort: false,
+      },
+    })
+
+    expect(config.performance).toEqual({
+      workerPool: false,
+      transformConcurrency: 3,
+      writeConcurrency: 8,
+      deterministicSort: false,
+    })
+  })
+
+  it('should fall back to the default performance object when nothing is configured', async () => {
+    const config = await makeProcessedConfig()
+
+    expect(config.performance).toEqual({
+      workerPool: 'auto',
+      writeConcurrency: 32,
+      deterministicSort: true,
+    })
+  })
+
+  it('should keep the other defaults when only part of performance is configured', async () => {
+    const config = await makeProcessedConfig({ performance: { writeConcurrency: 8 } })
+
+    expect(config.performance).toEqual({
+      workerPool: 'auto',
+      writeConcurrency: 8,
+      deterministicSort: true,
+    })
+  })
+
+  it('should sort component names deterministically by default', async () => {
+    const document = await readOpenApiFixture()
+    const config = await makeProcessedConfig()
+    const result = await new TemplateParser().parse(document, {
+      generatorConfig: config,
+      projectPath,
+    })
+
+    expect(result.componentNames.length).toBeGreaterThan(1)
+    expect(result.componentNames).toEqual(
+      [...result.componentNames].sort((a, b) => a.localeCompare(b)),
+    )
+  })
+
+  it('should keep the same components when deterministicSort is disabled', async () => {
+    const sortedResult = await new TemplateParser().parse(await readOpenApiFixture(), {
+      generatorConfig: await makeProcessedConfig(),
+      projectPath,
+    })
+    const unsortedResult = await new TemplateParser().parse(await readOpenApiFixture(), {
+      generatorConfig: await makeProcessedConfig({
+        performance: { deterministicSort: false, workerPool: false },
+      }),
+      projectPath,
+    })
+
+    expect([...unsortedResult.componentNames].sort()).toEqual([...sortedResult.componentNames].sort())
+    expect(unsortedResult.components.length).toBe(sortedResult.components.length)
+  })
+
+  it('should produce the same component set when the worker pool is disabled', async () => {
+    const withWorkers = await new TemplateParser().parse(await readOpenApiFixture(), {
+      generatorConfig: await makeProcessedConfig(),
+      projectPath,
+    })
+    const withoutWorkers = await new TemplateParser().parse(await readOpenApiFixture(), {
+      generatorConfig: await makeProcessedConfig({ performance: { workerPool: false } }),
+      projectPath,
+    })
+
+    expect([...withoutWorkers.componentNames].sort()).toEqual([...withWorkers.componentNames].sort())
   })
 })
 

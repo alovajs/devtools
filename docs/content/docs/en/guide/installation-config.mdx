@@ -1,0 +1,215 @@
+---
+title: Installation & Configuration
+description: CLI install, init, and worma.config.js configuration
+slug: guide/installation-config
+---
+
+## Install
+
+<Tabs items={['npm', 'yarn', 'pnpm', 'bun']}>
+  <Tab value="npm">
+
+```bash
+npm i wormajs -D
+```
+
+  </Tab>
+  <Tab value="yarn">
+
+```bash
+yarn add wormajs -D
+```
+
+  </Tab>
+  <Tab value="pnpm">
+
+```bash
+pnpm add wormajs -D
+```
+
+  </Tab>
+  <Tab value="bun">
+
+```bash
+bun add wormajs -D
+```
+
+  </Tab>
+</Tabs>
+
+## Initialize
+
+```bash
+worma init
+```
+
+This command creates a `worma.config.js` (also supports `.cjs`, `.mjs`, or `.ts` extensions) in the project root, with the alova template and the `aiDoc` plugin configured by default:
+
+```javascript
+import { defineConfig } from "wormajs";
+import { alova } from "wormajs/plugin";
+import { aiDoc } from "wormajs/plugin";
+
+export default defineConfig({
+  generator: [
+    {
+      input: "https://api.example.com/openapi.json",
+      output: "src/api",
+      plugins: [alova(), aiDoc()],
+    },
+  ],
+});
+```
+
+`init` also accepts `-T, --template` to pick a different initial template:
+
+```bash
+worma init -T axios
+worma init --template ky
+worma init -T fetch -t typescript
+```
+
+## Full worma.config.js
+
+```javascript
+import { defineConfig } from "wormajs";
+import { rename, aiDoc } from "wormajs/plugin";
+import { alova, swagger } from "wormajs/plugin";
+
+export default defineConfig({
+  generator: [
+    {
+      output: "src/api",
+      docComment: true,
+      responseMediaType: "application/json",
+      bodyMediaType: "application/json",
+      serverName: "User Service",
+      plugins: [
+        swagger("https://api.example.com/openapi.json"),
+        alova(),
+        aiDoc(),
+        rename({ getUserInfo: "fetchUserProfile" }),
+      ],
+    },
+  ],
+});
+```
+
+### Config options at a glance
+
+| Field               | Type                 | Required | Default             | Description                                                   |
+| ------------------- | -------------------- | -------- | ------------------- | ------------------------------------------------------------- |
+| `input`             | `string \| string[]` | yes      | —                   | OpenAPI document URL; an array requests all URLs together     |
+| `output`            | `string`             | no       | decided by template | Output directory                                              |
+| `docComment`        | `boolean`            | no       | `true`              | Whether to generate doc comments; `false` improves perf      |
+| `responseMediaType` | `string \| string[]` | no       | `'application/json'` | Response MediaType; an array is tried in order               |
+| `bodyMediaType`     | `string \| string[]` | no       | `'application/json'` | Request body MediaType; an array is tried in order           |
+| `serverName`        | `string`             | no       | doc `info.title`    | Custom service name for multi-doc, shown in the sidebar      |
+| `plugins`           | `ApiPlugin[]`        | yes      | —                   | Plugin array (templates also set via the plugin's getTemplate hook) |
+| `performance`       | `PerformanceConfig`  | no       | —                   | Performance config                                            |
+
+See [Built-in Plugins](/docs/plugin-system/builtin-plugins) for more plugin options.
+
+## Multi-source configuration
+
+Add multiple entries to the `generator` array to generate from different OpenAPI documents into different directories:
+
+```javascript
+import { defineConfig } from "wormajs";
+import { alova, axios } from "wormajs/plugin";
+import { aiDoc } from "wormajs/plugin";
+
+export default defineConfig({
+  generator: [
+    {
+      input: "https://user-service.example.com/openapi.json",
+      output: "src/api/user-service",
+      serverName: "User Service",
+      plugins: [alova(), aiDoc()],
+    },
+    {
+      input: "https://order-service.example.com/openapi.json",
+      output: "src/api/order-service",
+      serverName: "Order Service",
+      plugins: [axios(), aiDoc()],
+    },
+  ],
+});
+```
+
+With multiple sources, set `serverName` for each generator so the VSCode extension sidebar groups them and the AI Skill docs are categorized by service.
+
+### Multi-URL fallback
+
+`input` accepts a `string[]` array, requesting each URL and returning the first successful response:
+
+```javascript
+defineConfig({
+  generator: [
+    {
+      input: [
+        "https://primary-server.com/openapi.json",
+        "https://fallback-server.com/openapi.json",
+      ],
+      output: "./src/api",
+      plugins: [alova()],
+    },
+  ],
+});
+```
+
+### Apifox data source
+
+If your team manages API docs with Apifox, you can pull OpenAPI data directly from the Apifox project — no manual export or `input` field needed:
+
+```javascript
+import { defineConfig } from "wormajs";
+import { alova } from "wormajs/plugin";
+import { aiDoc, apifox } from "wormajs/plugin";
+
+export default defineConfig({
+  generator: [
+    {
+      output: "src/api",
+      serverName: "User Service",
+      plugins: [
+        apifox({
+          projectId: "your-project-id",
+          apifoxToken: "your-api-token",
+        }),
+        alova(),
+        aiDoc(),
+      ],
+    },
+  ],
+});
+```
+
+> **With the `apifox` plugin you no longer need the `input` field** — it automatically pulls the latest OpenAPI document from Apifox. See [Platform Fetcher](/docs/plugin-system/builtin-plugins/platform) for more (tag filtering, version pinning, etc.).
+
+## Quick config [#wormarc]
+
+Plain-text format: one OpenAPI document URL per line, optionally with a template and a coding agent:
+
+```
+# Main service, default alova template (no AI docs)
+https://api.example.com/v1/openapi.json
+
+# Admin console, axios template, install AI Skill into cursor
+admin=https://api.admin.com/openapi.json, axios, cursor
+
+# File service, fetch template, install AI Skill into cursor and claude-code
+public/files=https://api.files.com/openapi.json, fetch, cursor, claude-code
+```
+
+Line format: `[outputKey=]url[, template][, agent]`
+
+- `outputKey` (optional): custom output directory; when omitted, increments as `src/api`, `src/api2`, …
+- `template` (optional): template type, one of `alova` / `axios` / `fetch` / `ky`; defaults to `alova`
+- `agent` (optional): coding agent to install the AI Skill into, separated by `,` or the Chinese comma `，`; multiple allowed (deduplicated)
+
+In `.wormarc` mode, the `aiDoc` plugin is **added only when the line specifies an `agent`**; lines without an agent generate only the template code, not the AI Skill docs.
+
+> To reuse personal coding-agent preferences in `worma.config`, combine `parseAgentFile` to read from `.wormaagent.local` (see [AI Doc Generator](/plugin-system/builtin-plugins/aiDoc)).
+
+> When both `.wormarc` and `worma.config` exist, `worma.config` takes precedence.

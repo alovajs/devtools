@@ -15,3 +15,6 @@ export const Meta = extension.Meta
 export const MockWorma = extension.MockWorma
 export const Global = extension.Global
 export const Log = extension.Log
+export const ChangesView = extension.ChangesView
+export const UpdateChecker = extension.UpdateChecker
+export const getUpdateCount = extension.getUpdateCount

@@ -117,16 +117,9 @@ describe('generate API', () => {
       resolve(outputDir, 'globals.d.ts'),
       (await globalsContent()).replace(globalsOriginalContent, globalsReplacingContent),
     )
-    // generate again
+    // generate again — `generate()` always runs (no whole-run skip any more).
+    // `#`-prefixed no-overwrite files keep the user's edits, the rest is rewritten.
     await generate(config)
-    // if `force` is false, it will not re-generate when openapi file is not changed
-    await expect(indexContent()).resolves.toMatch(indexReplacingContent)
-    await expect(globalsContent()).resolves.toMatch(globalsReplacingContent)
-
-    // force generate even if openapi file is not changed
-    // but only index.ts will keep modified content
-    await generate(config, { force: true })
-    // if `force` is false, it will not re-generate when openapi file is not changed
     await expect(indexContent()).resolves.toMatch(indexReplacingContent)
     await expect(globalsContent()).resolves.toMatch(globalsOriginalContent)
   })

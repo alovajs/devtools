@@ -36,7 +36,7 @@ export function createStrReg(str: string) {
     .replace(/\r\n/g, '\n') // normalize Windows line endings
     .replace(/([[\](){}.*+|\\/^$?])/g, '\\$1')
     .replace(/\s+/g, '\\s+')
-    // Prettier may add newlines around angle brackets and other type boundaries
+    // The formatter may add newlines around angle brackets and other type boundaries
     .replace(/>\(/g, '>\\s*\\(')
     .replace(/\)</g, ')\\s*<')
     .replace(/(?<!\\)</g, '\\s*<\\s*')
@@ -51,7 +51,7 @@ export async function generateWithPlugin(inputFile: string, plugins: ApiPlugin[]
   vol.mkdirSync(outputDir, { recursive: true })
   await generate({
     generator: [{ ...config, input: inputFile, output: outputDir, type: 'ts', plugins: [alovaGlobals(), ...plugins] }],
-  }, { force: true })
+  }, {})
   const apiDefinitionsFile = await fs.readFile(resolve(outputDir, 'apiDefinitions.ts'), 'utf-8')
   const globalsFile = await fs.readFile(resolve(outputDir, 'globals.d.ts'), 'utf-8')
   const createApisFile = await fs.readFile(resolve(outputDir, 'createApis.ts'), 'utf-8')

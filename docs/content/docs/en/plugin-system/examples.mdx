@@ -1,0 +1,46 @@
+---
+title: "Example: Plugins that Rename Functions / Response Types"
+description: Learn plugin development through real examples
+---
+
+## Example 1: Add a uniform function-name prefix
+
+Add a uniform prefix to all auto-generated API functions. Note that `beforeCodeGenerate` now modifies the `data` object directly and does not return a value:
+
+```javascript
+import { defineConfig } from 'wormajs';
+
+export default defineConfig({
+  generator: [
+    {
+      plugins: [
+        {
+          name: 'prefix-api',
+          beforeCodeGenerate({ data }) {
+            data.apis = data.apis.map(api => ({
+              ...api,
+              name: `api_${api.name}`,
+              responseName: `Api${api.responseName}`,
+            }));
+          },
+        },
+      ],
+    },
+  ],
+});
+```
+
+## Example 2: Add a uniform header comment to generated files
+
+`beforeFileWrite` receives the **raw text content** of a single file before it is written, which is ideal for file-level text processing (e.g. adding a header comment, replacing text) rather than mutating data structures. The example adds a uniform copyright header to all `.ts` files:
+
+```javascript
+{
+  name: 'file-banner',
+  beforeFileWrite({ fileName, content }) {
+    if (fileName.endsWith('.ts')) {
+      return `// Copyright 2026 Your Company. All rights reserved.\n\n${content}`;
+    }
+  },
+}
+```

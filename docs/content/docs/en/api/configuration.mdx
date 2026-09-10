@@ -1,0 +1,126 @@
+---
+title: Configuration Object
+description: The complete types for defineConfig and GeneratorConfig
+---
+
+## defineConfig
+
+```typescript
+function defineConfig(config: Config): Config;
+function defineConfig(config: Promise<Config>): Promise<Config>;
+function defineConfig(config: () => Config | Promise<Config>): Config | Promise<Config>;
+```
+
+## Config
+
+```typescript
+interface Config {
+  /** Array of generation rules */
+  generator: GeneratorConfig[];
+}
+```
+
+## GeneratorConfig
+
+```typescript
+interface GeneratorConfig {
+  /** OpenAPI document URL (or local path); string[] is tried in order */
+  input?: string | string[];
+
+  /** Request options used when fetching the OpenAPI document */
+  fetchOptions?: FetchOptions;
+
+  /** List of type identifiers to exclude from generation; matched types are referenced instead of generated */
+  externalTypes?: string[];
+
+  /** Output directory */
+  output?: string;
+
+  /** Whether to generate doc comments, default true */
+  docComment?: boolean;
+
+  /** Response MediaType; an array is tried in order */
+  responseMediaType?: string | string[];
+
+  /** Request body MediaType; an array is tried in order */
+  bodyMediaType?: string | string[];
+
+  /** Custom service name when multiple documents are used */
+  serverName?: string;
+
+  /** Generated code flavor: 'auto' | 'ts' | 'typescript' | 'module' | 'commonjs', default 'auto' */
+  type?: 'auto' | 'ts' | 'typescript' | 'module' | 'commonjs';
+
+  /** When no require is present, default to require; only applies to nullable fields */
+  defaultRequire?: boolean;
+
+  /** Plugin array */
+  plugins?: ApiPlugin[];
+
+  /** Performance config */
+  performance?: PerformanceConfig;
+
+  /** Filter or transform the generated API; returns the modified apiDescriptor */
+  handleApi?: (apiDescriptor: ApiDescriptor) => ApiDescriptor | void | null | undefined;
+}
+```
+
+### FetchOptions
+
+```typescript
+interface FetchOptions {
+  headers?: Record<string, string>;
+  /** Timeout in milliseconds */
+  timeout?: number;
+  method?: MethodType;
+  data?: RequestBody;
+  params?: Record<string, any>;
+  /** When true, non-2xx responses don't throw and still return text */
+  insecure?: boolean;
+}
+```
+
+## PerformanceConfig
+
+> See [Performance](/docs/performance) for design details.
+
+```typescript
+interface PerformanceConfig {
+  /** schema→TS worker pool strategy: 'auto' | number | false, default 'auto' */
+  workerPool?: 'auto' | number | false;
+  /** transform stage concurrency cap, default auto */
+  transformConcurrency?: number;
+  /** Write concurrency, default 32 */
+  writeConcurrency?: number;
+  /** Whether to sort the collected component types deterministically, default true */
+  deterministicSort?: boolean;
+}
+```
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| `workerPool` | `'auto'` | `'auto'` adapts the pool size to the API count (no worker when `≤20`, then `min(2, cores)`, `min(4, cores)`, `min(⌈cores × 0.75⌉, cores)`, `max(2, cores − 1)` as the scale grows); a number pins the pool size; `false` disables workers entirely and conversion falls back to the main thread |
+| `transformConcurrency` | auto | Max concurrent async tasks in the `transform` phase; defaults to `min(64, max(8, cpus*4))` |
+| `writeConcurrency` | `32` | Max number of files written in parallel |
+| `deterministicSort` | `true` | Sort the collected component types alphabetically so worker scheduling cannot drift the artifact order; `false` keeps collection order (which may vary) |
+
+## GenerateApiOptions
+
+```typescript
+interface GenerateApiOptions {
+  /** Project root directory */
+  projectPath?: string;
+  /** Per-generator lifecycle progress callback */
+  onProgress?: (event: GeneratorProgressEvent) => void;
+}
+```
+
+`GeneratorProgressEvent` is a discriminated union, distinguished by its `phase` field:
+
+| phase | Description | Extra fields |
+|-------|-------------|--------------|
+| `active` | Started processing | `index` |
+| `progress` | In progress | `progress: number` (0-100), `message`, `source?` |
+| `done` | Generation succeeded | `resolvedInput?` |
+| `skipped` | Skipped (cache hit) | `resolvedInput?` |
+| `failed` | Generation failed | `error: string` |

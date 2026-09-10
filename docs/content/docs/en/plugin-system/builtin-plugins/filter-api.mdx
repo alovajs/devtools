@@ -1,0 +1,106 @@
+---
+title: API Filter
+description: Filter API endpoints by URL or tag, with multiple match rules and combined conditions
+---
+
+# API Filter
+
+This plugin filters API endpoints by URL or tag. It supports multiple match rules and combined conditions.
+
+## Key features
+
+- Filter by URL or tag
+- Include and exclude rules
+- Match by string, RegExp, or custom function
+- Combine multiple conditions
+
+## Basic usage
+
+```javascript
+import { defineConfig } from 'wormajs';
+import { apiFilter } from 'wormajs/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      // ...
+      plugins: [
+        // Keep only APIs whose URL contains a specific string
+        apiFilter({ include: '/api/user' }),
+      ],
+    },
+  ],
+});
+```
+
+## Config
+
+```typescript
+interface FilterApiConfig {
+  /**
+   * Filter scope, default 'url'
+   * - url: filter by endpoint path
+   * - tag: filter by tag
+   */
+  scope?: 'url' | 'tag';
+
+  /**
+   * Include rule
+   * - string: contains this string
+   * - RegExp: matches this regex
+   * - function: custom match function
+   */
+  include?: string | RegExp | ((key: string) => boolean);
+
+  /**
+   * Exclude rule
+   * - string: contains this string
+   * - RegExp: matches this regex
+   * - function: custom match function
+   */
+  exclude?: string | RegExp | ((key: string) => boolean);
+}
+
+function apiFilter(config: FilterApiConfig | FilterApiConfig[]): ApiPlugin;
+```
+
+## Multiple conditions
+
+Configure several filters at once; the final result is the union of all conditions:
+
+```javascript
+apiFilter([
+  {
+    scope: 'url',
+    include: /^\/api\/user/, // URLs starting with /api/user
+  },
+  {
+    scope: 'tag',
+    include: 'admin', // APIs tagged 'admin'
+  },
+]);
+```
+
+## Include + exclude
+
+Keep a specific URL but exclude some APIs:
+
+```javascript
+apiFilter({
+  include: /\/api\/user/,
+  exclude: '/api/user/list', // exclude /api/user/list
+});
+```
+
+> When both `include` and `exclude` are given, `exclude` is applied on top of the `include` result.
+
+## Custom match rule
+
+Use a custom function to match:
+
+```javascript
+apiFilter({
+  scope: 'url',
+  include: key => key.startsWith('/api') && key.length > 10,
+});
+```

@@ -257,7 +257,7 @@ export class MultiGeneratorRenderer {
       console.log(theme.success('\n✔ Generated successfully!\n'))
     }
     else {
-      console.log(theme.dim('\n  Try `worma gen -f` to force regenerate.\n'))
+      console.log(theme.dim('\n  Generation finished with failures. See the log above for details.\n'))
     }
   }
 }
@@ -564,7 +564,7 @@ export class MultiProjectRenderer {
       console.log(theme.success('\n✔ Generated successfully!\n'))
     }
     else {
-      console.log(theme.dim('\n  Try `worma gen -f` to force regenerate.\n'))
+      console.log(theme.dim('\n  Generation finished with failures. See the log above for details.\n'))
     }
   }
 }

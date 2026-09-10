@@ -1,0 +1,82 @@
+---
+title: CLI Commands
+description: Detailed parameters for worma init / gen / diff
+---
+
+## worma init
+
+Initialize the config file.
+
+```bash
+# Create worma.config.js in the current directory
+worma init
+
+# Specify the config file type
+worma init -t typescript
+worma init --type commonjs
+
+# Specify a template preset
+worma init -T axios
+worma init --template ky
+
+# Specify the project directory
+worma init -p ./packages/app
+```
+
+### Parameters
+
+| Parameter | Description | Allowed values |
+|-----------|-------------|----------------|
+| `-t, --type <type>` | Config file type | `typescript` / `ts` / `commonjs` / `module` |
+| `-T, --template <template>` | Template preset, defaults to `alova` | `alova` / `functional` / `axios` / `fetch` / `ky` |
+| `-p, --project <path>` | Project directory | — |
+
+## worma gen
+
+Generate API code based on the config. When the cache hits, only changed tags are rendered incrementally; unchanged files are not rewritten.
+
+```bash
+# Basic usage (workspace mode by default, scans all sub-projects)
+worma gen
+
+# Specify a project path (single-project mode)
+worma gen -p ./packages/app
+worma gen --project ./packages/app
+```
+
+### Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `-d, --debug` | Print debug logs |
+| `-p, --project <path>` | Specify the project directory. When provided, only that project is generated; otherwise workspace mode scans all sub-projects |
+
+### Behavior
+
+```text
+worma gen
+  → workspace mode by default: scan all sub-projects and generate one by one
+
+worma gen -p ./packages/app
+  → single-project mode: read config and generate only for the specified directory
+```
+
+## worma diff
+
+Browse the API change records (added / removed / modified) written after a successful `generate`.
+
+```bash
+worma diff              # list all change records
+worma diff --list       # same as above, explicit list
+worma diff latest       # view the latest record's details
+worma diff 0007         # view a record by sequence number
+worma diff -p ./packages/app   # specify the project directory
+```
+
+### Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `[id]` | Change record sequence number (e.g. `0007`) or the alias `latest`; omit to list all |
+| `-l, --list` | List all change records |
+| `-p, --project <path>` | Specify the project directory |

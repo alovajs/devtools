@@ -177,7 +177,6 @@ export const generateDefaultValues = (sourceCode: string) => getDefaultValue(rem
  * @returns Object containing type and interface default values
  */
 export function generateDefaultValuesFormat(sourceCode: string) {
-  return format(generateDefaultValues(sourceCode), {
-    parser: 'json',
-  })
+  // 产物是对象字面量，用 .json 让 oxfmt 按 JSON 解析（oxfmt 无 prettier 的 parser 选项，按扩展名推断）
+  return format('default-values.json', generateDefaultValues(sourceCode))
 }

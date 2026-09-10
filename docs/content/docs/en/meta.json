@@ -1,0 +1,21 @@
+{
+  "title": "worma Docs",
+  "description": "OpenAPI-based code and knowledge generation, from humans to AI",
+  "icon": "github",
+  "root": true,
+  "pages": [
+    "index",
+    "quick-start",
+    "cli-commands",
+    "performance",
+    "contributing",
+    "contributors",
+    "sponsor",
+    "guide",
+    "plugin-system",
+    "template-system",
+    "ai-skills",
+    "api",
+    "migration"
+  ]
+}

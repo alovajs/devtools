@@ -1,0 +1,113 @@
+---
+title: Migrate from Ky
+description: Move from hand-written ky calls to worma's type-safe generated calls
+---
+
+If your project currently calls APIs by hand with [ky](https://github.com/sindresorhus/ky), you can use worma to generate type-safe calls from the OpenAPI spec. **The generated code is still standard ky under the hood, so compatibility is excellent — your existing ky calls can stay as-is, and you don't have to migrate everything at once.**
+
+## Before: hand-written ky calls
+
+```typescript
+import ky from 'ky';
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+const users = await ky
+  .get('api/users', { searchParams: { page: 1, size: 10 } })
+  .json<User>();
+
+const created = await ky
+  .post('api/users', { json: { name: 'Alice', email: 'alice@example.com' } })
+  .json<User>();
+```
+
+## Migration steps
+
+### 1. Create the config with init
+
+```bash
+npx wormajs init --template ky
+```
+
+This generates `worma.config.ts` (or `.js`) in the project root, with the ky template selected by default. You can also skip `--template` and pick ky in the interactive menu.
+
+### 2. Generate the calls with gen
+
+```bash
+npx wormajs gen
+```
+
+The output lives under `src/api/ky/`, with each API exported as a standalone function, supporting tree-shaking:
+
+<Files>
+  <Folder name="ky" defaultOpen>
+    <File name="index.ts" />
+    <File name="helper.ts" />
+    <File name="components.d.ts" />
+    <Folder name="services" defaultOpen>
+      <File name="user.ts" />
+    </Folder>
+  </Folder>
+</Files>
+
+`index.ts` creates a default `kyInstance`:
+
+```typescript
+// src/api/ky/index.ts
+import ky from 'ky';
+
+export const kyInstance = ky.create({
+  prefix: 'https://api.example.com/',
+});
+```
+
+### 3. Swap the instance (the only part you need to change)
+
+Migration is very simple: **just import your existing ky instance file and re-export it under the same name in the generated `index.ts`; no other files need changes.**
+
+```typescript
+// src/api/ky/index.ts
+// Import from your existing ky instance file and re-export it as kyInstance
+export { myKy as kyInstance } from '@/lib/request';
+```
+
+> `@/lib/request` is your project's ky instance file, already configured with prefix, hooks, etc. `myKy` is its export name. This way, the `kyInstance` referenced in `services` points directly at your instance, with no other files touched.
+
+## Compatibility notes
+
+The generated calls are still standard ky, so **compatibility is excellent — your existing ky calls can stay, and you can migrate gradually**, replacing hand-written calls with generated type-safe functions in parallel with the original `ky.get/post` calls without conflict.
+
+## Replace hand-written calls
+
+```typescript
+// After migration: no .json() needed, return type inferred from OpenAPI
+import { getUserList, createUser } from './api/ky/services/user';
+
+const users = await getUserList({ params: { page: 1, size: 10 } });
+
+const created = await createUser({
+  data: { name: 'Alice', email: 'alice@example.com' },
+});
+```
+
+Call mapping:
+
+| Hand-written ky | worma generated function |
+| -------------------------------- | --------------------------------- |
+| `ky.get(url, { searchParams })`  | `fn({ params })` |
+| `ky.post(url, { json })`         | `fn({ data })` |
+| `ky.get(url, { searchParams: { id } })` | `fn({ pathParams: { id } })` |
+| `await ky.x().json<T>()`         | `await fn(...)` returns `T` directly |
+
+The generated functions also accept native ky request options (`timeout`, `headers`, `retry`, `signal`, etc.).
+
+## Migration checklist
+
+1. Run `worma init --template ky` to generate the config
+2. Run `worma gen` to generate `src/api/ky/`
+3. Replace the default `kyInstance` in `index.ts` with your existing instance and re-export it (no other files need changes)
+4. Replace hand-written `ky.get/post` calls with the generated type-safe functions as needed, mapping `searchParams` → `params` and `json` body → `data`

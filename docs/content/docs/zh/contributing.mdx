@@ -1,0 +1,93 @@
+---
+title: 贡献指南
+description: 欢迎参与 worma 的开发与文档建设，从这里开始你的第一次贡献
+---
+
+感谢你对 worma 的关注！worma 是一个完全开源、由社区驱动的项目，我们欢迎任何形式的贡献——无论是代码、文档、Issue 反馈还是经验分享。
+
+## 开始之前
+
+- 在 [GitHub Issues](https://github.com/alovajs/devtools/issues) 中搜索是否已有相关的讨论或需求。
+- 对于较大的功能改动，建议先开一个 Issue 与维护者沟通方案，避免重复劳动。
+- 查找带有 `good first issue` 标签的任务，适合初次贡献者上手。
+
+## 开发环境
+
+worma 使用 pnpm 管理 monorepo，推荐使用 Node.js ≥ 20.19 与 pnpm ≥ 9.1：
+
+```bash
+# 安装依赖
+pnpm install
+
+# 启动文档站点（开发模式）
+pnpm --filter worma-docs dev
+```
+
+## 模块开发流程
+
+本仓库包含多个子包，下面是各模块的开发与验证方式。
+
+### worma 核心包（wormajs）
+
+核心代码位于 `packages/worma`，每次修改代码后请运行单元测试进行验证：
+
+```bash
+# 仅运行 worma 核心包的单元测试
+pnpm --filter wormajs test
+
+# 或在仓库根目录运行全部单元测试（不含 e2e）
+pnpm test:unit
+
+# 构建核心包
+pnpm --filter wormajs build
+```
+
+> 说明：仓库根目录的 `pnpm test` 会依次执行 e2e、单元测试与覆盖率统计（包含构建步骤），日常开发验证推荐使用更轻量的 `pnpm test:unit`。
+
+### vscode-extension 扩展（worma-vscode）
+
+扩展代码位于 `packages/vscode-extension`，在 VS Code 中打开该目录后直接按下 **F5** 即可启动扩展开发宿主（Extension Development Host）进行调试；也可通过以下命令启动开发构建：
+
+```bash
+pnpm --filter worma-vscode dev
+```
+
+## 提交规范
+
+我们使用 [Conventional Commits](https://www.conventionalcommits.org/) 规范，并由 commitlint 校验提交信息。常用类型：
+
+- `feat`：新增功能
+- `fix`：修复缺陷
+- `docs`：文档变更
+- `refactor`：重构（无功能变化）
+- `test`：测试相关
+- `chore`：构建 / 工具链调整
+
+示例：
+
+```bash
+git commit -m "feat(core): 支持 oneOf 联合类型生成"
+```
+
+## Pull Request 流程
+
+1. Fork 仓库并基于 `main` 分支创建特性分支：`feat/your-feature`。
+2. 确保通过 `pnpm test:unit` 与 lint 检查。
+3. 提交 PR 时清晰描述改动动机、范围与验证方式。
+4. 等待维护者 Review，根据反馈调整。
+
+## 文档贡献
+
+文档位于 `docs/content/docs`，使用 MDX 编写。你可以：
+
+- 修正错别字、补充示例代码
+- 翻译或完善多语言内容
+- 补充使用场景与最佳实践
+
+## 行为准则
+
+请保持友善、包容的沟通氛围，尊重每一位贡献者。我们致力于打造对所有人友好的开源社区。
+
+---
+
+_worma 因社区而更好，期待你的参与。_

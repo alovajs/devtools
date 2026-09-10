@@ -1,0 +1,211 @@
+---
+title: Plugin API
+description: The ApiPlugin interface and lifecycle hooks
+---
+
+> For an overview of the plugin system and the built-in plugin list, see [Plugin System](/docs/plugin-system).
+
+## createPlugin
+
+Create a type-safe plugin factory function.
+
+```typescript
+import { createPlugin } from "wormajs";
+
+const myPlugin = createPlugin((options: { key: string }) => ({
+  name: "my-plugin",
+  beforeCodeGenerate({ data }) {
+    data.config.customKey = options.key;
+  },
+}));
+
+// Usage
+defineConfig({
+  generator: [
+    {
+      plugins: [myPlugin({ key: "value" })],
+    },
+  ],
+});
+```
+
+## ApiPlugin
+
+```typescript
+type MaybePromise<T> = T | Promise<T>;
+
+type ReportProgress = (progress: number, message?: string) => void;
+
+interface ApiPlugin {
+  name?: string;
+
+  /** ① Config stage: can modify config */
+  config?: (
+    params: ConfigHookParams,
+  ) => MaybePromise<GeneratorConfig | undefined | null | void>;
+
+  /** ② Before spec parsing: receives the raw spec text; can return a new string to replace it before parsing */
+  beforeSpecParse?: (params: BeforeSpecParseHookParams) => MaybePromise<string | undefined | null | void>;
+
+  /** ③ After OpenAPI is parsed: can modify the document */
+  specParsed?: (
+    params: SpecParsedHookParams,
+  ) => MaybePromise<OpenAPIDocument | undefined | null | void>;
+
+  /** ④ Resolve the template path */
+  getTemplate?: (
+    params: GetTemplateHookParams,
+  ) => MaybePromise<TemplateConfigResult | undefined | null | void>;
+
+  /** ⑤ Before rendering: inject/modify templateData */
+  beforeCodeGenerate?: (
+    params: BeforeCodeGenerateHookParams,
+  ) => MaybePromise<void>;
+
+  /** ⑥ Before each file is written: can modify a single file's content */
+  beforeFileWrite?: (params: BeforeFileWriteHookParams) => MaybePromise<string>;
+
+  /** ⑦ After all files are written */
+  codeGenerated?: (params: CodeGeneratedHookParams) => MaybePromise<void>;
+
+  /** ⑧ When the Handlebars instance is created: register custom helpers or partials */
+  onHandlebarsCreated?: (
+    params: OnHandlebarsCreatedHookParams,
+  ) => MaybePromise<void>;
+}
+```
+
+## Hook parameter types
+
+### ConfigHookParams
+
+```typescript
+interface ConfigHookParams {
+  config: GeneratorConfig;
+  projectPath: string;
+  reportProgress: ReportProgress;
+}
+```
+
+### BeforeSpecParseHookParams
+
+`beforeSpecParse` fires **after the spec file (OpenAPI/Swagger JSON or YAML text) is fetched but before it is parsed**; `params.spec` is the raw spec text string.
+
+**Transform the spec content:** the hook may return a new string to **replace** the spec text to be parsed; the returned string becomes the input for the subsequent parsing (including JSON/YAML detection and the Swagger 2.0 → OpenAPI 3.0 conversion). If nothing is returned (or a non-string is returned), the original text is kept. Multiple plugins' `beforeSpecParse` run in sequence — the previous plugin's return value becomes the next plugin's `spec` input.
+
+Common uses: fix illegal/non-standard raw spec text, inject or remove fields, do string-level replacement before parsing, etc.
+
+```typescript
+interface BeforeSpecParseHookParams {
+  config: Readonly<GeneratorConfig>;
+  /** Raw spec text (JSON or YAML), the string content before parsing */
+  spec: string;
+  projectPath: string;
+  reportProgress: ReportProgress;
+}
+```
+
+Example: replace spec text content before parsing.
+
+```typescript
+import { createPlugin } from "wormajs/plugin";
+
+const patchSpecPlugin = createPlugin(() => ({
+  name: "patch-spec",
+  beforeSpecParse({ spec }) {
+    // spec is the raw spec text; return a new string to replace it before parsing
+    return spec.replace(/"nullable":\s*"true"/g, '"nullable": true');
+  },
+}));
+```
+
+### SpecParsedHookParams
+
+```typescript
+interface SpecParsedHookParams {
+  config: Readonly<GeneratorConfig>;
+  document: OpenAPIDocument;
+  projectPath: string;
+  reportProgress: ReportProgress;
+}
+```
+
+### GetTemplateHookParams
+
+```typescript
+interface GetTemplateHookParams {
+  config: Readonly<GeneratorConfig>;
+  projectPath: string;
+  reportProgress: ReportProgress;
+}
+```
+
+Returns `TemplateConfigResult`:
+
+```typescript
+interface TemplateConfigResult {
+  /** Template path (relative or absolute; relative is to process.cwd()) */
+  path: string;
+}
+```
+
+### BeforeCodeGenerateHookParams
+
+```typescript
+interface BeforeCodeGenerateHookParams {
+  config: Readonly<GeneratorConfig>;
+  data: TemplateData;
+  projectPath: string;
+  reportProgress: ReportProgress;
+}
+```
+
+Modify `params.data` directly to inject data; no return value.
+
+### BeforeFileWriteHookParams
+
+```typescript
+interface BeforeFileWriteHookParams {
+  config: Readonly<GeneratorConfig>;
+  data: TemplateData;
+  filePath: string;
+  content: string;
+  projectPath: string;
+  reportProgress: ReportProgress;
+  /** Template file metadata */
+  meta: {
+    templateType?: "tag" | "api";
+    tag?: string;
+    api?: string;
+  };
+}
+```
+
+Returns the modified file content string.
+
+### CodeGeneratedHookParams
+
+```typescript
+interface CodeGeneratedHookParams {
+  config: Readonly<GeneratorConfig>;
+  data: TemplateData;
+  /** Paths of all generated files (without content) */
+  filePaths: string[];
+  /** Absolute output directory */
+  outputDir: string;
+  projectPath: string;
+  error?: Error;
+  reportProgress: ReportProgress;
+}
+```
+
+### OnHandlebarsCreatedHookParams
+
+```typescript
+interface OnHandlebarsCreatedHookParams {
+  hbs: typeof import("handlebars");
+  config: Readonly<GeneratorConfig>;
+  projectPath: string;
+  reportProgress: ReportProgress;
+}
+```

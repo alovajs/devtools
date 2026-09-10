@@ -8,6 +8,7 @@ import { Log } from '@/utils'
 import apiDetail from '@/views/api-detail'
 import apiServer from '@/views/api-server'
 import ApiGenerate from './ApiGenerate'
+import UpdateChecker from './UpdateChecker'
 import VscodeClient from './VscodeClient'
 import '@/components/message'
 
@@ -29,6 +30,8 @@ export default class Setup {
 
     if (getWorma()) {
       await ApiGenerate.onlyReadConfig()
+      // Requirement A: begin background update detection (silent).
+      UpdateChecker.init().forEach(d => ctx.subscriptions.push(d))
     }
     Log.info('🚀 Setup end')
   }

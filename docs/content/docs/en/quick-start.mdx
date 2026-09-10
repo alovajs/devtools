@@ -1,0 +1,119 @@
+---
+title: Quick Start
+description: Generate your first API and try VSCode hover docs in 5 minutes
+---
+
+Generate your first API and experience VSCode hover docs in 5 minutes.
+
+## Step 1: Install
+
+<Tabs items={['npm', 'yarn', 'pnpm', 'bun']}>
+  <Tab value="npm">
+
+```bash
+npm i wormajs -D
+```
+
+  </Tab>
+  <Tab value="yarn">
+
+```bash
+yarn add wormajs -D
+```
+
+  </Tab>
+  <Tab value="pnpm">
+
+```bash
+pnpm add wormajs -D
+```
+
+  </Tab>
+  <Tab value="bun">
+
+```bash
+bun add wormajs -D
+```
+
+  </Tab>
+</Tabs>
+
+For convenience, we recommend adding the following scripts to `package.json`:
+
+```json
+{
+  "scripts": {
+    "worma:init": "worma init",
+    "worma:gen": "worma gen"
+  }
+}
+```
+
+After that, run `npm run worma:init` to initialize and `npm run worma:gen` to generate code.
+
+## Step 2: Initialize
+
+Run in your project root:
+
+```bash
+worma init
+```
+
+This creates a `worma.config.js` (or `.cjs`/`.mjs`/`.ts`) file, with the alova template and the `aiDoc` plugin (for AI Skill docs) configured by default:
+
+```javascript
+import { defineConfig } from "wormajs";
+import { alova, aiDoc, swagger } from "wormajs/plugin";
+
+export default defineConfig({
+  generator: [
+    {
+      output: "src/api",
+      plugins: [swagger("https://api.example.com"), alova(), aiDoc()],
+    },
+  ],
+});
+```
+
+If you already have an OpenAPI document URL, you can also [edit `.wormarc` for quick configuration](/docs/guide/installation-config#wormarc):
+
+```
+https://api.example.com/openapi.json
+```
+
+## Step 3: Generate
+
+```bash
+worma gen
+```
+
+## Choose a template
+
+worma ships several predefined templates covering mainstream request libraries:
+
+| Template                                                                          | Request library | Highlights                          |
+| --------------------------------------------------------------------------------- | --------------- | ----------------------------------- |
+| [alova](/docs/template-system/predefined-templates#alova)                           | alova@3         | Functional calls, tree-shakable     |
+| [alovaGlobals](/docs/template-system/predefined-templates#alovaglobals)           | alova@3         | Globally mounted `Apis.xxx`, the former `@alova/wormhole` template, migration-friendly |
+| [axios](/docs/template-system/predefined-templates#axios)                         | axios           | The most popular HTTP client        |
+| [fetch](/docs/template-system/predefined-templates#fetch)                         | native fetch    | Zero extra dependencies             |
+| [ky](/docs/template-system/predefined-templates#ky)                               | ky              | Lightweight fetch wrapper           |
+
+If none of these fit, worma supports [fully custom templates](/docs/template-system/custom-templates) using Handlebars syntax to control the structure and content of generated code freely.
+
+## Step 4: Try the VSCode extension
+
+Install the [Worma VSCode extension](vscode:extension/worma.worma-vscode-extension), or search for **"worma"** in the marketplace, to get:
+
+- **Hover for API details** — hover over a generated API call to see its path, parameter table, response structure, and more
+- **Sidebar API explorer** — browse all APIs grouped by tag in the VSCode sidebar, with search support
+- **Auto-detect changes** — automatically regenerate when backend APIs change
+- **JS type hints** — even with plain JavaScript, get full type hints and doc display
+
+See [In-Editor Docs](/docs/guide/editor-docs) for details.
+
+## Next steps
+
+- Learn more about [Installation & Configuration](/docs/guide/installation-config)
+- Learn about [Monorepo Support](/docs/guide/monorepo) and auto-detecting sub-packages
+- Explore all capabilities of [In-Editor Docs](/docs/guide/editor-docs)

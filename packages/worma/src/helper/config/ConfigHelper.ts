@@ -55,12 +55,11 @@ export class ConfigHelper {
     )
   }
 
-  public async generate(options: { force?: boolean, tracker?: ProgressTracker }) {
-    const { tracker, force } = options
+  public async generate(options: { tracker?: ProgressTracker }) {
+    const { tracker } = options
     const results = await Promise.all(
       this.configManager.getConfig().generator.map(item =>
         GeneratorHelper.generate(item, {
-          force,
           projectPath: this.projectPath,
           tracker,
         }),
