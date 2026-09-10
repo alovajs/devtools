@@ -4,7 +4,7 @@
   "commit": false,
   "fixed": [],
   "linked": [],
-  "ignore": [],
+  "ignore": ["worma-docs"],
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "minor",

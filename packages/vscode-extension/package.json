@@ -2,7 +2,7 @@
   "publisher": "sighted2",
   "name": "sighted2-vscode",
   "displayName": "Sighted2",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "packageManager": "pnpm@10.13.1",
   "description": "Generate and search APIs without API documentation any more",

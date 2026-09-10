@@ -107,7 +107,7 @@ aiDoc({ agent: 'cursor, claude-code' }) // install to multiple agents (auto-dedu
 
 ### Specify agents via a config file
 
-If you want to keep coding agents in a separate config file (to differ per user / environment), use the exported `parseAgentFile` to parse a `key=value` file (same format as env files; lines starting with `#` are ignored). When the path is omitted, it reads `.wormaagent.local` at the project root by default:
+If you want to keep coding agents in a separate config file (to differ per user / environment), use the exported `parseAgentFile(filePath?)` to parse a `key=value` file (same format as env files; lines starting with `#` are ignored). You can pass a file path to read a specific file (e.g. `.env.local`); when the path is omitted, it reads `.wormaagent.local` at the project root by default:
 
 ```ini
 # .wormaagent.local
@@ -119,6 +119,9 @@ import { aiDoc, parseAgentFile } from '@alova/worma'
 
 const cfg = parseAgentFile() // reads ./.wormaagent.local by default -> cfg.agent === 'cursor, claude-code'
 aiDoc({ agent: cfg.agent })
+
+const cfg2 = parseAgentFile('.env.local') // read a specific file by path
+aiDoc({ agent: cfg2.agent })
 ```
 
 `parseAgentFile` returns `{ [key]: string }` key-value pairs, so you can read other custom fields and pass them into the config together.

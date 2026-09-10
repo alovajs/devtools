@@ -467,6 +467,48 @@ describe('plugins/aiDoc', () => {
       })
     }
 
+    const readSkillName = async (outputPath: string): Promise<string | undefined> => {
+      const skillContent = readVolFile(resolve(process.cwd(), outputPath, 'aidocs', 'SKILL.md'), 'utf-8')
+      const match = skillContent.match(/^name:\s*(\S.*)$/m)
+      return match?.[1]
+    }
+
+    it('should write the default skill name "apis-<title>" when skillName is not provided', async () => {
+      const plugin = aiDoc()
+      const outputPath = 'src/api-skillname-default'
+      plugin.config?.({ config: { output: outputPath } as any, projectPath: process.cwd(), reportProgress: vi.fn() })
+
+      await plugin.codeGenerated?.({
+        config: {} as any,
+        data: minimalData('My API'),
+        filePaths: [],
+        outputDir: resolve(process.cwd(), outputPath),
+        projectPath: process.cwd(),
+        reportProgress: vi.fn(),
+        renderTemplate: renderTemplateFn,
+      })
+
+      expect(await readSkillName(outputPath)).toBe('apis-My API')
+    })
+
+    it('should write the provided skillName into SKILL.md frontmatter', async () => {
+      const plugin = aiDoc({ skillName: 'custom-skill-name' })
+      const outputPath = 'src/api-skillname-custom'
+      plugin.config?.({ config: { output: outputPath } as any, projectPath: process.cwd(), reportProgress: vi.fn() })
+
+      await plugin.codeGenerated?.({
+        config: {} as any,
+        data: minimalData('My API'),
+        filePaths: [],
+        outputDir: resolve(process.cwd(), outputPath),
+        projectPath: process.cwd(),
+        reportProgress: vi.fn(),
+        renderTemplate: renderTemplateFn,
+      })
+
+      expect(await readSkillName(outputPath)).toBe('custom-skill-name')
+    })
+
     it('should install to codex when agent is the string "codex"', async () => {
       const { execSync } = await import('node:child_process')
       const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {})
