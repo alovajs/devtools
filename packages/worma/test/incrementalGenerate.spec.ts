@@ -185,7 +185,7 @@ describe('incremental generation', () => {
     expect(list[0].summary).toEqual({ generators: 1, added: 1, removed: 0, modified: 0 })
 
     const change = await getChange(PROJECT, 'latest')
-    expect(change!.schemaVersion).toBe(2)
+    expect(change!.schemaVersion).toBe(1)
     expect(change!.generators[0].changes).toContainEqual(
       expect.objectContaining({ op: '+', kind: 'api', target: 'GET /admins', level: 'additive' }),
     )

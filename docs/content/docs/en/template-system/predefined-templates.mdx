@@ -351,3 +351,40 @@ await getInventory({
   headers: { 'Authorization': 'Bearer token' }  // ky native option
 });
 ```
+
+## Reusing the generated types
+
+Besides the call function, every API also exports **named type aliases**, so business code (forms, stores, ...) can reference the request params, request body and response types directly. For a generated `services/pet.ts`:
+
+```typescript
+export type findPetsByStatusResponse = ComponentTypes.Pet[];
+export type findPetsByStatusParams = {
+  /** Status values that need to be considered for filter */
+  status: ('available' | 'pending' | 'sold')[];
+};
+export interface findPetsByStatusExtraConfig {
+  params: findPetsByStatusParams;
+}
+```
+
+Aliases are prefixed with the generated function name; the config key each one maps to differs per template:
+
+| Alias | alova | axios | fetch | ky |
+| --- | --- | --- | --- | --- |
+| `<fn>PathParams` | `pathParams` | `pathParams` | `pathParams` | `pathParams` |
+| `<fn>Params` | `params` | `params` | `params?` | `searchParams` |
+| `<fn>Data` | `data` | `data` | `body?` | `json` |
+| `<fn>Response` | return type | return type | return type | return type |
+| `<fn>ExtraConfig` | function config | function config | function config | function config |
+
+An alias is only generated when the operation actually has the corresponding parameter (an operation without query parameters has no `<fn>Params`).
+
+When using alova's `useForm` (or similar hooks), annotate the callback parameter with the exported alias, because `useForm` cannot infer the form type from the handler's return value:
+
+```typescript
+import { useForm } from 'alova/client';
+import { findPetsByStatus } from './api/alova/services/pet';
+import type { findPetsByStatusParams } from './api/alova/services/pet';
+
+const { send } = useForm((params: findPetsByStatusParams) => findPetsByStatus({ params }));
+```

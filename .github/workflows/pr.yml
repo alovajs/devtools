@@ -14,6 +14,11 @@ jobs:
   quality:
     runs-on: ubuntu-latest
     if: ${{ !contains(github.event.pull_request.head.ref, 'changeset-release') }}
+    env:
+      # `.npmrc` references `${NPM_TOKEN}`; when the variable is unset pnpm warns
+      # ("Failed to replace env in config") on every install. This job never
+      # publishes, so merely defining it is enough.
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4

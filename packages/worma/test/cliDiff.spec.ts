@@ -6,7 +6,7 @@ vi.mock('node:fs/promises')
 
 const CACHE = `${process.cwd()}/.worma-cache/changes`
 
-/** Legacy (v1) record: api-level lists, upgraded by the reader. */
+/** Legacy record: api-level lists, upgraded by the reader. */
 const record1 = {
   id: '0001',
   createdAt: 1700000000000,
@@ -22,7 +22,7 @@ const record1 = {
   ],
 }
 
-/** Legacy (v1) record with a removal and a modification. */
+/** Legacy record with a removal and a modification. */
 const record2 = {
   id: '0002',
   createdAt: 1700000100000,
@@ -38,9 +38,9 @@ const record2 = {
   ],
 }
 
-/** Current (v2) record: flat source-document rows, one row per affected API. */
+/** Current (v1) record: flat source-document rows, one row per affected API. */
 const record3 = {
-  schemaVersion: 2,
+  schemaVersion: 1,
   id: '0003',
   createdAt: 1700000200000,
   projectPath: process.cwd(),
@@ -157,7 +157,7 @@ describe('`worma diff` command', () => {
     expect(output).not.toContain('Change 0001')
   })
 
-  describe('source-document (v2) records', () => {
+  describe('source-document (v1) records', () => {
     beforeEach(() => {
       vol.fromJSON({
         [`${CACHE}/0001.json`]: JSON.stringify(record1),

@@ -34,7 +34,7 @@ export interface ChangeSummary {
 
 /** A full change record — one `generate()` run aggregated. */
 export interface Change {
-  /** Record schema; `2` for the source-document view (absent on legacy records) */
+  /** Record schema; `1` for the source-document view (absent on legacy records) */
   schemaVersion?: number
   id: string
   createdAt: number
@@ -61,11 +61,11 @@ export function countChanges(generators: ChangeItem[]): ChangeCounts {
 }
 
 /**
- * Read one generator entry, upgrading legacy (v1) api-level entries on the fly.
+ * Read one generator entry, upgrading legacy api-level entries on the fly.
  *
- * v1 stored `added` / `removed` / `modified` api lists with `changedFields`;
- * normalising both shapes into flat rows means every consumer only ever handles
- * the source-document model.
+ * Legacy records stored `added` / `removed` / `modified` api lists with
+ * `changedFields` and carried no `schemaVersion`; normalising both shapes into
+ * flat rows means every consumer only ever handles the source-document model.
  */
 function normalizeItem(raw: any): ChangeItem {
   const output = String(raw?.output ?? '')

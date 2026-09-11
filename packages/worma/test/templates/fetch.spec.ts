@@ -77,4 +77,32 @@ describe('fetch template (per-tag, tree-shaking)', () => {
     expect(content).toContain('fetchClient')
     expect(content).toMatch(/export\s+async\s+function\s+\w+/)
   })
+
+  it('should export named type aliases and let ExtraConfig reference them', async () => {
+    const outputDir = resolve(__dirname, `../mock_output/fetch_named_types`)
+    vol.mkdirSync(outputDir, { recursive: true })
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, '../openapis/openapi_300.yaml'),
+          output: outputDir,
+          plugins: [(await import('@/template')).fetch()],
+          type: 'ts',
+        },
+      ],
+    })
+
+    const content = vol.readFileSync(resolve(outputDir, 'services', 'pet.ts'), 'utf-8') as string
+    const flat = content.replace(/\s+/g, ' ')
+    expect(flat).toContain('export type findPetsByStatusResponse = ComponentTypes.Pet[];')
+    expect(flat).toContain('export type findPetsByStatusParams = {')
+    expect(flat).toContain('export type getPetByIdPathParams = {')
+    expect(flat).toContain('export type updatePetData = ComponentTypes.Pet;')
+    expect(flat).toContain(
+      `export type findPetsByStatusExtraConfig = Omit<RequestInit, 'body'> & { params?: findPetsByStatusParams; };`,
+    )
+    expect(flat).toContain(
+      `export type updatePetExtraConfig = Omit<RequestInit, 'body'> & { body?: updatePetData; };`,
+    )
+  })
 })

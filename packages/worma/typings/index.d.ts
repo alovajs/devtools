@@ -634,7 +634,7 @@ export interface ChangeSummary {
 }
 /** A full change record — one `generate()` run aggregated. */
 export interface Change {
-	/** Record schema; `2` for the source-document view (absent on legacy records) */
+	/** Record schema; `1` for the source-document view (absent on legacy records) */
 	schemaVersion?: number;
 	id: string;
 	createdAt: number;

@@ -10,16 +10,21 @@ const {{{currentTag.tag}}}DefaultConfig = resolveTagDefaultConfig(defaultConfig,
 {{> extract-responded}}
 {{#each currentTag.apis}}
 
-interface {{{name}}}ExtraConfig {
-  {{#if pathParameters}}pathParams: {{addNamespace pathParameters @root.componentNames}};
-  {{/if}}{{#if queryParameters}}params: {{addNamespace queryParameters @root.componentNames}};
-  {{/if}}{{#if requestBody}}data: {{addNamespace requestBody @root.componentNames}};
+export type {{{name}}}Response = {{addNamespace response @root.componentNames}};
+{{#if pathParameters}}export type {{{name}}}PathParams = {{addNamespace pathParameters @root.componentNames}};
+{{/if}}{{#if queryParameters}}export type {{{name}}}Params = {{addNamespace queryParameters @root.componentNames}};
+{{/if}}{{#if requestBody}}export type {{{name}}}Data = {{addNamespace requestBody @root.componentNames}};
+{{/if}}
+export interface {{{name}}}ExtraConfig {
+  {{#if pathParameters}}pathParams: {{{name}}}PathParams;
+  {{/if}}{{#if queryParameters}}params: {{{name}}}Params;
+  {{/if}}{{#if requestBody}}data: {{{name}}}Data;
   {{/if}}
 }
 {{> api-jsdoc}}
-export function {{{name}}}<Config extends Alova2MethodConfig<{{addNamespace response @root.componentNames}}> & {{{name}}}ExtraConfig>(config{{#or pathParameters queryParameters requestBody }}{{else}}?{{/or}}: Config): Alova2Method<ExtractResponded<Config, '{{{name}}}', {{addNamespace response @root.componentNames}}>> {
+export function {{{name}}}<Config extends Alova2MethodConfig<{{{name}}}Response> & {{{name}}}ExtraConfig>(config{{#or pathParameters queryParameters requestBody }}{{else}}?{{/or}}: Config): Alova2Method<ExtractResponded<Config, '{{{name}}}', {{{name}}}Response>> {
   const { url, data, mergedConfig } = buildPayload('{{{path}}}', {{../currentTag.tag}}DefaultConfig, {{{name}}}.name, config);
-  return alovaInstance.Request<ExtractResponded<Config, '{{{name}}}', {{addNamespace response @root.componentNames}}>>({
+  return alovaInstance.Request<ExtractResponded<Config, '{{{name}}}', {{{name}}}Response>>({
     ...mergedConfig,
     url,
     data,

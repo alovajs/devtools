@@ -15,10 +15,10 @@ import {
 
 const PROJECT = '/workspace/fixture'
 
-/** Current (v2) record shape: flat source-document rows. */
+/** Current (v1) record shape: flat source-document rows. */
 function makeRecord(id: string, createdAt: number) {
   return {
-    schemaVersion: 2,
+    schemaVersion: 1,
     id,
     createdAt,
     projectPath: PROJECT,
@@ -48,11 +48,22 @@ function makeSummary(id: string, createdAt: number) {
   }
 }
 
+/**
+ * `MockWorma` starts as an empty object, and the extension resolves worma lazily
+ * through a Proxy that prefers any *defined* `MockWorma` key — so the property
+ * must be defined before `sinon.stub` can take it over (same convention as the
+ * create-config / generate-api suites). `sinon.restore()` deletes it again.
+ */
+function mockWorma(name: string) {
+  sinon.define(MockWorma as any, name, () => {})
+  return sinon.stub(MockWorma as any, name)
+}
+
 setupTest('api-changes (requirement B)', () => {
   it('opens the API Changes webview and renders the latest record', async () => {
     const createdAt = Date.now()
-    sinon.stub(MockWorma, 'listChanges').returns(Promise.resolve([makeSummary('0001', createdAt)]))
-    sinon.stub(MockWorma, 'getChange').returns(Promise.resolve(makeRecord('0001', createdAt)))
+    mockWorma('listChanges').returns(Promise.resolve([makeSummary('0001', createdAt)]))
+    mockWorma('getChange').returns(Promise.resolve(makeRecord('0001', createdAt)))
 
     await executeCommand(Commands.open_changes, 'latest', PROJECT)
 
@@ -81,8 +92,8 @@ setupTest('api-changes (requirement B)', () => {
 
   it('renders a specific change record by id', async () => {
     const createdAt = Date.now()
-    sinon.stub(MockWorma, 'listChanges').returns(Promise.resolve([makeSummary('0001', createdAt)]))
-    sinon.stub(MockWorma, 'getChange').returns(Promise.resolve(makeRecord('0001', createdAt)))
+    mockWorma('listChanges').returns(Promise.resolve([makeSummary('0001', createdAt)]))
+    mockWorma('getChange').returns(Promise.resolve(makeRecord('0001', createdAt)))
 
     await executeCommand(Commands.open_changes, '0001', PROJECT)
 
@@ -95,7 +106,7 @@ setupTest('api-changes (requirement B)', () => {
 setupTest('generate → View Changes toast (requirement B)', () => {
   it('surfaces the change id and a "View Changes" action when a change is recorded', async () => {
     // `generate()` reports the record it persisted through `onChangeRecorded`.
-    sinon.stub(MockWorma, 'generate').callsFake(async (_config: any, options: any) => {
+    mockWorma('generate').callsFake(async (_config: any, options: any) => {
       options?.onChangeRecorded?.({ id: '0007', added: 1, removed: 1, modified: 1 })
       return [true]
     })
@@ -116,8 +127,15 @@ setupTest('generate → View Changes toast (requirement B)', () => {
 
 setupTest('update detection dot (requirement A)', () => {
   it('lights the status-bar dot when a source changed', async () => {
+    // `init()` already ran one silent check on activation, which filled the
+    // throttle window (`minInterval` defaults to 5 min). Force this one so the
+    // assertion does not depend on wall-clock timing; throttling itself is
+    // covered by the debounce test below.
+    UpdateChecker.clear()
+    ;(UpdateChecker as any).inFlight = false
+
     sinon.stub(Global as any, 'getConfigs').returns([[PROJECT, { generator: [] } as any]])
-    sinon.stub(MockWorma, 'checkUpdates').returns(Promise.resolve({
+    mockWorma('checkUpdates').returns(Promise.resolve({
       projectPath: PROJECT,
       updates: [{ status: 'changed', output: 'src/api', resolvedInput: 'api.json', hash: 'abc' }],
       hasGenerationBaseline: false,
@@ -127,7 +145,7 @@ setupTest('update detection dot (requirement A)', () => {
     const pending = sinon.stub(window, 'showInformationMessage').returns(new Promise(() => {}))
 
     // Intentionally not awaited — the prompt never resolves in this test.
-    void UpdateChecker.check({ silent: true })
+    void UpdateChecker.check({ force: true, silent: true })
 
     await timeout(200)
 
@@ -145,9 +163,9 @@ setupTest('update detection dot (requirement A)', () => {
 
 setupTest('edge cases (requirement A/B)', () => {
   it('does NOT offer a "View Changes" toast when no API changed', async () => {
-    sinon.stub(MockWorma, 'generate').returns(Promise.resolve([true]))
+    mockWorma('generate').returns(Promise.resolve([true]))
     // empty change history → no change summary → no toast
-    sinon.stub(MockWorma, 'listChanges').returns(Promise.resolve([]))
+    mockWorma('listChanges').returns(Promise.resolve([]))
 
     const spy = sinon.stub(window, 'showInformationMessage').resolves(undefined)
     await executeCommand(Commands.refresh)
@@ -159,8 +177,8 @@ setupTest('edge cases (requirement A/B)', () => {
   })
 
   it('openChanges renders an empty state when there are no records', async () => {
-    sinon.stub(MockWorma, 'listChanges').returns(Promise.resolve([]))
-    sinon.stub(MockWorma, 'getChange').returns(Promise.resolve(undefined))
+    mockWorma('listChanges').returns(Promise.resolve([]))
+    mockWorma('getChange').returns(Promise.resolve(undefined))
 
     await executeCommand(Commands.open_changes, 'latest', PROJECT)
 
@@ -172,7 +190,7 @@ setupTest('edge cases (requirement A/B)', () => {
 
   it('debounces a rapid repeat check (forced then unforced)', async () => {
     sinon.stub(Global as any, 'getConfigs').returns([[PROJECT, { generator: [] } as any]])
-    sinon.stub(MockWorma, 'checkUpdates').returns(Promise.resolve({
+    mockWorma('checkUpdates').returns(Promise.resolve({
       projectPath: PROJECT,
       updates: [{ status: 'changed', output: 'src/api', resolvedInput: 'api.json', hash: 'abc' }],
       hasGenerationBaseline: false,
@@ -187,14 +205,43 @@ setupTest('edge cases (requirement A/B)', () => {
     expect(second).to.deep.equal([])
   })
 
-  it('skips detection entirely when autoUpdate is disabled', async () => {
-    const cfgStub = sinon.stub(workspace, 'getConfiguration').returns({
-      get: (key: string, def?: any) => (key === 'enable' ? false : def),
-    } as any)
+  it('does not run any check when every autoUpdate trigger is disabled', async () => {
+    UpdateChecker.clear()
+    ;(UpdateChecker as any).inFlight = false
 
-    const result = await UpdateChecker.check({ force: true, silent: true })
-    expect(result).to.deep.equal([])
+    // Both triggers off: `init()` must neither register the focus listener nor
+    // schedule the deferred activation check.
+    const onFocusStub = sinon.stub(window, 'onDidChangeWindowState').returns({ dispose() {} } as any)
+    const cfgStub = sinon.stub(workspace, 'getConfiguration').returns({
+      get: (key: string, def?: any) => {
+        if (key === 'checkOnActivation' || key === 'checkOnWindowFocus')
+          return false
+        if (key === 'minInterval')
+          return 0
+        return def
+      },
+    } as any)
+    const checkUpdates = mockWorma('checkUpdates').returns(Promise.resolve({
+      projectPath: PROJECT,
+      updates: [{ status: 'changed', output: 'src/api', resolvedInput: 'api.json', hash: 'abc' }],
+      hasGenerationBaseline: false,
+    }))
+    const prompt = sinon.stub(window, 'showInformationMessage').resolves(undefined)
+
+    const disposables = UpdateChecker.init() as { dispose: () => void }[]
+    // Long enough to outlive the deferred (~1500ms) activation check.
+    await timeout(1800)
+
+    expect(onFocusStub.called).to.equals(false)
+    expect(checkUpdates.called).to.equals(false)
+    expect(prompt.called).to.equals(false)
+    expect(getUpdateCount()).to.equals(0)
+
+    UpdateChecker.clear()
+    disposables.forEach(d => d.dispose())
     cfgStub.restore()
+    onFocusStub.restore()
+    prompt.restore()
   })
 })
 
@@ -223,7 +270,7 @@ setupTest('update detection triggers (requirement A)', () => {
     } as any)
 
     sinon.stub(Global as any, 'getConfigs').returns([[PROJECT, { generator: [] } as any]])
-    sinon.stub(MockWorma, 'checkUpdates').returns(Promise.resolve({
+    mockWorma('checkUpdates').returns(Promise.resolve({
       projectPath: PROJECT,
       updates: [{ status: 'changed', output: 'src/api', resolvedInput: 'api.json', hash: 'abc' }],
       hasGenerationBaseline: false,
@@ -266,7 +313,7 @@ setupTest('update detection triggers (requirement A)', () => {
     } as any)
 
     sinon.stub(Global as any, 'getConfigs').returns([[PROJECT, { generator: [] } as any]])
-    sinon.stub(MockWorma, 'checkUpdates').returns(Promise.resolve({
+    mockWorma('checkUpdates').returns(Promise.resolve({
       projectPath: PROJECT,
       updates: [{ status: 'changed', output: 'src/api', resolvedInput: 'api.json', hash: 'abc' }],
       hasGenerationBaseline: false,
@@ -293,7 +340,7 @@ setupTest('update detection: new sources & resilience', () => {
     ;(UpdateChecker as any).inFlight = false
 
     sinon.stub(Global as any, 'getConfigs').returns([[PROJECT, { generator: [] } as any]])
-    sinon.stub(MockWorma, 'checkUpdates').returns(Promise.resolve({
+    mockWorma('checkUpdates').returns(Promise.resolve({
       projectPath: PROJECT,
       updates: [{ status: 'new', output: 'src/api', resolvedInput: 'api.json', hash: 'abc' }],
       hasGenerationBaseline: true,
@@ -316,7 +363,7 @@ setupTest('update detection: new sources & resilience', () => {
     ;(UpdateChecker as any).inFlight = false
 
     sinon.stub(Global as any, 'getConfigs').returns([[PROJECT, { generator: [] } as any]])
-    sinon.stub(MockWorma, 'checkUpdates').returns(Promise.resolve({
+    mockWorma('checkUpdates').returns(Promise.resolve({
       projectPath: PROJECT,
       updates: [{ status: 'new', output: 'src/api', resolvedInput: 'api.json', hash: 'abc' }],
       hasGenerationBaseline: false,
@@ -336,7 +383,7 @@ setupTest('update detection: new sources & resilience', () => {
     ;(UpdateChecker as any).inFlight = false
 
     sinon.stub(Global as any, 'getConfigs').returns([[PROJECT, { generator: [] } as any]])
-    sinon.stub(MockWorma, 'checkUpdates').returns(Promise.resolve({
+    mockWorma('checkUpdates').returns(Promise.resolve({
       projectPath: PROJECT,
       updates: [{ status: 'changed', output: 'src/api', resolvedInput: 'api.json', hash: 'abc' }],
       hasGenerationBaseline: true,
@@ -361,7 +408,7 @@ setupTest('update detection: new sources & resilience', () => {
 
     let calls = 0
     sinon.stub(Global as any, 'getConfigs').returns([[PROJECT, { generator: [] } as any]])
-    sinon.stub(MockWorma, 'checkUpdates').callsFake(() => {
+    mockWorma('checkUpdates').callsFake(() => {
       calls++
       return Promise.resolve({
         projectPath: PROJECT,

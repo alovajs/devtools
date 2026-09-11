@@ -95,7 +95,7 @@ async function generate(config: Config, options?: GenerateApiOptions): Promise<b
   if (changeItems.length > 0) {
     try {
       const id = await captureChange(projectPath, {
-        schemaVersion: 2,
+        schemaVersion: 1,
         createdAt: Date.now(),
         projectPath,
         generators: changeItems,

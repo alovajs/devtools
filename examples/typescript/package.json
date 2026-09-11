@@ -4,7 +4,7 @@
   "private": true,
   "description": "Worma TypeScript example - all templates in one project",
   "scripts": {
-    "gen": "worma gen -f",
+    "gen": "worma gen",
     "start": "npm run gen && tsx src/main.ts",
     "typecheck": "tsc --noEmit"
   },

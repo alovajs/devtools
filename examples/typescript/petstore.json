@@ -13,7 +13,7 @@
     { "name": "user", "description": "Operations about user" }
   ],
   "paths": {
-    "/pet2": {
+    "/pet": {
       "post": {
         "tags": ["pet"],
         "summary": "Add a new pet to the store",
@@ -57,7 +57,7 @@
             "description": "Status values to filter by",
             "required": true,
             "explode": true,
-            "schema": { "type": "string", "enum": ["available223", "pending", "sold", "approved"] }
+            "schema": { "type": "string", "enum": ["available", "pending", "sold"] }
           }
         ],
         "responses": {
@@ -73,7 +73,7 @@
       "get": {
         "tags": ["pet"],
         "summary": "Find pet by ID",
-        "operationId": "getPetById245",
+        "operationId": "getPetById",
         "parameters": [
           { "name": "petId", "in": "path", "description": "ID of pet to return", "required": true, "schema": { "type": "integer", "format": "int64" } }
         ],
@@ -86,10 +86,10 @@
       "delete": {
         "tags": ["pet"],
         "summary": "Deletes a pet",
-        "operationId": "deletePet23",
+        "operationId": "deletePet",
         "parameters": [
-          { "name": "petId", "in": "path", "description": "Pet678 id to delete", "required": true, "schema": { "type": "integer", "format": "int64" } },
-          { "name": "api_key", "in": "header", "required": false, "schema": { "type": "integer" } }
+          { "name": "petId", "in": "path", "description": "Pet id to delete", "required": true, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "api_key", "in": "header", "required": false, "schema": { "type": "string" } }
         ],
         "responses": {
           "204": { "description": "Deleted successfully" },
@@ -130,7 +130,7 @@
         "summary": "Find purchase order by ID",
         "operationId": "getOrderById",
         "parameters": [
-          { "name": "orderId2", "in": "path", "description": "ID of order to return", "required": true, "schema": { "type": "integer", "format": "int64" } }
+          { "name": "orderId", "in": "path", "description": "ID of order to return", "required": true, "schema": { "type": "integer", "format": "int64" } }
         ],
         "responses": {
           "200": { "description": "successful operation", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Order" } } } },
@@ -175,7 +175,7 @@
           "id": { "type": "integer", "format": "int64", "example": 10 },
           "name": { "type": "string", "example": "doggie" },
           "category": { "$ref": "#/components/schemas/Category" },
-          "photo234Urls": { "type": "array", "items": { "type": "string", "format": "uri" } },
+          "photoUrls": { "type": "array", "items": { "type": "string", "format": "uri" } },
           "tags": { "type": "array", "items": { "$ref": "#/components/schemas/Tag" } },
           "status": { "type": "string", "description": "pet status in the store", "enum": ["available", "pending", "sold"] }
         }

@@ -352,3 +352,40 @@ await getInventory({
   headers: { 'Authorization': 'Bearer token' }  // ky 原生参数
 });
 ```
+
+## 复用生成的类型
+
+每个 API 除导出调用函数外，还会导出**具名类型别名**，便于在业务流程中直接引用请求参数、请求体与响应的类型。以生成的 `services/pet.ts` 为例：
+
+```typescript
+export type findPetsByStatusResponse = ComponentTypes.Pet[];
+export type findPetsByStatusParams = {
+  /** Status values that need to be considered for filter */
+  status: ('available' | 'pending' | 'sold')[];
+};
+export interface findPetsByStatusExtraConfig {
+  params: findPetsByStatusParams;
+}
+```
+
+别名以生成的函数名作为前缀，各模板与配置键的对应关系如下：
+
+| 别名 | alova | axios | fetch | ky |
+| --- | --- | --- | --- | --- |
+| `<函数名>PathParams` | `pathParams` | `pathParams` | `pathParams` | `pathParams` |
+| `<函数名>Params` | `params` | `params` | `params?` | `searchParams` |
+| `<函数名>Data` | `data` | `data` | `body?` | `json` |
+| `<函数名>Response` | 返回类型 | 返回类型 | 返回类型 | 返回类型 |
+| `<函数名>ExtraConfig` | 函数入参 | 函数入参 | 函数入参 | 函数入参 |
+
+仅当接口真正存在对应参数时才会生成该别名，例如没有查询参数的接口不会生成 `<函数名>Params`。
+
+配合 alova 的 `useForm` 等 hooks 使用时，需要用导出的别名显式标注回调参数（`useForm` 无法从 handler 的返回值反向推断表单类型）：
+
+```typescript
+import { useForm } from 'alova/client';
+import { findPetsByStatus } from './api/alova/services/pet';
+import type { findPetsByStatusParams } from './api/alova/services/pet';
+
+const { send } = useForm((params: findPetsByStatusParams) => findPetsByStatus({ params }));
+```

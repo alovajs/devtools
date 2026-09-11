@@ -92,6 +92,54 @@ describe('alova template', () => {
     expect(content.trim().length).toBeGreaterThan(0)
   })
 
+  it('should export named type aliases and let ExtraConfig reference them', async () => {
+    const outputDir = resolve(__dirname, `../mock_output/functional_named_types`)
+    vol.mkdirSync(outputDir, { recursive: true })
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, '../openapis/openapi_300.yaml'),
+          output: outputDir,
+          plugins: [alova()],
+          type: 'ts',
+        },
+      ],
+    })
+
+    const content = vol.readFileSync(resolve(outputDir, 'services', 'pet.ts'), 'utf-8') as string
+    const flat = content.replace(/\s+/g, ' ')
+    // 请求参数/请求体/响应类型以具名别名导出，可直接用于 useForm 等场景
+    expect(flat).toContain('export type findPetsByStatusResponse = ComponentTypes.Pet[];')
+    expect(flat).toContain('export type findPetsByStatusParams = {')
+    expect(flat).toContain('export type getPetByIdPathParams = {')
+    expect(flat).toContain('export type updatePetData = ComponentTypes.Pet;')
+    // ExtraConfig 只引用具名别名，解析后的类型与改动前完全一致
+    expect(flat).toContain('export interface findPetsByStatusExtraConfig { params: findPetsByStatusParams; }')
+    expect(flat).toContain('export interface getPetByIdExtraConfig { pathParams: getPetByIdPathParams; }')
+  })
+
+  it('should export named type aliases in module declaration files', async () => {
+    const outputDir = resolve(__dirname, `../mock_output/functional_named_types_mod`)
+    vol.mkdirSync(outputDir, { recursive: true })
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, '../openapis/openapi_300.yaml'),
+          output: outputDir,
+          plugins: [alova()],
+          type: 'module',
+        },
+      ],
+    })
+
+    const content = vol.readFileSync(resolve(outputDir, 'services', 'pet.d.ts'), 'utf-8') as string
+    const flat = content.replace(/\s+/g, ' ')
+    expect(flat).toContain('export type findPetsByStatusResponse = ComponentTypes.Pet[];')
+    expect(flat).toContain('export type findPetsByStatusParams = {')
+    expect(flat).toContain('export interface findPetsByStatusExtraConfig { params: findPetsByStatusParams; }')
+    expect(flat).toMatch(/Alova2MethodConfig< ?findPetsByStatusResponse ?>/)
+  })
+
   describe('snapshot tests', () => {
     it('should match snapshot for typescript type', async () => {
       const outputDir = resolve(__dirname, '../mock_output/alova_snapshot_ts')

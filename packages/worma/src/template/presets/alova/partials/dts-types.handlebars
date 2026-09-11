@@ -3,10 +3,10 @@
 {{/if}}{{#if requestBody}}export type {{{name}}}Data = {{addNamespace requestBody @root.componentNames}};
 {{/if}}export type {{{name}}}Response = {{addNamespace response @root.componentNames}};
 {{#or pathParameters queryParameters requestBody}}
-export type {{{name}}}ExtraConfig = Options & {
+export interface {{{name}}}ExtraConfig {
   {{#if pathParameters}}pathParams: {{{name}}}PathParams;
-  {{/if}}{{#if queryParameters}}searchParams: {{{name}}}Params;
-  {{/if}}{{#if requestBody}}json: {{{name}}}Data;
+  {{/if}}{{#if queryParameters}}params: {{{name}}}Params;
+  {{/if}}{{#if requestBody}}data: {{{name}}}Data;
   {{/if}}
-};
+}
 {{/or}}
