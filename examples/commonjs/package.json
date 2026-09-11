@@ -4,7 +4,7 @@
   "private": true,
   "description": "Worma CommonJS example - all templates for CJS projects",
   "scripts": {
-    "gen": "worma gen -f",
+    "gen": "worma gen",
     "start": "npm run gen && node src/main.js"
   },
   "dependencies": {

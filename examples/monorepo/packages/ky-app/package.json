@@ -4,7 +4,7 @@
   "private": true,
   "description": "Worma monorepo sub-package — ky template",
   "scripts": {
-    "gen": "worma gen -f",
+    "gen": "worma gen",
     "start": "node src/main.js"
   },
   "dependencies": {

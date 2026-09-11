@@ -4,7 +4,7 @@
   "private": true,
   "description": "Worma ESM monorepo example — each sub-package tests a single generator template",
   "scripts": {
-    "gen:all": "pnpm -r exec worma gen -f",
+    "gen:all": "pnpm -r exec worma gen",
     "start:alova": "pnpm --filter alova-app start",
     "start:axios": "pnpm --filter axios-app start",
     "start:fetch": "pnpm --filter fetch-app start",

@@ -3,7 +3,7 @@
   "tag": "beta",
   "initialVersions": {
     "worma-docs": "0.0.0",
-    "sighted2-vscode": "0.3.0",
+    "worma-vscode": "0.3.0",
     "wormajs": "0.2.7"
   },
   "changesets": []

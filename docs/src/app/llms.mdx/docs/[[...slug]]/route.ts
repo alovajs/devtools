@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { defaultLocale, locales } from '@/lib/i18n'
+import { defaultLocale, isLocale } from '@/lib/i18n'
 import { getLLMText, getPageMarkdownUrl, source } from '@/lib/source'
 
 export const revalidate = false
@@ -10,7 +10,7 @@ export async function GET(_req: Request, { params }: RouteContext<'/llms.mdx/doc
 
   // 路径首段可能是语言（如 zh），需还原并传给 source.getPage 以取对应语言页面
   let locale = defaultLocale
-  if (segments.length > 0 && locales.includes(segments[0])) {
+  if (segments.length > 0 && isLocale(segments[0])) {
     locale = segments[0]
     segments = segments.slice(1)
   }

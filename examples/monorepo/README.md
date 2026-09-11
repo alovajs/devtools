@@ -34,7 +34,7 @@ Or enter a single sub-package to operate independently:
 ```bash
 cd packages/alova-app
 pnpm install
-pnpm gen       # Equivalent to worma gen -f
+pnpm gen       # Equivalent to worma gen
 pnpm start     # Equivalent to node src/main.js
 ```
 

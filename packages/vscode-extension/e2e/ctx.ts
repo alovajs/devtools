@@ -17,9 +17,9 @@ export function timeout(ms = 1000) {
 
 export function getExt() {
   // The extension under development is identified by its path: `Meta.extensionId`
-  // is generated from `package.json` and goes stale (it still reads
-  // `worma.worma-vscode` while the package is `sighted2.sighted2-vscode`), which
-  // makes `getExtension(extensionId)` return `undefined`.
+  // is generated from `package.json` and can go stale (it is only refreshed by
+  // `pnpm run update`), which makes `getExtension(extensionId)` return
+  // `undefined`.
   return extensions.all.find(ext => ext.extensionUri.fsPath === projectRoot)
     ?? extensions.getExtension(Meta.extensionId)!
 }
