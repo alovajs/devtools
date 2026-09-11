@@ -109,6 +109,6 @@ export async function generateFile(distDir: string, fileName: string, content: s
     await fs.mkdir(distDir, { recursive: true })
   }
   const filePath = path.join(distDir, fileName)
-  const formattedText = await format(content)
+  const formattedText = await format(fileName, content)
   await fs.writeFile(filePath, formattedText)
 }

@@ -1,0 +1,193 @@
+---
+title: Core Functions
+description: Programmatic APIs like defineConfig, generate, and readConfig
+---
+
+## defineConfig
+
+A type-safe config helper that accepts a config object or a function returning one. See [Configuration Object](/docs/api/configuration) for the full options.
+
+```typescript
+import { defineConfig } from 'wormajs';
+
+export default defineConfig({
+  generator: [...],
+});
+```
+
+**Type signature:**
+
+```typescript
+function defineConfig(config: Config): Config;
+function defineConfig(config: Promise<Config>): Promise<Config>;
+function defineConfig(config: () => Config): () => Config;
+function defineConfig(config: () => Promise<Config>): () => Promise<Config>;
+```
+
+## generate
+
+Invoke code generation programmatically — useful for CI/CD or custom script integration.
+
+```typescript
+import { generate } from 'wormajs';
+
+const results = await generate(config, { projectPath: process.cwd() });
+```
+
+**Type signature:**
+
+```typescript
+function generate(
+  config: Config,
+  options?: GenerateApiOptions
+): Promise<boolean[]>;
+```
+
+Returns a `boolean[]`, one entry per generator in `config.generator` (`true` for success, `false` for failure).
+
+### GenerateApiOptions
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `projectPath` | `string` | `process.cwd()` | Project root directory |
+| `onProgress` | `(event: GeneratorProgressEvent) => void` | — | Per-generator lifecycle callback |
+
+### Progress callback usage
+
+Use the `phase` field of `onProgress` to distinguish stages:
+
+```typescript
+await generate(config, {
+  onProgress(event) {
+    switch (event.phase) {
+      case 'active':
+        console.log(`[${event.index}] Started`);
+        break;
+      case 'progress':
+        console.log(`[${event.index}] ${event.progress}% - ${event.message}`);
+        break;
+      case 'done':
+        console.log(`[${event.index}] Done`);
+        break;
+      case 'failed':
+        console.error(`[${event.index}] Failed: ${event.error}`);
+        break;
+    }
+  },
+});
+```
+
+### Use cases
+
+**Custom script:**
+
+```javascript
+import { generate } from 'wormajs';
+
+await generate({
+  generator: [{
+    input: process.env.OPENAPI_URL,
+    output: 'src/api',
+  }],
+});
+```
+
+## readConfig
+
+Read the `worma.config` from a project and return the parsed config object.
+
+```typescript
+import { readConfig } from 'wormajs';
+
+const config = await readConfig('/path/to/project');
+```
+
+**Type signature:**
+
+```typescript
+function readConfig(projectPath?: string): Promise<Readonly<Config>>;
+```
+
+## getApiDocs
+
+Get the cached API doc data, e.g. for the VSCode extension sidebar.
+
+```typescript
+import { getApiDocs } from 'wormajs';
+
+const docs = await getApiDocs();
+```
+
+**Type signature:**
+
+```typescript
+function getApiDocs(
+  outputs?: string[],
+  projectPath?: string
+): Promise<CacheData[]>;
+```
+
+| Param | Description |
+|-------|-------------|
+| `outputs` | Optional; filter cached data by output path; returns all when omitted |
+| `projectPath` | Project root, default `process.cwd()` |
+
+Returns `CacheData[]`:
+
+```typescript
+interface CacheData {
+  path: string;
+  /** Service name shown in the sidebar */
+  serverName?: string;
+  /** Flattened API list */
+  apis: Api[];
+}
+```
+
+## setGlobalConfig
+
+Set worma's global config.
+
+```typescript
+import { setGlobalConfig } from 'wormajs';
+
+setGlobalConfig({
+  cacheDir: '.worma-cache',
+});
+```
+
+## createConfig
+
+Create a `worma.config` file in a project.
+
+```typescript
+import { createConfig } from 'wormajs';
+
+await createConfig({
+  template: 'alova',
+  type: 'typescript',
+});
+```
+
+| Param | Type | Description |
+|-------|------|-------------|
+| `projectPath` | `string` | Project root directory |
+| `type` | `TemplateType` | Generated code flavor |
+| `template` | `TemplatePreset` | Template preset: `'alova'` \| `'alovaGlobals'` \| `'axios'` \| `'fetch'` \| `'ky'` |
+
+## resolveWorkspaces
+
+In a Monorepo, find all sub-package directories that contain a `worma.config`.
+
+```typescript
+import { resolveWorkspaces } from 'wormajs';
+
+const dirs = await resolveWorkspaces('/path/to/monorepo');
+// → ['./packages/user-service', './packages/order-service']
+```
+
+**Type signature:**
+
+```typescript
+function resolveWorkspaces(projectPath?: string): Promise<string[]>;
+```

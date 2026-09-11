@@ -66,21 +66,17 @@ export const commands = {
  * Type union of all configs
  */
 export type ConfigKey
-  = | 'worma.autoUpdate'
-    | 'worma.enableViewApiLens'
+  = | 'worma.enableViewApiLens'
 
 export interface ConfigKeyTypeMap {
-  'worma.autoUpdate': unknown
   'worma.enableViewApiLens': boolean
 }
 
 export interface ConfigShorthandMap {
-  autoUpdate: 'worma.autoUpdate'
   enableViewApiLens: 'worma.enableViewApiLens'
 }
 
 export interface ConfigShorthandTypeMap {
-  autoUpdate: unknown
   enableViewApiLens: boolean
 }
 
@@ -95,16 +91,6 @@ export interface ConfigItem<T extends keyof ConfigKeyTypeMap> {
 export const configs = {
   /**
    *
-   * @key `worma.autoUpdate`
-   * @default `true`
-   * @type `undefined`
-   */
-  autoUpdate: {
-    key: 'worma.autoUpdate',
-    default: true,
-  } as ConfigItem<'worma.autoUpdate'>,
-  /**
-   *
    * @key `worma.enableViewApiLens`
    * @default `true`
    * @type `boolean`
@@ -116,26 +102,22 @@ export const configs = {
 }
 
 export interface ScopedConfigKeyTypeMap {
-  autoUpdate: unknown
   enableViewApiLens: boolean
 }
 
 export const scopedConfigs = {
   scope: 'worma',
   defaults: {
-    autoUpdate: true,
     enableViewApiLens: true,
   } satisfies ScopedConfigKeyTypeMap,
 }
 
 export interface NestedConfigs {
   worma: {
-    autoUpdate: unknown
     enableViewApiLens: boolean
   }
 }
 
 export interface NestedScopedConfigs {
-  autoUpdate: unknown
   enableViewApiLens: boolean
 }

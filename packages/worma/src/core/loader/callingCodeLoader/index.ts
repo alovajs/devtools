@@ -28,7 +28,7 @@ export class CallingCodeLoader implements Loader<string, Promise<string>, Callin
     if (api.requestBodyComment) {
       configStrArr.push(`data: ${await this.transform(api.requestBodyComment.replace(/\*/g, ''))}`)
     }
-    return format(`${api.name}({${configStrArr.join(',\n')}})`, {
+    return format('calling-code.ts', `${api.name}({${configStrArr.join(',\n')}})`, {
       printWidth: 40, // Shorten print width to force line breaks
       tabWidth: 2,
       semi: false, // Remove the trailing semicolon

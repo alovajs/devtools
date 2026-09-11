@@ -1,0 +1,290 @@
+---
+title: Platform Fetchers
+description: Auto-build the OpenAPI file URL for Swagger / Knife4j / YApi / Apifox / Postman
+---
+
+# Platform Fetchers
+
+worma ships five platform fetcher plugins: `swagger`, `knife4j`, `yapi`, `apifox`, `postman`. Their purpose is unified — pass the platform's base address (or project credentials) as a **plugin argument**, and the plugin assembles candidate OpenAPI file URLs in its `config` hook and writes them to `config.input`, so you don't have to look up and concatenate URLs manually.
+
+> Note: `input` is **no longer** set separately on `config`; it's written by the platform plugin instead.
+
+## Basic usage
+
+```javascript
+import { defineConfig } from 'wormajs';
+import { swagger, alovaGlobals } from 'wormajs/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      output: './src/api',
+      plugins: [swagger('https://petstore3.swagger.io'), alovaGlobals()],
+    },
+  ],
+});
+```
+
+## Supported platforms
+
+| Plugin | Description | Argument |
+|------|------|------|
+| `swagger(input)` | Swagger UI / server | Base address string, or an array of strings |
+| `knife4j(input)` | Knife4j (springdoc / springfox) | Base address string, or an array of strings |
+| `yapi(options)` | YApi project (private, needs login cookie) | `{ url, pid, cookie?, type?, status?, isWiki?, timeout? }` |
+| `apifox(options)` | Apifox project (needs projectId and access token) | `{ projectId, apifoxToken, ... }` |
+| `postman(options)` | Postman collection (needs apiKey and collectionId) | `{ apiKey, collectionId }` |
+
+### Type signatures
+
+```typescript
+import { swagger, knife4j, yapi, apifox, postman } from 'wormajs/plugin';
+
+// URL-based platforms: base address (single or array) as the plugin argument
+function swagger(input: string | string[]): ApiPlugin;
+function knife4j(input: string | string[]): ApiPlugin;
+
+// YApi: pass the service address and project ID to assemble the export endpoint URL
+interface YapiOptions {
+  /** YApi service base address, e.g. `https://yapi.xxx.com` */
+  url: string;
+  /** Project ID, required */
+  pid: string | number;
+  /** OpenAPI type, default `OpenAPIV2` */
+  type?: string;
+  /** Interface status, default `all` */
+  status?: string;
+  /** Include wiki, default `true` */
+  isWiki?: boolean;
+  /** Login cookie; can also be passed via fetchOptions.headers.cookie */
+  cookie?: string;
+  /** Extra fetch timeout (ms) */
+  timeout?: number;
+}
+function yapi(options: YapiOptions): ApiPlugin;
+
+// Apifox: pull via project ID and access token
+interface ApifoxOptions {
+  /** Apifox project ID */
+  projectId: string;
+  /** Apifox access token */
+  apifoxToken: string;
+  /** Locale, default 'zh-CN' */
+  locale?: string;
+  /** Apifox API version, default '2024-03-28' */
+  apifoxVersion?: string;
+  /** Filter APIs by tag */
+  selectedTags?: string[];
+  /** Exclude APIs by tag */
+  excludedByTags?: string[];
+  /** OpenAPI version, default '3.0' */
+  oasVersion?: '2.0' | '3.0' | '3.1';
+  /** Export format, default 'JSON' */
+  exportFormat?: 'JSON' | 'YAML';
+  /** Include Apifox extension properties, default false */
+  includeApifoxExtensionProperties?: boolean;
+  /** Use folder paths as tags, default false */
+  addFoldersToTags?: boolean;
+}
+function apifox(options: ApifoxOptions): ApiPlugin;
+
+// Postman: pull with an API key and the collection uid
+interface PostmanOptions {
+  /** Postman API Key */
+  apiKey: string;
+  /** The uid of the collection */
+  collectionId: string;
+}
+function postman(options: PostmanOptions): ApiPlugin;
+```
+
+## Platform rules (URL-based)
+
+The URL-based platforms (`swagger` / `knife4j`) take one or more base addresses and generate a candidate URL array for each:
+
+| Plugin | Generated input candidates (using `<base>`) |
+|------|----------------------------------------|
+| `swagger` | `<base>/openapi.json`, `<base>/v2/swagger.json`, `<base>/api/v3/openapi.json`, `<base>` |
+| `knife4j` | `<base>/v3/api-docs`, `<base>/v2/api-docs`, `<base>` |
+
+The framework tries each candidate URL in order and returns the first successful one (see `getOpenApiData`).
+
+### Multiple addresses
+
+Pass an array to assemble and merge multiple base addresses:
+
+```javascript
+swagger(['https://a.com', 'https://b.com'])
+```
+
+## YApi plugin (special: needs cookie)
+
+YApi projects are private and must be pulled via its own export endpoint, which requires a **login cookie**. The `yapi` plugin assembles the export URL from the service base address (`url`) and project ID (`pid`):
+
+```
+<url>/api/plugin/exportSwagger?type=<type>&pid=<pid>&status=<status>&isWiki=<isWiki>
+```
+
+- `url` is required, pointing to your YApi service base address (e.g. `https://yapi.xxx.com`);
+- `pid` is required, used to assemble the export URL;
+- `type` / `status` / `isWiki` can be specified externally, defaulting to `OpenAPIV2` / `all` / `true`;
+- `cookie` is required, otherwise the plugin throws a clear error immediately (rather than failing silently);
+- `cookie` can also be passed via `fetchOptions.headers.cookie`; `yapi` prefers the `cookie` from the plugin argument.
+
+```javascript
+import { defineConfig } from 'wormajs';
+import { yapi, alovaGlobals } from 'wormajs/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      output: './src/api',
+      plugins: [
+        yapi({
+          url: 'https://yapi.xxx.com',
+          pid: 123,
+          cookie: '_yapi_token=xxx; _yapi_uid=yyy',
+        }),
+        alovaGlobals(),
+      ],
+    },
+  ],
+});
+```
+
+If `url`, `pid`, or `cookie` is missing, the `config` stage throws an error immediately, e.g.:
+
+```
+[yapi] `cookie` is required. YApi projects are private, so the export endpoint
+needs your login cookie to fetch the OpenAPI document.
+  e.g. yapi({ url: "https://yapi.xxx.com", pid: 123, cookie: "_yapi_token=xxx; ..." })
+```
+
+## Apifox plugin (special: needs token)
+
+Unlike URL-based platforms, Apifox doesn't use a base address. It uses the Apifox open API with `projectId` + `apifoxToken` to export the project's OpenAPI document directly. The plugin assembles the export endpoint URL in its `config` hook and injects the Bearer token and export params (requesting via `POST` + `body` through `fetchOptions`).
+
+- `projectId` is required, pointing to your Apifox project ID;
+- `apifoxToken` is required, used as `Authorization: Bearer <token>` auth;
+- the rest of the params filter the scope, pick the OpenAPI version, and choose the export format.
+
+```javascript
+import { defineConfig } from 'wormajs';
+import { apifox, alovaGlobals } from 'wormajs/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      output: './src/api',
+      plugins: [
+        apifox({
+          projectId: 'proj-123',
+          apifoxToken: 'token-abc',
+        }),
+        alovaGlobals(),
+      ],
+    },
+  ],
+});
+```
+
+### Parameters
+
+> For the meaning and accepted values of each param, see the Apifox official "Parameter Settings" docs: [Apifox Parameter Settings](https://s.apifox.cn/apidoc/docs-site/4478210/api-173411997)
+
+| Name | Type | Default | Description |
+|--------|------|--------|------|
+| `projectId` | `string` | — | Apifox project ID |
+| `apifoxToken` | `string` | — | Apifox access token |
+| `locale` | `string` | `'zh-CN'` | Locale |
+| `apifoxVersion` | `string` | `'2024-03-28'` | Apifox API version |
+| `selectedTags` | `string[]` | — | Filter APIs by tag |
+| `excludedByTags` | `string[]` | — | Exclude APIs by tag |
+| `oasVersion` | `'2.0' \| '3.0' \| '3.1'` | `'3.0'` | OpenAPI version |
+| `exportFormat` | `'JSON' \| 'YAML'` | `'JSON'` | Export format |
+| `includeApifoxExtensionProperties` | `boolean` | `false` | Include Apifox extension properties |
+| `addFoldersToTags` | `boolean` | `false` | Use folder paths as tags |
+
+### Filter by tag
+
+```javascript
+apifox({
+  projectId: 'proj-123',
+  apifoxToken: 'token-abc',
+  selectedTags: ['order', 'user'],
+})
+```
+
+### Exclude by tag
+
+```javascript
+apifox({
+  projectId: 'proj-123',
+  apifoxToken: 'token-abc',
+  excludedByTags: ['test', 'deprecated'],
+})
+```
+
+### Custom OpenAPI version and export format
+
+```javascript
+apifox({
+  projectId: 'proj-123',
+  apifoxToken: 'token-abc',
+  oasVersion: '3.1',
+  exportFormat: 'YAML',
+})
+```
+
+## Postman plugin (special: needs API key)
+
+A Postman collection is not an OpenAPI document, so it must first be converted through the **collection transformation endpoint**:
+
+```
+https://api.getpostman.com/collections/<collectionId>/transformations
+```
+
+The `postman` plugin writes that URL to `config.input` in its `config` hook and injects the `x-api-key`
+header through `fetchOptions`; because the endpoint responds with `{ output: "<OpenAPI document>" }`,
+the plugin also unwraps the envelope in its `beforeSpecParse` hook before the generator parses it.
+
+- `apiKey` is required, sent as the `x-api-key` header (generated in Postman → Settings → API keys);
+- `collectionId` is required — the uid of the collection;
+- the transformation endpoint only converts collections **you have access to** — fork public collections into your own workspace first, otherwise it returns 403.
+
+```javascript
+import { defineConfig } from 'wormajs';
+import { postman, alovaGlobals } from 'wormajs/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      output: './src/api',
+      plugins: [
+        postman({
+          apiKey: 'PMAK-xxx',
+          collectionId: '12345678-a1b2-c3d4-e5f6-7890abcdef12',
+        }),
+        alovaGlobals(),
+      ],
+    },
+  ],
+});
+```
+
+### Parameters
+
+| Name | Type | Default | Description |
+|--------|------|--------|------|
+| `apiKey` | `string` | — | Postman API Key |
+| `collectionId` | `string` | — | The uid of the collection |
+
+## How it works
+
+These platform plugins all modify `config.input` via their `config` hook:
+
+1. The plugin argument is the platform address (`swagger` / `knife4j`), `yapi`'s `{ url, pid, cookie, ... }`, `apifox`'s `{ projectId, apifoxToken, ... }`, or `postman`'s `{ apiKey, collectionId }`;
+2. URL-based plugins auto-assemble the OpenAPI file URL array by platform type; `yapi` assembles the `exportSwagger` export URL from `url` + `pid` and injects `cookie`; `apifox` assembles the Apifox export endpoint URL and injects the Bearer token and export params; `postman` writes the collection transformation endpoint URL and injects `x-api-key`, then unwraps the response envelope in `beforeSpecParse`;
+3. The result is assigned to `config.input`.
+
+Since the plugin's `config` hook runs before config validation, validation passes even if `input` is not written on `config`.

@@ -1,7 +1,10 @@
-type {{{name}}}Response = {{addNamespace response @root.componentNames}};
-type {{{name}}}ExtraConfig = Omit<RequestInit, 'body'> & {
-  {{#if pathParameters}}pathParams: {{addNamespace pathParameters @root.componentNames}};
-  {{/if}}{{#if queryParameters}}params?: {{addNamespace queryParameters @root.componentNames}};
-  {{/if}}{{#if requestBody}}body?: {{addNamespace requestBody @root.componentNames}} | BodyInit;
+{{#if pathParameters}}export type {{{name}}}PathParams = {{addNamespace pathParameters @root.componentNames}};
+{{/if}}{{#if queryParameters}}export type {{{name}}}Params = {{addNamespace queryParameters @root.componentNames}};
+{{/if}}{{#if requestBody}}export type {{{name}}}Data = {{addNamespace requestBody @root.componentNames}};
+{{/if}}export type {{{name}}}Response = {{addNamespace response @root.componentNames}};
+export type {{{name}}}ExtraConfig = Omit<RequestInit, 'body'> & {
+  {{#if pathParameters}}pathParams: {{{name}}}PathParams;
+  {{/if}}{{#if queryParameters}}params?: {{{name}}}Params;
+  {{/if}}{{#if requestBody}}body?: {{{name}}}Data | BodyInit;
   {{/if}}
 };

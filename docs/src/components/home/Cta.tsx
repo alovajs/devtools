@@ -1,11 +1,15 @@
 'use client'
 
+import type { Locale } from '@/lib/i18n'
 import { useState } from 'react'
-import { AGENT_PROMPT, COPY_TOAST_MESSAGE } from './agentPrompt'
+import { localePrefix } from '@/lib/i18n'
+import { getHomeDict } from '@/lib/i18n-home'
+import { AGENT_PROMPT, COPY_TOAST_MESSAGE, COPY_TOAST_MESSAGE_ZH } from './agentPrompt'
 import Button from './Button'
 import CornerPlus from './CornerPlus'
 
-export default function Cta() {
+export default function Cta({ lang }: { lang: Locale }) {
+  const t = getHomeDict(lang)
   const [toast, setToast] = useState(false)
 
   const handleCopy = async () => {
@@ -29,7 +33,7 @@ export default function Cta() {
         <CornerPlus />
         <div className="font-data-mono text-[10px] text-primary mb-8 uppercase tracking-[0.4em] animate-pulse">// READY_FOR_DEPLOYMENT</div>
         <h2 className="font-headline-lg text-5xl lg:text-7xl text-on-background mb-12 uppercase font-bold tracking-tighter">
-          「开始使用」
+          {t.cta.title}
         </h2>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
           <div className="relative w-full sm:w-auto">
@@ -39,19 +43,19 @@ export default function Cta() {
               className="w-full sm:w-auto"
               onClick={handleCopy}
             >
-              agent安装
+              {t.cta.agentInstall}
             </Button>
             {toast && (
               <div className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-black px-3 py-1.5 text-xs text-white shadow-lg transition-opacity">
-                {COPY_TOAST_MESSAGE}
+                {lang === 'zh' ? COPY_TOAST_MESSAGE_ZH : COPY_TOAST_MESSAGE}
               </div>
             )}
           </div>
-          <Button variant="outline" size="lg" className="px-10 w-full sm:w-auto" href="/docs">快速开始</Button>
+          <Button variant="outline" size="lg" className="px-10 w-full sm:w-auto" href={`${localePrefix(lang)}/docs`}>{t.cta.quickStart}</Button>
           <Button variant="outline" size="lg" icon="code" className="px-10 w-full sm:w-auto" href="https://github.com/alovajs/devtools">GitHub</Button>
         </div>
         <p className="font-data-mono text-xs text-on-surface-variant tracking-widest uppercase">
-          将上方 Prompts 发送给你的 Coding Agent，快速完成 worma 安装与配置
+          {t.cta.hint}
         </p>
         <div className="mt-16 flex justify-center">
           <div className="w-px h-12 bg-gradient-to-b from-primary to-transparent" />

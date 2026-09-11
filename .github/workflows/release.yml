@@ -13,6 +13,11 @@ jobs:
   quality:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
+    env:
+      # `.npmrc` references `${NPM_TOKEN}`; when the variable is unset pnpm warns
+      # ("Failed to replace env in config") on every install. Only the publish
+      # step needs a real token.
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,6 +44,11 @@ jobs:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     needs: [quality]
+    env:
+      # Defined (even empty) so `pnpm install` does not warn about the
+      # `${NPM_TOKEN}` placeholder in `.npmrc`; the publish step below overrides
+      # it with the real token.
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4

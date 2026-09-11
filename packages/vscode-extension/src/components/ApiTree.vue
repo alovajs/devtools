@@ -364,7 +364,7 @@ defineExpose({
       :filter
     >
       <template #empty>
-        <div class="h-full flex items-center justify-center">
+        <div class="h-full flex items-start justify-center pt-[120px]">
           <template v-if="loading">
             <n-spin :size="14" class="mr-3" />
             <span>{{ $t('loading') }}</span>

@@ -7,6 +7,35 @@ import fs from 'fs-extra'
 import { projectRoot, root } from './path.js'
 import { logger, run } from './utils.js'
 
+/**
+ * Wipe the previous run's fixture directory.
+ *
+ * On Windows a fixture's `node_modules` is full of pnpm junctions, and the
+ * removal regularly fails with EBUSY/EPERM while the indexer / an antivirus /
+ * a lingering process still holds a handle. Retry with a backoff and, if the
+ * directory still cannot be removed, keep going: `ensureFixture()` re-copies
+ * the fixture sources (overwriting) and reinstalls, so a leftover directory is
+ * harmless — it must never abort the whole e2e run.
+ */
+async function removeFixtures(dir: string) {
+  for (let attempt = 1; attempt <= 5; attempt++) {
+    try {
+      await fs.remove(dir)
+      return
+    }
+    catch (error: any) {
+      const code = error?.code
+      const transient = code === 'EBUSY' || code === 'EPERM' || code === 'ENOTEMPTY'
+      if (!transient || attempt === 5) {
+        logger.warn(`Could not remove ${dir}: ${error?.message ?? error}. Continuing with the existing directory.`)
+        return
+      }
+      logger.warn(`Failed to remove ${dir} (${code}), retry ${attempt}/5 ...`)
+      await new Promise(resolve => setTimeout(resolve, 500 * attempt))
+    }
+  }
+}
+
 async function main() {
   const extensionDevelopmentPath = projectRoot
 
@@ -19,13 +48,20 @@ async function main() {
   const actionsDir = join(projectRoot, './e2e-out/actions')
   const fixtureTempPath = join(root, './e2e-fixtures-temp')
   if (fs.existsSync(fixtureTempPath)) {
-    await fs.remove(fixtureTempPath)
+    await removeFixtures(fixtureTempPath)
   }
 
-  const actions = await fg('*', {
+  // `E2E_ACTIONS=api-changes,extension-activation` restricts the run to a
+  // subset of the actions: iterating on one failing suite then costs seconds
+  // instead of a full matrix run. Unset → run every action (CI default).
+  const only = (process.env.E2E_ACTIONS ?? '')
+    .split(',')
+    .map(name => name.trim())
+    .filter(Boolean)
+  const actions = (await fg('*', {
     onlyDirectories: true,
     cwd: actionsDir,
-  })
+  })).filter(action => only.length === 0 || only.includes(action))
 
   // Install each required example only once.
   const installed = new Set<string>()
@@ -83,6 +119,33 @@ async function main() {
     installed.add(example)
   }
 
+  /**
+   * Run one action against one fixture. Kept separate so the caller can record a
+   * failure and keep going instead of aborting the whole run.
+   */
+  async function runAction(action: string, extensionTestsPath: string, example: string) {
+    console.log(`\n\n${chalk.blue('E2E')} ${chalk.magenta(action)} ${chalk.blue('› fixture')} ${chalk.magenta(example)} ${chalk.blue('...')}`)
+    await ensureFixture(example)
+    const fixtureTargetPath = join(fixtureTempPath, example)
+
+    await runTests({
+      extensionDevelopmentPath,
+      extensionTestsPath,
+      version: '1.89.0',
+      launchArgs: [fixtureTargetPath, '--disable-extensions'],
+      extensionTestsEnv: {
+        E2E_ACTION: action,
+        E2E_FIXTURE: example,
+      },
+    })
+
+    console.log(chalk.green(`E2E ${action} › ${example} finished.\n`))
+  }
+
+  // Every failing action is recorded instead of aborting on the first one: a
+  // single broken suite must not hide regressions in the suites after it.
+  const failures: string[] = []
+
   try {
     for (const action of actions) {
       const extensionTestsPath = join(actionsDir, action, 'index')
@@ -106,30 +169,33 @@ async function main() {
       }
 
       for (const example of fixtures) {
-        console.log(`\n\n${chalk.blue('E2E')} ${chalk.magenta(action)} ${chalk.blue('› fixture')} ${chalk.magenta(example)} ${chalk.blue('...')}`)
-        await ensureFixture(example)
-        const fixtureTargetPath = join(fixtureTempPath, example)
-
-        await runTests({
-          extensionDevelopmentPath,
-          extensionTestsPath,
-          version: '1.89.0',
-          launchArgs: [fixtureTargetPath, '--disable-extensions'],
-          extensionTestsEnv: {
-            E2E_ACTION: action,
-            E2E_FIXTURE: example,
-          },
-        })
-
-        console.log(chalk.green(`E2E ${action} › ${example} finished.\n`))
+        try {
+          await runAction(action, extensionTestsPath, example)
+        }
+        catch (error) {
+          failures.push(`${action} › ${example}`)
+          const detail = error instanceof Error ? (error.stack ?? error.message) : String(error)
+          logger.error(`E2E ${action} › ${example} failed\n${detail}`)
+        }
       }
     }
-    process.exit(0)
   }
-  catch {
-    logger.error('Failed to run tests')
+  catch (error) {
+    // Setup-level failure (glob / copy / ...): record it and let the summary
+    // below decide the exit code together with the per-action results.
+    const detail = error instanceof Error ? (error.stack ?? error.message) : String(error)
+    failures.push(`runner setup: ${detail}`)
+  }
+
+  if (failures.length > 0) {
+    logger.error(`Failed to run tests: ${failures.join(', ')}`)
     process.exit(1)
   }
+  process.exit(0)
 }
 
-main()
+main().catch((error) => {
+  logger.error(error instanceof Error ? (error.stack ?? error.message) : String(error))
+  logger.error('Failed to run tests')
+  process.exit(1)
+})

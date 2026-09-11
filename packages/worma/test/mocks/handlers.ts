@@ -25,6 +25,16 @@ export default <RequestHandler[]>[
     const openApiDocs = await openapi301Json()
     return HttpResponse.json(openApiDocs)
   }),
+  // Postman collection transformation: responds with { output: "<stringified openapi>" }
+  http.get('https://api.getpostman.com/collections/:collectionId/transformations', async ({ request }) => {
+    const apiKey = request.headers.get('x-api-key')
+    if (!apiKey) {
+      return HttpResponse.json({ message: 'invalid headers' }, { status: 400 })
+    }
+
+    const openApiDocs = await openapi301Json()
+    return HttpResponse.json({ output: JSON.stringify(openApiDocs) })
+  }),
   http.post('https://api.apifox.com/v1/projects/:projectId/export-openapi', async ({ request }) => {
     // validate headers
     const ver = request.headers.get('X-Apifox-Api-Version')

@@ -1,16 +1,21 @@
+import type { Locale } from '@/lib/i18n'
 import Image from 'next/image'
+import { getHomeDict } from '@/lib/i18n-home'
 import Icon from './Icon'
 
-export default function ProcessFlow() {
+export default function ProcessFlow({ lang }: { lang: Locale }) {
+  const t = getHomeDict(lang)
+  const a = t.processFlow.artifacts
+
   return (
     <section className="tech-border-b bg-surface relative p-12 lg:p-24">
       <div className="font-data-mono text-outline absolute left-4 top-4 text-[10px] tracking-widest">FLOW_VISUALIZATION_V2</div>
-      <h2 className="font-headline-lg text-on-background mb-16 text-center text-4xl font-bold tracking-tighter uppercase">从 OpenAPI 到生产代码</h2>
+      <h2 className="font-headline-lg text-on-background mb-16 text-center text-4xl font-bold tracking-tighter uppercase">{t.processFlow.heading}</h2>
       <div className="relative mx-auto max-w-5xl flex flex-col items-center justify-between gap-12 lg:flex-row">
         <div className="tech-border bg-background relative w-full p-6 lg:w-56">
           <div className="bg-background font-data-mono text-primary absolute left-4 px-2 text-[9px] -top-3">INPUT</div>
           <Icon name="description" className="text-primary mb-4 text-3xl" />
-          <span className="font-data-mono text-on-background block text-xs uppercase">交付 OpenAPI</span>
+          <span className="font-data-mono text-on-background block text-xs uppercase">{t.processFlow.input}</span>
           <div className="bg-outline relative mt-4 h-[1px] w-full">
             <div className="bg-primary absolute h-2 w-2 rounded-full -right-1 -top-1" />
           </div>
@@ -38,16 +43,16 @@ export default function ProcessFlow() {
         <div className="relative grid grid-cols-2 w-full gap-2 lg:w-56">
           <div className="bg-surface font-data-mono text-primary absolute left-4 px-2 text-[9px] -top-3">ARTIFACTS</div>
           <div className="tech-border bg-background p-3 text-center">
-            <span className="font-data-mono text-on-surface-variant block text-[10px]">Code</span>
+            <span className="font-data-mono text-on-surface-variant block text-[10px]">{a.code}</span>
           </div>
           <div className="tech-border bg-background p-3 text-center">
-            <span className="font-data-mono text-on-surface-variant block text-[10px]">Types</span>
+            <span className="font-data-mono text-on-surface-variant block text-[10px]">{a.types}</span>
           </div>
           <div className="tech-border bg-background p-3 text-center">
-            <span className="font-data-mono text-on-surface-variant block text-[10px]">Docs</span>
+            <span className="font-data-mono text-on-surface-variant block text-[10px]">{a.docs}</span>
           </div>
           <div className="tech-border bg-primary p-3 text-center text-black">
-            <span className="font-data-mono block text-[10px] font-bold">AI Skill</span>
+            <span className="font-data-mono block text-[10px] font-bold">{a.skill}</span>
           </div>
         </div>
       </div>

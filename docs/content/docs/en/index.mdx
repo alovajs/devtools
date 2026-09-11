@@ -1,0 +1,107 @@
+---
+title: Introduction
+description: worma  -  One OpenAPI spec, generating both API code and AI knowledge
+---
+
+> Make worma an indispensable part of your AI coding workflow  -  one OpenAPI spec that generates both code developers can call directly, and API knowledge that AI can read.
+
+In AI coding tools (such as Cursor), when the AI tries to call a backend API, it often gets function names and parameters wrong. worma is built to solve exactly this problem.
+
+worma is a general-purpose OpenAPI code generator, independent of backend language and frontend request library. Whether your backend is Java, Go, or Python, your frontend uses Alova, Axios, Fetch, or Ky, and your project runs on Node.js, Deno, or Bun  -  any TypeScript or JavaScript project works, with full type safety from OpenAPI spec all the way to generated code. Just provide one OpenAPI spec file, and you get call functions, TypeScript type definitions, API docs, and an AI Skill all at once.
+
+The name comes from "wormhole"  -  the connection between backend APIs and frontend code should be as direct as a wormhole, with no detours. worma is a heavily redesigned and performance-optimized evolution of `@alova/wormhole` into a general-purpose OpenAPI code generator. Existing `@alova/wormhole` users can migrate smoothly via the `alovaGlobals` template.
+
+## Workflow
+
+<Steps>
+  <Step>
+    **Backend delivers the OpenAPI file**
+
+    Swagger, Knife4j, ApiFox, and more  -  any single OpenAPI spec file is enough to get started.
+
+  </Step>
+  <Step>
+    **Run `worma gen`**
+
+    One command generates two kinds of output at once:
+
+    - **For you**: call functions, TypeScript types, in-editor docs
+    - **For AI**: Skill docs for AI to read directly
+
+    After generation, the following is added to your project:
+
+    <Files>
+      <Folder name=".skills" defaultOpen>
+        <File name="SKILL.md" />
+        <Folder name="references" defaultOpen>
+          <File name="user-info.md" />
+          <File name="user-login.md" />
+        </Folder>
+      </Folder>
+      <Folder name="src/api" defaultOpen>
+        <File name="user.ts" />
+        <File name="types.ts" />
+      </Folder>
+    </Files>
+
+    `.skills/` is a knowledge base for AI to read directly, and `src/api/` is call code that developers can import.
+
+  </Step>
+  <Step>
+    **Coding agent queries the right API automatically**
+
+    Type "implement the user list page", and the AI automatically queries `getUserList({ page: 1 })`  -  with correct function name, parameters, and request path.
+
+    Just describe the business intent; no need to look up API docs  -  the AI matches the right API from the Skill automatically.
+
+  </Step>
+</Steps>
+
+## Core Features
+
+### One-click AI Skill generation
+
+Automatically generates API docs that comply with the Skills spec, supporting [most coding agents](https://www.npmjs.com/package/skills#supported-agents)  -  install and use. The LLM accurately perceives all APIs in the project, avoiding guesses about function names and parameters.
+
+### Four-in-one output
+
+One OpenAPI spec produces call functions, TypeScript types, readable docs, and an AI Skill. Developers use the code, AI uses the knowledge  -  each gets what they need.
+
+### Multiple request libraries plus custom templates
+
+Built-in Alova, Axios, Fetch, and Ky templates, switchable with one click. Teams pick the template that matches their actual request library. For custom needs, freely modify templates via the Handlebars template engine.
+
+### In-editor documentation
+
+After installing the VSCode extension, hover to see the full parameter table and return examples  -  even pure JavaScript projects get near-TypeScript-level type hints. Developers and AI share the same API knowledge, making code completion more accurate.
+
+## Try it now
+
+No local install needed  -  experience it right in the browser:
+
+- [TypeScript example](https://stackblitz.com/fork/github/alovajs/devtools/tree/main/examples/typescript)
+- [ESM example](https://stackblitz.com/fork/github/alovajs/devtools/tree/main/examples/esm)
+- [CommonJS example](https://stackblitz.com/fork/github/alovajs/devtools/tree/main/examples/commonjs)
+- [Monorepo example](https://stackblitz.com/fork/github/alovajs/devtools/tree/main/examples/monorepo)
+
+## Install the worma skill for AI
+
+Add worma's configuration and usage knowledge for your AI:
+
+```bash
+npx skills add alovajs/skills --skill worma-guidelines
+```
+
+After installation, the AI can understand worma's configuration and commands.
+
+## Migrate from existing solutions
+
+worma supports multiple request libraries and integrates smoothly with your current stack:
+
+- Using axios manually? See [Migrating from Axios](/docs/migration/from-axios)
+- Using ky manually? See [Migrating from Ky](/docs/migration/from-ky)
+- Using `@alova/wormhole`? See [Migrating from wormhole](/docs/migration/from-wormhole)
+
+---
+
+[Quick Start](/docs/quick-start)  -  connect in 5 minutes.

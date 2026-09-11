@@ -1,0 +1,67 @@
+---
+title: Built-in Plugins
+description: Usage of all built-in plugins, including importType, aiDoc, swagger/knife4j/yapi/apifox, rename, tagModifier, and more
+---
+
+worma ships the following preset plugins, configured in order within the `plugins` array.
+
+| Plugin | Description | Docs |
+|------|------|------|
+| Template plugins | alova / alovaGlobals / axios / fetch / ky templates | [Predefined Templates](/docs/template-system/predefined-templates) |
+| rename | Rename API call functions and parameter names, with multiple naming styles | [Details](/docs/plugin-system/builtin-plugins/rename) |
+| tagModifier | Change an API's tag name | [Details](/docs/plugin-system/builtin-plugins/tag-modifier) |
+| payloadModifier | Add, remove, and modify an API's parameter types, with tag/path filtering and response unwrapping | [Details](/docs/plugin-system/builtin-plugins/payload-modifier) |
+| apiFilter | Filter APIs by URL and tag | [Details](/docs/plugin-system/builtin-plugins/filter-api) |
+| swagger / knife4j / yapi / apifox | Auto-build or pull each platform's OpenAPI file URL (YApi needs a cookie; Apifox needs projectId and an access token) | [Details](/docs/plugin-system/builtin-plugins/platform) |
+| importType | Reuse external types and exclude them from auto-generation | [Details](/docs/plugin-system/builtin-plugins/import-type) |
+| aiDoc | Generate AI Skill docs | See [AI Skills Integration](/docs/ai-skills) |
+
+## Template plugins
+
+The five predefined templates (alova, alovaGlobals, axios, fetch, ky) are now provided as plugins. Each template plugin returns the template path via its `getTemplate` hook:
+
+```javascript
+import { defineConfig } from 'wormajs';
+import { alova, alovaGlobals, axios, fetch, ky } from 'wormajs/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      // Use the alova functional template
+      plugins: [alova({ framework: 'vue' })],
+    },
+  ],
+});
+```
+
+See [Predefined Templates](/docs/template-system/predefined-templates) for details.
+
+## Plugin ordering
+
+Plugins run in the order they appear in the `plugins` array:
+
+```javascript
+import { defineConfig } from 'wormajs';
+import {
+  rename, tagModifier, payloadModifier, apiFilter, apifox, importType,
+  alova, swagger
+} from 'wormajs/plugin';
+import { aiDoc } from 'wormajs/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      plugins: [
+        swagger('https://petstore3.swagger.io'),
+        rename({ style: 'camelCase' }),
+        tagModifier(tag => `api_${tag}`),
+        payloadModifier([/* ... */]),
+        apiFilter({ include: '/api/v1' }),
+        importType({ 'my-types|type': ['Pagination'] }),
+        alova(),
+        aiDoc(),
+      ],
+    },
+  ],
+});
+```

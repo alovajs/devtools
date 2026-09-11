@@ -1,0 +1,391 @@
+---
+title: 预定义模板
+description: 使用内置的五套预定义模板
+---
+
+
+## alova
+
+按需引入模式，每个 API 作为独立函数导出，支持 Tree-shaking。
+
+```javascript
+import { alova } from 'wormajs/plugin';
+plugins: [alova()];
+```
+
+**模板结构：**
+
+<Files>
+  <Folder name="alova" defaultOpen>
+    <File name="components.d.ts" />
+    <File name="helper.ts" />
+    <File name="index.ts" />
+    <File name="typed.ts" />
+    <Folder name="services" defaultOpen>
+      <File name="index.ts" />
+      <File name="pet.ts" />
+      <File name="store.ts" />
+      <File name="user.ts" />
+    </Folder>
+  </Folder>
+</Files>
+
+<Callout type="idea" title="重新生成时不会被覆盖的文件">
+- `index.ts`（根目录入口）
+- `services/index.ts`（服务导出入口）
+
+因此你可以自由修改这些文件，在 index 中调整导出方式、注入中间件或自定义请求实例配置，重新生成时不会丢失你的改动。
+</Callout>
+
+**使用方法：**
+
+```typescript
+import { getUserList } from './api/alova/services/user';
+
+const users = await getUserList({ params: { page: 1, size: 10 } });
+```
+
+支持 `data`（请求体）、`params`（查询参数）、`pathParams`（路径参数），以及 alova method 的配置参数（如 `cacheFor`、`transform` 等）。
+
+**传递 alova 原生配置参数：**
+
+```typescript
+// cacheFor - 设置缓存时间（毫秒）
+await getUserList({
+  params: { page: 1, size: 10 },
+  cacheFor: 60_000       // alova method 原生参数：缓存 60 秒
+});
+
+// transform - 响应数据转换
+await getPetById({
+  pathParams: { petId: 123 },
+  transform: (data) => data.name  // alova method 原生参数：只取 name 字段
+});
+
+// shareRequest - 共享请求
+await getUserList({
+  shareRequest: false     // alova method 原生参数：禁止请求共享
+});
+```
+
+## alovaGlobals
+
+全局挂载模式，兼容 alova@3（仅 v3，不再支持 v2）。
+
+```javascript
+import { alovaGlobals } from 'wormajs/plugin';
+
+plugins: [alovaGlobals({
+  global: 'Apis',
+  globalHost: 'globalThis',
+})]
+```
+
+**参数说明：**
+
+```typescript
+interface TemplateAlovaGlobalsConfig {
+  /** 全局导出的 api 名称，默认为 'Apis'，多 generator 时为必填且不可重复 */
+  global?: string;
+  /** 全局 api 对象挂载的宿主对象，默认为 'globalThis' */
+  globalHost?: string;
+  /** 使用 import type 方式导入，默认 false */
+  useImportType?: boolean;
+}
+```
+
+> `global` 参数会拼接在每个 API 的 `pathKey` 和 `defaultValue` 最前面（如 `Apis.pet.addPet`），确保全局引用路径正确。
+
+**模板结构：**
+
+<Files>
+  <Folder name="alova-globals" defaultOpen>
+    <File name="apiDefinitions.ts" />
+    <File name="createApis.ts" />
+    <File name="globals.d.ts" />
+    <File name="index.ts" />
+  </Folder>
+</Files>
+
+<Callout type="idea" title="重新生成时不会被覆盖的文件">
+- `index.ts`
+
+因此你可以自由修改这个文件，自定义全局配置或初始化逻辑，重新生成时不会丢失你的改动。
+</Callout>
+
+**使用方法：**
+
+```typescript
+// main.ts — 只需导入一次
+import './api/alova-globals';
+
+// 任意文件中直接使用
+const user = await Apis.user.getUserById({ pathParams: { userId: 123 } });
+```
+
+支持 `data`、`params`、`pathParams`，以及 alova method 的配置参数。
+
+**传递 alova 原生配置参数：**
+
+```typescript
+// cacheFor - 设置缓存时间（毫秒）
+await Apis.user.getUserList({
+  params: { page: 1, size: 10 },
+  cacheFor: 60_000       // alova method 原生参数：缓存 60 秒
+});
+
+// transform - 响应数据转换
+await Apis.pet.getPetById({
+  pathParams: { petId: 123 },
+  transform: (data) => data.name  // alova method 原生参数：只取 name 字段
+});
+```
+
+## axios
+
+生成基于 axios 的调用函数，采用按需引入模式。
+
+```javascript
+import { axios } from 'wormajs/plugin';
+plugins: [axios()];
+```
+
+**模板结构：**
+
+<Files>
+  <Folder name="axios" defaultOpen>
+    <File name="components.d.ts" />
+    <File name="helper.ts" />
+    <File name="index.ts" />
+    <Folder name="services" defaultOpen>
+      <File name="index.ts" />
+      <File name="pet.ts" />
+      <File name="store.ts" />
+      <File name="user.ts" />
+    </Folder>
+  </Folder>
+</Files>
+
+<Callout type="idea" title="重新生成时不会被覆盖的文件">
+- `index.ts`（根目录入口）
+- `services/index.ts`（服务导出入口）
+
+因此你可以自由修改这些文件，在 index 中调整导出方式、注入中间件或自定义请求实例配置，重新生成时不会丢失你的改动。
+</Callout>
+
+**使用方法：**
+
+```typescript
+import { createUser } from './api/axios/services/user';
+
+const newUser = await createUser({ data: { name: 'Alice', email: 'alice@example.com' } });
+```
+
+支持 `data`（请求体，对应 axios 的 `data`）、`params`（查询参数，对应 axios 的 `params`）、`pathParams`（路径参数），以及 axios 请求配置参数（如 `timeout`、`headers` 等）。
+
+**传递 axios 原生配置参数：**
+
+```typescript
+// responseType - 指定响应数据类型
+await getUserList({
+  params: { page: 1, size: 10 },
+  responseType: 'json'    // axios 原生参数
+});
+
+// withCredentials - 跨域请求是否携带 cookie
+await createUser({
+  data: { name: 'Alice' },
+  withCredentials: true    // axios 原生参数
+});
+
+// timeout - 请求超时时间（毫秒）
+await getUserById({
+  pathParams: { userId: 123 },
+  timeout: 5000            // axios 原生参数：5 秒超时
+});
+
+// 自定义 headers
+await getInventory({
+  headers: { 'X-Custom-Header': 'value' }  // axios 原生参数
+});
+```
+
+## fetch
+
+生成基于原生 fetch 的调用函数，零额外依赖，采用按需引入模式。
+
+```javascript
+import { fetch } from 'wormajs/plugin';
+plugins: [fetch()];
+```
+
+**模板结构：**
+
+<Files>
+  <Folder name="fetch" defaultOpen>
+    <File name="FetchClient.ts" />
+    <File name="components.d.ts" />
+    <File name="helper.ts" />
+    <File name="index.ts" />
+    <Folder name="services" defaultOpen>
+      <File name="index.ts" />
+      <File name="pet.ts" />
+      <File name="store.ts" />
+      <File name="user.ts" />
+    </Folder>
+  </Folder>
+</Files>
+
+<Callout type="idea" title="重新生成时不会被覆盖的文件">
+- `index.ts`（根目录入口）
+- `services/index.ts`（服务导出入口）
+
+因此你可以自由修改这些文件，在 index 中调整导出方式、注入中间件或自定义请求实例配置，重新生成时不会丢失你的改动。
+</Callout>
+
+**使用方法：**
+
+```typescript
+import { getUserList } from './api/fetch/services/user';
+
+const users = await getUserList({ params: { page: 1, size: 10 } });
+```
+
+支持 `body`（请求体，对应原生 fetch 的 `body`）、`params`（查询参数）、`pathParams`（路径参数），以及 fetch 请求配置参数（如 `headers`、`signal` 等）。
+
+**传递 fetch 原生配置参数：**
+
+```typescript
+// signal - 请求取消（AbortController）
+const controller = new AbortController();
+await getUserList({
+  params: { page: 1, size: 10 },
+  signal: controller.signal   // fetch 原生参数：可取消请求
+});
+
+// credentials - 控制 cookie 携带策略
+await createUser({
+  body: { name: 'Alice' },
+  credentials: 'include'      // fetch 原生参数：携带 cookie
+});
+
+// 自定义 headers
+await getInventory({
+  headers: { 'X-API-Key': 'xxx' }  // fetch 原生参数
+});
+
+// mode - 请求模式
+await getUserList({
+  params: { status: 'active' },
+  mode: 'cors'                 // fetch 原生参数
+});
+```
+
+## ky
+
+生成基于 [ky](https://github.com/sindresorhus/ky) 的调用函数，采用按需引入模式。
+
+```javascript
+import { ky } from 'wormajs/plugin';
+plugins: [ky()];
+```
+
+**模板结构：**
+
+<Files>
+  <Folder name="ky" defaultOpen>
+    <File name="components.d.ts" />
+    <File name="helper.ts" />
+    <File name="index.ts" />
+    <Folder name="services" defaultOpen>
+      <File name="index.ts" />
+      <File name="pet.ts" />
+      <File name="store.ts" />
+      <File name="user.ts" />
+    </Folder>
+  </Folder>
+</Files>
+
+<Callout type="idea" title="重新生成时不会被覆盖的文件">
+- `index.ts`（根目录入口）
+- `services/index.ts`（服务导出入口）
+
+因此你可以自由修改这些文件，在 index 中调整导出方式、注入中间件或自定义请求实例配置，重新生成时不会丢失你的改动。
+</Callout>
+
+**使用方法：**
+
+```typescript
+import { getUserById } from './api/ky/services/user';
+
+const user = await getUserById({ pathParams: { userId: 123 } });
+```
+
+支持 `json`（请求体，对应 ky 的 `json` 参数）、`searchParams`（查询参数，对应 ky 的 `searchParams`）、`pathParams`（路径参数），以及 ky 请求配置参数（如 `headers`、`timeout`、`retry` 等）。
+
+**传递 ky 原生配置参数：**
+
+```typescript
+// timeout - 请求超时（毫秒）
+await getUserList({
+  searchParams: { page: 1, size: 10 },
+  timeout: 5000              // ky 原生参数：5 秒超时
+});
+
+// retry - 失败重试次数
+await createUser({
+  json: { name: 'Alice' },
+  retry: 3                   // ky 原生参数：最多重试 3 次
+});
+
+// hooks - 请求生命周期钩子
+await uploadFile({
+  body: file,
+  hooks: {
+    beforeRequest: [(r) => console.log('请求前:', r)],
+    afterResponse: [(r) => console.log('响应后:', r)]
+  }                          // ky 原生参数
+});
+
+// headers - 自定义请求头
+await getInventory({
+  headers: { 'Authorization': 'Bearer token' }  // ky 原生参数
+});
+```
+
+## 复用生成的类型
+
+每个 API 除导出调用函数外，还会导出**具名类型别名**，便于在业务流程中直接引用请求参数、请求体与响应的类型。以生成的 `services/pet.ts` 为例：
+
+```typescript
+export type findPetsByStatusResponse = ComponentTypes.Pet[];
+export type findPetsByStatusParams = {
+  /** Status values that need to be considered for filter */
+  status: ('available' | 'pending' | 'sold')[];
+};
+export interface findPetsByStatusExtraConfig {
+  params: findPetsByStatusParams;
+}
+```
+
+别名以生成的函数名作为前缀，各模板与配置键的对应关系如下：
+
+| 别名 | alova | axios | fetch | ky |
+| --- | --- | --- | --- | --- |
+| `<函数名>PathParams` | `pathParams` | `pathParams` | `pathParams` | `pathParams` |
+| `<函数名>Params` | `params` | `params` | `params?` | `searchParams` |
+| `<函数名>Data` | `data` | `data` | `body?` | `json` |
+| `<函数名>Response` | 返回类型 | 返回类型 | 返回类型 | 返回类型 |
+| `<函数名>ExtraConfig` | 函数入参 | 函数入参 | 函数入参 | 函数入参 |
+
+仅当接口真正存在对应参数时才会生成该别名，例如没有查询参数的接口不会生成 `<函数名>Params`。
+
+配合 alova 的 `useForm` 等 hooks 使用时，需要用导出的别名显式标注回调参数（`useForm` 无法从 handler 的返回值反向推断表单类型）：
+
+```typescript
+import { useForm } from 'alova/client';
+import { findPetsByStatus } from './api/alova/services/pet';
+import type { findPetsByStatusParams } from './api/alova/services/pet';
+
+const { send } = useForm((params: findPetsByStatusParams) => findPetsByStatus({ params }));
+```

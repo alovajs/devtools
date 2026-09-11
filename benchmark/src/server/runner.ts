@@ -195,7 +195,7 @@ export async function runSingleBenchmarkWithMem(scale: number, template: string)
     const start = performance.now()
 
     const { promise, getPeakRSS } = withMemoryTracking(() =>
-      generate(config, { force: true, projectPath: baseDir() }),
+      generate(config, { projectPath: baseDir() }),
     )
 
     const results = await promise

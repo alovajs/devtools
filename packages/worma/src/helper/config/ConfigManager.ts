@@ -1,6 +1,7 @@
 import type { Config } from './type'
 import type { ProgressTracker } from '@/helper/progress'
 import { fromError } from 'zod-validation-error'
+import { setGlobalConfig } from '@/config'
 import prepareConfig from '@/functions/prepareConfig'
 import { generatorHelper } from '@/helper/config/GeneratorHelper'
 import { logger } from '@/helper/logger'
@@ -31,6 +32,9 @@ export class ConfigManager {
     // update config
     this.config = validatedConfig
     this.readConfig = Object.freeze(this.config)
+    // 同步格式化配置到全局，供 utils/format 读取。
+    // 每次加载都覆盖（含 undefined），避免跨次生成或测试之间互相污染。
+    setGlobalConfig({ format: validatedConfig.format })
     logger.debug('Configuration loaded successfully', this.config)
   }
 
@@ -80,6 +84,9 @@ export class ConfigManager {
       result.generator = userConfig.generator.map(config => ({
         ...this.defaultGeneratorConfig,
         ...config,
+        // Shallow-spreading would drop the per-field defaults when the user only
+        // sets part of `performance`, so merge that object one level deep.
+        performance: { ...this.defaultGeneratorConfig.performance, ...config.performance },
       }))
     }
     return result

@@ -1,0 +1,294 @@
+---
+title: 平台拉取器
+description: 自动拼接 Swagger / Knife4j / YApi / Apifox / Postman 的 OpenAPI 文件地址
+---
+
+# 平台拉取器
+
+worma 内置五个平台拉取器插件：`swagger`、`knife4j`、`yapi`、`apifox`、`postman`。
+它们的用途是统一的——把平台的基础地址（或项目凭证）作为**插件参数**传入，由插件在
+`config` hook 中拼装出候选 OpenAPI 文件地址并写入 `config.input`，从而无需手动查找和拼接 URL。
+
+> 注意：`input` **不再**在 `config` 上单独设置，而是由平台插件写入。
+
+## 基本使用
+
+```javascript
+import { defineConfig } from 'wormajs';
+import { swagger, alovaGlobals } from 'wormajs/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      output: './src/api',
+      plugins: [swagger('https://petstore3.swagger.io'), alovaGlobals()],
+    },
+  ],
+});
+```
+
+## 支持的平台
+
+| 插件 | 说明 | 参数 |
+|------|------|------|
+| `swagger(input)` | Swagger UI / 服务端 | 基础地址字符串，或字符串数组 |
+| `knife4j(input)` | Knife4j（springdoc / springfox） | 基础地址字符串，或字符串数组 |
+| `yapi(options)` | YApi 项目（私有，需登录 cookie） | `{ url, pid, cookie?, type?, status?, isWiki?, timeout? }` |
+| `apifox(options)` | Apifox 项目（需 projectId 与访问令牌） | `{ projectId, apifoxToken, ... }` |
+| `postman(options)` | Postman 集合（需 apiKey 与 collectionId） | `{ apiKey, collectionId }` |
+
+### 类型签名
+
+```typescript
+import { swagger, knife4j, yapi, apifox, postman } from 'wormajs/plugin';
+
+// URL 型平台：基础地址（单个或数组）作为插件参数
+function swagger(input: string | string[]): ApiPlugin;
+function knife4j(input: string | string[]): ApiPlugin;
+
+// YApi：传入服务地址与项目 ID，拼装导出接口地址
+interface YapiOptions {
+  /** YApi 服务基础地址，例如 `https://yapi.xxx.com` */
+  url: string;
+  /** 项目 ID，必填 */
+  pid: string | number;
+  /** OpenAPI 类型，默认 `OpenAPIV2` */
+  type?: string;
+  /** 接口状态，默认 `all` */
+  status?: string;
+  /** 是否包含 wiki，默认 `true` */
+  isWiki?: boolean;
+  /** 登录 cookie；也可通过 fetchOptions.headers.cookie 传入 */
+  cookie?: string;
+  /** 额外的 fetch 超时（毫秒） */
+  timeout?: number;
+}
+function yapi(options: YapiOptions): ApiPlugin;
+
+// Apifox：通过项目 ID 与访问令牌拉取
+interface ApifoxOptions {
+  /** Apifox 项目 ID */
+  projectId: string;
+  /** Apifox 访问令牌 */
+  apifoxToken: string;
+  /** 语言环境，默认 'zh-CN' */
+  locale?: string;
+  /** Apifox API 版本，默认 '2024-03-28' */
+  apifoxVersion?: string;
+  /** 按标签筛选接口 */
+  selectedTags?: string[];
+  /** 排除指定标签的接口 */
+  excludedByTags?: string[];
+  /** OpenAPI 版本，默认 '3.0' */
+  oasVersion?: '2.0' | '3.0' | '3.1';
+  /** 导出格式，默认 'JSON' */
+  exportFormat?: 'JSON' | 'YAML';
+  /** 是否包含 Apifox 扩展属性，默认 false */
+  includeApifoxExtensionProperties?: boolean;
+  /** 是否将文件夹路径作为标签，默认 false */
+  addFoldersToTags?: boolean;
+}
+function apifox(options: ApifoxOptions): ApiPlugin;
+
+// Postman：通过 API Key 与 collection uid 拉取
+interface PostmanOptions {
+  /** Postman API Key */
+  apiKey: string;
+  /** 集合的 uid */
+  collectionId: string;
+}
+function postman(options: PostmanOptions): ApiPlugin;
+```
+
+## 平台规则（URL 型）
+
+URL 型平台（`swagger` / `knife4j`）接收一个或多个基础地址，对每个地址生成候选 URL 数组：
+
+| 插件 | 生成的 input 候选（以 `<base>` 为例） |
+|------|----------------------------------------|
+| `swagger` | `<base>/openapi.json`、`<base>/v2/swagger.json`、`<base>/api/v3/openapi.json`、`<base>` |
+| `knife4j` | `<base>/v3/api-docs`、`<base>/v2/api-docs`、`<base>` |
+
+框架会依次尝试每个候选 URL，返回第一个成功的结果（详见 `getOpenApiData`）。
+
+### 多地址
+
+传入数组即可对多个基础地址分别拼装并合并：
+
+```javascript
+swagger(['https://a.com', 'https://b.com'])
+```
+
+## YApi 插件（特殊：需 cookie）
+
+YApi 项目是私有的，必须通过其自带的导出接口拉取 OpenAPI 文档，且需要**登录 cookie** 鉴权。
+`yapi` 插件会根据服务基础地址（`url`）与项目 ID（`pid`）拼装导出地址：
+
+```
+<url>/api/plugin/exportSwagger?type=<type>&pid=<pid>&status=<status>&isWiki=<isWiki>
+```
+
+- `url` 必填，指向你的 YApi 服务基础地址（如 `https://yapi.xxx.com`）；
+- `pid` 必填，用于拼装导出地址；
+- `type` / `status` / `isWiki` 均可外部指定，默认值分别为 `OpenAPIV2` / `all` / `true`；
+- `cookie` 必填，否则插件会直接抛出清晰错误（而不是静默失败）；
+- `cookie` 也可通过 `fetchOptions.headers.cookie` 传入，`yapi` 会优先使用插件参数中的 `cookie`。
+
+```javascript
+import { defineConfig } from 'wormajs';
+import { yapi, alovaGlobals } from 'wormajs/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      output: './src/api',
+      plugins: [
+        yapi({
+          url: 'https://yapi.xxx.com',
+          pid: 123,
+          cookie: '_yapi_token=xxx; _yapi_uid=yyy',
+        }),
+        alovaGlobals(),
+      ],
+    },
+  ],
+});
+```
+
+如果缺少 `url`、`pid` 或 `cookie`，`config` 阶段会立即抛出错误，例如：
+
+```
+[yapi] `cookie` is required. YApi projects are private, so the export endpoint
+needs your login cookie to fetch the OpenAPI document.
+  e.g. yapi({ url: "https://yapi.xxx.com", pid: 123, cookie: "_yapi_token=xxx; ..." })
+```
+
+## Apifox 插件（特殊：需令牌）
+
+Apifox 与 URL 型平台不同：它不使用基础地址，而是通过 Apifox 开放 API，用 `projectId` + `apifoxToken`
+直接导出项目的 OpenAPI 文档。插件会在 `config` hook 中拼装出导出接口地址，并自动注入 Bearer 令牌与导出参数
+（通过 `fetchOptions` 以 `POST` + `body` 方式请求）。
+
+- `projectId` 必填，指向你的 Apifox 项目 ID；
+- `apifoxToken` 必填，作为 `Authorization: Bearer <token>` 鉴权；
+- 其余参数用于筛选范围、选择 OpenAPI 版本与导出格式等。
+
+```javascript
+import { defineConfig } from 'wormajs';
+import { apifox, alovaGlobals } from 'wormajs/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      output: './src/api',
+      plugins: [
+        apifox({
+          projectId: 'proj-123',
+          apifoxToken: 'token-abc',
+        }),
+        alovaGlobals(),
+      ],
+    },
+  ],
+});
+```
+
+### 参数说明
+
+> 各参数含义与取值可参考 Apifox 官方「参数设置」文档：[Apifox 参数设置文档](https://s.apifox.cn/apidoc/docs-site/4478210/api-173411997)
+
+| 参数名 | 类型 | 默认值 | 描述 |
+|--------|------|--------|------|
+| `projectId` | `string` | — | Apifox 项目 ID |
+| `apifoxToken` | `string` | — | Apifox 访问令牌 |
+| `locale` | `string` | `'zh-CN'` | 语言环境 |
+| `apifoxVersion` | `string` | `'2024-03-28'` | Apifox API 版本 |
+| `selectedTags` | `string[]` | — | 按标签筛选接口 |
+| `excludedByTags` | `string[]` | — | 排除指定标签的接口 |
+| `oasVersion` | `'2.0' \| '3.0' \| '3.1'` | `'3.0'` | OpenAPI 版本 |
+| `exportFormat` | `'JSON' \| 'YAML'` | `'JSON'` | 导出格式 |
+| `includeApifoxExtensionProperties` | `boolean` | `false` | 是否包含 Apifox 扩展属性 |
+| `addFoldersToTags` | `boolean` | `false` | 是否将文件夹路径作为标签 |
+
+### 按标签筛选
+
+```javascript
+apifox({
+  projectId: 'proj-123',
+  apifoxToken: 'token-abc',
+  selectedTags: ['order', 'user'],
+})
+```
+
+### 排除指定标签
+
+```javascript
+apifox({
+  projectId: 'proj-123',
+  apifoxToken: 'token-abc',
+  excludedByTags: ['test', 'deprecated'],
+})
+```
+
+### 自定义 OpenAPI 版本与导出格式
+
+```javascript
+apifox({
+  projectId: 'proj-123',
+  apifoxToken: 'token-abc',
+  oasVersion: '3.1',
+  exportFormat: 'YAML',
+})
+```
+
+## Postman 插件（特殊：需 API Key）
+
+Postman 的集合（collection）本身不是 OpenAPI 文档，需要先通过 Postman 的**集合转换接口**转换成 OpenAPI 定义：
+
+```
+https://api.getpostman.com/collections/<collectionId>/transformations
+```
+
+`postman` 插件会在 `config` hook 中把该地址写入 `config.input`，并通过 `fetchOptions` 注入 `x-api-key` 请求头；
+由于该接口返回的是 `{ output: "<OpenAPI 文档>" }`，插件还会在 `beforeSpecParse` hook 中把这一层外壳解开，再交给生成器解析。
+
+- `apiKey` 必填，作为 `x-api-key` 请求头鉴权（在 Postman → Settings → API keys 中生成）；
+- `collectionId` 必填，为集合的 uid；
+- 转换接口只能转换**你有权限**的集合，公开集合需先 fork 到自己的 workspace，否则会返回 403。
+
+```javascript
+import { defineConfig } from 'wormajs';
+import { postman, alovaGlobals } from 'wormajs/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      output: './src/api',
+      plugins: [
+        postman({
+          apiKey: 'PMAK-xxx',
+          collectionId: '12345678-a1b2-c3d4-e5f6-7890abcdef12',
+        }),
+        alovaGlobals(),
+      ],
+    },
+  ],
+});
+```
+
+### 参数说明
+
+| 参数名 | 类型 | 默认值 | 描述 |
+|--------|------|--------|------|
+| `apiKey` | `string` | — | Postman API Key |
+| `collectionId` | `string` | — | 集合的 uid |
+
+## 工作原理
+
+这些平台插件都通过 `config` hook 修改 `config.input`：
+
+1. 插件参数为平台地址（`swagger` / `knife4j`）、`yapi` 的 `{ url, pid, cookie, ... }`、`apifox` 的 `{ projectId, apifoxToken, ... }`，或 `postman` 的 `{ apiKey, collectionId }`；
+2. URL 型插件根据平台类型自动拼装生成 OpenAPI 文件 URL 数组；`yapi` 根据 `url` + `pid` 拼装 `exportSwagger` 导出地址并注入 `cookie`；`apifox` 则拼装 Apifox 导出接口地址并注入 Bearer 令牌与导出参数；`postman` 则写入集合转换接口地址并注入 `x-api-key`，再在 `beforeSpecParse` 中解开返回的外壳；
+3. 将结果赋值给 `config.input`。
+
+由于插件的 `config` hook 在配置校验之前执行，因此即使 `config` 上不写 `input`，校验也能通过。

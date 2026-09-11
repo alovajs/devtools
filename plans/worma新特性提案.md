@@ -852,13 +852,12 @@ export default defineConfig({
 
 ### 平台规则
 
-用户通过 `swagger('<url>')` / `knife4j('<url>')` / `fastapi('<url>')` 传入平台基础地址（或地址数组），插件内部据此自动拼接 OpenAPI 文件地址数组并写入 `config.input` 供后续依次尝试；YApi 较为特殊，使用 `yapi({ url, pid, cookie })` 传入服务基础地址、项目 ID 与登录 cookie，插件据此拼装 `exportSwagger` 导出地址。
+用户通过 `swagger('<url>')` / `knife4j('<url>')` 传入平台基础地址（或地址数组），插件内部据此自动拼接 OpenAPI 文件地址数组并写入 `config.input` 供后续依次尝试；YApi 较为特殊，使用 `yapi({ url, pid, cookie })` 传入服务基础地址、项目 ID 与登录 cookie，插件据此拼装 `exportSwagger` 导出地址。
 
 | 平台类型    | 生成的 input 数组                                                                    |
 | ----------- | ------------------------------------------------------------------------------------ |
 | `'swagger'` | `['<input>/api/v3/openapi.json', '<input>/v2/swagger.json', '<input>/openapi.json']` |
 | `'knife4j'` | `['<input>/v3/api-docs', '<input>/v2/api-docs']`                                     |
-| `'fastapi'` | `['<input>/openapi.json']`                                                           |
 | `'yapi'`    | `['<input>']`（需包含 pid/token 参数）                                               |
 
 ## config.input 支持 string[]

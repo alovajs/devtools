@@ -1,5 +1,11 @@
+'use client'
+
 import type { ComponentType } from 'react'
+import type { Locale } from '@/lib/i18n'
 import { Code2, FileText, Globe, Link as LinkIcon, Mail, Newspaper } from 'lucide-react'
+import { usePathname } from 'next/navigation'
+import { isLocale } from '@/lib/i18n'
+import { getHomeDict } from '@/lib/i18n-home'
 import SectionHeader from './SectionHeader'
 import SectionLabel from './SectionLabel'
 
@@ -35,37 +41,64 @@ export interface Contributor {
 }
 
 /**
- * Beta 阶段贡献者名单。
+ * Beta 阶段贡献者名单（按语言提供展示文案）。
  *
- * 新增 / 调整贡献者时，只需维护此数组即可，页面会自动渲染。
+ * 新增 / 调整贡献者时，只需维护此对象即可，页面会自动渲染。
  * 每位贡献者的链接通过 `links` 数组自定义，不一定指向 GitHub。
  * （当前为示例数据，请替换为真实的 beta 贡献者。）
  */
-export const betaContributors: Contributor[] = [
-  {
-    name: 'Jin Park',
-    role: 'Beta 体验官',
-    contributions: ['深度使用', 'bug猎手', '体验打磨'],
-    links: [
-      { type: 'github', url: 'https://github.com/jinpark-dev' },
-    ],
-  },
-  {
-    name: '李慕',
-    role: 'Beta 体验官',
-    contributions: ['深度使用', '改进献策', '细节把关'],
-    links: [
-      { type: 'github', url: 'https://github.com/limu-dev' },
-    ],
-  },
-  {
-    name: 'em_zh_z',
-    avatar: '/img/em_zh_z.jpg',
-    role: 'Beta 体验官',
-    contributions: ['bug猎手', '深度使用'],
-    links: [],
-  },
-]
+export const betaContributors: Record<Locale, Contributor[]> = {
+  en: [
+    {
+      name: 'Jin Park',
+      role: 'Beta Tester',
+      contributions: ['Power user', 'Bug hunter', 'Polish'],
+      links: [
+        { type: 'github', url: 'https://github.com/jinpark-dev' },
+      ],
+    },
+    {
+      name: 'Li Mu',
+      role: 'Beta Tester',
+      contributions: ['Power user', 'Ideas', 'Details'],
+      links: [
+        { type: 'github', url: 'https://github.com/limu-dev' },
+      ],
+    },
+    {
+      name: 'em_zh_z',
+      avatar: '/img/em_zh_z.jpg',
+      role: 'Beta Tester',
+      contributions: ['Bug hunter', 'Power user'],
+      links: [],
+    },
+  ],
+  zh: [
+    {
+      name: 'Jin Park',
+      role: 'Beta 体验官',
+      contributions: ['深度使用', 'bug猎手', '体验打磨'],
+      links: [
+        { type: 'github', url: 'https://github.com/jinpark-dev' },
+      ],
+    },
+    {
+      name: '李慕',
+      role: 'Beta 体验官',
+      contributions: ['深度使用', '改进献策', '细节把关'],
+      links: [
+        { type: 'github', url: 'https://github.com/limu-dev' },
+      ],
+    },
+    {
+      name: 'em_zh_z',
+      avatar: '/img/em_zh_z.jpg',
+      role: 'Beta 体验官',
+      contributions: ['bug猎手', '深度使用'],
+      links: [],
+    },
+  ],
+}
 
 const defaultLabels: Record<string, string> = {
   github: 'GitHub',
@@ -115,24 +148,28 @@ function renderLink(link: ContributorLink) {
 }
 
 export default function Contributors() {
+  const pathname = usePathname()
+  const locale: Locale = isLocale(pathname.split('/')[1] ?? '') ? (pathname.split('/')[1] as Locale) : 'en'
+  const t = getHomeDict(locale)
+
   return (
     <section className="relative my-8 overflow-hidden border border-[var(--color-fd-border)] bg-[var(--color-fd-background)] bg-[radial-gradient(var(--color-fd-border)_1px,transparent_1px)_0_0/40px_40px]">
       <SectionLabel>CONTRIBUTORS // BETA_PHASE</SectionLabel>
       <div className="border-b border-[var(--color-fd-border)] p-8 lg:p-12">
-        <SectionHeader label="// 社区贡献者" title="BETA 贡献者" />
+        <SectionHeader label={t.contributors.headerLabel} title={t.contributors.title} />
         <p className="mt-6 max-w-2xl font-body-md text-sm leading-relaxed text-[var(--color-fd-muted-foreground)]">
-          worma 仍处于 beta 阶段，以下伙伴参与了早期的设计、开发与验证。每一项贡献，无论大小，都让虫洞连接更通畅。
+          {t.contributors.desc}
         </p>
         <div className="mt-6 font-data-mono text-[10px] tracking-[0.3em] uppercase text-[var(--color-fd-primary)]">
           TOTAL //
           {' '}
-          {betaContributors.length}
+          {betaContributors[locale].length}
           {' '}
-          CONTRIBUTORS
+          {t.contributors.total}
         </div>
       </div>
       <div className="grid grid-cols-1 gap-px bg-[var(--color-fd-border)] sm:grid-cols-2 lg:grid-cols-3">
-        {betaContributors.map(contributor => (
+        {betaContributors[locale].map(contributor => (
           <div
             key={contributor.name}
             className="group relative flex flex-col gap-4 bg-[var(--color-fd-card)] p-6 transition-colors hover:bg-[var(--color-fd-muted)]"

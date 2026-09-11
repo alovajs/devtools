@@ -23,7 +23,7 @@ describe('generate() progress reporting', () => {
         ],
       },
       {
-        force: true,
+
         onProgress: (e) => {
           events.push({ ...e })
         },
@@ -73,7 +73,7 @@ describe('generate() progress reporting', () => {
         ],
       },
       {
-        force: true,
+
         onProgress: (e) => {
           events.push({ ...e })
         },
@@ -109,7 +109,7 @@ describe('generate() progress reporting', () => {
           },
         ],
       },
-      { force: true },
+      {},
     )).resolves.toBeDefined()
   })
 })

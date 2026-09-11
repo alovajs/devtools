@@ -1,15 +1,8 @@
 import { MethodType, RequestBody } from 'alova';
 import { OpenAPIV3_1 } from 'openapi-types';
+import { FormatConfig as OxfmtFormatConfig } from 'oxfmt';
 import { z } from 'zod/v3';
 
-declare const DEFAULT_CONFIG: {
-	cacheDir: string;
-	/** Overrides cacheDir's parent directory for monorepo unified cache. */
-	cacheRoot: string | undefined;
-	Error: ErrorConstructor;
-	templateData: Map<string, any>;
-};
-export declare function setGlobalConfig(config: Partial<typeof DEFAULT_CONFIG>): void;
 export type OpenAPIDocument = OpenAPIV3_1.Document;
 export type SchemaObject = OpenAPIV3_1.SchemaObject;
 export type Parameter = OpenAPIV3_1.ParameterObject;
@@ -203,10 +196,33 @@ export interface PerformanceConfig {
 	transformConcurrency?: number;
 	/** Max parallelism for file writes. Default 32 */
 	writeConcurrency?: number;
-	/** Apply prettier formatting to final files before write. Default true (schema-level prettier is always disabled) */
-	formatFile?: boolean;
-	/** Sort tags/APIs/components alphabetically for deterministic output. Default true */
+	/**
+	 * Sort the collected component types alphabetically so the output order stays
+	 * stable regardless of worker scheduling. `false` keeps collection order.
+	 * Default true
+	 */
 	deterministicSort?: boolean;
+}
+/**
+ * 生成产物的格式化配置。
+ *
+ * 除 `enabled` 外的所有字段都是 oxfmt 原生选项，worma 不做校验、原样透传给 oxfmt，
+ * 由 oxfmt 自行校验；类型提示直接来自 oxfmt，因此随 oxfmt 版本自动保持同步。
+ *
+ * @example
+ * ```js
+ * // 关闭格式化
+ * format: { enabled: false }
+ *
+ * // 自定义风格
+ * format: { printWidth: 100, trailingComma: 'all', semi: false }
+ * ```
+ */
+export interface FormatOptions extends OxfmtFormatConfig {
+	/**
+	 * 是否格式化生成的代码，默认 true。
+	 */
+	enabled?: boolean;
 }
 export interface GeneratorConfig {
 	/**
@@ -324,6 +340,17 @@ export interface Config {
 	 * Currently, only OpenAPI specifications are supported, including OpenAPI 2.0 and 3.0 specifications.
 	 */
 	generator: GeneratorConfig[];
+	/**
+	 * 生成产物的格式化配置（基于 oxfmt），对所有 generator 生效。
+	 * 除 `enabled` 外的字段原样透传给 oxfmt，worma 不做额外校验。
+	 *
+	 * @example
+	 * ```js
+	 * format: { enabled: false }
+	 * format: { printWidth: 100, trailingComma: 'all', semi: false }
+	 * ```
+	 */
+	format?: FormatOptions;
 }
 export type UserConfig = Config;
 export type UserConfigFnObject = () => UserConfig;
@@ -437,12 +464,83 @@ export type GeneratorProgressEvent = {
 	phase: "failed";
 	error: string;
 });
+/** Id and aggregated row counts of a change record persisted by one `generate()` run. */
+export interface RecordedChangeInfo {
+	/** Zero-padded record id, e.g. `"0007"` */
+	id: string;
+	added: number;
+	removed: number;
+	modified: number;
+}
 export interface GenerateApiOptions {
-	force?: boolean;
 	projectPath?: string;
 	/** Per-generator lifecycle callback. Receives a discriminated union of {@link GeneratorProgressEvent}. */
 	onProgress?: (event: GeneratorProgressEvent) => void;
+	/**
+	 * Called once when this run persisted a change record, with its id and
+	 * aggregated counts. Never called when the source document did not change,
+	 * so callers can tell "source updated" apart from "nothing to record".
+	 */
+	onChangeRecorded?: (change: RecordedChangeInfo) => void;
 }
+export type SourceStatus = "unchanged" | "changed" | "new" | "error";
+export interface SourceUpdateInfo {
+	/** Index inside `config.generator` */
+	index: number;
+	output: string;
+	serverName?: string;
+	status: SourceStatus;
+	/** The URL / file that actually served the spec — also the cache key */
+	resolvedInput?: string;
+	/** Normalized hash of the raw spec text */
+	hash?: string;
+	error?: string;
+}
+export interface CheckUpdatesResult {
+	projectPath: string;
+	updates: SourceUpdateInfo[];
+	hasChanges: boolean;
+	/**
+	 * Whether the project already carries a generation baseline (any index entry
+	 * with a non-empty `tags` map). Lets callers decide whether a `new` source is
+	 * worth surfacing: a brand-new project must stay silent on its first run,
+	 * while an established project that gained a source should be noticed.
+	 */
+	hasGenerationBaseline: boolean;
+}
+/**
+ * Detect whether the configured OpenAPI sources changed since the last
+ * recorded baseline.
+ *
+ * This is a **source-level, side-effect free** check:
+ *
+ * - it only hashes the raw spec text — no parsing, no plugin hooks;
+ * - it only reads/writes the `source` sub-field of `index.json` entries, never
+ *   the generation-side `hash` / `tags`;
+ * - when no baseline exists yet (`new`) it writes the baseline silently and
+ *   does *not* report a change (first run must not nag the user).
+ *
+ * Nothing on the user's disk is rewritten — callers decide what to do with the
+ * result (the VS Code extension asks for confirmation before generating).
+ */
+export declare function checkUpdates(config: Config, options?: {
+	projectPath?: string;
+}): Promise<CheckUpdatesResult>;
+declare const DEFAULT_CONFIG: {
+	cacheDir: string;
+	/** Overrides cacheDir's parent directory for monorepo unified cache. */
+	cacheRoot: string | undefined;
+	/**
+	 * Maximum number of `changes/<NNNN>.json` records to keep.
+	 * `0` (or any non-positive value) keeps every record.
+	 */
+	changeHistoryLimit: number;
+	/** 用户自定义的产物格式化配置，未设置时使用内置默认值 */
+	format: FormatOptions | undefined;
+	Error: ErrorConstructor;
+	templateData: Map<string, any>;
+};
+export declare function setGlobalConfig(config: Partial<typeof DEFAULT_CONFIG>): void;
 export type TemplatePreset = "alova" | "alovaGlobals" | "axios" | "fetch" | "ky";
 export interface ConfigCreationOptions {
 	projectPath?: string;
@@ -461,13 +559,168 @@ export declare function defineConfig(config: UserConfigFnPromise): UserConfigFnP
 export declare function defineConfig(config: UserConfigFn): UserConfigFn;
 export declare function defineConfig(config: UserConfigExport): UserConfigExport;
 /**
+ * Structural diff of the **source** OpenAPI document.
+ *
+ * The baseline is the document parsed from the `beforeSpecParse` output, i.e.
+ * taken *before* the `specParsed` hooks run: it is the source file as authored,
+ * not the plugin-normalised document that generation consumes. Every difference
+ * is reported as a flat {@link SourceChange} row so a caller (the CLI table, the
+ * editor webview, a CI script) can render it without any further shaping.
+ *
+ * Design notes:
+ * - `$ref`s are deliberately **not** inlined: the record is a source view, so a
+ *   component change is reported once under `#/components/...`, with the
+ *   affected operations attached as `affects` (resolved through the reverse
+ *   `$ref` index, including transitive references) so the impact stays visible
+ *   without duplicating the row.
+ * - Description-ish keys are still recorded (they are source changes) but get
+ *   the `doc` level so callers can de-emphasise them.
+ */
+/** Category of a change row. */
+export type ChangeKind = "api" | "param" | "body" | "resp" | "comp" | "meta";
+/** `+` added, `-` removed, `~` modified. */
+export type ChangeOp = "+" | "-" | "~";
+/** Coarse severity, used for ordering and colour only. */
+export type ChangeLevel = "breaking" | "additive" | "doc";
+/** One flattened source-document change. */
+export interface SourceChange {
+	op: ChangeOp;
+	kind: ChangeKind;
+	/** `GET /pets`, `#/components/schemas/Pet` or `#/info` */
+	target: string;
+	/** Location inside the target, e.g. `query.status.schema.enum` */
+	item?: string;
+	/** Short description, e.g. `createPet -> addPet` or `+"sold"` */
+	detail?: string;
+	level: ChangeLevel;
+	/**
+	 * Operations affected by a `comp` change, rendered as a list next to the
+	 * change (one per line). Always absent for non-component kinds.
+	 */
+	affects?: string[];
+}
+/**
+ * Diff two source documents and return the flattened change rows.
+ *
+ * Returns an empty array when the documents are structurally identical, so the
+ * caller can decide not to write a change record at all.
+ */
+export declare function diffSourceDocument(before: unknown, after: unknown): SourceChange[];
+/** Alias accepted by {@link getChange} — resolves to the newest record. */
+export declare const LATEST_CHANGE_ID = "latest";
+/** One generator's (output's) contribution to a change record. */
+export interface ChangeItem {
+	output: string;
+	serverName?: string;
+	/** URL / file that served the spec this record was built from */
+	resolvedInput?: string;
+	/** Flattened source-document changes (see `diffSourceDocument`) */
+	changes: SourceChange[];
+}
+/** Aggregated row counts of a change record. */
+export interface ChangeCounts {
+	added: number;
+	removed: number;
+	modified: number;
+}
+/** Lightweight list entry returned by {@link listChanges}. */
+export interface ChangeSummary {
+	id: string;
+	createdAt: number;
+	summary: {
+		generators: number;
+	} & ChangeCounts;
+	outputs: string[];
+}
+/** A full change record — one `generate()` run aggregated. */
+export interface Change {
+	/** Record schema; `1` for the source-document view (absent on legacy records) */
+	schemaVersion?: number;
+	id: string;
+	createdAt: number;
+	projectPath: string;
+	generators: ChangeItem[];
+}
+/** Aggregate the change rows of every generator into flat counts. */
+export declare function countChanges(generators: ChangeItem[]): ChangeCounts;
+/**
+ * List recorded changes, newest first.
+ *
+ * Sorted by `createdAt` (id as tie-breaker) rather than by file name: an id is
+ * only chronological as long as `index.json#changeSeq` never resets, and a
+ * reset would otherwise make a brand-new record show up last.
+ */
+export declare function listChanges(projectPath: string): Promise<ChangeSummary[]>;
+/**
+ * Read a single change record.
+ *
+ * @param projectPath absolute path of the project root
+ * @param id `"0007"` or the alias `"latest"` (newest record)
+ */
+export declare function getChange(projectPath: string, id: string): Promise<Change | undefined>;
+/** A newly added or removed API (identified by `method` + `path`). */
+export interface ApiChange {
+	method: string;
+	path: string;
+	name?: string;
+	tag?: string;
+}
+/** An API that still exists but whose definition changed. */
+export interface ApiFieldChange extends ApiChange {
+	/** Names of the fields whose value differs between the two versions */
+	changedFields: string[];
+}
+export interface ApiDiffResult {
+	added: ApiChange[];
+	removed: ApiChange[];
+	modified: ApiFieldChange[];
+}
+/**
+ * Stable matching key for an API.
+ *
+ * `method` + `path` is used instead of `name` because it survives function
+ * renames: a renamed API is reported as *modified* rather than
+ * removed + added.
+ */
+export declare function apiDiffKey(api: Pick<Api, "method" | "path">): string;
+/**
+ * Diff two API lists at API level.
+ *
+ * @param oldApis API list as of the previous generation (from cache)
+ * @param newApis API list parsed from the current spec
+ */
+export declare function diffApis(oldApis?: Api[], newApis?: Api[]): ApiDiffResult;
+/**
+ * The source document as of the last successful generation.
+ *
+ * It is captured **before** the `specParsed` hooks run, so the snapshot is the
+ * source file the user authored (after `beforeSpecParse`), not the document the
+ * plugin pipeline turns it into.
+ */
+export interface SourceSnapshot {
+	version: number;
+	/** URL / file that served the spec */
+	resolvedInput?: string;
+	/** Hash of the stable-stringified document */
+	hash: string;
+	updatedAt: number;
+	/** The stable-stringified document, parsed back into a plain value */
+	doc: unknown;
+}
+/** Stable hash of a stable-stringified source document. */
+export declare function sourceDocumentHash(documentText: string): string;
+/** Read one generator's last source snapshot. */
+export declare function readSourceSnapshot(projectRoot: string, outputPath: string): Promise<SourceSnapshot | null>;
+/** Persist one generator's source snapshot. */
+export declare function writeSourceSnapshot(projectRoot: string, outputPath: string, snapshot: SourceSnapshot): Promise<void>;
+/**
  * Generate relevant API information based on the configuration object.
  *
  * When `options.onProgress` is provided, each generator independently reports
  * its lifecycle via {@link GeneratorProgressEvent} discriminated union events.
  *
  * @param config generating config
- * @param options config rules that contains `force`, `projectPath`, `onProgress`
+ * @param options config rules that contains `projectPath`, `onProgress`
  * @returns An array that contains the result of `generator` items in configuration whether generation is successful.
  */
 export declare function generate(config: Config, options?: GenerateApiOptions): Promise<boolean[]>;

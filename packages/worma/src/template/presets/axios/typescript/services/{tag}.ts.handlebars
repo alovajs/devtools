@@ -8,11 +8,15 @@ import type * as ComponentTypes from '../components';
 const {{{currentTag.tag}}}DefaultConfig = resolveTagDefaultConfig(defaultConfig, '{{{currentTag.tag}}}DefaultConfig');
 
 {{#each currentTag.apis}}
-type {{{name}}}Response = {{addNamespace response @root.componentNames}};
-type {{{name}}}ExtraConfig = Omit<AxiosRequestConfig, 'data' | 'params'> & {
-  {{#if pathParameters}}pathParams: {{addNamespace pathParameters @root.componentNames}};
-  {{/if}}{{#if queryParameters}}params: {{addNamespace queryParameters @root.componentNames}};
-  {{/if}}{{#if requestBody}}data: {{addNamespace requestBody @root.componentNames}};
+export type {{{name}}}Response = {{addNamespace response @root.componentNames}};
+{{#if pathParameters}}export type {{{name}}}PathParams = {{addNamespace pathParameters @root.componentNames}};
+{{/if}}{{#if queryParameters}}export type {{{name}}}Params = {{addNamespace queryParameters @root.componentNames}};
+{{/if}}{{#if requestBody}}export type {{{name}}}Data = {{addNamespace requestBody @root.componentNames}};
+{{/if}}
+export type {{{name}}}ExtraConfig = Omit<AxiosRequestConfig, 'data' | 'params'> & {
+  {{#if pathParameters}}pathParams: {{{name}}}PathParams;
+  {{/if}}{{#if queryParameters}}params: {{{name}}}Params;
+  {{/if}}{{#if requestBody}}data: {{{name}}}Data;
   {{/if}}
 };
 {{> api-jsdoc}}

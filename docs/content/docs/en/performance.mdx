@@ -1,0 +1,79 @@
+---
+title: Performance
+description: worma's performance optimization design for large-scale OpenAPI generation
+---
+
+worma has been optimized over multiple rounds and can stably handle OpenAPI documents with **5000+ APIs**. The repository ships a self-contained `benchmark/` project covering **500 – 5000 APIs**, so generation time and artifact size can be reproduced at each scale.
+
+## Multi-threaded Schema → TS conversion
+
+Schema-to-TypeScript conversion is pure CPU work with no external side effects, making it a natural fit for parallelism. worma uses a generic `WorkerPool` to distribute conversion tasks across multiple worker threads.
+
+### Adaptive pool size
+
+The worker thread count is derived from the API count by `pickPoolSize(apiCount)`:
+
+| APIs | Workers |
+|------|---------|
+| ≤ 20 | 0 (main thread) |
+| ≤ 1000 | `min(2, CPU cores)` |
+| ≤ 3000 | `min(4, CPU cores)` |
+| ≤ 8000 | `min(⌈CPU cores × 0.75⌉, CPU cores)` |
+| > 8000 | `max(2, CPU cores − 1)` |
+
+- Zero overhead for small projects, full multi-core utilization for large ones
+- Lazy start (spawn on first task) + auto-recycle after 30s idle
+- Pool instances are reused in-process by `PoolManager`, keyed by output directory, so repeated generation skips worker creation
+- Zero dependencies, built entirely on the `node:worker_threads` module
+
+## Render and write pipeline
+
+Generation runs in a per-tag phase followed by a global phase; per-tag artifacts are rendered first and then written in a single batch:
+
+```
+Parse OpenAPI → Convert schemas in parallel (worker pool) → Aggregate by tag
+  → Render all per-tag files → Write them in one concurrent batch
+  → Render and write global templates → Drop artifacts of removed tags
+```
+
+- **Tag phase**: tags are rendered in order and their artifacts are collected in memory (the `beforeFileWrite` hook runs here); once every tag is rendered, all files are written in a single batch so write concurrency is fully saturated, instead of many small sequential write batches
+- **Global phase**: global templates such as `index.ts` and `types.ts` are rendered and written after the tag phase
+- Before writing, all target directories are created in batch; files are then written in batches of `writeConcurrency` (32 by default) to avoid holding too many file handles
+- Artifacts (directories and files) of tags removed from the spec are deleted, so nothing stale is left behind
+
+## Incremental generation
+
+Tag-level incremental rendering via hash comparison makes the second generation much faster:
+
+- Compute a SHA256 fingerprint (16 chars) for each API
+- Two kinds of data live in the cache directory (`.worma-cache/` by default):
+  - `index.json`: KB-level metadata holding each entry's aggregate hash and per-tag hashes
+  - `data/<slug>/<tag>.json`: per-tag API data, loaded on demand
+  - The legacy `data/<slug>.json` single-file layout is still readable
+- Incremental checks only need to read `index.json`, no need to load the full API data
+- Only re-render tags whose hash changed; global templates (index.ts, types.ts, etc.) are always rendered
+- No "full rebuild" switch: `generate()` always renders incrementally (only re-renders tags with changed hashes, while global templates are always rendered)
+
+## Concurrency throttling
+
+- `transform` concurrency cap is computed automatically: `min(64, max(8, cpus*4))`, avoiding O(n) Promise spikes that blow up peak memory
+- Write concurrency is 32, with batched mkdir then parallel writes
+
+## Other optimizations
+
+- **Schema normalization reuse**: the dual-output path normalizes a schema only once (cached by schema identity in a `WeakMap`), and both the type and JSDoc parses reuse that result, avoiding repeated clone + transform work
+- **Handlebars caching**: the Handlebars instance, compiled templates and registered partials are all cached per template path, so repeated generation in the same process has zero redundant overhead
+- **Deterministic output ordering**: collected component types are sorted lexicographically by name (controlled by `performance.deterministicSort`, on by default), so worker scheduling cannot drift the artifact order
+
+## Performance config
+
+Every strategy above can be tuned through `generator[].performance`; when left unset, the defaults are exactly the automatic behavior described earlier:
+
+| Field | Default | Effect |
+|-------|---------|--------|
+| `workerPool` | `'auto'` | `'auto'` adapts the pool size to the API count; a number pins it; `false` disables workers |
+| `transformConcurrency` | auto | `transform` phase concurrency cap, default `min(64, max(8, cpus*4))` |
+| `writeConcurrency` | `32` | Write concurrency |
+| `deterministicSort` | `true` | Whether to sort component output lexicographically |
+
+See [Configuration Object → PerformanceConfig](/docs/api/configuration#performanceconfig) for accepted values.

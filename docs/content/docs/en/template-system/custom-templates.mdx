@@ -1,0 +1,347 @@
+---
+title: Custom Templates
+description: Create custom code-generation templates with Handlebars
+---
+
+When the predefined templates don't meet your needs, build a fully custom Handlebars template.
+
+If you'd rather not write a template from scratch, install the worma Skill and let the AI coding assistant generate a custom worma template from this page's docs:
+
+```bash
+npx skills add alovajs/skills --skill worma-guidelines
+```
+
+Then describe your need in the AI chat, e.g.:
+
+```text
+Create a custom worma template. My requirement is: xxx
+```
+
+## Basic usage
+
+Custom templates return the template path via the plugin's `getTemplate` hook. You can also use a plugin function in `plugins` that returns the template path directly:
+
+```javascript
+import { defineConfig } from "wormajs";
+import { functional } from "wormajs/plugin";
+
+export default defineConfig({
+  generator: [
+    {
+      plugins: [
+        functional({
+          path: "./my-template",
+          config: { customOption: "value" },
+        }),
+      ],
+    },
+  ],
+});
+```
+
+## Directory structure and file rules
+
+### Basic structure
+
+Every `.handlebars` file in the template directory (except `partials/`) is rendered as a target template; the generated code mirrors the template's file structure.
+
+### `{tag}` dynamic filename
+
+Use the `{tag}` placeholder in a filename to render multiple files, iterating over the OpenAPI tags:
+
+```text
+my-template/
+├── index.ts.handlebars       # → index.ts
+└── {tag}.ts.handlebars       # → user.ts, article.ts, order.ts ...
+```
+
+Inside a `{tag}` template you can access the `currentTag` object (type [`ApiDoc`](#tagedApis)). Use `currentTag.tag` for the current tag name and `currentTag.apis` for the API list under that tag.
+
+### `{api}` dynamic filename
+
+Name a file `{api}` (e.g. `{api}.ts`) to render multiple files, iterating over the [`allApis`](#allApis) array and replacing `{api}` with the API name. Inside an `{api}` template you can access the `currentApi` object (type [`Api`](#tagedApis)).
+
+```text
+my-template/
+├── index.ts.handlebars       # → index.ts
+└── {api}.ts.handlebars       # → getUser.ts, createUser.ts, deleteUser.ts ...
+```
+
+`currentTag` and `currentApi` are only valid in the context of their corresponding dynamic filename.
+
+### `#` no-overwrite prefix
+
+Prefix a filename with `#` to mark it as created once and never overwritten afterward:
+
+```text
+my-template/
+├── #index.ts.handlebars      # created on first run, not overwritten later (named index.ts after generation)
+└── index.ts.handlebars       # overwritten every time
+```
+
+### Module-type subfolders
+
+Split into module-type subfolders to match different project setups:
+
+```text
+my-template/
+├── typescript/               # generates .ts files
+│   ├── index.ts.handlebars
+│   └── types.ts.handlebars
+├── module/                   # generates .mjs files
+│   ├── index.mjs.handlebars
+│   └── types.d.ts.handlebars
+└── common/                   # generates .cjs files
+    ├── index.cjs.handlebars
+    └── types.d.cts.handlebars
+```
+
+`TemplateData.type` values:
+
+- `typescript` — uses the `typescript/` folder
+- `module` — uses the `module/` folder
+- `commonjs` — uses the `common/` folder
+- `auto` — auto-detect
+
+A template may provide only some of these subfolders. A missing type raises a clear error:
+
+```text
+Template "ky" does not support module type "commonjs". Supported types: typescript, module
+```
+
+When no module-type subfolders are used, every handlebars file under the template path is rendered as a target template.
+
+## Handlebars syntax
+
+```handlebars
+{{! comment }}
+
+{{! variable output }}
+{{keyName}}
+{{{unescapedHtml}}}
+
+{{! condition }}
+{{#if pathParameters}} ... {{/if}}
+{{#or pathParameters queryParameters}} ... {{/or}}
+
+{{! loop }}
+{{#each tagedApis}}
+  {{#apis}}
+    export const
+    {{{name}}}
+    = () => {};
+  {{/apis}}
+{{/each}}
+
+{{! comparison }}
+{{#if (eq type "typescript")}} ... {{/if}}
+```
+
+## Predefined helpers
+
+worma auto-registers a set of common Handlebars helpers before rendering, ready to use in templates:
+
+| Helper            | Signature                                   | Description                                                                                  |
+| ----------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------- |
+| `isType`          | `(value, type, options)`                   | Check whether `value` is a given type (e.g. `'array'`, `'object'`); use with `{{#isType}}`   |
+| `and`             | `(...args)`                                | Renders block content only when all args are truthy; use with `{{#and}}`                     |
+| `or`              | `(...args)`                                | Renders block content when any arg is truthy; use with `{{#or}}`                             |
+| `eq`              | `(a, b)`                                   | Check `a === b`; use with `{{#if (eq a b)}}`                                                 |
+| `not`             | `(a, b)`                                   | Check `a !== b`; use with `{{#if (not a b)}}`                                                |
+| `join`            | `(...args)`                                | Concatenate all args into a string                                                           |
+| `raw`             | `(text)`                                   | Output raw HTML without escaping special characters                                          |
+| `stripStarPrefix` | `(text)`                                   | Strip the leading `* ` prefix from each line; handy for cleaning JSDoc comments              |
+| `addNamespace`     | `(typeStr, componentNames, importName?)`   | Add a namespace prefix to component names (in `componentNames`) that appear in a type string  |
+
+Examples:
+
+```handlebars
+{{! type check }}
+{{#isType pathParameters "object"}}
+  // path parameters are an object type
+{{else}}
+  // path parameters are another type
+{{/isType}}
+
+{{! combined conditions }}
+{{#and hasQueryParams (eq method "GET")}}
+  // has query params and is a GET request
+{{/and}}
+
+{{! strip * prefix }}
+{{{stripStarPrefix queryParametersComment}}}
+```
+
+### `addNamespace`
+
+When generating type references, component schemas (component schema) are usually imported via a namespace, e.g.:
+
+```typescript
+import type * as ComponentTypes from "../components";
+```
+
+`addNamespace` scans the type string and prefixes PascalCase identifiers that appear in `componentNames` (one of the [top-level fields](#top-level-fields)) with the namespace prefix. Identifiers not in `componentNames` (like `string`, `Record`) stay unchanged, and already-prefixed identifiers aren't double-prefixed. It works consistently for top-level types, generics, object literals, and arrays.
+
+**Parameters:**
+
+- `typeStr` — the type expression string to process (e.g. the `response`, `requestBody` fields).
+- `componentNames` — the list of component names to prefix; usually pass `@root.componentNames`.
+- `importName` (optional) — the namespace import name, **defaulting to `ComponentTypes`**. Pass a custom name when your template uses a different import name.
+
+```handlebars
+{{! default ComponentTypes prefix }}
+type {{{name}}}Response = {{addNamespace response @root.componentNames}};
+{{! input Pet       → output ComponentTypes.Pet }}
+{{! input Pet[]     → output ComponentTypes.Pet[] }}
+{{! input List<Pet> → output List<ComponentTypes.Pet> }}
+{{! input string    → output string (not in componentNames, unchanged) }}
+
+{{! custom import name: import type * as Types from '../components'; }}
+type {{{name}}}Response = {{addNamespace response @root.componentNames "Types"}};
+{{! input Pet → output Types.Pet }}
+```
+
+You can also register extra custom helpers via the plugin's `onHandlebarsCreated` hook:
+
+```javascript
+{
+  name: 'my-helpers',
+  onHandlebarsCreated({ hbs }) {
+    hbs.registerHelper('uppercase', (str) => str.toUpperCase());
+  },
+}
+```
+
+## Template data structure
+
+The following data is available during template rendering. `TemplateData` extends the standard OpenAPI document structure and adds helper fields auto-generated by worma.
+
+### Top-level fields
+
+| Field             | Type                  | Description                                                           |
+| ---------------- | --------------------- | --------------------------------------------------------------------- |
+| `openapi`        | `string`              | OpenAPI spec version                                                 |
+| `baseUrl`        | `string`              | API base URL, extracted from OpenAPI `servers[0].url`                |
+| `type`           | `string`              | Module type: `'typescript'` \| `'module'` \| `'commonjs'`            |
+| `title`          | `string`              | OpenAPI `info.title`                                                 |
+| `version`        | `string`              | OpenAPI `info.version`                                               |
+| `description`    | `string`              | OpenAPI `info.description`                                           |
+| `contact`        | `object`              | OpenAPI `info.contact`                                               |
+| `framework`      | `string`              | Framework tag: `vue` \| `react` \| `svelte` \| `solid-js` \| `nuxt`  |
+| `defaultKey`     | `boolean`             | Whether this is the default config                                   |
+| `components`     | `string[]`            | Schema/Component definitions                                         |
+| `componentNames` | `string[]`            | All generated component schema names                                  |
+| `allApis`        | [`Api[]`](#allApis)          | Flat list of all APIs, in the original (pre-tag-grouping) order      |
+| `tagedApis`      | [`ApiDoc[]`](#tagedApis)     | API list grouped by OpenAPI tag                                      |
+| `config`         | `Record<string, any>` | Custom params passed in via template config                          |
+
+### Fields inherited from OpenAPI
+
+`TemplateData` spreads the entire OpenAPI document object, so templates can also access directly:
+
+| Field              | Description                          |
+| ------------------ | ----------------------------------- |
+| `openapi`          | OpenAPI spec version                |
+| `info.title`       | Document title                      |
+| `info.version`     | Document version                    |
+| `info.description` | Document description                |
+| `info.contact`     | Contact info                        |
+| `servers`          | Server list                         |
+| `paths`            | API path definitions               |
+| `components`       | Component definitions (schemas, responses, etc.) |
+| `tags`             | Tag list                           |
+
+### Generated API grouping data
+
+#### `tagedApis: ApiDoc[]` [#tagedApis]
+
+The API list grouped by OpenAPI tag. Each `ApiDoc`:
+
+```typescript
+interface ApiDoc {
+  /** The tag name of this group */
+  tag: string;
+  /** All APIs under this tag */
+  apis: Api[];
+}
+
+interface Api {
+  /** The owning tag */
+  tag: string;
+  /** Function name (operationId) */
+  name: string;
+  /** HTTP method (uppercase), e.g. GET, POST */
+  method: string;
+  /** API summary / description */
+  summary: string;
+  /** URL path */
+  path: string;
+  /** Path parameter type string */
+  pathParameters: string;
+  /** Query parameter type string */
+  queryParameters: string;
+  /** Path parameter JSDoc comment (optional) */
+  pathParametersComment?: string;
+  /** Query parameter JSDoc comment (optional) */
+  queryParametersComment?: string;
+  /** Response body JSDoc comment (optional) */
+  responseComment?: string;
+  /** Request body JSDoc comment (optional) */
+  requestBodyComment?: string;
+  /** Response body TypeScript type string */
+  response: string;
+  /** Request body TypeScript type string (optional) */
+  requestBody?: string;
+  /** API call code example */
+  callingCode?: string;
+}
+```
+
+Template iteration example:
+
+```handlebars
+{{#each tagedApis}}
+  // tag:
+  {{tag}}
+  {{#each apis}}
+    export function
+    {{{name}}}(params:
+    {{{pathParameters}}}) { return request('{{method}}', '{{path}}'); }
+  {{/each}}
+{{/each}}
+```
+
+#### `allApis: Api[]` [#allApis]
+
+A flat list of all APIs, in the original (pre-tag-grouping) order.
+
+## Partials
+
+The `partials/` folder under the template root is auto-registered as partials, referenced by filename:
+
+```text
+my-template/
+├── partials/
+│   └── comment.handlebars     # {{> comment}}
+├── index.ts.handlebars
+└── {tag}.ts.handlebars
+```
+
+```handlebars
+{{> comment}}  <!-- includes partials/comment.handlebars -->
+```
+
+## Full example
+
+```text
+my-template/
+├── partials/
+│   └── license.handlebars
+├── typescript/
+│   ├── index.ts.handlebars
+│   ├── {tag}.ts.handlebars
+│   └── #config.ts.handlebars
+└── module/
+    ├── index.mjs.handlebars
+    └── {tag}.mjs.handlebars
+```

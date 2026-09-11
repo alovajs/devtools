@@ -209,9 +209,6 @@ export class MultiGeneratorRenderer {
       else if (st.status === 'failed') {
         row += `\n      ${theme.error(`✖ ${st.error || 'failed'}`)}`
       }
-      else if (st.status === 'skipped') {
-        row += `  ${theme.dim('up-to-date')}`
-      }
 
       // Add blank line between rows for readability
       lines.push(row)
@@ -257,7 +254,7 @@ export class MultiGeneratorRenderer {
       console.log(theme.success('\n✔ Generated successfully!\n'))
     }
     else {
-      console.log(theme.dim('\n  Try `worma gen -f` to force regenerate.\n'))
+      console.log(theme.dim('\n  Generation finished with failures. See the log above for details.\n'))
     }
   }
 }
@@ -480,9 +477,6 @@ export class MultiProjectRenderer {
           else if (st.status === 'failed') {
             row += `\n      ${theme.error(`✖ ${st.error || 'failed'}`)}`
           }
-          else if (st.status === 'skipped') {
-            row += `  ${theme.dim('up-to-date')}`
-          }
 
           lines.push(row)
           lines.push('')
@@ -564,7 +558,7 @@ export class MultiProjectRenderer {
       console.log(theme.success('\n✔ Generated successfully!\n'))
     }
     else {
-      console.log(theme.dim('\n  Try `worma gen -f` to force regenerate.\n'))
+      console.log(theme.dim('\n  Generation finished with failures. See the log above for details.\n'))
     }
   }
 }

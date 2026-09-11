@@ -1,192 +1,176 @@
-import type { PayloadModifierConfig } from './type'
-import type {
-  ApiDescriptor,
-  ApiPlugin,
-  Parameter,
-  SchemaObject,
-} from '@/type'
-import { ParameterIn, PluginName } from '@/constant'
+import type { PatchResult } from './patch'
+import type { Matcher, PayloadModifierConfig } from './type'
+import type { ApiDescriptor, ApiPlugin, SchemaObject } from '@/type'
+import { PluginName } from '@/constant'
+import { logger } from '@/helper/logger'
 import { extend, isMatch } from '../utils'
-import { applyModifierSchema } from './hepler'
+import { stripRef } from './dsl'
+import { applyFieldValue } from './patch'
+import { getScopeSchema, setScopeSchema } from './scope'
 
-export { Schema, SchemaAllOf, SchemaAnyOf, SchemaArray, SchemaEnum, SchemaOneOf, SchemaPrimitive, SchemaReference } from './type'
+export type {
+  FieldPatchObject,
+  FieldTable,
+  FieldValue,
+  Matcher,
+  ModifierConfig,
+  ModifierScope,
+  PayloadModifierConfig,
+  SchemaDSL,
+  SchemaPrimitive,
+} from './type'
 
-// Convert parameters of a specific type (query/path) into an object schema
-function parametersToSchema(parameters: Parameter[] | undefined, type: ParameterIn): SchemaObject {
-  if (!parameters || !Array.isArray(parameters)) {
-    return { type: 'object', properties: {}, required: [] }
+const LOG_TAG = '[payloadModifier]'
+
+/** Tests a value against one or more rules. No rule given = everything matches. */
+function matchRule(value: string, rule?: Matcher | Matcher[]): boolean {
+  if (rule === undefined) {
+    return true
   }
-  const schema: SchemaObject = { type: 'object', properties: {}, required: [] }
-  for (const param of parameters) {
-    if (param.in === type) {
-      ;(schema.properties as Record<string, SchemaObject>)[param.name] = param.schema as SchemaObject
-      if (param.required) {
-        ;(schema.required as string[]).push(param.name)
-      }
-    }
-  }
-  return schema
+  const rules = Array.isArray(rule) ? rule : [rule]
+  return rules.some(item => isMatch(value, item))
 }
 
-// Convert an object schema back to parameters, keeping other types untouched
-function schemaToParameters(
-  parameters: Parameter[] | undefined,
-  schema: SchemaObject | null,
-  type: ParameterIn,
-): Parameter[] | undefined {
-  if (!parameters || !Array.isArray(parameters)) {
-    return parameters
+/** Tag dimension: any tag hitting any rule makes the config apply. */
+function matchTags(tags: string[] | undefined, rule?: Matcher | Matcher[]): boolean {
+  if (rule === undefined) {
+    return true
   }
-  if (!schema || typeof schema !== 'object' || !schema.properties) {
-    return parameters.filter(param => param.in !== type)
+  if (!Array.isArray(tags) || tags.length === 0) {
+    return false
   }
-  const requiredSet = new Set(Array.isArray(schema.required) ? (schema.required as string[]) : [])
-  const newParameters: Parameter[] = []
-  for (const param of parameters) {
-    if (param.in !== type) {
-      newParameters.push(param)
-      continue
-    }
-    const propSchema = (schema.properties as Record<string, NonNullable<Parameter['schema']>>)[param.name]
-    if (!propSchema) {
-      continue
-    }
-    newParameters.push({
-      ...param,
-      schema: propSchema as Parameter['schema'],
-      required: requiredSet.has(param.name),
-    })
-  }
-  return newParameters
+  return tags.some(tag => matchRule(tag, rule))
 }
 
-// Apply modifications to properties of an object schema (used when `match` is set)
-function modifySchemaProperties<T extends SchemaObject = SchemaObject>(schema: T, config: PayloadModifierConfig): T {
-  if (!schema || typeof schema !== 'object') {
-    return schema
-  }
-  const targetSchema: SchemaObject = { ...schema }
-
-  // recurse into union keywords
-  if (Array.isArray(targetSchema.oneOf)) {
-    targetSchema.oneOf = targetSchema.oneOf.map(item => modifySchemaProperties(item, config))
-  }
-  if (Array.isArray(targetSchema.anyOf)) {
-    targetSchema.anyOf = targetSchema.anyOf.map(item => modifySchemaProperties(item, config))
-  }
-  if (Array.isArray(targetSchema.allOf)) {
-    targetSchema.allOf = targetSchema.allOf.map(item => modifySchemaProperties(item, config))
-  }
-  // modify matched properties
-  if (targetSchema.properties) {
-    const props = { ...targetSchema.properties } as Record<string, SchemaObject>
-    let required: string[] = Array.isArray(targetSchema.required) ? [...targetSchema.required] : []
-
-    for (const key of Object.keys(props)) {
-      if (!isMatch(key, config.match)) {
-        continue
-      }
-      const { required: requiredOverride, schema: schemaValue } = applyModifierSchema(
-        props[key],
-        config,
-        { required: required.includes(key), key },
-      )
-      required = required.filter(r => r !== key)
-      if (!schemaValue) {
-        delete props[key]
-        continue
-      }
-      props[key] = schemaValue
-      if (requiredOverride) {
-        required.push(key)
-      }
-    }
-    targetSchema.properties = props
-    targetSchema.required = Array.from(new Set(required))
-  }
-  return targetSchema as T
+/** Interface filters are ANDed together. */
+function matchApi(apiDescriptor: ApiDescriptor, config: PayloadModifierConfig): boolean {
+  return matchRule(apiDescriptor.url ?? '', config.path)
+    && matchTags(apiDescriptor.tags, config.tag)
 }
 
-// Apply modifications to matched parameters (used when `match` is set for params/pathParams)
-function modifyParameters(
-  parameters: Parameter[],
-  type: ParameterIn,
+/**
+ * Navigates an unwrap path. Only `properties` is followed, so array items are out of
+ * reach by design — use `handler` for those. Returns `undefined` when a segment is missing.
+ */
+function unwrapSchema(root: SchemaObject, path: string): SchemaObject | undefined {
+  let node: SchemaObject | undefined = root
+  for (const segment of path.split('.')) {
+    if (!node || !node.properties) {
+      return undefined
+    }
+    node = (node.properties as Record<string, SchemaObject>)[segment]
+  }
+  return node
+}
+
+/** Runs patch then handler on a single located node. */
+function applyStages(
+  node: SchemaObject,
+  key: string | undefined,
   config: PayloadModifierConfig,
-): Parameter[] {
-  if (!parameters || !Array.isArray(parameters)) {
-    return parameters
-  }
-  return parameters.map((param) => {
-    if (param.in !== type || !isMatch(param.name, config.match)) {
-      return param
+  warn: (message: string) => void,
+): PatchResult {
+  let result: PatchResult = { schema: node }
+
+  if ('patch' in config) {
+    result = applyFieldValue(node, config.patch!, { warn })
+    if (!result.schema) {
+      return result
     }
-    const { schema, required } = applyModifierSchema(
-      param.schema!,
-      config,
-      { required: !!param.required, key: param.name },
-    )
-    if (!schema) {
-      return null
-    }
-    return { ...param, schema, required }
-  }).filter(item => item !== null)
-}
-
-// Apply config to a parameter scope (params or pathParams)
-function applyToParameters(
-  parameters: Parameter[] | undefined,
-  type: ParameterIn,
-  config: PayloadModifierConfig,
-): Parameter[] | undefined {
-  if (!parameters)
-    return undefined
-  if (config.match) {
-    return modifyParameters(parameters, type, config)
   }
-  const schema = parametersToSchema(parameters, type)
-  const result = applyModifierSchema(schema, config, { required: false })
-  return schemaToParameters(parameters, result.schema, type)
-}
 
-// Apply config to a schema scope (data or response)
-function applyToSchemaField(
-  schema: SchemaObject | undefined,
-  config: PayloadModifierConfig,
-): SchemaObject | undefined {
-  if (!schema)
-    return undefined
-  if (config.match) {
-    return modifySchemaProperties(schema, config)
+  if (config.handler) {
+    const handled = config.handler(result.schema as SchemaObject, key)
+    return { schema: handled ? stripRef(handled) : null, required: result.required }
   }
-  return applyModifierSchema(schema, config, { required: false }).schema ?? undefined
+
+  return result
 }
 
-function payloadModifierApiDescriptor(apiDescriptor: ApiDescriptor, config: PayloadModifierConfig) {
-  if (!apiDescriptor)
-    return null
-  // API path filter: if path does not match, return as-is and this config does not apply
-  if (!isMatch(apiDescriptor.url, config.path))
+function applyConfig(apiDescriptor: ApiDescriptor, config: PayloadModifierConfig): ApiDescriptor {
+  if (!apiDescriptor || !matchApi(apiDescriptor, config)) {
     return apiDescriptor
-  const newDescriptor = { ...apiDescriptor }
-  const { scope } = config
-  switch (scope) {
-    case 'params':
-      newDescriptor.parameters = applyToParameters(newDescriptor.parameters, ParameterIn.QUERY, config)
-      break
-    case 'pathParams':
-      newDescriptor.parameters = applyToParameters(newDescriptor.parameters, ParameterIn.PATH, config)
-      break
-    case 'data':
-      newDescriptor.requestBody = applyToSchemaField(newDescriptor.requestBody, config)
-      break
-    case 'response':
-      newDescriptor.responses = applyToSchemaField(newDescriptor.responses, config)
-      break
   }
-  return newDescriptor
+
+  const warn = (message: string) => logger.warn(`${LOG_TAG} ${message}`)
+  const root = getScopeSchema(apiDescriptor, config.scope)
+  if (!root) {
+    return apiDescriptor
+  }
+
+  // 1. redirect: the scope root itself is replaced before anything else runs
+  let located: SchemaObject = root
+  if (config.unwrap !== undefined) {
+    const unwrapped = unwrapSchema(root, config.unwrap)
+    if (!unwrapped) {
+      warn(`unwrap "${config.unwrap}" does not exist in scope "${config.scope}" of ${apiDescriptor.url}, config skipped`)
+      return apiDescriptor
+    }
+    located = stripRef(unwrapped)
+  }
+
+  // 2. locate: either the root itself or every matching top-level field
+  if (config.match === undefined) {
+    const { schema } = applyStages(located, undefined, config, warn)
+    const next: ApiDescriptor = { ...apiDescriptor }
+    setScopeSchema(next, config.scope, schema)
+    return next
+  }
+
+  const keys = Object.keys(located.properties ?? {}).filter(key => isMatch(key, config.match!))
+  if (!keys.length) {
+    return apiDescriptor
+  }
+
+  const properties: Record<string, SchemaObject> = { ...(located.properties ?? {}) } as Record<string, SchemaObject>
+  const required = new Set<string>(Array.isArray(located.required) ? located.required as string[] : [])
+  for (const key of keys) {
+    const result = applyStages(properties[key], key, config, warn)
+    if (!result.schema) {
+      delete properties[key]
+      required.delete(key)
+      continue
+    }
+    properties[key] = result.schema
+    if (result.required ?? required.has(key)) {
+      required.add(key)
+    }
+    else {
+      required.delete(key)
+    }
+  }
+
+  const next: ApiDescriptor = { ...apiDescriptor }
+  setScopeSchema(next, config.scope, {
+    ...located,
+    properties,
+    required: Array.from(required),
+  } as SchemaObject)
+  return next
 }
 
+/**
+ * Flexibly adds, deletes and modifies the payload of your APIs.
+ *
+ * Every config runs the same fixed pipeline: interface filter (`path` / `tag`) → redirect
+ * (`unwrap`) → locate (`match`) → patch (`patch`) → custom (`handler`). Configs are applied
+ * in array order, so a later config sees the result of the previous ones.
+ *
+ * @example
+ * ```ts
+ * payloadModifier([
+ *   { scope: 'response', unwrap: 'data' },
+ *   { scope: 'response', match: /[Ii]d$/, patch: 'string' },
+ *   { scope: 'data', path: '/planPoint', patch: { operatorId: { type: 'string', required: true } } },
+ * ])
+ * ```
+ */
 export function payloadModifier(configs: PayloadModifierConfig[]): ApiPlugin {
+  // Guards against the config hook being run twice for the same descriptor,
+  // which happens when the CLI loads the same plugin instance more than once.
+  const processed = Symbol('worma:payloadModifier:processed')
+  const list = Array.isArray(configs) ? configs : [configs]
+
   return {
     name: PluginName.PAYLOAD_MODIFIER,
     config({ config }) {
@@ -195,13 +179,17 @@ export function payloadModifier(configs: PayloadModifierConfig[]): ApiPlugin {
           if (!apiDescriptor) {
             return null
           }
-          // Apply each configuration in sequence
-          return configs.reduce<ApiDescriptor | null>((desc, conf) => {
-            if (!desc) {
-              return null
-            }
-            return payloadModifierApiDescriptor(desc, conf)
-          }, apiDescriptor)
+          if ((apiDescriptor as Record<symbol, unknown>)[processed]) {
+            return apiDescriptor
+          }
+          const next = list.reduce<ApiDescriptor | null>(
+            (descriptor, conf) => (descriptor ? applyConfig(descriptor, conf) : null),
+            apiDescriptor,
+          )
+          if (next) {
+            (next as Record<symbol, unknown>)[processed] = true
+          }
+          return next
         },
       })
     },

@@ -1,16 +1,17 @@
 import type { GeneratorProgressEvent } from 'wormajs'
 import path from 'node:path'
-import { ProgressLocation, window } from 'vscode'
+import { commands, ProgressLocation, window } from 'vscode'
 import { showError } from '@/components/event'
 import ApiGenerate from '@/core/ApiGenerate'
 import worma from '@/helper/worma'
+import { withProjectCwd } from '@/utils/cwd'
 import { getWorkspacePaths, registerCommand } from '@/utils/vscode'
 import { Commands } from './commands'
-import { endLoading, loading } from './statusBar'
+import { endLoading, loading, setUpdateIndicator } from './statusBar'
 
 interface ActionItem {
   label: string
-  action: 'createConfig' | 'generateApis' | 'generateApisForce'
+  action: 'createConfig' | 'generateApis' | 'generateApisForce' | 'reviewChanges'
 }
 
 interface ProjectItem {
@@ -63,8 +64,8 @@ export const showStatusBarActions: CommandType = {
   commandId: Commands.status_bar_show_actions,
   handler: () => async () => {
     const actions: ActionItem[] = [
-      { label: '$(zap) Generate APIs', action: 'generateApis' },
-      { label: '$(sync) Force Generate APIs', action: 'generateApisForce' },
+      { label: '$(sync) Generate APIs', action: 'generateApis' },
+      { label: '$(git-compare) Review API Changes', action: 'reviewChanges' },
       { label: '$(new-file) Create config file', action: 'createConfig' },
     ]
 
@@ -73,6 +74,11 @@ export const showStatusBarActions: CommandType = {
       placeHolder: 'Select an action',
     })
     if (!picked) {
+      return
+    }
+
+    if (picked.action === 'reviewChanges') {
+      await commands.executeCommand(Commands.open_changes)
       return
     }
 
@@ -85,7 +91,7 @@ export const showStatusBarActions: CommandType = {
     if (picked.action === 'createConfig') {
       for (const projectPath of targetProjects) {
         try {
-          await worma.createConfig({ projectPath })
+          await withProjectCwd(projectPath, () => worma.createConfig({ projectPath }))
         }
         catch (error) {
           showError(error)
@@ -93,7 +99,6 @@ export const showStatusBarActions: CommandType = {
       }
     }
     else {
-      const isForce = picked.action === 'generateApisForce'
       try {
         loading()
         await ApiGenerate.readConfig(targetProjects.length === allProjects.length ? undefined : targetProjects)
@@ -102,12 +107,11 @@ export const showStatusBarActions: CommandType = {
         await window.withProgress(
           {
             location: ProgressLocation.Notification,
-            title: isForce ? 'Force Generating APIs' : 'Generating APIs',
+            title: 'Generating APIs',
             cancellable: false,
           },
           async (progress) => {
             await ApiGenerate.generate({
-              force: isForce,
               projectPath,
               onProgress(event: GeneratorProgressEvent) {
                 if (event.phase !== 'progress')
@@ -119,7 +123,9 @@ export const showStatusBarActions: CommandType = {
             })
           },
         )
-        ApiGenerate.showError()
+        await ApiGenerate.showError()
+        // Generation succeeded → clear the persistent "update available" state.
+        setUpdateIndicator(0)
       }
       catch (error) {
         showError(error)

@@ -44,9 +44,23 @@ export type GeneratorProgressEvent = {
   | { phase: 'failed', error: string }
 )
 
+/** Id and aggregated row counts of a change record persisted by one `generate()` run. */
+export interface RecordedChangeInfo {
+  /** Zero-padded record id, e.g. `"0007"` */
+  id: string
+  added: number
+  removed: number
+  modified: number
+}
+
 export interface GenerateApiOptions {
-  force?: boolean
   projectPath?: string
   /** Per-generator lifecycle callback. Receives a discriminated union of {@link GeneratorProgressEvent}. */
   onProgress?: (event: GeneratorProgressEvent) => void
+  /**
+   * Called once when this run persisted a change record, with its id and
+   * aggregated counts. Never called when the source document did not change,
+   * so callers can tell "source updated" apart from "nothing to record".
+   */
+  onChangeRecorded?: (change: RecordedChangeInfo) => void
 }

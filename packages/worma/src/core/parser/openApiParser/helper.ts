@@ -87,8 +87,11 @@ const isRemoteUrl = (u: string) => /^https?:\/\//.test(u)
 /**
  * Fetch the raw spec text (JSON/YAML) from the first URL that succeeds.
  * Returns the raw text together with the resolved URL; throws if all URLs fail.
+ *
+ * Exported as `getRawSpecText` so that update detection (requirement A) can
+ * hash the source without parsing it or running any plugin hook.
  */
-async function fetchRawText(
+export async function getRawSpecText(
   urls: string[],
   options: { projectPath?: string, fetchOptions?: FetchOptions },
 ): Promise<{ text: string, url: string }> {
@@ -108,22 +111,13 @@ async function fetchRawText(
         ? await fetchRawRemoteFile(u, fetchOptions)
         : await fetchRawLocalFile(u, projectPath)
 
-      // Quick parse + validity check (full parse + Swagger2→OpenAPI3 conversion
-      // happens later in parseSpec, after beforeSpecParse may rewrite the text).
-      let probe: any
-      try {
-        probe = JSON.parse(text)
-      }
-      catch (jsonError) {
-        try {
-          probe = YAML.load(text) as any
-        }
-        catch (yamlError) {
-          throw new Error(`${u}: ${(jsonError instanceof Error ? jsonError.message : String(jsonError))} (YAML: ${yamlError instanceof Error ? yamlError.message : String(yamlError)})`)
-        }
-      }
-      if (!isValidOpenApiData(probe)) {
-        throw new Error(`${u} did not yield a valid OpenAPI/Swagger document`)
+      // Nothing is parsed here on purpose: the OpenAPI validity check runs in
+      // parseSpec, i.e. after `beforeSpecParse` may rewrite the text. Only
+      // payloads that can never be a spec (HTML error pages, e.g. a Swagger UI
+      // page hit instead of its spec document) are rejected so that Promise.any
+      // falls through to the next URL.
+      if (!couldBeSpecText(text)) {
+        throw new Error(`${u} did not yield a usable OpenAPI/Swagger payload`)
       }
       return { text, url: u }
     })()
@@ -138,6 +132,26 @@ async function fetchRawText(
       : [(err as Error).message]
     throw logger.throwError(`Unable to retrieve valid OpenAPI document from any URL:\n${errors.join('\n')}`)
   }
+}
+
+/**
+ * Keywords every OpenAPI/Swagger document carries, either as a JSON key
+ * (`"openapi": "3.0.3"`) or as a YAML key (`openapi: 3.0.3`). Escaped forms are
+ * matched as well, so an envelope such as `{ "output": "{\"openapi\":...}" }`
+ * still passes and can be unwrapped by `beforeSpecParse`. The optional leading
+ * `\\` accounts for the backslash JSON adds when the spec is embedded as a
+ * string (e.g. the Postman transformation response).
+ */
+const SPEC_KEYWORD_RE = /\\?["']?(?:openapi|swagger|paths)\\?["']?\s*:/
+
+/**
+ * Cheap, parse-free guard for a fetched candidate: the text must mention a spec
+ * keyword, so HTML pages and unrelated JSON payloads are rejected early and
+ * Promise.any falls through to the next URL. The authoritative validity check
+ * still happens in `parseSpec`, i.e. after `beforeSpecParse` may rewrite the text.
+ */
+function couldBeSpecText(text: string): boolean {
+  return SPEC_KEYWORD_RE.test(text)
 }
 
 // Validate OpenAPI data
@@ -195,6 +209,8 @@ export interface OpenApiDataResult {
   data: OpenAPIDocument
   /** The actual URL that was successfully parsed */
   resolvedUrl: string
+  /** The raw spec text as fetched (before `beforeSpecParse` rewriting) */
+  rawText: string
 }
 
 export interface GetOpenApiDataOptions {
@@ -224,7 +240,7 @@ export async function getOpenApiDataWithUrl(
 
   // Normalize to array — single string or array both handled uniformly
   const urls = Array.isArray(url) ? url : [url]
-  const { text, url: resolvedUrl } = await fetchRawText(urls, { projectPath, fetchOptions })
+  const { text, url: resolvedUrl } = await getRawSpecText(urls, { projectPath, fetchOptions })
 
   // Allow the caller (e.g. a `beforeSpecParse` plugin hook) to transform the
   // raw spec text before it is parsed into an OpenAPIDocument.
@@ -239,7 +255,7 @@ export async function getOpenApiDataWithUrl(
       fetchOptions,
     })
   }
-  return { data: result, resolvedUrl }
+  return { data: result, resolvedUrl, rawText: text }
 }
 
 /**

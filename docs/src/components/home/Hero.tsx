@@ -1,7 +1,10 @@
 'use client'
 
+import type { Locale } from '@/lib/i18n'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { AGENT_PROMPT, COPY_TOAST_MESSAGE } from './agentPrompt'
+import { localePrefix } from '@/lib/i18n'
+import { getHomeDict } from '@/lib/i18n-home'
+import { AGENT_PROMPT, COPY_TOAST_MESSAGE, COPY_TOAST_MESSAGE_ZH } from './agentPrompt'
 import Button from './Button'
 import CornerPlus from './CornerPlus'
 
@@ -170,7 +173,8 @@ void main() {
   )
 }
 
-export default function Hero() {
+export default function Hero({ lang }: { lang: Locale }) {
+  const t = getHomeDict(lang)
   const [toast, setToast] = useState(false)
   const [version, setVersion] = useState('')
 
@@ -208,29 +212,29 @@ export default function Hero() {
         <CornerPlus />
         <div className="text-primary font-data-mono mb-8 inline-flex items-center gap-3 text-[10px] tracking-[0.2em]">
           <span className="bg-primary h-2 w-2" />
-          {version ? `SYSTEM_INIT // v${version}` : 'SYSTEM_INIT // LOADING'}
+          {version ? `SYSTEM_INIT // v${version}` : t.hero.loading}
         </div>
         <h1 className="font-headline-lg text-on-background mb-8 text-5xl font-bold leading-[0.95] tracking-tighter uppercase lg:text-7xl">
-          一份 OpenAPI
+          {t.hero.titleLine1}
           <br />
-          从人类到
-          <span className="text-primary italic">AI</span>
+          {t.hero.titleLine2a}
+          <span className="text-primary italic">{t.hero.titleLine2b}</span>
         </h1>
         <p className="font-body-md text-on-surface-variant mb-12 max-w-md text-sm leading-relaxed">
-          为你生成类型安全的接口代码，为AI生成易理解的接口知识。统一规范，加速协同。
+          {t.hero.subtitle}
         </p>
         <div className="flex gap-4 lg:flex-row lg:items-center">
           <div className="relative">
             <Button variant="primary" onClick={handleCopy}>
-              agent安装
+              {t.hero.agentInstall}
             </Button>
             {toast && (
               <div className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-black px-3 py-1.5 text-xs text-white shadow-lg transition-opacity">
-                {COPY_TOAST_MESSAGE}
+                {lang === 'zh' ? COPY_TOAST_MESSAGE_ZH : COPY_TOAST_MESSAGE}
               </div>
             )}
           </div>
-          <Button variant="outline" href="/docs">快速开始</Button>
+          <Button variant="outline" href={`${localePrefix(lang)}/docs`}>{t.hero.quickStart}</Button>
         </div>
         <div className="mt-4">
           <a
@@ -239,7 +243,7 @@ export default function Hero() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-sm font-body-md text-on-background underline decoration-primary/30 underline-offset-4 transition-colors hover:text-primary hover:decoration-primary"
           >
-            即刻体验
+            {t.hero.tryNow}
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17l9.2-9.2M17 17V7H7" /></svg>
           </a>
         </div>

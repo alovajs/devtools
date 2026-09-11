@@ -1,7 +1,8 @@
 /* eslint-disable no-console */
 import type { ProjectInfo } from './renderer'
 import type { TemplatePreset } from '@/createConfig'
-import type { Config, GeneratorConfig, TemplateType } from '@/type/lib'
+import type { ChangeLevel, ChangeOp, SourceChange } from '@/functions/diffDocument'
+import type { Config, GeneratorConfig, RecordedChangeInfo, TemplateType } from '@/type/lib'
 import path from 'node:path'
 import * as readline from 'node:readline/promises'
 import { setGlobalConfig } from '@/config'
@@ -16,6 +17,9 @@ import { INIT_TEMPLATE_CHOICES, InitRenderer, MultiGeneratorRenderer, MultiProje
 import { theme } from './theme'
 // eslint-disable-next-line ts/no-require-imports, perfectionist/sort-imports
 const pkg = require('../../package.json')
+
+// eslint-disable-next-line ts/no-require-imports, perfectionist/sort-imports
+const Table: any = require('cli-table3')
 
 export async function actionInit({ type, template, project }: { type?: TemplateType, template?: TemplatePreset, project?: string }) {
   const renderer = new InitRenderer(pkg.version)
@@ -120,11 +124,9 @@ interface ProjectEntry {
 
 export async function actionGen({
   project,
-  force,
   debug,
 }: {
   project?: string
-  force?: boolean
   debug?: boolean
 }) {
   if (debug) {
@@ -172,7 +174,7 @@ export async function actionGen({
   if (projects.length === 1) {
     // Single project: existing MultiGeneratorRenderer path — 100% unchanged behaviour
     const proj = projects[0]
-    await generateForProject(proj, force)
+    await generateForProject(proj)
   }
   else {
     // Multi-project: new MultiProjectRenderer + sequential execution
@@ -186,14 +188,17 @@ export async function actionGen({
     const renderer = new MultiProjectRenderer(projectInfos, pkg.version)
 
     const allResults: boolean[][] = []
+    const recorded: RecordedChangeInfo[] = []
     for (let pi = 0; pi < projects.length; pi++) {
       const proj = projects[pi]
       try {
         const results = await generate(proj.config, {
-          force,
           projectPath: proj.dir,
           onProgress(event) {
             renderer.onProjectEvent(pi, event)
+          },
+          onChangeRecorded(change) {
+            recorded.push(change)
           },
         })
         allResults.push(results)
@@ -210,10 +215,179 @@ export async function actionGen({
     }
 
     renderer.finalize(allResults)
+    printRecordedChanges(recorded)
   }
 }
 
-async function generateForProject(entry: ProjectEntry, force?: boolean): Promise<void> {
+// ──────────────────────────────────────────────────────────────
+// `worma diff` — browse recorded API changes (requirement B)
+// ──────────────────────────────────────────────────────────────
+
+/**
+ * Format a timestamp in the **local** time zone (`YYYY-MM-DD HH:mm:ss`).
+ *
+ * `toISOString()` renders UTC, which made every record look ~8h off for anyone
+ * outside UTC and is the reason a record created at noon showed up as 04:xx.
+ */
+function formatTime(ts: number): string {
+  const date = new Date(ts)
+  if (Number.isNaN(date.getTime()))
+    return '-'
+  const pad = (value: number) => String(value).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+}
+
+/**
+ * Build a bordered `cli-table3` instance with our theme colours applied to the
+ * header (the library's own head/border colours are disabled so our `theme`
+ * palette wins). ANSI escape codes are measured as zero-width by cli-table3's
+ * internal `string-width` layout, so coloured cells stay aligned.
+ */
+function createTable(head: string[]): any {
+  return new Table({
+    head,
+    style: { head: [], border: [] },
+  })
+}
+
+/** `worma diff` / `worma diff <id>` / `worma diff latest` */
+export async function actionDiff(
+  id: string | undefined,
+  { list, project }: { list?: boolean, project?: string },
+): Promise<void> {
+  const projectPath = project
+    ? (path.isAbsolute(project) ? project : path.resolve(process.cwd(), project))
+    : process.cwd()
+
+  // Mirror `actionGen`: always resolve the cache from CWD so monorepo
+  // sub-packages share one unified cache root.
+  setGlobalConfig({ cacheRoot: process.cwd() })
+
+  const { countChanges, getChange, listChanges } = await import('@/functions/changeReport')
+
+  if (!id || list) {
+    const summaries = await listChanges(projectPath)
+    if (summaries.length === 0) {
+      console.log(`\n  ${theme.dim('No change records found.')}`)
+      console.log(`  ${theme.dim('Run `worma gen` after changing your spec to create one.')}\n`)
+      return
+    }
+    const table = createTable([
+      theme.label('ID'),
+      theme.label('CREATED'),
+      theme.label('OUTPUTS'),
+      theme.label('CHANGES'),
+    ])
+    summaries.forEach(s => table.push([
+      s.id,
+      formatTime(s.createdAt),
+      s.outputs.join(', ') || '-',
+      `+${s.summary.added} / -${s.summary.removed} / ~${s.summary.modified}`,
+    ]))
+    console.log('')
+    console.log(table.toString())
+    console.log('')
+    return
+  }
+
+  const change = await getChange(projectPath, id)
+  if (!change) {
+    console.log(`\n  ${theme.warning('?')} No change record found for "${id}".\n`)
+    return
+  }
+
+  console.log('')
+  console.log(`  ${theme.label(`Change ${change.id}`)}  ${theme.dim(formatTime(change.createdAt))}`)
+  console.log('')
+
+  const totals = countChanges(change.generators)
+
+  for (const gen of change.generators) {
+    console.log(`  ${theme.header(gen.serverName ? `${gen.output}  (${gen.serverName})` : gen.output)}`)
+    if (gen.changes.length === 0) {
+      console.log(`    ${theme.dim('no changes')}`)
+      console.log('')
+      continue
+    }
+
+    // Every change is one row: component changes carry their affected
+    // operations in `affects`, listed under the change itself (one per line).
+    const table = createTable([
+      '',
+      theme.label('TYPE'),
+      theme.label('TARGET'),
+      theme.label('ITEM'),
+      theme.label('CHANGE'),
+      theme.label('LEVEL'),
+    ])
+    for (const row of gen.changes) {
+      table.push([
+        opText(row.op),
+        theme.dim(row.kind),
+        row.target,
+        row.item ?? '',
+        changeCell(row),
+        levelText(row.level),
+      ])
+    }
+    console.log(table.toString())
+    console.log('')
+  }
+
+  console.log(`  ${theme.label('Total:')} ${theme.success(`+${totals.added} added`)}, ${theme.error(`-${totals.removed} removed`)}, ${theme.warning(`~${totals.modified} modified`)}`)
+  console.log('')
+}
+
+/**
+ * `CHANGE` cell of one row: the change itself plus, for a component change, the
+ * operations it affects — one per line, so nothing is folded away.
+ */
+function changeCell(row: SourceChange): string {
+  return [row.detail, ...(row.affects ?? [])].filter(Boolean).join('\n')
+}
+
+/** `+` / `-` / `~` cell with the matching palette colour. */
+function opText(op: ChangeOp): string {
+  if (op === '+')
+    return theme.success(op)
+  if (op === '-')
+    return theme.error(op)
+  return theme.warning(op)
+}
+
+/** Severity cell with the matching palette colour. */
+function levelText(level: ChangeLevel): string {
+  if (level === 'breaking')
+    return theme.error(level)
+  if (level === 'additive')
+    return theme.success(level)
+  return theme.dim(level)
+}
+
+/**
+ * Close a `worma gen` run with the change-record pointer: the id(s) written by
+ * this run plus the command showing their details.
+ *
+ * A run that recorded nothing (the source document did not change) prints no
+ * closing line at all.
+ */
+export function printRecordedChanges(recorded: RecordedChangeInfo[]): void {
+  if (recorded.length === 0)
+    return
+  const totals = recorded.reduce(
+    (acc, change) => ({
+      added: acc.added + change.added,
+      removed: acc.removed + change.removed,
+      modified: acc.modified + change.modified,
+    }),
+    { added: 0, removed: 0, modified: 0 },
+  )
+  const ids = recorded.map(change => change.id).join(', ')
+  console.log(`\n  ${theme.success('✔')} Changes recorded: ${theme.label(ids)} ${theme.dim(`(+${totals.added}/-${totals.removed}/~${totals.modified})`)}`)
+  console.log(`  ${theme.dim('Run `worma diff latest` to view the details.')}\n`)
+}
+
+async function generateForProject(entry: ProjectEntry): Promise<void> {
   const { dir, configPath, config, generators } = entry
 
   // Initialize renderer — prints pre-flight (Phase 1), starts live-update (Phase 2)
@@ -229,8 +403,8 @@ async function generateForProject(entry: ProjectEntry, force?: boolean): Promise
   }
 
   // Unified entry — generate() creates per-gen trackers internally
+  const recorded: RecordedChangeInfo[] = []
   const results = await generate(config, {
-    force,
     projectPath: dir,
     onProgress(event) {
       switch (event.phase) {
@@ -251,9 +425,13 @@ async function generateForProject(entry: ProjectEntry, force?: boolean): Promise
           break
       }
     },
+    onChangeRecorded(change) {
+      recorded.push(change)
+    },
   })
 
   // Finalize — Phase 3: stop live-update, show concise ✔/✖ summary
   const failedCount = results.filter(r => !r).length
   renderer.finalize(failedCount)
+  printRecordedChanges(recorded)
 }

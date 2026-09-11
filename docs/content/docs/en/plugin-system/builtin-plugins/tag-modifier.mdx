@@ -1,0 +1,71 @@
+---
+title: Tag Modifier
+description: Modify the tags of APIs from the OpenAPI document
+---
+
+# Tag Modifier
+
+This plugin modifies the tags of APIs coming from the OpenAPI document.
+
+## Basic usage
+
+```javascript
+import { defineConfig } from 'wormajs';
+import { tagModifier } from 'wormajs/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      // ...
+      plugins: [
+        // The callback runs for every API and returns the new tag
+        // Return the original tag if you don't want to change it
+        tagModifier(tag => tag.toUpperCase()),
+      ],
+    },
+  ],
+});
+```
+
+## Config
+
+```typescript
+type ModifierHandler = (tag: string) => string;
+
+function tagModifier(handler: ModifierHandler): ApiPlugin;
+```
+
+- `handler`: a function that receives the current tag and returns the modified tag. Return the original tag if you don't want to change it.
+
+## Examples
+
+### Add a uniform prefix
+
+```javascript
+tagModifier(tag => `api_${tag}`);
+```
+
+### Filter specific tags
+
+```javascript
+tagModifier(tag => {
+  if (tag.includes('user')) {
+    return tag.replace('user', 'member');
+  }
+  return tag; // other tags stay unchanged
+});
+```
+
+### Convert to camelCase
+
+```javascript
+tagModifier(tag => {
+  return tag
+    .split('_')
+    .map((part, index) => {
+      if (index === 0) return part;
+      return part.charAt(0).toUpperCase() + part.slice(1);
+    })
+    .join('');
+});
+```

@@ -5,9 +5,10 @@ import { getWorma } from '@/functions/getWorma'
 import { debounce, Log } from '@/utils'
 import { getCurrentWorkspacePath } from '@/utils/vscode'
 
-export function showError(err: unknown) {
+export function showError(err: unknown, options?: { prompt?: boolean }) {
   const error = err as Error
-  Log.error(error, { prompt: !!error.ERROR_CODE })
+  // callers that already surface their own popup opt out via `prompt: false`
+  Log.error(error, { prompt: options?.prompt ?? !!error.ERROR_CODE })
 }
 export function registerEvent() {
   // listener workspace directory changes

@@ -1,15 +1,22 @@
 import type { GeneratorProgressEvent } from 'wormajs'
-import type Error from '@/components/error'
 import { updateLoadingProgress } from '@/commands/statusBar'
+import Error from '@/components/error'
 import Global from '@/core/Global'
 import worma from '@/helper/worma'
+import { withProjectCwd } from '@/utils/cwd'
+
+/** Aggregated API-diff counts produced by one `generate()` run. */
+export interface GenerateChangeSummary {
+  added: number
+  removed: number
+  modified: number
+  /** Id of the newest change record written by this run — used to deep-link into the API Changes view. */
+  id: string
+}
 
 export interface GenerateOption {
-  force?: boolean
   projectPath?: string
   showError?: boolean
-  /** Triggered by the autoUpdate timer; suppresses the "up to date" popup. */
-  isAuto?: boolean
   onProgress?: (event: GeneratorProgressEvent) => void
 }
 
@@ -27,7 +34,9 @@ export default async (option?: GenerateOption) => {
   const resultArr: Array<[string, boolean]> = []
   const errorArr: Array<Error> = []
   const projectStatsMap = new Map<string, ProjectStats>()
-  const { force = false, projectPath: projectPathValue, showError = false, onProgress } = option ?? {}
+  /** Change record written by this run, per project — reported by `generate()`. */
+  const changeSummary: Record<string, GenerateChangeSummary> = {}
+  const { projectPath: projectPathValue, showError = false, onProgress } = option ?? {}
 
   const allEntries = Global.getConfigs()
 
@@ -63,8 +72,9 @@ export default async (option?: GenerateOption) => {
 
     try {
       progressMap.set(projectPath, new Map())
-      const generateResult = await worma.generate(config, {
-        force,
+      // run inside the project context: `process.cwd()` in the extension host points
+      // to the VS Code installation dir, which breaks relative paths in custom plugins
+      const generateResult = await withProjectCwd(projectPath, () => worma.generate(config, {
         projectPath,
         onProgress(event) {
           const genMap = progressMap.get(projectPath)!
@@ -89,11 +99,30 @@ export default async (option?: GenerateOption) => {
           else if (event.phase === 'failed') {
             stats.failed++
             stats.failedErrors.push(event.error)
+            // feed generator failures into the regular error pipeline too, otherwise
+            // a failed generator is only visible in the output channel and no
+            // notification pops up (the generate() promise itself resolves)
+            const isFirstOccurrence = stats.failedErrors.indexOf(event.error) === stats.failedErrors.length - 1
+            if (isFirstOccurrence) {
+              const error = new Error(event.error)
+              error.setPath(projectPath)
+              errorArr.push(error)
+            }
           }
           onProgress?.(event)
           mergeAndReport()
         },
-      })
+        onChangeRecorded(change) {
+          // Reported by `generate()` itself once the record is persisted, so no
+          // post-run scan (and no `createdAt` heuristic) is needed.
+          changeSummary[projectPath] = {
+            id: change.id,
+            added: change.added,
+            removed: change.removed,
+            modified: change.modified,
+          }
+        },
+      }))
       resultArr.push([projectPath, generateResult?.some(item => !!item)])
     }
     catch (err) {
@@ -107,9 +136,14 @@ export default async (option?: GenerateOption) => {
       throw error
     })
   }
+
+  // `changeSummary` is filled by the `onChangeRecorded` callback above: a record
+  // only exists when the source document actually changed, which is exactly the
+  // signal the caller needs to offer a "View Changes" affordance.
   return {
     resultArr,
     errorArr,
     projectStats: projectStatsMap,
+    changeSummary,
   }
 }

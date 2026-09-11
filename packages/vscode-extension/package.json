@@ -1,7 +1,7 @@
 {
-  "publisher": "worma",
-  "name": "worma-vscode",
-  "displayName": "Worma",
+  "publisher": "sighted2",
+  "name": "sighted2-vscode",
+  "displayName": "Sighted2",
   "version": "0.4.0",
   "private": true,
   "packageManager": "pnpm@10.13.1",
@@ -41,38 +41,27 @@
   ],
   "contributes": {
     "configuration": {
-      "title": "Worma",
+      "title": "mnjit",
       "properties": {
-        "worma.autoUpdate": {
-          "markdownDescription": "Whether to automatically update APIs. Set to `false` to disable, `true` for default (every 5 minutes), or an object for detailed configuration.",
-          "oneOf": [
-            {
-              "type": "boolean",
-              "default": true
-            },
-            {
-              "type": "object",
-              "properties": {
-                "launchEditor": {
-                  "type": "boolean",
-                  "default": false,
-                  "description": "Update immediately when the editor launches."
-                },
-                "interval": {
-                  "type": "number",
-                  "default": 300000,
-                  "description": "Auto-update interval in milliseconds."
-                }
-              },
-              "additionalProperties": false
-            }
-          ],
-          "default": true
-        },
         "worma.enableViewApiLens": {
           "type": "boolean",
           "default": true,
           "markdownDescription": "Whether to show the `📖 View Api` CodeLens above matched API function calls. Set to `false` to hide it."
+        },
+        "worma.autoUpdate.checkOnActivation": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Run one silent update check shortly after the extension activates."
+        },
+        "worma.autoUpdate.checkOnWindowFocus": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Re-check for source updates whenever the VS Code window regains focus."
+        },
+        "worma.autoUpdate.minInterval": {
+          "type": "number",
+          "default": 300000,
+          "markdownDescription": "Minimum interval in milliseconds between two automatic update checks."
         }
       }
     },
@@ -80,17 +69,18 @@
       {
         "command": "worma.refresh",
         "category": "Worma",
-        "title": "Generate APIs"
-      },
-      {
-        "command": "worma.generateApi.force",
-        "category": "Worma",
-        "title": "Force Generate APIs"
+        "title": "Generate APIs",
+        "icon": "$(sync)"
       },
       {
         "command": "worma.create.config",
         "category": "Worma",
         "title": "Create worma config"
+      },
+      {
+        "command": "worma.openChanges",
+        "category": "Worma",
+        "title": "Review API Changes"
       },
       {
         "command": "worma.apiDocs.refresh",
@@ -142,6 +132,13 @@
         "default": {
           "fontPath": "./res/logo.ttf",
           "fontCharacter": "\\E64F"
+        }
+      },
+      "worma-icon-update": {
+        "description": "worma update icon",
+        "default": {
+          "fontPath": "./res/logo.ttf",
+          "fontCharacter": "\\E651"
         }
       }
     },

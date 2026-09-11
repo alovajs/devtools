@@ -101,6 +101,28 @@ function joinPath(...parts: string[]) {
   return p ? normalizeSlashes(p) : p
 }
 
+/**
+ * Recursively delete a directory, ignoring anything that is not there.
+ * Implemented with readdir/unlink/rmdir instead of `fs.rm` so it also works on
+ * virtual filesystems that do not implement `rm`.
+ */
+async function removeDirRecursive(dir: string): Promise<void> {
+  let entries: Awaited<ReturnType<typeof fs.readdir>> = []
+  try {
+    entries = await fs.readdir(dir, { withFileTypes: true }) as any
+  }
+  catch {
+    return
+  }
+  for (const entry of entries as any[]) {
+    const full = path.join(dir, entry.name)
+    if (entry.isDirectory())
+      await removeDirRecursive(full)
+    else await fs.unlink(full).catch(() => {})
+  }
+  await fs.rmdir(dir).catch(() => {})
+}
+
 export class TemplateHelper {
   private static instance: TemplateHelper
   /** Runtime cache of parsed template data, keyed by `${projectPath}::${output}`. Flushed to disk via flushAllData. */
@@ -356,7 +378,7 @@ export class TemplateHelper {
 
   /**
    * 9.2.3: Private file writing — now internal to the streaming pipeline.
-   * Prettier formatting applied at file level (9.5.2).
+   * oxfmt formatting applied at file level (9.5.2).
    */
   private async outputFiles(
     files: Record<string, string>,
@@ -387,14 +409,14 @@ export class TemplateHelper {
       const batch = entries.slice(i, i + concurrency)
       await Promise.all(batch.map(async ([rp, content]) => {
         const op = path.isAbsolute(rp) ? rp : path.join(output, rp)
-        // 9.5.2: Apply prettier at file level for .ts/.js files
+        // 9.5.2: Apply oxfmt at file level for .ts/.js files
         let finalContent = content
         if (formatFile && /\.(?:ts|js|mjs|cjs|tsx|jsx)$/.test(rp)) {
           try {
-            finalContent = await format(content)
+            finalContent = await format(rp, content)
           }
           catch {
-            // Prettier format failed, use original content
+            // oxfmt format failed, use original content
           }
         }
         return fs.writeFile(op, finalContent)
@@ -564,9 +586,56 @@ export class TemplateHelper {
 
     await this.applyHooksAndWrite(globalFiles, outputDir, beforeFileWrite, undefined, undefined, undefined, writeConcurrency, formatFile, allFilePaths)
 
+    // --- Phase 3: drop orphaned tag artifacts ---
+    // Tags that existed before but are gone from the spec must not leave stale
+    // files/directories behind in the output directory.
+    await this.removeOrphanTagArtifacts(changedTags, tags, tpls, outputDir)
+
     logger.debug('Phase 2 complete', { globalFilesWritten: Object.keys(globalFiles).length })
     logger.debug('Generation summary', { totalOutputFiles: allFilePaths.length })
     return { filePaths: allFilePaths }
+  }
+
+  /**
+   * Remove generated artifacts of tags that no longer exist in the spec.
+   *
+   * `changedTags` contains both changed and removed tags; the ones missing from
+   * `tags` (the current tag list) are the removed ones. For those we delete:
+   * - the `[tag]` directory produced by tag-dir templates
+   * - the files produced by `[tag]`-named templates
+   */
+  private async removeOrphanTagArtifacts(
+    changedTags: Set<string> | undefined,
+    tags: string[],
+    tpls: TemplateFileInfo[],
+    outputDir: string,
+  ): Promise<void> {
+    if (!changedTags || changedTags.size === 0)
+      return
+
+    const removedTags = [...changedTags].filter(tag => !tags.includes(tag))
+    if (removedTags.length === 0)
+      return
+
+    const tagDirTpls = tpls.filter(f => f.insideTagDir)
+    const tagTpls = tpls.filter(f => !f.insideTagDir && f.templateType === 'tag')
+
+    for (const tag of removedTags) {
+      // Tag-dir templates: delete the whole `[tag]` directory (may be nested)
+      const dirs = new Set(
+        tagDirTpls.map(tf => path.dirname(tf.relativePath.replace(TemplatePlaceholder.TAG, tag))),
+      )
+      for (const dir of dirs) {
+        await removeDirRecursive(path.join(outputDir, dir))
+      }
+      // Flat `[tag]`-named templates: delete the resolved file
+      for (const tf of tagTpls) {
+        const relPath = stripExt(normalizeSlashes(tf.relativePath.replace(TemplatePlaceholder.TAG, tag)))
+        await fs.unlink(path.join(outputDir, relPath)).catch(() => {})
+      }
+    }
+
+    logger.debug('Removed orphaned tag artifacts', { tags: removedTags })
   }
 
   private async applyHooksAndWrite(

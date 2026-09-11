@@ -1,0 +1,156 @@
+---
+title: Skill Doc Structure
+description: Detailed format of SKILL.md and references/*.md
+---
+
+## Overall structure
+
+<Files>
+  <Folder name="aidocs" defaultOpen>
+    <File name="SKILL.md" />
+    <Folder name="references" defaultOpen>
+      <Folder name="pet" defaultOpen>
+        <File name="addPet.md" />
+        <File name="getPetById.md" />
+        <File name="findPetsByStatus.md" />
+      </Folder>
+      <Folder name="user">
+        <File name="loginUser.md" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
+## SKILL.md
+
+`SKILL.md` is the AI's entry file. It contains frontmatter metadata, an overview, and the full API directory index:
+
+```markdown
+---
+name: petstore-openapi-3.0-api-reference
+description: >-
+  API reference documentation for Alova Functional (Petstore - OpenAPI 3.0 v1.0.0).
+  Contains specifications for all REST API endpoints, including HTTP request methods,
+  URL paths, path/query parameters, request body schemas, and response types.
+  Key domains covered: pet, store, user.
+---
+
+> version 1.0.0
+
+## Overview
+
+This skill provides complete API reference documentation for Alova Functional.
+When you need to call any endpoint in this service, consult the corresponding
+API document in the references directory for detailed parameter schemas,
+request/response formats, and usage examples.
+
+## API Directory (Alova Functional)
+
+- **pet**
+  - [Add a new pet to the store](./references/pet/addPet.md) `[POST] /pet`
+  - [Find pet by ID](./references/pet/getPetById.md) `[GET] /pet/{petId}`
+  - [Finds Pets by status](./references/pet/findPetsByStatus.md) `[GET] /pet/findByStatus`
+- **user**
+  - [Logs user into the system](./references/user/loginUser.md) `[GET] /user/login`
+```
+
+| Area | Description |
+|------|-------------|
+| frontmatter | `name` uses the `{title}-api-reference` format so the coding agent can recognize the Skill; `description` includes the service name, version, domain list, and when to trigger |
+| `> version` | A blockquote marking the OpenAPI document version |
+| `## Overview` | Explains the Skill's purpose and guides the AI to the detailed docs under `references/` |
+| `## API Directory` | Lists all endpoints grouped by tag; each group has a summary link plus `[METHOD] /path`, so the AI can locate the needed endpoint quickly |
+| Parameter | `{title}`, `{serverName}`, `{version}`, `{tagedApis}`, etc. are rendered by the template from the OpenAPI doc and config |
+
+## Endpoint details
+
+Each API endpoint maps to a standalone Markdown doc. Using `addPet` as an example:
+
+````markdown
+# IMPORTANT: Enforce before generating code (must not be violated)!!!
+
+Before executing the code generation task, recite the following usage
+conventions and ensure compliance when generating.
+
+## Usage Conventions
+
+1. The API defined in this document is located at `src/api/alova/pet`
+2. Follow the calling method shown in the example below.
+
+## API
+
+Add a new pet to the store
+
+`[POST] /pet`
+
+## Request Body
+
+Pass the required request body in `data`:
+
+```typescript
+{
+  id?: number
+  name: string
+  category?: {
+    id?: number
+    name?: string
+  }
+  photoUrls: string[]
+  tags?: Array<{
+    id?: number
+    name?: string
+  }>
+  // pet status in the store
+  status?: "available" | "pending" | "sold"
+}
+```
+
+## Response
+
+Use the response data as needed:
+
+```typescript
+{
+  id?: number
+  name: string
+  category?: {
+    id?: number
+    name?: string
+  }
+  photoUrls: string[]
+  tags?: Array<{
+    id?: number
+    name?: string
+  }>
+  // pet status in the store
+  status?: "available" | "pending" | "sold"
+}
+```
+
+## Usage Example
+
+```typescript
+addPet({
+  data: {
+    name: '',
+    photoUrls: []
+  }
+})
+```
+````
+
+### Doc structure notes
+
+| Area | Description |
+|------|-------------|
+| Top mandatory notice | `# IMPORTANT: Enforce before generating code` — requires the AI to recite the usage conventions before generating code |
+| `## Usage Conventions` | Mandatory rules: declares the API's file location (e.g. `src/api/alova/pet`) and requires following the calling style shown below |
+| `## API` | Endpoint summary + the `` `[METHOD] /path` `` endpoint identifier |
+| `## Path Parameters` | Path parameter type definition (if any); the AI passes via `pathParams` |
+| `## Query Parameters` | Query parameter type definition (if any); the AI passes via `params` |
+| `## Request Body` | Request body type definition (if any); the AI passes via `data` |
+| `## Response` | Response body type definition; the AI infers the return data structure from it |
+| `## Usage Example` | A complete call example with real values; the AI can reference it directly |
+| Parameter | `{fileLocation}` is injected by the aiDoc plugin during the `codeGenerated` lifecycle; `{serverName}` comes from the generator config; `{method}`, `{path}`, `{summary}`, etc. come from the OpenAPI doc |
+
+> Different endpoint types include only the relevant parameter sections. A GET endpoint with only path params has no Request Body; a POST endpoint usually includes both Request Body and Response.

@@ -231,9 +231,11 @@ export interface PerformanceConfig {
 	transformConcurrency?: number;
 	/** Max parallelism for file writes. Default 32 */
 	writeConcurrency?: number;
-	/** Apply prettier formatting to final files before write. Default true (schema-level prettier is always disabled) */
-	formatFile?: boolean;
-	/** Sort tags/APIs/components alphabetically for deterministic output. Default true */
+	/**
+	 * Sort the collected component types alphabetically so the output order stays
+	 * stable regardless of worker scheduling. `false` keeps collection order.
+	 * Default true
+	 */
 	deterministicSort?: boolean;
 }
 export interface GeneratorConfig {
@@ -580,105 +582,129 @@ export interface ImportTypeOptions {
 export declare function importType(imports: Record<string, string[]>, options?: {
 	files?: string[];
 }): ApiPlugin;
+/**
+ * The part of the API the modification applies to.
+ * - `params` — query parameters
+ * - `pathParams` — path parameters
+ * - `data` — request body
+ * - `response` — response body
+ */
 export type ModifierScope = "params" | "pathParams" | "data" | "response";
+/**
+ * A matching rule.
+ * - string: the value contains this substring
+ * - RegExp: the value matches this pattern
+ * - function: a predicate receiving the value
+ */
+export type Matcher = string | RegExp | ((value: string) => boolean);
+/**
+ * Type expressions understood by the plugin. TS-only types (`undefined`, `unknown`,
+ * `any`, `never`) are valid and are written through to the schema as-is.
+ */
 export type SchemaPrimitive = "number" | "string" | "boolean" | "undefined" | "null" | "unknown" | "any" | "never";
 /**
- * Array type: a native JS array whose elements are Schemas.
- * e.g. ['string'] means string[]; ['string', 'number'] means the tuple [string, number]
+ * The spec DSL. It only ever *describes a type*, therefore it always appears in a type
+ * value position (`FieldPatchObject.type`, `FieldPatchObject.items`, union members, ...).
  */
-export type SchemaArray = Schema[];
-/**
- * Object/reference type.
- * Required properties are written directly; optional properties are wrapped
- * with the `SchemaOptional` form `{ required: false, type: Schema }`
- * (consistent with how a standalone optional primitive is represented).
- */
-export interface SchemaReference {
-	[attr: string]: Schema;
-}
-/**
- * Enum type representation.
- */
-export interface SchemaEnum {
+export type SchemaDSL = SchemaPrimitive
+/** `['string']` = `string[]`, `['string', 'number']` = the tuple `[string, number]` */
+ | SchemaDSL[] | {
+	oneOf: SchemaDSL[];
+} | {
+	anyOf: SchemaDSL[];
+} | {
+	allOf: SchemaDSL[];
+} | {
 	enum: Array<string | number | boolean | null>;
 	type?: SchemaPrimitive;
 }
+/** object shorthand: every listed field is required */
+ | {
+	[field: string]: SchemaDSL;
+};
 /**
- * Composite types (oneOf / anyOf / allOf).
+ * OpenAPI keywords usable inside a patch object. Every other key is documented by the
+ * plugin itself, so a patch object holding one of these keys is a partial patch of the
+ * target while an object holding none of them is a shorthand for `properties`.
  */
-export interface SchemaOneOf {
-	oneOf: Schema[];
-}
-export interface SchemaAnyOf {
-	anyOf: Schema[];
-}
-export interface SchemaAllOf {
-	allOf: Schema[];
+export interface FieldPatchObject {
+	/** Replaces the type: type-family keys are cleared, documentation keys are kept. */
+	type?: SchemaDSL;
+	/** Field-level requiredness, translated to the parent `required` array (or to `ParameterObject.required`). */
+	required?: boolean;
+	description?: string;
+	/** Explicit field-table patch, also the escape hatch when a field is named like a reserved key. */
+	properties?: Record<string, FieldValue>;
+	items?: SchemaDSL;
+	enum?: Array<string | number | boolean | null>;
+	oneOf?: SchemaDSL[];
+	anyOf?: SchemaDSL[];
+	allOf?: SchemaDSL[];
+	format?: string;
+	example?: unknown;
+	default?: unknown;
+	deprecated?: boolean;
+	nullable?: boolean;
+	title?: string;
 }
 /**
- * Standalone primitive type that is itself optional (driven by the `type` field).
- * Used in handler input/output to mean "this field is optional / make it optional".
+ * A field table: an object without reserved keys, read as a patch of the field table of
+ * the target. Every value follows the same rules as `FieldValue`, recursively.
  */
-export interface SchemaOptional {
-	required: boolean;
-	type: Schema;
+export interface FieldTable {
+	[field: string]: FieldValue;
 }
 /**
- * The data Schema.
- * - SchemaArray is a native array (elements are Schemas)
- * - composite types use { oneOf | anyOf | allOf: Schema[] }
- * - optional object properties are wrapped with `SchemaOptional` ({ required: false, type: Schema });
- *   a standalone optional primitive uses the same SchemaOptional wrapper
+ * A patch value. The same syntax is used for the top level `patch` and for every value
+ * inside a field table, so the rules below apply recursively.
+ *
+ * | form | meaning |
+ * | --- | --- |
+ * | `null` | delete the target |
+ * | string / array | shorthand for `{ type: value }`, documentation keys are kept |
+ * | object without reserved keys | field table, merged into the target field table |
+ * | object with reserved keys | partial patch of the target itself |
  */
-export type Schema = SchemaPrimitive | SchemaReference | SchemaArray | SchemaEnum | SchemaOneOf | SchemaAnyOf | SchemaAllOf | SchemaOptional;
+export type FieldValue = null | SchemaDSL | FieldPatchObject | FieldTable;
 export interface ModifierConfig {
-	/**
-	 * The scope the modifier applies to (which parameter location to process).
-	 */
+	/** The scope the config applies to. */
 	scope: ModifierScope;
+	/** URL filter. Omitted = every API. Multiple rules are ORed, `path` and `tag` are ANDed. */
+	path?: Matcher | Matcher[];
+	/** Tag filter: any tag of the API hitting any rule makes the config apply. */
+	tag?: Matcher | Matcher[];
+	/** Replaces the scope root with a nested node, navigating along `properties` only. */
+	unwrap?: string;
+	/** Locator. Omitted = the root itself, otherwise every matching top-level field. */
+	match?: Matcher;
+	/** Declarative patch (add / delete / modify). Runs before `handler`. */
+	patch?: FieldValue;
 	/**
-	 * API path filter: this config applies only when `apiDescriptor.url` matches;
-	 * when omitted it applies to all APIs. Matching rules are the same as `match` (string substring / RegExp / function).
+	 * Escape hatch taking and returning raw OpenAPI schema objects.
+	 * @param schema the located raw schema
+	 * @param key the located field name, `undefined` when the root itself is located
+	 * @returns the replacement schema, or `null` / `undefined` to delete the target
 	 */
-	path?: string | RegExp | ((url: string) => boolean);
-	/**
-	 * Match rule. Only matched fields are transformed; when omitted, all fields are transformed.
-	 * - string: the original field name contains this string
-	 * - RegExp: the original field name matches this pattern
-	 * - function: receives the key and returns a boolean indicating a match
-	 */
-	match?: string | RegExp | ((key: string) => boolean);
-	/**
-	 * handler flexibly modifies the parameter type value.
-	 * @param schema the original field type, already converted to the user-facing Schema representation.
-	 *               When the field itself is optional and is a primitive, it is passed as { required: false, type: 'string' }.
-	 *               Narrow the type inside handler if needed (e.g. with a cast).
-	 * @param key the matched field key. When `match` is omitted, the whole scope object is passed to the handler
-	 *            once and `key` is `undefined`; when `match` is set, `key` is the matched field name for each call.
-	 * @returns Schema to change the type; { required: boolean, type: Schema } to change requiredness (driven by `type`);
-	 *          void | null | undefined to remove the field.
-	 */
-	handler: (schema: Schema, key?: string) => Schema | {
-		required: boolean;
-		type: Schema;
-	} | void | null | undefined;
+	handler?: (schema: SchemaObject, key?: string) => SchemaObject | null | undefined;
 }
 export type PayloadModifierConfig = ModifierConfig;
-export declare function payloadModifier(configs: PayloadModifierConfig[]): ApiPlugin;
 /**
- * FastAPI platform plugin.
+ * Flexibly adds, deletes and modifies the payload of your APIs.
  *
- * Pass the base URL of your FastAPI app; the plugin will try `/openapi.json`
- * first, then fall back to the bare base URL.
- *
- * @param input - base URL string, or an array of base URLs
+ * Every config runs the same fixed pipeline: interface filter (`path` / `tag`) → redirect
+ * (`unwrap`) → locate (`match`) → patch (`patch`) → custom (`handler`). Configs are applied
+ * in array order, so a later config sees the result of the previous ones.
  *
  * @example
  * ```ts
- * plugins: [fastapi('http://fastapi-example.dokkuapp.com'), alovaGlobals()]
+ * payloadModifier([
+ *   { scope: 'response', unwrap: 'data' },
+ *   { scope: 'response', match: /[Ii]d$/, patch: 'string' },
+ *   { scope: 'data', path: '/planPoint', patch: { operatorId: { type: 'string', required: true } } },
+ * ])
  * ```
  */
-export declare const fastapi: (input: string | string[]) => ApiPlugin;
+export declare function payloadModifier(configs: PayloadModifierConfig[]): ApiPlugin;
 /**
  * Knife4j platform plugin.
  *
@@ -766,6 +792,65 @@ export interface YapiOptions {
  * ```
  */
 export declare function yapi(options: YapiOptions): ApiPlugin;
+export interface PostmanOptions {
+	/** Postman API Key, generated from Postman → Settings → API keys */
+	apiKey: string;
+	/** The uid of the Postman collection */
+	collectionId: string;
+}
+/**
+ * Unwraps the OpenAPI definition returned by the Postman collection
+ * transformation endpoint, which responds with `{ output: "<stringified spec>" }`
+ * instead of the specification itself.
+ *
+ * The response is parsed exactly once. Anything that is not a transformation
+ * envelope (an error payload, an HTML page, a malformed body, …) throws instead
+ * of being silently passed through, so the real problem surfaces immediately.
+ * The unwrapped spec is then validated by the generator's parser, like any other
+ * input — this function does not re-parse or validate it.
+ */
+export declare function unwrapTransformationOutput(spec: string): string;
+/**
+ * Postman platform plugin.
+ *
+ * Postman collections are not OpenAPI documents, so the plugin points `input` to
+ * the collection transformation endpoint, which converts the collection into an
+ * OpenAPI definition:
+ *
+ * ```
+ * https://api.getpostman.com/collections/<collectionId>/transformations
+ * ```
+ *
+ * The `x-api-key` header is injected through `fetchOptions`. The endpoint responds
+ * with `{ output: "<spec>" }`, so the plugin unwraps that envelope in its
+ * `beforeSpecParse` hook.
+ *
+ * `apiKey` and `collectionId` are both required — the plugin throws a clear error
+ * when either is missing.
+ *
+ * @param options - `{ apiKey, collectionId }`
+ * @param options.apiKey - Postman API key used to read the collection
+ * @param options.collectionId - The uid of the Postman collection
+ *
+ * @example
+ * ```ts
+ * import { postman, alovaGlobals } from 'wormajs/plugin';
+ *
+ * defineConfig({
+ *   generator: [{
+ *     plugins: [
+ *       postman({
+ *         apiKey: 'PMAK-xxx',
+ *         collectionId: '12345678-a1b2-c3d4-e5f6-7890abcdef12',
+ *       }),
+ *       alovaGlobals(),
+ *     ],
+ *     output: './src/api',
+ *   }]
+ * });
+ * ```
+ */
+export declare function postman({ apiKey, collectionId }: PostmanOptions): ApiPlugin;
 /**
  * Rename style options
  */

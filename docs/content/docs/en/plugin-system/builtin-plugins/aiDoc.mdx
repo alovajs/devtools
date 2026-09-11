@@ -1,0 +1,144 @@
+---
+title: AI Doc Generator
+description: Generate AI-readable API knowledge docs so coding agents understand your project's APIs precisely
+---
+
+# AI Doc Generator
+
+This plugin auto-generates API knowledge docs that follow the Skills spec, so coding agents understand every API in your project and stop guessing function names and parameters. It is usually used together with other templates (alova, axios, etc.).
+
+## Key features
+
+- Auto-generate the `SKILL.md` overview index and the tag-grouped API reference docs
+- Support custom template paths and output directories
+- Support auto-installing the Skill into mainstream coding agents (Cursor, Claude Code, Windsurf, etc.)
+- Support specifying one or more coding agents via `agent`, installing to multiple agents in one generation (auto-deduplicated)
+
+## Basic usage
+
+```javascript
+import { defineConfig } from "wormajs";
+import { alova, aiDoc } from "wormajs/plugin";
+
+export default defineConfig({
+  generator: [
+    {
+      input: "https://api.example.com/openapi.json",
+      output: "src/api",
+      plugins: [alova(), aiDoc()],
+    },
+  ],
+});
+```
+
+## Config
+
+```typescript
+// Coding agent names (matching the agents the skills package supports). The skills
+// package is a pure CLI and doesn't export types, so we maintain a copy here;
+// you can also pass a plain string.
+type SkillAgent =
+  | 'cursor' | 'claude-code' | 'codex' | 'windsurf' /* …see the type def for the rest */ ;
+
+interface AiDocConfig {
+  /** Custom template path; uses the built-in template when omitted */
+  template?: string;
+  /** Output directory name, default 'aidocs' */
+  outputDir?: string;
+  /**
+   * Coding agents to install the Skill into.
+   * - Omitted (default): don't install the Skill.
+   * - `SkillAgent` / `SkillAgent[]`: specify the install targets directly.
+   * - `string`: a comma-separated list of agent names used directly as install
+   *   targets, e.g. `"cursor"` or `"cursor, claude-code"`.
+   *   Can also be combined with `parseAgentFile` to read agent names from a config file.
+   */
+  agent?: SkillAgent | SkillAgent[] | string;
+}
+
+function aiDoc(config?: AiDocConfig): ApiPlugin;
+```
+
+### Parameters
+
+| Name | Type | Default | Description |
+| -------------- | ------------------ | ------- | ------------------------------------------------------------------------ |
+| `template` | `string` | — | Custom template path; uses the built-in template when omitted |
+| `outputDir` | `string` | `'aidocs'` | Output directory name |
+| `agent` | `SkillAgent \| SkillAgent[] \| string` | — | Coding agents to install the Skill into: omitted = don't install; `SkillAgent`/`SkillAgent[]` = direct targets; string = comma-separated targets (auto-deduplicated) |
+
+## Output structure
+
+<Files>
+  <Folder name="aidocs" defaultOpen>
+    <File name="SKILL.md" />
+    <Folder name="references" defaultOpen>
+      <Folder name="pet" defaultOpen>
+        <File name="addPet.md" />
+        <File name="getPetById.md" />
+        <File name="findPetsByStatus.md" />
+      </Folder>
+      <Folder name="user">
+        <File name="getUserList.md" />
+        <File name="createUser.md" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
+- **`SKILL.md`**: the overview index, listing all API endpoints with their doc links
+- **`references/{tag}/{api}.md`**: grouped by tag, one doc per API endpoint, including the HTTP method, path, parameter schema, and request/response examples
+
+> See [AI Skills Integration](/ai-skills) for the structure details and usage of the generated content.
+
+## Auto-install the Skill
+
+`agent` accepts the following values. When you run `worma gen`, the generated Skill is installed into the corresponding coding agents per config:
+
+- Omitted (default): don't install.
+- `string`: a comma-separated list of agent names used directly as install targets, e.g. `"cursor"` or `"cursor, claude-code"`.
+
+```typescript
+aiDoc({ agent: 'cursor' })              // install to cursor
+aiDoc({ agent: 'cursor, claude-code' }) // install to multiple agents (auto-deduplicated)
+```
+
+> worma no longer auto-reads or creates any local config file (such as `node_modules/.worma/skills.local`). Install targets are fully specified by you via the `agent` string, and multiple agents are auto-deduplicated.
+
+### Specify agents via a config file
+
+If you want to keep coding agents in a separate config file (to differ per user / environment), use the exported `parseAgentFile(filePath?)` to parse a `key=value` file (same format as env files; lines starting with `#` are ignored). You can pass a file path to read a specific file (e.g. `.env.local`); when the path is omitted, it reads `.wormaagent.local` at the project root by default:
+
+```ini
+# .wormaagent.local
+agent=cursor, claude-code
+```
+
+```typescript
+import { aiDoc, parseAgentFile } from '@alova/worma'
+
+const cfg = parseAgentFile() // reads ./.wormaagent.local by default -> cfg.agent === 'cursor, claude-code'
+aiDoc({ agent: cfg.agent })
+
+const cfg2 = parseAgentFile('.env.local') // read a specific file by path
+aiDoc({ agent: cfg2.agent })
+```
+
+`parseAgentFile` returns `{ [key]: string }` key-value pairs, so you can read other custom fields and pass them into the config together.
+
+<Callout type="warning" title="Add .wormaagent.local to .gitignore">
+`.wormaagent.local` usually holds **personal** coding-agent preferences (e.g. the `cursor`, `claude-code` you use locally). Add it to your project's `.gitignore` so it isn't committed and doesn't override or interfere with other team members' `agent` settings:
+
+```ini
+# .gitignore
+.wormaagent.local
+```
+</Callout>
+
+### Run the generation command
+
+```bash
+worma gen
+```
+
+worma installs the generated Skill into the corresponding agents per the config above. For the list of supported coding agents, see the [skills docs](https://www.npmjs.com/package/skills#supported-agents).

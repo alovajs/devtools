@@ -1,13 +1,18 @@
+import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import { DefaultSystemTheme } from '@/components/DefaultSystemTheme'
-import { Provider } from '@/components/provider'
+import { HtmlLangSync } from '@/components/HtmlLangSync'
 import './global.css'
+
+export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
+}
 
 const inter = Inter({
   subsets: ['latin'],
+  display: 'swap',
 })
 
-export default function Layout({ children }: LayoutProps<'/'>) {
+export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={inter.className} suppressHydrationWarning>
       <head>
@@ -20,11 +25,8 @@ export default function Layout({ children }: LayoutProps<'/'>) {
         />
       </head>
       <body className="min-h-screen flex flex-col">
-        <Provider>
-          {/* 非首页（首页强制深色）默认跟随系统配色 */}
-          <DefaultSystemTheme skipHome />
-          {children}
-        </Provider>
+        <HtmlLangSync />
+        {children}
       </body>
     </html>
   )

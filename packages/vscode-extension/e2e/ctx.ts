@@ -4,6 +4,7 @@ import Chai from 'chai'
 import Snapshot from 'chai-jest-snapshot'
 import sinon from 'sinon'
 import { commands, extensions, Uri, window, workspace } from 'vscode'
+import { projectRoot } from './path.js'
 import { Meta } from './test.js'
 
 Chai.use(Snapshot)
@@ -15,7 +16,12 @@ export function timeout(ms = 1000) {
 }
 
 export function getExt() {
-  return extensions.getExtension(Meta.extensionId)!
+  // The extension under development is identified by its path: `Meta.extensionId`
+  // is generated from `package.json` and goes stale (it still reads
+  // `worma.worma-vscode` while the package is `sighted2.sighted2-vscode`), which
+  // makes `getExtension(extensionId)` return `undefined`.
+  return extensions.all.find(ext => ext.extensionUri.fsPath === projectRoot)
+    ?? extensions.getExtension(Meta.extensionId)!
 }
 
 export async function openFile(name: string) {
@@ -23,8 +29,8 @@ export async function openFile(name: string) {
   await window.showTextDocument(doc)
   return doc.getText()
 }
-export async function executeCommand<T>(id: string) {
-  return commands.executeCommand<T>(id)
+export async function executeCommand<T>(id: string, ...args: any[]) {
+  return commands.executeCommand<T>(id, ...args)
 }
 
 export function setupTest(name: string, fn: () => void) {

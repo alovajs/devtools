@@ -1,1363 +1,520 @@
-import type { SchemaOneOf } from '@/plugins/presets/payloadModifier'
-import type { ApiDescriptor, SchemaObject } from '@/type'
+import type { PayloadModifierConfig } from '@/plugins/presets/payloadModifier'
+import type { ApiDescriptor, Parameter, SchemaObject } from '@/type'
+import { ParameterIn } from '@/constant'
 import { payloadModifier } from '@/plugins/presets/payloadModifier'
 
-describe('payloadModifier plugin tests', () => {
-  // Helper: get handleApi from plugin without running full generator
-  function getHandleApi(configs: Parameters<typeof payloadModifier>[0]) {
+describe('payloadModifier plugin', () => {
+  // Takes `handleApi` from the plugin without running the whole generator
+  function getHandleApi(configs: PayloadModifierConfig[]) {
     const plugin = payloadModifier(configs)
-    const configured = plugin.config?.({} as any) as any
+    const configured = plugin.config?.({ config: {} } as any) as any
     return configured.handleApi as (api: ApiDescriptor) => ApiDescriptor | null
   }
 
-  it('modifies query/path parameters, wraps optional input and removes matched ones', () => {
-    let ageInput: any
-    let idInput: any
-    const handleApi = getHandleApi([
-      {
-        scope: 'params',
-        match: 'age',
-        handler: (input) => {
-          ageInput = input
-          return { required: true, type: { oneOf: ['string', 'number', 'boolean'] } }
-        },
-      },
-      { scope: 'params', match: 'debug', handler: () => null },
-      {
-        scope: 'pathParams',
-        match: 'id',
-        handler: (input) => {
-          idInput = input
-          return { required: false, type: 'string' }
-        },
-      },
-    ])
-
-    const api: ApiDescriptor = {
+  function makeApi(overrides: Partial<ApiDescriptor> = {}): ApiDescriptor {
+    return {
       url: '/pets/{id}',
       method: 'get',
       parameters: [
         { name: 'id', in: 'path', required: true, schema: { type: 'integer' } },
-        { name: 'age', in: 'query', required: false, schema: { type: 'integer', description: 'hello age' } },
-        { name: 'debug', in: 'query', required: false, schema: { type: 'boolean' } },
-        { name: 'q', in: 'query', required: false, schema: { type: 'string' } },
+        { name: 'page', in: 'query', required: false, schema: { type: 'integer', description: 'page number' } },
       ],
-      requestBody: { type: 'object', properties: {}, required: [] },
-      responses: { type: 'object', properties: {}, required: [] },
-    }
-
-    const result = handleApi(api)!
-    // optional plain-type input is wrapped as { required: false, type }
-    expect(ageInput).toEqual({ required: false, type: 'number' })
-    // required plain-type input is the original string
-    expect(idInput).toBe('number')
-
-    // age becomes the string|number|boolean union type, and required is true
-    const ageParam = result.parameters!.find(p => p.in === 'query' && p.name === 'age')!
-    expect(ageParam.schema).toEqual({
-      description: 'hello age',
-      oneOf: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }],
-    })
-    expect(ageParam.required).toBeTruthy()
-
-    // debug is removed
-    expect(result.parameters!.some(p => p.name === 'debug')).toBe(false)
-
-    // path id is string and required is false
-    const idParam = result.parameters!.find(p => p.in === 'path' && p.name === 'id')!
-    expect((idParam.schema as SchemaObject)?.type).toBe('string')
-    expect(idParam.required).toBe(false)
-
-    // q stays unchanged
-    const qParam = result.parameters!.find(p => p.in === 'query' && p.name === 'q')!
-    expect((qParam.schema as SchemaObject)?.type).toBe('string')
-    expect(qParam.required).toBe(false)
-  })
-
-  it('modifies request body properties, required and array type', () => {
-    const handleApi = getHandleApi([
-      { scope: 'data', match: 'name', handler: () => ({ required: true, type: 'number' }) },
-      { scope: 'data', match: 'count', handler: () => null },
-      { scope: 'data', match: 'tags', handler: () => ['string'] },
-    ])
-
-    const api: ApiDescriptor = {
-      url: '/pets',
-      method: 'post',
-      parameters: [],
       requestBody: {
         type: 'object',
+        description: 'the body',
         properties: {
-          name: { type: 'string' },
-          count: { type: 'integer' },
-          tags: { type: 'array', items: { type: 'string' } },
+          id: { type: 'integer', description: 'pet id' },
+          name: { type: 'string', description: 'pet name' },
+          legacyFlag: { type: 'boolean' },
         },
-        required: ['count'],
+        required: ['id'],
       },
-      responses: { type: 'object', properties: {}, required: [] },
-    }
-
-    const result = handleApi(api)!
-    const rb = result.requestBody as SchemaObject
-    expect((rb.properties?.name as SchemaObject)?.type).toBe('number')
-    expect(rb.properties?.count).toBeUndefined()
-    // returning a native array should produce an array type
-    expect(rb.properties?.tags).toEqual({ type: 'array', items: { type: 'string' } })
-    // required now includes name and tags (the tags handler returns ['string'] which is not a SchemaOptional, so required defaults to true)
-    expect(rb.required).toEqual(['name', 'tags'])
-  })
-
-  it('returns nested object with optional keys', () => {
-    const handleApi = getHandleApi([
-      {
-        scope: 'data',
-        match: 'user',
-        handler: () => ({
-          username: 'string',
-          age: { required: false, type: 'number' },
-        }),
-      },
-    ])
-
-    const api: ApiDescriptor = {
-      url: '/users',
-      method: 'post',
-      parameters: [],
-      requestBody: {
-        type: 'object',
-        properties: { user: { type: 'object', properties: { name: { type: 'string' } }, required: ['name'] } },
-        required: ['user'],
-      },
-      responses: { type: 'object', properties: {}, required: [] },
-    }
-
-    const result = handleApi(api)!
-    const rb = result.requestBody as SchemaObject
-    expect(rb.properties?.user).toEqual({
-      type: 'object',
-      properties: { username: { type: 'string' }, age: { type: 'number' } },
-      required: ['username'],
-    })
-  })
-
-  it('recurses into union keywords in responses', () => {
-    const handleApi = getHandleApi([
-      { scope: 'response', match: 'ok', handler: () => 'number' },
-    ])
-
-    const api: ApiDescriptor = {
-      url: '/pets',
-      method: 'get',
-      parameters: [],
-      requestBody: { type: 'object', properties: {}, required: [] },
-      responses: {
-        oneOf: [
-          { type: 'object', properties: { ok: { type: 'string' } }, required: ['ok'] },
-          { type: 'object', properties: { ok: { type: 'string' } }, required: [] },
-        ],
-      } as any,
-    }
-
-    const result = handleApi(api)!
-    const res = result.responses!
-    expect(Array.isArray(res.oneOf)).toBeTruthy()
-    for (const branch of res.oneOf as SchemaObject[]) {
-      expect((branch.properties?.ok as SchemaObject)?.type).toBe('number')
-    }
-  })
-
-  it('applies multiple configs sequentially', () => {
-    const handleApi = getHandleApi([
-      { scope: 'params', match: 'age', handler: () => { return 'string' } },
-      { scope: 'params', match: 'age', handler: () => { return 'number' } }, // overridden by the second config
-      { scope: 'data', match: 'flag', handler: () => { return { required: true, type: 'boolean' } } },
-    ])
-
-    const api: ApiDescriptor = {
-      url: '/pets',
-      method: 'get',
-      parameters: [{ name: 'age', in: 'query', schema: { type: 'integer' } }],
-      requestBody: { type: 'object', properties: { flag: { type: 'string' } }, required: [] },
-      responses: { type: 'object', properties: {}, required: [] },
-    }
-
-    const result = handleApi(api)!
-    const ageParam = result.parameters![0]
-    expect((ageParam.schema as SchemaObject)?.type).toBe('number') // overridden by the second config
-    const rb = result.requestBody!
-    expect((rb.properties?.flag as SchemaObject)?.type).toBe('boolean')
-    expect(rb.required).toEqual(['flag'])
-  })
-
-  it('handler receives object input (response.data) and transforms nested fields based on it', () => {
-    let input: any
-    const handleApi = getHandleApi([
-      {
-        scope: 'response',
-        match: 'data',
-        handler: (schema) => {
-          input = schema
-          // transform based on the input: change id to string, drop name, add createdAt
-          const spec = schema as Record<string, any>
-          const next: Record<string, any> = {}
-          for (const key of Object.keys(spec)) {
-            const val = spec[key]
-            // unwrap SchemaOptional (the input form of an optional field)
-            const isOpt = val && typeof val === 'object' && !Array.isArray(val)
-              && typeof val.required === 'boolean' && 'type' in val
-            const unwrapped = isOpt ? val.type : val
-            if (key === 'name') {
-              continue
-            }
-            if (key === 'id') {
-              next.id = 'string'
-            }
-            else if (isOpt) {
-              next[key] = { required: false, type: unwrapped }
-            }
-            else {
-              next[key] = unwrapped
-            }
-          }
-          next.createdAt = 'string'
-          return next
-        },
-      },
-    ])
-
-    const api: ApiDescriptor = {
-      url: '/users',
-      method: 'get',
-      parameters: [],
-      requestBody: { type: 'object', properties: {}, required: [] },
       responses: {
         type: 'object',
         properties: {
-          code: { type: 'number' },
+          code: { type: 'integer', description: 'status code' },
           data: {
             type: 'object',
-            properties: { id: { type: 'number' }, name: { type: 'string' } },
+            description: 'the payload',
+            properties: {
+              id: { type: 'integer', description: 'pet id' },
+              name: { type: 'string', description: 'pet name' },
+              debugInfo: { type: 'string', description: 'debug' },
+            },
             required: ['id'],
           },
         },
-        required: ['code', 'data'],
-      } as any,
-    }
-
-    const result = handleApi(api)!
-    // the input is the SchemaReference of the data sub-object (optional props are wrapped in SchemaOptional)
-    expect(input).toEqual({ id: 'number', name: { required: false, type: 'string' } })
-    // the data field is transformed: id -> string, name removed, createdAt added and all required
-    const res = result.responses as SchemaObject
-    expect(res.properties?.data).toEqual({
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-        createdAt: { type: 'string' },
-      },
-      required: ['id', 'createdAt'],
-    })
-    // the code field is unaffected
-    expect((res.properties?.code as SchemaObject)?.type).toBe('number')
-  })
-
-  it('handler receives native array input and maps element type based on it', () => {
-    let input: any
-    const handleApi = getHandleApi([
-      {
-        scope: 'data',
-        match: 'tags',
-        handler: (schema) => {
-          input = schema
-          // the input is ['string']; based on it, change the element type to number
-          return ['number']
-        },
-      },
-    ])
-
-    const api: ApiDescriptor = {
-      url: '/pets',
-      method: 'post',
-      parameters: [],
-      requestBody: {
-        type: 'object',
-        properties: { tags: { type: 'array', items: { type: 'string' } } },
-        required: ['tags'],
-      },
-      responses: { type: 'object', properties: {}, required: [] },
-    }
-
-    const result = handleApi(api)!
-    // the input is the native array ['string']
-    expect(input).toEqual(['string'])
-    const rb = result.requestBody as SchemaObject
-    // returning ['number'] produces an array type
-    expect(rb.properties?.tags).toEqual({ type: 'array', items: { type: 'number' } })
-  })
-
-  it('handler receives oneOf input and appends a branch based on it', () => {
-    let input: any
-    const handleApi = getHandleApi([
-      {
-        scope: 'params',
-        match: 'id',
-        handler: (schema) => {
-          input = schema
-          const spec = schema as SchemaOneOf
-          return { oneOf: [...spec.oneOf, 'boolean'] }
-        },
-      },
-    ])
-
-    const api: ApiDescriptor = {
-      url: '/pets/{id}',
-      method: 'get',
-      parameters: [
-        { name: 'id', in: 'query', required: true, schema: { oneOf: [{ type: 'string' }, { type: 'number' }] } as any },
-      ],
-      requestBody: { type: 'object', properties: {}, required: [] },
-      responses: { type: 'object', properties: {}, required: [] },
-    }
-
-    const result = handleApi(api)!
-    // the input is a oneOf object
-    expect(input).toEqual({ oneOf: ['string', 'number'] })
-    const idParam = result.parameters!.find(p => p.name === 'id')!
-    expect((idParam.schema as SchemaObject).oneOf).toEqual([
-      { type: 'string' },
-      { type: 'number' },
-      { type: 'boolean' },
-    ])
-  })
-
-  it('handler receives enum input and transforms it based on input', () => {
-    let input: any
-    const handleApi = getHandleApi([
-      {
-        scope: 'params',
-        match: 'kind',
-        handler: (schema) => {
-          input = schema
-          const spec = schema as { enum: string[], type?: string }
-          return { enum: [...spec.enum, 'c'], type: 'string' }
-        },
-      },
-    ])
-
-    const api: ApiDescriptor = {
-      url: '/items',
-      method: 'get',
-      parameters: [
-        { name: 'kind', in: 'query', required: false, schema: { type: 'string', enum: ['a', 'b'] } as any },
-      ],
-      requestBody: { type: 'object', properties: {}, required: [] },
-      responses: { type: 'object', properties: {}, required: [] },
-    }
-
-    const result = handleApi(api)!
-    // the input is an enum object
-    expect(input).toEqual({ enum: ['a', 'b'], type: 'string' })
-    const kindParam = result.parameters!.find(p => p.name === 'kind')!
-    expect(kindParam.schema).toEqual({ enum: ['a', 'b', 'c'], type: 'string' })
-  })
-
-  it('handler removes a field based on its input type', () => {
-    let input: any
-    const handleApi = getHandleApi([
-      {
-        scope: 'data',
-        match: 'internalId',
-        handler: (schema) => {
-          input = schema
-          // the input is a plain string type -> remove this field
-          return typeof schema === 'string' ? null : schema
-        },
-      },
-    ])
-
-    const api: ApiDescriptor = {
-      url: '/pets',
-      method: 'post',
-      parameters: [],
-      requestBody: {
-        type: 'object',
-        properties: { internalId: { type: 'string' }, name: { type: 'string' } },
-        required: ['internalId'],
-      },
-      responses: { type: 'object', properties: {}, required: [] },
-    }
-
-    const result = handleApi(api)!
-    expect(input).toBe('string')
-    const rb = result.requestBody as SchemaObject
-    expect(rb.properties?.internalId).toBeUndefined()
-    expect(rb.properties?.name).toEqual({ type: 'string' })
-    expect(rb.required).toEqual([])
-  })
-
-  it('handler receives SchemaOptional input for optional param and toggles required based on input', () => {
-    let input: any
-    const handleApi = getHandleApi([
-      {
-        scope: 'params',
-        match: 'page',
-        handler: (schema) => {
-          input = schema
-          // the input is wrapped as { required: false, type: 'number' }
-          const opt = schema as { required: boolean, type: string }
-          if (opt.required === false && opt.type === 'number') {
-            return { required: true, type: 'number' }
-          }
-          return schema
-        },
-      },
-    ])
-
-    const api: ApiDescriptor = {
-      url: '/list',
-      method: 'get',
-      parameters: [
-        { name: 'page', in: 'query', required: false, schema: { type: 'integer' } },
-      ],
-      requestBody: { type: 'object', properties: {}, required: [] },
-      responses: { type: 'object', properties: {}, required: [] },
-    }
-
-    const result = handleApi(api)!
-    expect(input).toEqual({ required: false, type: 'number' })
-    const pageParam = result.parameters!.find(p => p.name === 'page')!
-    expect((pageParam.schema as SchemaObject)?.type).toBe('number')
-    expect(pageParam.required).toBe(true)
-  })
-
-  it('handler receives object with native-array property (response.data.list) and transforms nested item via input', () => {
-    let input: any
-    const handleApi = getHandleApi([
-      {
-        scope: 'response',
-        match: 'data',
-        handler: (schema) => {
-          input = schema
-          // the input is shaped like { list: { required: false, type: [ { id: {required:false,type:'number'}, name: {required:false,type:'string'} } ] } }
-          return {
-            list: [{ id: 'string', name: 'string' }],
-          }
-        },
-      },
-    ])
-
-    const api: ApiDescriptor = {
-      url: '/feed',
-      method: 'get',
-      parameters: [],
-      requestBody: { type: 'object', properties: {}, required: [] },
-      responses: {
-        type: 'object',
-        properties: {
-          data: {
-            type: 'object',
-            properties: {
-              list: {
-                type: 'array',
-                items: { type: 'object', properties: { id: { type: 'number' }, name: { type: 'string' } } },
-              },
-            },
-            required: [],
-          },
-        },
         required: ['data'],
-      } as any,
+      },
+      ...overrides,
     }
+  }
 
-    const result = handleApi(api)!
-    // the input is shaped like { list: { required: false, type: [ { id: {required:false,type:'number'}, name: {required:false,type:'string'} } ] } } (both list and item fields are optional)
-    expect(input).toEqual({
-      list: {
-        required: false,
-        type: [{ id: { required: false, type: 'number' }, name: { required: false, type: 'string' } }],
-      },
-    })
-    const res = result.responses as SchemaObject
-    expect(res.properties?.data).toEqual({
-      type: 'object',
-      properties: {
-        list: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: { id: { type: 'string' }, name: { type: 'string' } },
-            required: ['id', 'name'],
-          },
+  function warnSpy() {
+    return vi.spyOn(console, 'warn').mockImplementation(() => {})
+  }
+
+  it('returns null when the descriptor is null', () => {
+    const handleApi = getHandleApi([{ scope: 'response', patch: 'string' }])
+    expect(handleApi(null as any)).toBeNull()
+  })
+
+  describe('interface filter', () => {
+    it('applies only when the url matches (string / RegExp / function / array)', () => {
+      const patch: PayloadModifierConfig = { scope: 'response', patch: { debugInfo: null } }
+      const makeTarget = () => makeApi({
+        url: '/pets/{id}',
+        responses: {
+          type: 'object',
+          properties: { debugInfo: { type: 'string' } },
+          required: [],
         },
-      },
-      required: ['list'],
+      })
+
+      expect(getHandleApi([{ ...patch, path: '/pets' }])(makeTarget())).toBeTruthy()
+      expect((getHandleApi([{ ...patch, path: '/pets' }])(makeTarget())!.responses as SchemaObject).properties?.debugInfo).toBeUndefined()
+      // unmatched -> returned untouched
+      const untouched = makeTarget()
+      expect(getHandleApi([{ ...patch, path: '/orders' }])(untouched)).toBe(untouched)
+      // array of rules is ORed
+      expect((getHandleApi([{ ...patch, path: ['/orders', '/pets'] }])(makeTarget())!.responses as SchemaObject).properties?.debugInfo).toBeUndefined()
+      // RegExp and function
+      expect((getHandleApi([{ ...patch, path: /^\/pe/ }])(makeTarget())!.responses as SchemaObject).properties?.debugInfo).toBeUndefined()
+      expect((getHandleApi([{ ...patch, path: url => url.endsWith('{id}') }])(makeTarget())!.responses as SchemaObject).properties?.debugInfo).toBeUndefined()
+    })
+
+    it('filters by tag and ANDs it with path', () => {
+      const targetId = { id: null } as never
+      const makeTarget = () => makeApi({
+        url: '/pets',
+        tags: ['Coverage', 'Pets'],
+        responses: { type: 'object', properties: { id: { type: 'integer' } }, required: [] },
+      })
+      const hasId = (api: ApiDescriptor | null) => !!(api!.responses as SchemaObject).properties?.id
+
+      expect(hasId(getHandleApi([{ scope: 'response', tag: 'Coverage', patch: targetId }])(makeTarget()))).toBe(false)
+      expect(hasId(getHandleApi([{ scope: 'response', tag: ['MissingTag', 'Pets'], patch: targetId }])(makeTarget()))).toBe(false)
+      // an api without tags never matches a tag filter
+      const noTags = makeApi({ url: '/pets', tags: undefined })
+      expect(getHandleApi([{ scope: 'response', tag: 'Coverage', patch: targetId }])(noTags)).toBe(noTags)
+      // path and tag are ANDed
+      const otherPath = makeApi({ url: '/orders', tags: ['Coverage'] })
+      expect(getHandleApi([{ scope: 'response', path: '/pets', tag: 'Coverage', patch: targetId }])(otherPath)).toBe(otherPath)
     })
   })
 
-  it('collapses nested SchemaOptional (outer required wins, inner ignored) with object type', () => {
-    const handleApi = getHandleApi([
-      {
-        scope: 'data',
-        handler: () => ({
-          required: true,
-          type: {
-            // inner required=false is ignored; type is the full object representation
-            required: false,
-            type: {
-              id: 'number', // not wrapped -> required by default
-              name: { required: false, type: 'string' }, // optional
+  describe('unwrap', () => {
+    it('replaces the scope root, keeping every comment', () => {
+      const result = getHandleApi([{ scope: 'response', unwrap: 'data' }])(makeApi())!
+      expect(result.responses).toEqual({
+        type: 'object',
+        description: 'the payload',
+        properties: {
+          id: { type: 'integer', description: 'pet id' },
+          name: { type: 'string', description: 'pet name' },
+          debugInfo: { type: 'string', description: 'debug' },
+        },
+        required: ['id'],
+      })
+    })
+
+    it('supports nested paths', () => {
+      const api = makeApi({
+        responses: {
+          type: 'object',
+          properties: {
+            data: {
+              type: 'object',
+              description: 'wrapper',
+              properties: { list: { type: 'object', description: 'inner', properties: { id: { type: 'integer' } } } },
             },
           },
-        }),
-      },
-    ])
+        },
+      })
+      const result = getHandleApi([{ scope: 'response', unwrap: 'data.list' }])(api)!
+      expect(result.responses).toEqual({ type: 'object', description: 'inner', properties: { id: { type: 'integer' } } })
+    })
 
-    const api: ApiDescriptor = {
-      url: '/create',
-      method: 'post',
-      parameters: [],
-      requestBody: { type: 'object', properties: {}, required: [] },
-      responses: { type: 'object', properties: {}, required: [] },
-    }
+    it('warns and skips when the path does not exist', () => {
+      const spy = warnSpy()
+      const api = makeApi()
+      const result = getHandleApi([{ scope: 'response', unwrap: 'missing.child', patch: 'string' }])(api)
+      expect(spy).toHaveBeenCalled()
+      expect(result).toBe(api)
+      spy.mockRestore()
+    })
 
-    const result = handleApi(api)!
-    expect(result.requestBody).toEqual({
-      type: 'object',
-      properties: { id: { type: 'number' }, name: { type: 'string' } },
-      required: ['id'],
+    it('applies to parameter scopes through the object view', () => {
+      const api = makeApi({
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } },
+          { name: 'filter', in: 'query', required: false, schema: { type: 'object', description: 'the filter', properties: { kind: { type: 'string', description: 'the kind' } } } },
+        ],
+      })
+      const result = getHandleApi([{ scope: 'params', unwrap: 'filter' }])(api)!
+      const params = result.parameters!.filter(p => p.in === ParameterIn.QUERY)
+      expect(params).toEqual([{ name: 'kind', in: 'query', required: false, schema: { type: 'string', description: 'the kind' } }])
     })
   })
 
-  it('collapses deeply nested SchemaOptional on a param (outermost required wins)', () => {
-    const handleApi = getHandleApi([
-      {
-        scope: 'params',
-        match: 'token',
-        handler: () => ({
-          required: true,
-          type: { required: false, type: { required: false, type: 'string' } },
-        }),
-      },
-    ])
+  describe('match', () => {
+    it('locates every matching top-level field', () => {
+      const result = getHandleApi([{ scope: 'response', match: /(code|data)/, patch: 'string' }])(makeApi())!
+      const res = result.responses as SchemaObject
+      expect(res.properties?.code).toEqual({ type: 'string', description: 'status code' })
+      expect(res.properties?.data).toEqual({ type: 'string', description: 'the payload' })
+    })
 
-    const api: ApiDescriptor = {
-      url: '/x',
-      method: 'get',
-      parameters: [
-        { name: 'token', in: 'query', required: false, schema: { type: 'integer' } },
-      ],
-      requestBody: { type: 'object', properties: {}, required: [] },
-      responses: { type: 'object', properties: {}, required: [] },
-    }
-
-    const result = handleApi(api)!
-    const tokenParam = result.parameters!.find(p => p.name === 'token')!
-    expect((tokenParam.schema as SchemaObject).type).toBe('string')
-    expect(tokenParam.required).toBe(true)
-  })
-
-  it('handler can return any/unknown/undefined/null/never primitive types', () => {
-    const handleApi = getHandleApi([
-      { scope: 'params', match: 'a', handler: () => 'any' },
-      { scope: 'params', match: 'b', handler: () => 'unknown' },
-      { scope: 'params', match: 'c', handler: () => 'undefined' },
-      { scope: 'params', match: 'd', handler: () => 'null' },
-      { scope: 'params', match: 'e', handler: () => 'never' },
-    ])
-
-    const api: ApiDescriptor = {
-      url: '/x',
-      method: 'get',
-      parameters: [
-        { name: 'a', in: 'query', required: false, schema: { type: 'string' } },
-        { name: 'b', in: 'query', required: false, schema: { type: 'string' } },
-        { name: 'c', in: 'query', required: false, schema: { type: 'string' } },
-        { name: 'd', in: 'query', required: false, schema: { type: 'string' } },
-        { name: 'e', in: 'query', required: false, schema: { type: 'string' } },
-      ],
-      requestBody: { type: 'object', properties: {}, required: [] },
-      responses: { type: 'object', properties: {}, required: [] },
-    }
-
-    const result = handleApi(api)!
-    const getType = (name: string) => (result.parameters!.find(p => p.name === name)!.schema as SchemaObject).type
-    expect(getType('a')).toBe('any')
-    expect(getType('b')).toBe('unknown')
-    expect(getType('c')).toBe('undefined')
-    expect(getType('d')).toBe('null')
-    expect(getType('e')).toBe('never')
-  })
-
-  it('match supports RegExp', () => {
-    const handleApi = getHandleApi([
-      { scope: 'params', match: /_date$/, handler: () => 'string' },
-    ])
-
-    const api: ApiDescriptor = {
-      url: '/x',
-      method: 'get',
-      parameters: [
-        { name: 'createdAt', in: 'query', required: false, schema: { type: 'string' } },
-        { name: 'updatedAt', in: 'query', required: false, schema: { type: 'string' } },
-        { name: 'name', in: 'query', required: false, schema: { type: 'integer' } },
-      ],
-      requestBody: { type: 'object', properties: {}, required: [] },
-      responses: { type: 'object', properties: {}, required: [] },
-    }
-
-    const result = handleApi(api)!
-    const getType = (n: string) => (result.parameters!.find(p => p.name === n)!.schema as SchemaObject).type
-    expect(getType('createdAt')).toBe('string')
-    expect(getType('updatedAt')).toBe('string')
-    expect(getType('name')).toBe('integer') // unmatched, untouched
-  })
-
-  it('match supports function', () => {
-    const handleApi = getHandleApi([
-      {
-        scope: 'data',
-        match: (key: string) => key.startsWith('user'),
-        handler: () => 'string',
-      },
-    ])
-
-    const api: ApiDescriptor = {
-      url: '/x',
-      method: 'post',
-      parameters: [],
-      requestBody: {
-        type: 'object',
-        properties: {
-          user_name: { type: 'string' },
-          user_age: { type: 'integer' },
-          other: { type: 'boolean' },
-        },
-        required: [],
-      },
-      responses: { type: 'object', properties: {}, required: [] },
-    }
-
-    const result = handleApi(api)!
-    const rb = result.requestBody as SchemaObject
-    expect((rb.properties?.user_name as SchemaObject)?.type).toBe('string')
-    expect((rb.properties?.user_age as SchemaObject)?.type).toBe('string')
-    expect((rb.properties?.other as SchemaObject)?.type).toBe('boolean') // unmatched, untouched
-  })
-
-  it('match omitted (data): handler is called once on the whole scope object with key undefined', () => {
-    let calls = 0
-    let receivedKey: any
-    let received: any
-    const handleApi = getHandleApi([
-      {
-        scope: 'data',
-        handler: (schema, key) => {
-          calls++
-          receivedKey = key
-          received = schema
-          // set every field on the whole object to boolean, preserving the optional flag
-          const s = schema as Record<string, any>
-          const next: Record<string, any> = {}
-          for (const k of Object.keys(s)) {
-            const val = s[k]
-            const isOpt = val && typeof val === 'object' && !Array.isArray(val)
-              && typeof val.required === 'boolean' && 'type' in val
-            next[k] = isOpt ? { required: false, type: 'boolean' } : 'boolean'
-          }
-          return next
-        },
-      },
-    ])
-
-    const api: ApiDescriptor = {
-      url: '/x',
-      method: 'post',
-      parameters: [],
-      requestBody: {
-        type: 'object',
-        properties: {
-          a: { type: 'string' },
-          b: { type: 'integer' },
-          c: { type: 'boolean' },
-        },
-        required: ['a'],
-      },
-      responses: { type: 'object', properties: {}, required: [] },
-    }
-
-    const result = handleApi(api)!
-    // the whole scope is called only once
-    expect(calls).toBe(1)
-    // when match is omitted, key is undefined
-    expect(receivedKey).toBeUndefined()
-    // the input is the whole requestBody object, optional props wrapped in SchemaOptional (integer normalized to number)
-    expect(received).toEqual({ a: 'string', b: { required: false, type: 'number' }, c: { required: false, type: 'boolean' } })
-    // every field is changed to boolean; the required relationship is preserved
-    const rb = result.requestBody as SchemaObject
-    expect((rb.properties?.a as SchemaObject)?.type).toBe('boolean')
-    expect((rb.properties?.b as SchemaObject)?.type).toBe('boolean')
-    expect((rb.properties?.c as SchemaObject)?.type).toBe('boolean')
-    expect(rb.required).toEqual(['a'])
-  })
-
-  it('match omitted (params): handler is called once on the whole query object with key undefined', () => {
-    let calls = 0
-    let receivedKey: any
-    let received: any
-    const handleApi = getHandleApi([
-      {
-        scope: 'params',
-        handler: (schema, key) => {
-          calls++
-          receivedKey = key
-          received = schema
-          return schema
-        },
-      },
-    ])
-
-    const api: ApiDescriptor = {
-      url: '/x',
-      method: 'get',
-      parameters: [
-        { name: 'a', in: 'query', required: true, schema: { type: 'string' } },
-        { name: 'b', in: 'query', required: false, schema: { type: 'integer' } },
-        { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
-      ],
-      requestBody: { type: 'object', properties: {}, required: [] },
-      responses: { type: 'object', properties: {}, required: [] },
-    }
-
-    const result = handleApi(api)!
-    // the whole query scope is called only once
-    expect(calls).toBe(1)
-    // when match is omitted, key is undefined
-    expect(receivedKey).toBeUndefined()
-    // the input is the whole query object (only query params, path params excluded), optional props wrapped in SchemaOptional (integer normalized to number)
-    expect(received).toEqual({ a: 'string', b: { required: false, type: 'number' } })
-    // the original structure stays unchanged; path params are unaffected (integer is normalized to number after the Schema round-trip)
-    const getType = (n: string) => (result.parameters!.find(p => p.name === n)!.schema as SchemaObject).type
-    expect(getType('a')).toBe('string')
-    expect(getType('b')).toBe('number')
-    expect(getType('id')).toBe('string')
-  })
-
-  it('match set: handler receives the matched key as the 2nd argument', () => {
-    const keys: string[] = []
-    const handleApi = getHandleApi([
-      // exact string match
-      { scope: 'params', match: 'age', handler: (_s, key) => {
-        keys.push(key as string)
-        return 'string'
-      } },
-      // regex match
-      { scope: 'params', match: /At$/, handler: (_s, key) => {
-        keys.push(key as string)
-        return 'string'
-      } },
-      // function match
-      {
-        scope: 'data',
-        match: (k: string) => k.startsWith('user'),
-        handler: (_s, key) => {
-          keys.push(key as string)
-          return 'string'
-        },
-      },
-    ])
-
-    const api: ApiDescriptor = {
-      url: '/x',
-      method: 'post',
-      parameters: [
-        { name: 'age', in: 'query', required: false, schema: { type: 'integer' } },
-        { name: 'createdAt', in: 'query', required: false, schema: { type: 'string' } },
-        { name: 'updatedAt', in: 'query', required: false, schema: { type: 'string' } },
-        { name: 'name', in: 'query', required: false, schema: { type: 'integer' } },
-      ],
-      requestBody: {
-        type: 'object',
-        properties: { user_name: { type: 'string' }, user_age: { type: 'integer' }, other: { type: 'boolean' } },
-        required: [],
-      },
-      responses: { type: 'object', properties: {}, required: [] },
-    }
-
-    handleApi(api)
-    // matched fields are recorded in order; unmatched name/other are not included
-    expect(keys).toEqual(['age', 'createdAt', 'updatedAt', 'user_name', 'user_age'])
-  })
-
-  it('handler can return SchemaEnum to produce an enum field', () => {
-    const handleApi = getHandleApi([
-      {
-        scope: 'params',
-        match: 'status',
-        handler: () => ({ enum: ['active', 'inactive', 'pending'], type: 'string' }),
-      },
-    ])
-
-    const api: ApiDescriptor = {
-      url: '/x',
-      method: 'get',
-      parameters: [
-        { name: 'status', in: 'query', required: false, schema: { type: 'string' } },
-      ],
-      requestBody: { type: 'object', properties: {}, required: [] },
-      responses: { type: 'object', properties: {}, required: [] },
-    }
-
-    const result = handleApi(api)!
-    const statusParam = result.parameters!.find(p => p.name === 'status')!
-    expect(statusParam.schema).toEqual({ enum: ['active', 'inactive', 'pending'], type: 'string' })
-  })
-
-  it('normalizes an OpenAPI integer enum to the TS number type and converts it back', () => {
-    let input: any
-    const handleApi = getHandleApi([
-      {
-        scope: 'params',
-        match: 'kind',
-        handler: (schema) => {
-          input = schema
-          return schema // pass through unchanged
-        },
-      },
-    ])
-
-    const api: ApiDescriptor = {
-      url: '/items',
-      method: 'get',
-      parameters: [
-        { name: 'kind', in: 'query', required: false, schema: { type: 'integer', enum: [1, 2, 3] } as any },
-      ],
-      requestBody: { type: 'object', properties: {}, required: [] },
-      responses: { type: 'object', properties: {}, required: [] },
-    }
-
-    const result = handleApi(api)!
-    // the OpenAPI `integer` type is normalized to the TS `number` type for the handler
-    expect(input).toEqual({ enum: [1, 2, 3], type: 'number' })
-    const kindParam = result.parameters!.find(p => p.name === 'kind')!
-    // converted back into the OpenAPI `integer` type
-    expect(kindParam.schema).toEqual({ type: 'integer', enum: [1, 2, 3] })
-  })
-
-  it('handler can transform a numeric enum (data scope)', () => {
-    let input: any
-    const handleApi = getHandleApi([
-      {
-        scope: 'data',
-        match: 'status',
-        handler: (schema) => {
-          input = schema
-          const spec = schema as { enum: number[], type?: string }
-          return { enum: [...spec.enum, 9], type: 'number' }
-        },
-      },
-    ])
-
-    const api: ApiDescriptor = {
-      url: '/orders',
-      method: 'post',
-      parameters: [],
-      requestBody: {
-        type: 'object',
-        properties: { status: { type: 'integer', enum: [1, 2] } as any },
-        required: ['status'],
-      },
-      responses: { type: 'object', properties: {}, required: [] },
-    }
-
-    const result = handleApi(api)!
-    expect(input).toEqual({ enum: [1, 2], type: 'number' })
-    const rb = result.requestBody as SchemaObject
-    expect(rb.properties?.status).toEqual({ type: 'integer', enum: [1, 2, 9] })
-  })
-
-  it('handler can return a SchemaEnum with type "number" (response scope)', () => {
-    const handleApi = getHandleApi([
-      {
-        scope: 'response',
-        match: 'code',
-        handler: () => ({ enum: [100, 200, 300], type: 'number' }),
-      },
-    ])
-
-    const api: ApiDescriptor = {
-      url: '/x',
-      method: 'get',
-      parameters: [],
-      requestBody: { type: 'object', properties: {}, required: [] },
-      responses: {
-        type: 'object',
-        properties: { code: { type: 'integer' } },
-        required: ['code'],
-      } as any,
-    }
-
-    const result = handleApi(api)!
-    const res = result.responses as SchemaObject
-    expect(res.properties?.code).toEqual({ type: 'integer', enum: [100, 200, 300] })
-  })
-
-  it('infers the OpenAPI type of an untyped enum from its values', () => {
-    const handleApi = getHandleApi([
-      { scope: 'data', match: () => true, handler: schema => schema },
-    ])
-
-    const api: ApiDescriptor = {
-      url: '/x',
-      method: 'post',
-      parameters: [],
-      requestBody: {
-        type: 'object',
-        properties: {
-          kind: { enum: ['a', 'b'] },
-          size: { enum: [1, 2] },
-          rate: { enum: [1.5, 2.5] },
-          enabled: { enum: [true, false] },
-        },
-        required: ['kind', 'size', 'rate', 'enabled'],
-      },
-      responses: { type: 'object', properties: {}, required: [] },
-    }
-
-    const result = handleApi(api)!
-    const rb = result.requestBody as SchemaObject
-    expect(rb.properties?.kind).toEqual({ type: 'string', enum: ['a', 'b'] })
-    expect(rb.properties?.size).toEqual({ type: 'integer', enum: [1, 2] })
-    expect(rb.properties?.rate).toEqual({ type: 'number', enum: [1.5, 2.5] })
-    expect(rb.properties?.enabled).toEqual({ type: 'boolean', enum: [true, false] })
-  })
-
-  it('leaves an enum untyped when its values are mixed', () => {
-    const handleApi = getHandleApi([
-      { scope: 'data', match: 'mixed', handler: schema => schema },
-    ])
-
-    const api: ApiDescriptor = {
-      url: '/x',
-      method: 'post',
-      parameters: [],
-      requestBody: {
-        type: 'object',
-        properties: { mixed: { enum: ['a', 1] } as any },
-        required: ['mixed'],
-      },
-      responses: { type: 'object', properties: {}, required: [] },
-    }
-
-    const result = handleApi(api)!
-    const rb = result.requestBody as SchemaObject
-    // mixed value types -> no type is written
-    expect(rb.properties?.mixed).toEqual({ enum: ['a', 1] })
-  })
-
-  it('preserves an OpenAPI 3.1 nullable type array on an enum', () => {
-    const handleApi = getHandleApi([
-      { scope: 'params', match: 'kind', handler: schema => schema },
-    ])
-
-    const api: ApiDescriptor = {
-      url: '/items',
-      method: 'get',
-      parameters: [
-        {
-          name: 'kind',
-          in: 'query',
-          required: false,
-          schema: { type: ['string', 'null'], enum: ['a', 'b', null] } as any,
-        },
-      ],
-      requestBody: { type: 'object', properties: {}, required: [] },
-      responses: { type: 'object', properties: {}, required: [] },
-    }
-
-    const result = handleApi(api)!
-    const kindParam = result.parameters!.find(p => p.name === 'kind')!
-    // the 3.1 `type: ['string', 'null']` is kept instead of being dropped
-    expect(kindParam.schema).toEqual({ type: ['string', 'null'], enum: ['a', 'b', null] })
-  })
-
-  it('replaces the type array when the handler specifies a type', () => {
-    const handleApi = getHandleApi([
-      {
-        scope: 'params',
-        match: 'kind',
-        handler: () => ({ enum: ['a', 'b'], type: 'string' }),
-      },
-    ])
-
-    const api: ApiDescriptor = {
-      url: '/items',
-      method: 'get',
-      parameters: [
-        {
-          name: 'kind',
-          in: 'query',
-          required: false,
-          schema: { type: ['string', 'null'], enum: ['a', 'b', null] } as any,
-        },
-      ],
-      requestBody: { type: 'object', properties: {}, required: [] },
-      responses: { type: 'object', properties: {}, required: [] },
-    }
-
-    const result = handleApi(api)!
-    const kindParam = result.parameters!.find(p => p.name === 'kind')!
-    expect(kindParam.schema).toEqual({ type: 'string', enum: ['a', 'b'] })
-  })
-
-  it('keeps a float enum as OpenAPI number instead of integer', () => {
-    const handleApi = getHandleApi([
-      {
-        scope: 'data',
-        match: 'rate',
-        handler: () => ({ enum: [1.5, 2.5], type: 'number' }),
-      },
-    ])
-
-    const api: ApiDescriptor = {
-      url: '/rates',
-      method: 'post',
-      parameters: [],
-      requestBody: {
-        type: 'object',
-        properties: { rate: { type: 'number', enum: [1.5, 2.5] } as any },
-        required: ['rate'],
-      },
-      responses: { type: 'object', properties: {}, required: [] },
-    }
-
-    const result = handleApi(api)!
-    const rb = result.requestBody as SchemaObject
-    // not every value is an integer -> stays `number`, the type matches the values
-    expect(rb.properties?.rate).toEqual({ type: 'number', enum: [1.5, 2.5] })
-  })
-
-  it('keeps a mixed integer/float enum as OpenAPI number', () => {
-    const handleApi = getHandleApi([
-      {
-        scope: 'data',
-        match: 'rate',
-        handler: () => ({ enum: [1, 2.5], type: 'number' }),
-      },
-    ])
-
-    const api: ApiDescriptor = {
-      url: '/rates',
-      method: 'post',
-      parameters: [],
-      requestBody: {
-        type: 'object',
-        properties: { rate: { type: 'number', enum: [1, 2.5] } as any },
-        required: ['rate'],
-      },
-      responses: { type: 'object', properties: {}, required: [] },
-    }
-
-    const result = handleApi(api)!
-    const rb = result.requestBody as SchemaObject
-    expect(rb.properties?.rate).toEqual({ type: 'number', enum: [1, 2.5] })
-  })
-
-  describe('feature: keep documentation (description) through the round-trip', () => {
-    it('preserves nested property descriptions when the handler returns an object', () => {
+    it('supports string, RegExp and function rules', () => {
+      const keys: Array<string | undefined> = []
+      const remember = (schema: SchemaObject, key?: string) => {
+        keys.push(key)
+        return schema
+      }
       const handleApi = getHandleApi([
-        {
-          scope: 'data',
-          match: 'user',
-          handler: () => ({ id: 'string', name: 'string' }),
-        },
+        { scope: 'data', match: 'name', handler: remember },
+        { scope: 'data', match: /Flag$/, handler: remember },
+        { scope: 'data', match: k => k === 'id', handler: remember },
       ])
+      handleApi(makeApi())
+      expect(keys).toEqual(['name', 'legacyFlag', 'id'])
+    })
 
-      const api: ApiDescriptor = {
-        url: '/users',
-        method: 'post',
-        parameters: [],
+    it('is a silent no-op when nothing matches', () => {
+      const api = makeApi()
+      expect(getHandleApi([{ scope: 'response', match: 'nothing', patch: null }])(api)).toBe(api)
+    })
+
+    it('patches the root itself when match is omitted', () => {
+      const result = getHandleApi([{ scope: 'data', patch: { description: 'new doc' } }])(makeApi())!
+      expect(result.requestBody).toEqual(expect.objectContaining({ description: 'new doc', type: 'object' }))
+    })
+  })
+
+  describe('patch', () => {
+    it('deletes matched fields with null', () => {
+      const result = getHandleApi([{ scope: 'response', unwrap: 'data', patch: { debugInfo: null, name: null } }])(makeApi())!
+      const res = result.responses as SchemaObject
+      expect(Object.keys(res.properties!)).toEqual(['id'])
+      expect(res.required).toEqual(['id'])
+    })
+
+    it('empties the scope when the root itself is deleted', () => {
+      const result = getHandleApi([{ scope: 'data', patch: null }])(makeApi())!
+      expect(result.requestBody).toBeUndefined()
+    })
+
+    it('only empties its own parameter location', () => {
+      const result = getHandleApi([{ scope: 'params', patch: null }])(makeApi())!
+      expect(result.parameters!.filter(p => p.in === ParameterIn.QUERY)).toEqual([])
+      expect(result.parameters!.filter(p => p.in === ParameterIn.PATH)).toHaveLength(1)
+    })
+
+    it('treats a string or array as a type shorthand and keeps documentation', () => {
+      const api = makeApi({
+        requestBody: {
+          type: 'object',
+          properties: {
+            count: { type: 'integer', format: 'int64', description: 'a count' },
+            tags: { type: 'array', items: { type: 'number' }, description: 'the tags' },
+          },
+          required: [],
+        },
+      })
+      const result = getHandleApi([
+        { scope: 'data', match: 'count', patch: 'string' },
+        { scope: 'data', match: 'tags', patch: ['string'] },
+      ])(api)!
+      const rb = result.requestBody as SchemaObject
+      expect(rb.properties?.count).toEqual({ type: 'string', description: 'a count' })
+      expect(rb.properties?.tags).toEqual({ type: 'array', items: { type: 'string' }, description: 'the tags' })
+    })
+
+    it('merges a plain object into properties but rebuilds with an explicit type', () => {
+      const makeNested = () => makeApi({
         requestBody: {
           type: 'object',
           properties: {
             user: {
               type: 'object',
               description: 'the user',
-              properties: {
-                id: { type: 'number', description: 'user id' },
-                name: { type: 'string', description: 'user name' },
-              },
+              properties: { age: { type: 'integer' }, keep: { type: 'string' } },
+              required: ['age'],
+            },
+          },
+          required: ['user'],
+        },
+      })
+
+      const merged = getHandleApi([{ scope: 'data', match: 'user', patch: { name: 'string' } }])(makeNested())!
+      expect((merged.requestBody as SchemaObject).properties?.user).toEqual({
+        type: 'object',
+        description: 'the user',
+        properties: {
+          age: { type: 'integer' },
+          keep: { type: 'string' },
+          name: { type: 'string' },
+        },
+        required: ['age', 'name'],
+      })
+
+      const replaced = getHandleApi([{ scope: 'data', match: 'user', patch: { type: { name: 'string' } } }])(makeNested())!
+      expect((replaced.requestBody as SchemaObject).properties?.user).toEqual({
+        type: 'object',
+        description: 'the user',
+        properties: { name: { type: 'string' } },
+        required: ['name'],
+      })
+    })
+
+    it('keeps siblings untouched when merging into properties', () => {
+      const api = makeApi({
+        requestBody: {
+          type: 'object',
+          properties: {
+            user: {
+              type: 'object',
+              description: 'the user',
+              properties: { id: { type: 'integer', description: 'user id' }, name: { type: 'string', description: 'user name' } },
               required: ['id'],
             },
           },
           required: ['user'],
         },
-        responses: { type: 'object', properties: {}, required: [] },
-      }
-
-      const result = handleApi(api)!
-      const rb = result.requestBody as SchemaObject
-      expect(rb.properties?.user).toEqual({
+      })
+      const result = getHandleApi([{ scope: 'data', match: 'user', patch: { name: 'string' } }])(api)!
+      // `name` existed and was optional, so omitting `required` keeps it optional
+      expect((result.requestBody as SchemaObject).properties?.user).toEqual({
         type: 'object',
         description: 'the user',
-        properties: {
-          id: { type: 'string', description: 'user id' },
-          name: { type: 'string', description: 'user name' },
-        },
-        required: ['id', 'name'],
+        properties: { id: { type: 'integer', description: 'user id' }, name: { type: 'string', description: 'user name' } },
+        required: ['id'],
       })
     })
 
-    it('preserves array item descriptions when the handler returns an array', () => {
-      const handleApi = getHandleApi([
-        {
-          scope: 'data',
-          match: 'list',
-          handler: () => ([{ id: 'string' }]),
-        },
-      ])
+    it('warns and skips when a field table targets a non-object', () => {
+      const spy = warnSpy()
+      const api = makeApi()
+      const result = getHandleApi([{ scope: 'data', match: 'name', patch: { inner: 'string' } }])(api)!
+      expect(spy).toHaveBeenCalled()
+      expect((result.requestBody as SchemaObject).properties?.name).toEqual({ type: 'string', description: 'pet name' })
+      spy.mockRestore()
+    })
 
-      const api: ApiDescriptor = {
-        url: '/feed',
-        method: 'post',
-        parameters: [],
+    it('writes partial patches without touching the other keys', () => {
+      const api = makeApi({
         requestBody: {
           type: 'object',
           properties: {
-            list: {
-              type: 'array',
-              description: 'the list',
-              items: {
-                type: 'object',
-                description: 'an item',
-                properties: { id: { type: 'number', description: 'item id' } },
-                required: ['id'],
-              },
-            },
-          },
-          required: ['list'],
-        },
-        responses: { type: 'object', properties: {}, required: [] },
-      }
-
-      const result = handleApi(api)!
-      const rb = result.requestBody as SchemaObject
-      expect(rb.properties?.list).toEqual({
-        type: 'array',
-        description: 'the list',
-        items: {
-          type: 'object',
-          description: 'an item',
-          properties: { id: { type: 'string', description: 'item id' } },
-          required: ['id'],
-        },
-      })
-    })
-
-    it('preserves query parameter descriptions when match is omitted', () => {
-      const handleApi = getHandleApi([
-        { scope: 'params', handler: schema => schema },
-      ])
-
-      const api: ApiDescriptor = {
-        url: '/x',
-        method: 'get',
-        parameters: [
-          { name: 'a', in: 'query', required: true, schema: { type: 'string', description: 'param a' } },
-          { name: 'b', in: 'query', required: false, schema: { type: 'integer', description: 'param b' } },
-        ],
-        requestBody: { type: 'object', properties: {}, required: [] },
-        responses: { type: 'object', properties: {}, required: [] },
-      }
-
-      const result = handleApi(api)!
-      const a = result.parameters!.find(p => p.name === 'a')!.schema as SchemaObject
-      const b = result.parameters!.find(p => p.name === 'b')!.schema as SchemaObject
-      expect(a).toEqual({ type: 'string', description: 'param a' })
-      expect(b).toEqual({ type: 'number', description: 'param b' })
-    })
-
-    it('does not leak stale structural fields when the type is replaced', () => {
-      const handleApi = getHandleApi([
-        { scope: 'data', match: 'payload', handler: () => 'string' },
-        { scope: 'data', match: 'kind', handler: () => ({ enum: ['a', 'b'], type: 'string' }) },
-      ])
-
-      const api: ApiDescriptor = {
-        url: '/x',
-        method: 'post',
-        parameters: [],
-        requestBody: {
-          type: 'object',
-          properties: {
-            payload: {
-              type: 'object',
-              description: 'the payload',
-              properties: { inner: { type: 'number' } },
-              required: ['inner'],
-            },
-            kind: {
-              type: 'object',
-              description: 'the kind',
-              properties: { code: { type: 'number' } },
-              required: ['code'],
-            },
+            email: { type: 'string', format: 'email', description: 'mail' },
+            status: { type: 'string', description: 'status' },
           },
           required: [],
         },
-        responses: { type: 'object', properties: {}, required: [] },
-      }
-
-      const result = handleApi(api)!
+      })
+      const result = getHandleApi([
+        { scope: 'data', match: 'email', patch: { description: 'contact mail', deprecated: true } },
+        { scope: 'data', match: 'status', patch: { enum: ['on', 'off'] } },
+      ])(api)!
       const rb = result.requestBody as SchemaObject
-      // the description is kept, the obsolete properties/required are dropped
-      expect(rb.properties?.payload).toEqual({ type: 'string', description: 'the payload' })
-      expect(rb.properties?.kind).toEqual({ type: 'string', enum: ['a', 'b'], description: 'the kind' })
+      expect(rb.properties?.email).toEqual({ type: 'string', format: 'email', description: 'contact mail', deprecated: true })
+      expect(rb.properties?.status).toEqual({ type: 'string', description: 'status', enum: ['on', 'off'] })
+    })
+
+    it('uses properties as the escape hatch for reserved key names', () => {
+      const api = makeApi({
+        requestBody: { type: 'object', properties: { description: { type: 'number' } }, required: [] },
+      })
+      const result = getHandleApi([{ scope: 'data', patch: { properties: { description: { type: 'string' } } } }])(api)!
+      expect((result.requestBody as SchemaObject).properties?.description).toEqual({ type: 'string' })
+    })
+
+    it('supports tuples, unions and TS-only primitive types', () => {
+      const api = makeApi({
+        requestBody: {
+          type: 'object',
+          properties: {
+            pair: { type: 'array', items: { type: 'string' } },
+            value: { type: 'string' },
+            any: { type: 'string' },
+            never: { type: 'string' },
+          },
+          required: [],
+        },
+      })
+      const result = getHandleApi([
+        { scope: 'data', match: 'pair', patch: ['string', 'number'] },
+        { scope: 'data', match: 'value', patch: { oneOf: ['string', 'number'] } },
+        { scope: 'data', match: 'any', patch: 'unknown' },
+        { scope: 'data', match: 'never', patch: 'never' },
+      ])(api)!
+      const rb = result.requestBody as SchemaObject
+      expect(rb.properties?.pair).toEqual({ type: 'array', items: [{ type: 'string' }, { type: 'number' }] })
+      expect(rb.properties?.value).toEqual({ oneOf: [{ type: 'string' }, { type: 'number' }] })
+      expect((rb.properties?.any as SchemaObject).type).toBe('unknown')
+      expect((rb.properties?.never as SchemaObject).type).toBe('never')
+    })
+
+    it('infers the type of a new enum field', () => {
+      const result = getHandleApi([
+        { scope: 'data', patch: { size: { enum: [1, 2] }, rate: { enum: [1.5, 2.5] } } },
+      ])(makeApi())!
+      const rb = result.requestBody as SchemaObject
+      expect(rb.properties?.size).toEqual({ enum: [1, 2], type: 'integer' })
+      expect(rb.properties?.rate).toEqual({ enum: [1.5, 2.5], type: 'number' })
+    })
+
+    it('adds array items and forces the array type', () => {
+      const api = makeApi({ requestBody: { type: 'object', properties: { list: {} }, required: [] } })
+      const result = getHandleApi([{ scope: 'data', match: 'list', patch: { items: 'string' } }])(api)!
+      expect((result.requestBody as SchemaObject).properties?.list).toEqual({ items: { type: 'string' }, type: 'array' })
+    })
+
+    it('throws on an unknown primitive type', () => {
+      const handleApi = getHandleApi([{ scope: 'data', match: 'name', patch: 'int64' as any }])
+      expect(() => handleApi(makeApi())).toThrow(/Invalid schema type "int64"/)
     })
   })
 
-  it('handler returns null when apiDescriptor is null', () => {
-    const handleApi = getHandleApi([{ scope: 'params', match: 'x', handler: () => 'string' }])
-    expect(handleApi(null as any)).toBeNull()
-  })
-
-  describe('validation: handler return value', () => {
-    function api(): ApiDescriptor {
-      return {
-        url: '/x',
-        method: 'get',
-        parameters: [{ name: 'age', in: 'query', required: false, schema: { type: 'string' } }],
-        requestBody: { type: 'object', properties: { name: { type: 'string' } }, required: [] },
-        responses: { type: 'object', properties: {}, required: [] },
-      }
-    }
-
-    it('throws on invalid primitive type', () => {
-      const handleApi = getHandleApi([{ scope: 'params', match: 'age', handler: () => 'int64' as any }])
-      expect(() => handleApi(api())).toThrow(/Invalid schema type "int64"/)
-    })
-
-    it('throws on invalid primitive in SchemaOptional.type', () => {
-      const handleApi = getHandleApi([{ scope: 'params', match: 'age', handler: () => ({ required: false, type: 'int64' as any }) }])
-      expect(() => handleApi(api())).toThrow(/Invalid schema type "int64"/)
-    })
-
-    it('throws on invalid primitive in oneOf', () => {
-      const handleApi = getHandleApi([{ scope: 'params', match: 'age', handler: () => ({ oneOf: ['int64' as any, 'string'] }) }])
-      expect(() => handleApi(api())).toThrow(/Invalid schema type "int64"/)
-    })
-
-    it('throws on invalid primitive in anyOf', () => {
-      const handleApi = getHandleApi([{ scope: 'params', match: 'age', handler: () => ({ anyOf: ['int64' as any, 'string'] }) }])
-      expect(() => handleApi(api())).toThrow(/Invalid schema type "int64"/)
-    })
-
-    it('throws on invalid primitive in allOf', () => {
-      const handleApi = getHandleApi([{ scope: 'params', match: 'age', handler: () => ({ allOf: ['int64' as any, 'string'] }) }])
-      expect(() => handleApi(api())).toThrow(/Invalid schema type "int64"/)
-    })
-
-    it('throws on invalid type in SchemaEnum', () => {
-      const handleApi = getHandleApi([{ scope: 'params', match: 'age', handler: () => ({ enum: ['a', 'b'], type: 'int64' as any }) }])
-      expect(() => handleApi(api())).toThrow(/Invalid schema type "int64"/)
-    })
-
-    it('throws on the OpenAPI-only "integer" type in SchemaEnum (TS types only)', () => {
-      const handleApi = getHandleApi([{ scope: 'params', match: 'age', handler: () => ({ enum: [1, 2], type: 'integer' as any }) }])
-      expect(() => handleApi(api())).toThrow(/Invalid schema type "integer"/)
-    })
-
-    it('throws on invalid primitive in array element', () => {
-      const handleApi = getHandleApi([{ scope: 'data', match: 'name', handler: () => ['int64' as any] }])
-      expect(() => handleApi(api())).toThrow(/Invalid schema type "int64"/)
-    })
-
-    it('throws on invalid primitive in nested SchemaReference', () => {
-      const handleApi = getHandleApi([{ scope: 'data', match: 'name', handler: () => ({ key: 'int64' as any }) }])
-      expect(() => handleApi(api())).toThrow(/Invalid schema type "int64"/)
-    })
-
-    it('throws on invalid primitive in deeply nested SchemaOptional', () => {
-      const handleApi = getHandleApi([{ scope: 'params', match: 'age', handler: () => ({ required: true, type: { required: false, type: 'int64' as any } }) }])
-      expect(() => handleApi(api())).toThrow(/Invalid schema type "int64"/)
-    })
-
-    it('does not throw for all valid SchemaPrimitive values', () => {
-      const handleApi = getHandleApi([
-        { scope: 'params', match: 'age', handler: () => 'number' },
-      ])
-      expect(() => handleApi(api())).not.toThrow()
-    })
-  })
-
-  describe('feature: path filter', () => {
-    it('applies config only when apiDescriptor.url matches (string substring)', () => {
-      const handleApi = getHandleApi([
+  describe('required', () => {
+    it('makes added fields required by default and honours required: false', () => {
+      const result = getHandleApi([
         {
-          path: '/pets',
           scope: 'data',
-          match: 'userId',
-          handler: () => ({ required: true, type: 'string' }),
+          patch: {
+            operatorId: { type: 'string', description: 'operator code' },
+            optionalNote: { type: 'string', required: false },
+          },
         },
-      ])
-
-      const matchedApi: ApiDescriptor = {
-        url: '/pets/{id}',
-        method: 'post',
-        parameters: [],
-        requestBody: { type: 'object', properties: { userId: { type: 'integer' } }, required: ['userId'] },
-        responses: { type: 'object', properties: {}, required: [] },
-      }
-      const unmatchedApi: ApiDescriptor = { ...matchedApi, url: '/orders' }
-
-      const matched = handleApi(matchedApi)!
-      const rb = matched.requestBody as SchemaObject
-      // matched: userId is rewritten
-      expect((rb.properties?.userId as SchemaObject)?.type).toBe('string')
-      // unmatched: returned as-is (same reference)
-      const unmatched = handleApi(unmatchedApi)!
-      expect(unmatched).toBe(unmatchedApi)
+      ])(makeApi())!
+      const rb = result.requestBody as SchemaObject
+      expect(rb.properties?.operatorId).toEqual({ type: 'string', description: 'operator code' })
+      expect(rb.required).toEqual(expect.arrayContaining(['id', 'operatorId']))
+      expect(rb.required).not.toContain('optionalNote')
     })
 
-    it('path supports RegExp and function matchers', () => {
+    it('translates field requiredness to ParameterObject.required', () => {
+      const result = getHandleApi([{ scope: 'params', match: 'page', patch: { required: true } }])(makeApi())!
+      const page = result.parameters!.find(p => p.name === 'page') as Parameter
+      expect(page.required).toBe(true)
+      expect(page.schema).toEqual({ type: 'integer', description: 'page number' })
+    })
+
+    it('keeps the current requiredness when required is omitted', () => {
+      const result = getHandleApi([{ scope: 'data', match: 'name', patch: 'string' }])(makeApi())!
+      expect((result.requestBody as SchemaObject).required).toEqual(['id'])
+    })
+
+    it('makes an existing field optional', () => {
+      const result = getHandleApi([{ scope: 'data', match: 'id', patch: { required: false } }])(makeApi())!
+      expect((result.requestBody as SchemaObject).required).toEqual([])
+    })
+  })
+
+  describe('handler', () => {
+    it('receives and returns raw OpenAPI schemas', () => {
+      let received: unknown
+      let key: string | undefined
       const handleApi = getHandleApi([
         {
-          path: /^\/admin/,
-          scope: 'params',
-          match: 'token',
-          handler: () => ({ required: true, type: 'string' }),
-        },
-        {
-          path: (url: string) => url.includes('internal'),
-          scope: 'params',
-          match: 'secret',
-          handler: () => ({ required: true, type: 'string' }),
+          scope: 'response',
+          match: 'data',
+          handler: (schema, fieldKey) => {
+            received = schema
+            key = fieldKey
+            return { ...schema, description: 'handled' }
+          },
         },
       ])
+      const result = handleApi(makeApi())!
+      expect(received).toEqual(makeApi().responses!.properties!.data)
+      expect(key).toBe('data')
+      expect((result.responses as SchemaObject).properties?.data).toEqual(expect.objectContaining({ description: 'handled' }))
+    })
 
-      const adminApi: ApiDescriptor = {
-        url: '/admin/users',
-        method: 'get',
-        parameters: [
-          { name: 'token', in: 'query', required: false, schema: { type: 'string' } },
-          { name: 'secret', in: 'query', required: false, schema: { type: 'string' } },
-        ],
-        requestBody: { type: 'object', properties: {}, required: [] },
-        responses: { type: 'object', properties: {}, required: [] },
-      }
-      const internalApi: ApiDescriptor = { ...adminApi, url: '/internal/x' }
-      const otherApi: ApiDescriptor = { ...adminApi, url: '/public/x' }
+    it('deletes the target when it returns null or undefined', () => {
+      const removed = getHandleApi([{ scope: 'response', match: 'code', handler: () => null }])(makeApi())!
+      expect((removed.responses as SchemaObject).properties?.code).toBeUndefined()
 
-      const admin = handleApi(adminApi)!
-      expect((admin.parameters!.find(p => p.name === 'token')!.schema as SchemaObject)?.type).toBe('string')
-      // under the admin path, secret does not match (the path function requires the url to contain 'internal')
-      expect((admin.parameters!.find(p => p.name === 'secret')!.schema as SchemaObject)?.type).toBe('string')
+      const api = makeApi({ responses: { type: 'object', properties: { code: { type: 'integer' } }, required: [] } })
+      const cleared = getHandleApi([{ scope: 'response', handler: () => undefined }])(api)!
+      expect(cleared.responses).toBeUndefined()
+    })
 
-      const internal = handleApi(internalApi)!
-      expect((internal.parameters!.find(p => p.name === 'secret')!.schema as SchemaObject)?.type).toBe('string')
+    it('runs after patch', () => {
+      let seen: SchemaObject | undefined
+      const result = getHandleApi([
+        {
+          scope: 'data',
+          match: 'id',
+          patch: 'string',
+          handler: (schema) => {
+            seen = schema
+            return schema
+          },
+        },
+      ])(makeApi())!
+      expect(seen).toEqual({ type: 'string', description: 'pet id' })
+      expect((result.requestBody as SchemaObject).properties?.id).toEqual({ type: 'string', description: 'pet id' })
+    })
+  })
 
-      // none matched: returned as-is
-      const other = handleApi(otherApi)!
-      expect(other).toBe(otherApi)
+  describe('pipeline', () => {
+    it('applies configs in order, each seeing the previous result', () => {
+      const result = getHandleApi([
+        { scope: 'response', unwrap: 'data' },
+        { scope: 'response', match: /[Ii]d$/, patch: 'string' },
+        { scope: 'response', patch: { debugInfo: null } },
+      ])(makeApi())!
+      expect(result.responses).toEqual({
+        type: 'object',
+        description: 'the payload',
+        properties: {
+          id: { type: 'string', description: 'pet id' },
+          name: { type: 'string', description: 'pet name' },
+        },
+        required: ['id'],
+      })
+    })
+
+    it('combines several scopes', () => {
+      const result = getHandleApi([
+        { scope: 'params', match: 'page', patch: 'string' },
+        { scope: 'pathParams', match: 'id', patch: 'string' },
+        { scope: 'data', match: 'id', patch: 'string' },
+      ])(makeApi())!
+      expect(result.parameters!.find(p => p.name === 'page')!.schema).toEqual({ type: 'string', description: 'page number' })
+      expect(result.parameters!.find(p => p.name === 'id')!.schema).toEqual({ type: 'string' })
+      expect((result.requestBody as SchemaObject).properties?.id).toEqual({ type: 'string', description: 'pet id' })
+    })
+
+    it('appends brand new parameters to the parameter list', () => {
+      const result = getHandleApi([{ scope: 'params', patch: { token: { type: 'string', required: false } } }])(makeApi())!
+      const query = result.parameters!.filter(p => p.in === ParameterIn.QUERY)
+      expect(query[0].name).toBe('page')
+      expect(query[1]).toEqual({ name: 'token', in: 'query', required: false, schema: { type: 'string' } })
+    })
+
+    it('is idempotent for the same plugin instance', () => {
+      const handleApi = getHandleApi([{ scope: 'response', unwrap: 'data' }])
+      const first = handleApi(makeApi())!
+      const second = handleApi(first)!
+      expect(second).toBe(first)
+    })
+
+    it('drops the internal $ref marker when a node is replaced', () => {
+      const api = makeApi({
+        responses: {
+          type: 'object',
+          properties: {
+            data: { _$ref: '#/components/schemas/Pet', type: 'object', description: 'pet' } as SchemaObject,
+          },
+        },
+      })
+      const result = getHandleApi([{ scope: 'response', unwrap: 'data' }])(api)!
+      const responses = result.responses as Record<string, any>
+      expect(responses._$ref).toBeUndefined()
+      expect(responses.description).toBe('pet')
     })
   })
 })

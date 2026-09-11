@@ -3,7 +3,7 @@
 import { Command, Option } from 'commander'
 
 import { ConfigTypeEnum, PresetTemplateName, TemplateTypeEnum } from '@/constant'
-import { actionGen, actionInit } from './actions'
+import { actionDiff, actionGen, actionInit } from './actions'
 
 // eslint-disable-next-line ts/no-require-imports, perfectionist/sort-imports
 const pkg = require('../../package.json')
@@ -21,10 +21,17 @@ program
 program
   .command('gen')
   .description('generate API from OpenAPI specs')
-  .option('-f, --force', 'force generate api')
   .option('-d, --debug', 'enable debug logging')
   .option('-p, --project <path>', 'project directory (single project mode)')
   .action(actionGen)
+
+program
+  .command('diff')
+  .description('browse recorded API changes')
+  .argument('[id]', 'change id (e.g. 0007) or `latest`; omit to list all')
+  .option('-l, --list', 'list all recorded changes')
+  .option('-p, --project <path>', 'project directory')
+  .action(actionDiff)
 
 program.parse(process.argv)
 /* c8 ignore stop */

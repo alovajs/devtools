@@ -1,0 +1,390 @@
+---
+title: Predefined Templates
+description: Use the five built-in predefined templates
+---
+
+## alova
+
+On-demand import mode — each API is exported as a standalone function, supporting tree-shaking.
+
+```javascript
+import { alova } from 'wormajs/plugin';
+plugins: [alova()],
+```
+
+**Template structure:**
+
+<Files>
+  <Folder name="alova" defaultOpen>
+    <File name="components.d.ts" />
+    <File name="helper.ts" />
+    <File name="index.ts" />
+    <File name="typed.ts" />
+    <Folder name="services" defaultOpen>
+      <File name="index.ts" />
+      <File name="pet.ts" />
+      <File name="store.ts" />
+      <File name="user.ts" />
+    </Folder>
+  </Folder>
+</Files>
+
+<Callout type="idea" title="Files not overwritten on regeneration">
+- `index.ts` (root entry)
+- `services/index.ts` (service export entry)
+
+So you can freely edit these files — adjust the export style in index, inject middleware, or customize the request instance config — without losing your changes on regeneration.
+</Callout>
+
+**Usage:**
+
+```typescript
+import { getUserList } from './api/alova/services/user';
+
+const users = await getUserList({ params: { page: 1, size: 10 } });
+```
+
+Supports `data` (request body), `params` (query params), `pathParams` (path params), and alova method config options (e.g. `cacheFor`, `transform`).
+
+**Pass alova native config options:**
+
+```typescript
+// cacheFor - cache duration (ms)
+await getUserList({
+  params: { page: 1, size: 10 },
+  cacheFor: 60_000       // alova method native option: cache for 60s
+});
+
+// transform - response transform
+await getPetById({
+  pathParams: { petId: 123 },
+  transform: (data) => data.name  // alova method native option: take only the name field
+});
+
+// shareRequest - share request
+await getUserList({
+  shareRequest: false     // alova method native option: disable request sharing
+});
+```
+
+## alovaGlobals
+
+Globally mounted mode, compatible with alova@3 (v3 only, no longer v2).
+
+```javascript
+import { alovaGlobals } from 'wormajs/plugin';
+
+plugins: [alovaGlobals({
+  global: 'Apis',
+  globalHost: 'globalThis',
+})]
+```
+
+**Config:**
+
+```typescript
+interface TemplateAlovaGlobalsConfig {
+  /** Global API name, default 'Apis'; required and must be unique when multiple generators are used */
+  global?: string;
+  /** Host object the global API is mounted on, default 'globalThis' */
+  globalHost?: string;
+  /** Use `import type` for the import, default false */
+  useImportType?: boolean;
+}
+```
+
+> The `global` argument is prepended to each API's `pathKey` and `defaultValue` (e.g. `Apis.pet.addPet`), ensuring the global reference path is correct.
+
+**Template structure:**
+
+<Files>
+  <Folder name="alova-globals" defaultOpen>
+    <File name="apiDefinitions.ts" />
+    <File name="createApis.ts" />
+    <File name="globals.d.ts" />
+    <File name="index.ts" />
+  </Folder>
+</Files>
+
+<Callout type="idea" title="Files not overwritten on regeneration">
+- `index.ts`
+
+So you can freely edit this file to customize global config or initialization logic without losing your changes on regeneration.
+</Callout>
+
+**Usage:**
+
+```typescript
+// main.ts — import once
+import './api/alova-globals';
+
+// Use directly from any file
+const user = await Apis.user.getUserById({ pathParams: { userId: 123 } });
+```
+
+Supports `data`, `params`, `pathParams`, and alova method config options.
+
+**Pass alova native config options:**
+
+```typescript
+// cacheFor - cache duration (ms)
+await Apis.user.getUserList({
+  params: { page: 1, size: 10 },
+  cacheFor: 60_000       // alova method native option: cache for 60s
+});
+
+// transform - response transform
+await Apis.pet.getPetById({
+  pathParams: { petId: 123 },
+  transform: (data) => data.name  // alova method native option: take only the name field
+});
+```
+
+## axios
+
+Generate axios-based call functions in on-demand import mode.
+
+```javascript
+import { axios } from 'wormajs/plugin';
+plugins: [axios()],
+```
+
+**Template structure:**
+
+<Files>
+  <Folder name="axios" defaultOpen>
+    <File name="components.d.ts" />
+    <File name="helper.ts" />
+    <File name="index.ts" />
+    <Folder name="services" defaultOpen>
+      <File name="index.ts" />
+      <File name="pet.ts" />
+      <File name="store.ts" />
+      <File name="user.ts" />
+    </Folder>
+  </Folder>
+</Files>
+
+<Callout type="idea" title="Files not overwritten on regeneration">
+- `index.ts` (root entry)
+- `services/index.ts` (service export entry)
+
+So you can freely edit these files — adjust the export style in index, inject middleware, or customize the request instance config — without losing your changes on regeneration.
+</Callout>
+
+**Usage:**
+
+```typescript
+import { createUser } from './api/axios/services/user';
+
+const newUser = await createUser({ data: { name: 'Alice', email: 'alice@example.com' } });
+```
+
+Supports `data` (request body, maps to axios `data`), `params` (query params, maps to axios `params`), `pathParams` (path params), and axios request options (e.g. `timeout`, `headers`).
+
+**Pass axios native config options:**
+
+```typescript
+// responseType - response data type
+await getUserList({
+  params: { page: 1, size: 10 },
+  responseType: 'json'    // axios native option
+});
+
+// withCredentials - send cookies on cross-origin requests
+await createUser({
+  data: { name: 'Alice' },
+  withCredentials: true    // axios native option
+});
+
+// timeout - request timeout (ms)
+await getUserById({
+  pathParams: { userId: 123 },
+  timeout: 5000            // axios native option: 5s timeout
+});
+
+// custom headers
+await getInventory({
+  headers: { 'X-Custom-Header': 'value' }  // axios native option
+});
+```
+
+## fetch
+
+Generate native fetch-based call functions with zero extra dependencies, in on-demand import mode.
+
+```javascript
+import { fetch } from 'wormajs/plugin';
+plugins: [fetch()],
+```
+
+**Template structure:**
+
+<Files>
+  <Folder name="fetch" defaultOpen>
+    <File name="FetchClient.ts" />
+    <File name="components.d.ts" />
+    <File name="helper.ts" />
+    <File name="index.ts" />
+    <Folder name="services" defaultOpen>
+      <File name="index.ts" />
+      <File name="pet.ts" />
+      <File name="store.ts" />
+      <File name="user.ts" />
+    </Folder>
+  </Folder>
+</Files>
+
+<Callout type="idea" title="Files not overwritten on regeneration">
+- `index.ts` (root entry)
+- `services/index.ts` (service export entry)
+
+So you can freely edit these files — adjust the export style in index, inject middleware, or customize the request instance config — without losing your changes on regeneration.
+</Callout>
+
+**Usage:**
+
+```typescript
+import { getUserList } from './api/fetch/services/user';
+
+const users = await getUserList({ params: { page: 1, size: 10 } });
+```
+
+Supports `body` (request body, maps to native fetch `body`), `params` (query params), `pathParams` (path params), and fetch request options (e.g. `headers`, `signal`).
+
+**Pass fetch native config options:**
+
+```typescript
+// signal - abort the request (AbortController)
+const controller = new AbortController();
+await getUserList({
+  params: { page: 1, size: 10 },
+  signal: controller.signal   // fetch native option: cancelable
+});
+
+// credentials - cookie policy
+await createUser({
+  body: { name: 'Alice' },
+  credentials: 'include'      // fetch native option: send cookies
+});
+
+// custom headers
+await getInventory({
+  headers: { 'X-API-Key': 'xxx' }  // fetch native option
+});
+
+// mode - request mode
+await getUserList({
+  params: { status: 'active' },
+  mode: 'cors'                 // fetch native option
+});
+```
+
+## ky
+
+Generate [ky](https://github.com/sindresorhus/ky)-based call functions in on-demand import mode.
+
+```javascript
+import { ky } from 'wormajs/plugin';
+plugins: [ky()],
+```
+
+**Template structure:**
+
+<Files>
+  <Folder name="ky" defaultOpen>
+    <File name="components.d.ts" />
+    <File name="helper.ts" />
+    <File name="index.ts" />
+    <Folder name="services" defaultOpen>
+      <File name="index.ts" />
+      <File name="pet.ts" />
+      <File name="store.ts" />
+      <File name="user.ts" />
+    </Folder>
+  </Folder>
+</Files>
+
+<Callout type="idea" title="Files not overwritten on regeneration">
+- `index.ts` (root entry)
+- `services/index.ts` (service export entry)
+
+So you can freely edit these files — adjust the export style in index, inject middleware, or customize the request instance config — without losing your changes on regeneration.
+</Callout>
+
+**Usage:**
+
+```typescript
+import { getUserById } from './api/ky/services/user';
+
+const user = await getUserById({ pathParams: { userId: 123 } });
+```
+
+Supports `json` (request body, maps to ky `json`), `searchParams` (query params, maps to ky `searchParams`), `pathParams` (path params), and ky request options (e.g. `headers`, `timeout`, `retry`).
+
+**Pass ky native config options:**
+
+```typescript
+// timeout - request timeout (ms)
+await getUserList({
+  searchParams: { page: 1, size: 10 },
+  timeout: 5000              // ky native option: 5s timeout
+});
+
+// retry - retry count on failure
+await createUser({
+  json: { name: 'Alice' },
+  retry: 3                   // ky native option: retry up to 3 times
+});
+
+// hooks - request lifecycle hooks
+await uploadFile({
+  body: file,
+  hooks: {
+    beforeRequest: [(r) => console.log('before request:', r)],
+    afterResponse: [(r) => console.log('after response:', r)]
+  }                          // ky native option
+});
+
+// headers - custom request headers
+await getInventory({
+  headers: { 'Authorization': 'Bearer token' }  // ky native option
+});
+```
+
+## Reusing the generated types
+
+Besides the call function, every API also exports **named type aliases**, so business code (forms, stores, ...) can reference the request params, request body and response types directly. For a generated `services/pet.ts`:
+
+```typescript
+export type findPetsByStatusResponse = ComponentTypes.Pet[];
+export type findPetsByStatusParams = {
+  /** Status values that need to be considered for filter */
+  status: ('available' | 'pending' | 'sold')[];
+};
+export interface findPetsByStatusExtraConfig {
+  params: findPetsByStatusParams;
+}
+```
+
+Aliases are prefixed with the generated function name; the config key each one maps to differs per template:
+
+| Alias | alova | axios | fetch | ky |
+| --- | --- | --- | --- | --- |
+| `<fn>PathParams` | `pathParams` | `pathParams` | `pathParams` | `pathParams` |
+| `<fn>Params` | `params` | `params` | `params?` | `searchParams` |
+| `<fn>Data` | `data` | `data` | `body?` | `json` |
+| `<fn>Response` | return type | return type | return type | return type |
+| `<fn>ExtraConfig` | function config | function config | function config | function config |
+
+An alias is only generated when the operation actually has the corresponding parameter (an operation without query parameters has no `<fn>Params`).
+
+When using alova's `useForm` (or similar hooks), annotate the callback parameter with the exported alias, because `useForm` cannot infer the form type from the handler's return value:
+
+```typescript
+import { useForm } from 'alova/client';
+import { findPetsByStatus } from './api/alova/services/pet';
+import type { findPetsByStatusParams } from './api/alova/services/pet';
+
+const { send } = useForm((params: findPetsByStatusParams) => findPetsByStatus({ params }));
+```

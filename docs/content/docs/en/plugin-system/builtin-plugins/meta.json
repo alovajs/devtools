@@ -1,0 +1,12 @@
+{
+  "pages": [
+    "aiDoc",
+    "platform",
+    "rename",
+    "tag-modifier",
+    "payload-modifier",
+    "filter-api",
+    "import-type"
+  ],
+  "title": "Built-in Plugins"
+}

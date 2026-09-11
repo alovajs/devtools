@@ -1,0 +1,268 @@
+---
+title: 参数修改器
+description: 灵活修改 API 接口的请求和响应参数，支持增加、删除、修改参数类型，支持按 tag/path 过滤与响应解包
+---
+
+# 参数修改器
+
+`payloadModifier` 用来修改接口的请求参数和响应结构：增加字段、删除字段、改类型、改必填性、改注释，以及把 `data` 这类包装层解包掉。
+
+## 快速开始
+
+```javascript
+import { defineConfig } from 'wormajs';
+import { payloadModifier } from 'wormajs/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      // ...
+      plugins: [
+        payloadModifier([
+          // 全部接口：响应解包 data
+          { scope: 'response', unwrap: 'data' },
+          // 某类 tag：解包后删调试字段
+          { scope: 'response', tag: '覆盖分析', unwrap: 'data', patch: { debugInfo: null } },
+          // 全部接口：id 结尾字段批量改 string（原注释保留）
+          { scope: 'response', match: /[Ii]d$/, patch: 'string' },
+          { scope: 'params', match: /[Ii]d$/, patch: 'string' },
+          // 只改必填性
+          { scope: 'data', match: 'email', patch: { required: false } },
+        ]),
+      ],
+    },
+  ],
+});
+```
+
+## 执行顺序
+
+每个配置项按下面的顺序执行：
+
+```txt
+过滤接口（path / tag） → 更换根节点（unwrap） → 选择字段（match） → 修改字段（patch） → 自定义处理（handler）
+```
+
+| 步骤 | 配置键 | 作用 |
+| --- | --- | --- |
+| 过滤接口 | `path` / `tag` | 决定这条配置是否作用于当前接口 |
+| 更换根节点 | `unwrap` | 把要修改的根节点换成它里面的某个子节点，后面的步骤都在这个新节点上做 |
+| 选择字段 | `match` | 不写 = 改根节点本身；写了 = 改根下所有命中的顶层字段 |
+| 修改字段 | `patch` | 声明式的增 / 删 / 改 |
+| 自定义处理 | `handler` | 拿到原始 schema 自己处理 |
+
+多条配置按数组顺序依次执行，后面的配置看到的是前面处理完的结果。
+
+## 配置项
+
+```typescript
+interface ModifierConfig {
+  /** 生效范围（必填） */
+  scope: 'params' | 'pathParams' | 'data' | 'response';
+
+  /** 按接口地址过滤：string 为子串匹配；不写 = 全部接口；数组为「或」 */
+  path?: Matcher | Matcher[];
+  /** 按 tag 过滤：接口的 tags 中任一个命中即生效 */
+  tag?: Matcher | Matcher[];
+
+  /** 先用子节点替换根节点，点号分隔，只沿 properties 往下找 */
+  unwrap?: string;
+
+  /** 要改的字段名：不写 = 改根节点本身；写了 = 改命中的顶层字段 */
+  match?: Matcher;
+
+  /** 改什么：增 / 删 / 改类型 / 改必填 / 改注释 */
+  patch?: FieldValue;
+
+  /** 自定义处理：进出都是原始 SchemaObject，返回 null / undefined 表示删除 */
+  handler?: (schema: SchemaObject, key?: string) => SchemaObject | null | undefined;
+}
+
+type Matcher = string | RegExp | ((value: string) => boolean);
+```
+
+## 过滤接口
+
+`path` 和 `tag` 都省略时对全部接口生效；同时写时为「与」关系；单个键给数组时为「或」关系。
+
+```javascript
+// 地址以 /api/admin 开头 且 带「覆盖分析」tag 的接口
+{ path: /^\/api\/admin/, tag: '覆盖分析', scope: 'response', patch: { debugInfo: null } }
+// 地址含 /pets 或 /orders 的接口
+{ path: ['/pets', '/orders'], scope: 'data', match: 'userId', patch: 'string' }
+```
+
+接口没有任何 tag 时，`tag` 过滤不会命中。
+
+## 更换根节点
+
+先把要修改的根节点换成它里面某个子节点，再做后续操作。常用于把响应里的 `data` 解包出来。
+
+```javascript
+{ scope: 'response', unwrap: 'data' }       // 解包一层
+{ scope: 'response', unwrap: 'data.list' }  // 解包多层
+```
+
+- 只沿 `properties` 往下找，写错路径时打印告警并跳过这条配置，不影响其它接口和其它配置；
+- 不进入数组元素（`list.items` 这种路径不支持），要取数组元素请用 `handler`；
+- 这一步只是换节点，不做任何类型转换，字段上的 `description` 等注释原样保留。
+
+## 选择字段
+
+| 写法 | 改哪些字段 |
+| --- | --- |
+| 不写 `match` | 根节点本身（整体增删改） |
+| 写 `match` | 根节点下所有命中的**顶层字段**（可以有多个） |
+| 写了但一个都没命中 | 什么都不做 |
+
+只匹配当前节点的顶层字段名，不会往更深层找，也不会进到 `oneOf` / `anyOf` / `allOf` 的分支里。
+
+```javascript
+{ scope: 'response', match: /[Ii]d$/, patch: 'string' }               // 正则
+{ scope: 'data', match: 'email', patch: { required: false } }         // 子串
+{ scope: 'data', match: key => key.startsWith('user'), patch: 'string' } // 函数
+```
+
+## 修改字段
+
+`patch` 顶层的写法，和字段表里每个字段的写法是同一套规则，可以一层层嵌套下去：
+
+| 值的形式 | 含义 |
+| --- | --- |
+| `null` | 删除（写在字段上 = 删这个字段；写在最外层 = 删 `match` 选中的字段） |
+| 字符串 / 数组 | 相当于 `{ type: 该值 }`，替换类型，保留 `description` 等注释 |
+| 对象，不含关键字 | 相当于 `properties`：对字段列表做**合并**修改 |
+| 对象，含关键字 | 对这个字段本身做**部分修改**：只改写出来的键，没写的键保持原样 |
+
+这里的关键字指：`type`、`required`、`description`、`properties`、`items`、`enum`、`oneOf`、`anyOf`、`allOf`、`format`、`example`、`default`、`deprecated`、`nullable`、`title`。
+
+### 类型怎么写
+
+出现在 `type` / `items` / `oneOf` 这些**类型值**位置，用来描述一个类型：
+
+```typescript
+type SchemaDSL
+  = 'number' | 'string' | 'boolean' | 'undefined' | 'null' | 'unknown' | 'any' | 'never'
+  | SchemaDSL[]                                 // ['string'] 是 string[]；['string','number'] 是元组
+  | { oneOf: SchemaDSL[] } | { anyOf: SchemaDSL[] } | { allOf: SchemaDSL[] }
+  | { enum: Array<string | number | boolean | null>, type?: SchemaPrimitive }
+  | { [field: string]: SchemaDSL };             // 对象类型简写，列出的字段都是必填
+```
+
+`unknown` / `any` / `never` 这些 TS 类型会原样写进 `type`，生成对应的 TS 类型。
+
+### 改类型时会清掉什么
+
+写 `type`（或 `oneOf` / `anyOf` / `allOf`）时，会把描述旧类型的这些键清掉，避免残留：
+
+```txt
+type、properties、items、enum、oneOf、anyOf、allOf、format、required
+```
+
+其余的键（`description`、`title`、`example`、`deprecated`、`nullable`…）全部保留。
+
+```javascript
+// 原字段：{ type: 'integer', format: 'int64', description: '宠物 id' }
+{ scope: 'data', match: 'id', patch: 'string' }
+// 结果：{ type: 'string', description: '宠物 id' }
+```
+
+### 其它关键字的行为
+
+| 键 | 行为 |
+| --- | --- |
+| `required` | 不写进 schema，改成增删父级的 `required` 数组；`params` / `pathParams` 改的是 `ParameterObject.required` |
+| `description` / `title` / `format` / `example` / `default` / `deprecated` / `nullable` | 直接覆盖 |
+| `enum` | 覆盖枚举值；没写 `type` 且字段原来也没有 `type` 时按值推断（全整数 → `integer`，含小数 → `number`，全字符串 → `string`，全布尔 → `boolean`） |
+| `items` | 覆盖数组元素类型；字段原来不是 `array` 时会补上 `type: 'array'` |
+| `properties` | 明确声明要改哪些字段（也是字段名和关键字重名时的写法） |
+
+`required` 写在最外层（改根节点）时没有父级，不会生效。
+
+### 必填性 required
+
+- 新增的字段**默认必填**，要可选必须显式写 `required: false`；
+- 已有的字段不写 `required` 就**保持原来的必填性**；
+- 显式写 `required: true / false` 会增删父级的 `required` 数组。
+
+```javascript
+{ scope: 'data', match: 'email', patch: { required: false } }            // 已有字段改为可选
+{ scope: 'data', patch: { note: { type: 'string', required: false } } }  // 新字段声明为可选
+```
+
+### 字段名和关键字重名时
+
+字段名恰好叫 `description`、`type` 这类关键字时，用 `properties` 明确写出来：
+
+```javascript
+// 意思：改目标里名为 description 的字段（而不是改目标的 description）
+{ scope: 'data', patch: { properties: { description: { type: 'string' } } } }
+```
+
+### 合并与整体替换
+
+```javascript
+{ scope: 'data', match: 'user', patch: { name: 'string' } }           // 合并：user 其它字段保留
+{ scope: 'data', match: 'user', patch: { type: { name: 'string' } } } // 整体替换：user 的类型重建
+```
+
+两种写法都会保留目标自身的 `description` 等注释。
+
+### 常用写法速查
+
+```javascript
+// 增：新字段带注释，默认必填
+{ scope: 'data', patch: { operatorId: { type: 'string', description: '操作人编码，无填0' } } }
+// 删字段
+{ scope: 'response', unwrap: 'data', patch: { debugInfo: null } }
+// 删整个范围（data 变成空；params 只清 query 参数）
+{ scope: 'data', patch: null }
+// 改类型
+{ scope: 'data', match: 'tags', patch: ['string'] }                // string[]
+{ scope: 'data', match: 'id', patch: { oneOf: ['string', 'number'] } }
+// 改注释
+{ scope: 'data', match: 'totalCount', patch: { description: '总条数' } }
+// 改必填
+{ scope: 'params', match: 'page', patch: { required: true } }
+```
+
+## 自定义处理
+
+`patch` 表达不了时，用 `handler` 直接拿到原始 schema 自己处理：
+
+```javascript
+{
+  scope: 'response',
+  path: '/special',
+  handler: schema => schema.properties.data,   // 自己解包
+}
+```
+
+- 写了 `match`：每个命中的字段各调用一次，第二个参数是字段名；
+- 没写 `match`：对根节点调用一次，第二个参数为 `undefined`；
+- 返回 `null` / `undefined` 表示**删除**；想保持原样必须 `return schema`；
+- `patch` 和 `handler` 一起写时，`patch` 先执行，`handler` 拿到的是改过之后的结果；
+- 想保留注释就展开原对象：`schema => ({ ...schema, type: 'string' })`；
+- 需要重命名字段也可以在这里做：复制一个键，再删掉旧键。
+
+## 四个 scope 分别作用在哪
+
+| scope | 作用位置 |
+| --- | --- |
+| `data` | `apiDescriptor.requestBody` |
+| `response` | `apiDescriptor.responses` |
+| `params` | query 参数：先合成一个对象 schema，改完再写回参数数组 |
+| `pathParams` | path 参数，同上 |
+
+`params` / `pathParams` 里新增的字段会生成新的参数，放在同类型参数的后面；`required` 会写回参数的 `required`。
+
+## 边界情况
+
+| 情况 | 表现 |
+| --- | --- |
+| `unwrap` 路径找不到 | 打印告警并跳过这条配置，不影响其它配置和其它接口 |
+| `match` 一个都没命中 | 什么都不做 |
+| 字段列表修改用在了非对象字段上 | 打印告警并跳过这个字段 |
+| 删除时有 `match` | 删掉该字段，同时从 `required` 里移除 |
+| 删除时没有 `match` | 清空这个范围：`data` / `response` 置空；`params` / `pathParams` 只移除对应位置的参数 |
+| 重复执行 | 同一个插件实例对同一个接口只会处理一次 |

@@ -126,7 +126,7 @@ async function main() {
 
       const start = performance.now()
       try {
-        const results = await generate(config, { force: true })
+        const results = await generate(config)
         const timeMs = Math.round(performance.now() - start)
 
         if (!results.every(Boolean)) {

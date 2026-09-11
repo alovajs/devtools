@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import { pickPoolSize, WorkerPool as WorkerPoolClass } from '@/core/WorkerPool'
+import { pickPoolSize, resolvePoolSize, WorkerPool as WorkerPoolClass } from '@/core/WorkerPool'
 
 describe('pickPoolSize', () => {
   // P2: threshold lowered from 200 to 20 so medium-sized APIs also benefit from worker parallelism
@@ -24,6 +24,29 @@ describe('pickPoolSize', () => {
     const small = pickPoolSize(1000)
     const large = pickPoolSize(5000)
     expect(large).toBeGreaterThanOrEqual(small)
+  })
+})
+
+describe('resolvePoolSize (performance.workerPool strategy)', () => {
+  it('falls back to the adaptive heuristic for `auto` and for an omitted strategy', () => {
+    expect(resolvePoolSize(5)).toBe(pickPoolSize(5))
+    expect(resolvePoolSize(5000)).toBe(pickPoolSize(5000))
+    expect(resolvePoolSize(5000, 'auto')).toBe(pickPoolSize(5000))
+  })
+
+  it('returns 0 when the strategy is `false` (workers disabled)', () => {
+    expect(resolvePoolSize(0, false)).toBe(0)
+    expect(resolvePoolSize(5000, false)).toBe(0)
+  })
+
+  it('pins the pool size when a number is given, regardless of apiCount', () => {
+    expect(resolvePoolSize(5, 1)).toBe(1)
+    expect(resolvePoolSize(5000, 3)).toBe(3)
+  })
+
+  it('clamps invalid numeric strategies to a usable range', () => {
+    expect(resolvePoolSize(5000, -2)).toBe(0)
+    expect(resolvePoolSize(5000, 2.7)).toBe(2)
   })
 })
 

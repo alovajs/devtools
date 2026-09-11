@@ -1,0 +1,126 @@
+---
+title: Migrate from wormhole
+description: A complete guide to migrating from @alova/wormhole to worma
+---
+
+worma is the OpenAPI code generator spun off from `@alova/wormhole` and redesigned to be more general-purpose. It is no longer limited to the alova request library — it adds multiple templates (axios, fetch, ky), custom templates, and a more complete plugin system.
+
+## Automatic migration with AI
+
+Install the worma Skill.
+
+```bash
+npx skills add alovajs/skills --skill worma-guidelines
+```
+
+Then send the following prompt in the AI chat to migrate automatically:
+
+```text
+Please migrate this project from @alova/wormhole to worma
+```
+
+## Package name and install
+
+| Item | @alova/wormhole | worma |
+| -------- | ------------------------------- | --------------------- |
+| npm package | `@alova/wormhole` | `wormajs` |
+| Install command | `npm i @alova/wormhole -D` | `npm i wormajs -D` |
+| Import entry | `from '@alova/wormhole'` | `from 'wormajs'` |
+| Plugin import | `from '@alova/wormhole/plugin'` | `from 'wormajs/plugin'` |
+
+## Config file
+
+Rename `alova.config.{js,ts}` to `worma.config.{js,ts}` — the `defineConfig` usage is unchanged. worma also adds the simplified `.wormarc` config.
+
+## CLI commands
+
+| Item | @alova/wormhole | worma |
+| -------------- | ----------------- | ------------------- |
+| Init | `alova init` | `worma init` |
+| Generate | `alova gen` | `worma gen` |
+| Specify project | `-c, --cwd` | `-p, --project` |
+| Workspace mode | `-w, --workspace` | Default behavior, no flag needed |
+| Verbose log | `--verbose` | `-d, --debug` |
+
+## Template migration: default mode → `plugins`
+
+`@alova/wormhole` used the alovaGlobals template (globally mounted) by default, with no config needed. worma requires selecting the template explicitly via the `plugins` array:
+
+```javascript
+// @alova/wormhole (alovaGlobals by default, no config needed)
+export default defineConfig({
+  generator: [{
+    input: 'https://api.example.com/openapi.json',
+    output: 'src/api',
+  }],
+});
+
+// worma (must be specified explicitly)
+import { alovaGlobals } from 'wormajs/plugin';
+
+export default defineConfig({
+  generator: [{
+    input: 'https://api.example.com/openapi.json',
+    output: 'src/api',
+    plugins: [alovaGlobals()],
+  }],
+});
+```
+
+worma also adds `alova` (on-demand import), `axios`, `fetch`, `ky`, and more templates — see [Predefined Templates](/docs/template-system/predefined-templates).
+
+## platform config → plugins
+
+`@alova/wormhole`'s `platform` config becomes per-platform plugins in worma (`swagger` / `knife4j` / `yapi`), and the base URL is passed as a plugin argument, so no `input` is needed. FastAPI projects can simply use the `swagger` plugin (`/openapi.json` is its first candidate URL):
+
+```javascript
+// @alova/wormhole
+defineConfig({
+  generator: [
+    {
+      input: "https://api.example.com",
+      platform: "swagger",
+    },
+  ],
+});
+
+// worma
+import { swagger, alovaGlobals } from "wormajs/plugin";
+
+defineConfig({
+  generator: [
+    {
+      plugins: [swagger("https://api.example.com"), alovaGlobals()],
+      output: "src/api",
+    },
+  ],
+});
+```
+
+## Removed config options
+
+| @alova/wormhole option | Notes |
+| ---------------------- | ------------------------------ |
+| `fileNameCase` | Removed, no replacement |
+| `autoUpdate` (root config) | Removed; managed by the VSCode extension instead |
+| `platform` option | Becomes `swagger` / `knife4j` / `yapi` plugins (base URL passed as plugin argument) |
+
+## Other changes
+
+- The alova template only supports **alova@3**, no longer alova@2
+
+## Migration checklist
+
+1. Uninstall `@alova/wormhole`, install `wormajs`
+2. Rename the config file: `alova.config.{js,ts}` → `worma.config.{js,ts}`
+3. Update import paths: `@alova/wormhole` → `wormajs`, `@alova/wormhole/plugin` → `wormajs/plugin`
+4. Add the template plugin to the `plugins` array (e.g. `alovaGlobals()`)
+5. Change the `platform` option to `swagger` / `knife4j` / `yapi` plugins (base URL passed as plugin argument)
+6. CLI arg `-c, --cwd` → `-p, --project`
+
+## Migrating from other sources
+
+If you currently call APIs by hand with axios, ky, etc., see the corresponding migration guides:
+
+- [Migrate from Axios](/docs/migration/from-axios)
+- [Migrate from Ky](/docs/migration/from-ky)

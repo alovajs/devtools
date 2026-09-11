@@ -58,6 +58,7 @@
   "dependencies": {
     "alova": "catalog:frontend",
     "chalk": "catalog:dev",
+    "cli-table3": "catalog:",
     "cli-truncate": "catalog:",
     "commander": "catalog:dev",
     "esbuild": "catalog:build",
@@ -68,7 +69,7 @@
     "log-update": "catalog:",
     "openapi-types": "catalog:types",
     "ora": "catalog:dev",
-    "prettier": "catalog:dev",
+    "oxfmt": "catalog:dev",
     "skills": "catalog:",
     "string-width": "catalog:",
     "swagger2openapi": "catalog:frontend",

@@ -2,7 +2,7 @@ import type { YapiOptions } from '@/plugins/presets/platform'
 import type { GeneratorConfig } from '@/type'
 import { describe, expect, it } from 'vitest'
 import { alovaGlobals } from '@/plugins'
-import { fastapi, knife4j, swagger, yapi } from '@/plugins/presets/platform'
+import { knife4j, swagger, yapi } from '@/plugins/presets/platform'
 
 function noop() { }
 
@@ -68,19 +68,6 @@ describe('platform preset plugins - config', () => {
         'https://openapi3.demo.knife4jnext.com/v3/api-docs',
         'https://openapi3.demo.knife4jnext.com/v2/api-docs',
         'https://openapi3.demo.knife4jnext.com',
-      ])
-    })
-  })
-
-  describe('fastapi plugin', () => {
-    it('should set input to fastapi openapi.json + baseUrl fallback', async () => {
-      const plugin = fastapi('http://fastapi-example.dokkuapp.com')
-      const next = (await plugin.config!({ config: makeConfig(), projectPath: '', reportProgress: noop }))!
-
-      expect(Array.isArray(next.input)).toBe(true)
-      expect(next.input).toEqual([
-        'http://fastapi-example.dokkuapp.com/openapi.json',
-        'http://fastapi-example.dokkuapp.com',
       ])
     })
   })
@@ -155,7 +142,6 @@ describe('platform preset plugins - config', () => {
     it('should expose correct names for each platform plugin', () => {
       expect(swagger('x').name).toBe('swagger')
       expect(knife4j('x').name).toBe('knife4j')
-      expect(fastapi('x').name).toBe('fastapi')
       expect(yapi({ url: 'x', pid: 1, cookie: 'c' }).name).toBe('yapi')
     })
   })

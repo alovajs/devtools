@@ -1,0 +1,93 @@
+---
+title: Contributing
+description: Welcome to worma's development and docs — start your first contribution here
+---
+
+Thanks for your interest in worma! worma is a fully open-source, community-driven project. We welcome any kind of contribution — code, docs, issue feedback, or experience sharing.
+
+## Before you start
+
+- Search [GitHub Issues](https://github.com/alovajs/devtools/issues) to see if there is already a related discussion or request.
+- For larger feature changes, open an Issue to align with maintainers first to avoid duplicate work.
+- Look for tasks labeled `good first issue` — great for first-time contributors.
+
+## Development environment
+
+worma uses pnpm to manage the monorepo. Node.js ≥ 20.19 and pnpm ≥ 9.1 are recommended:
+
+```bash
+# Install dependencies
+pnpm install
+
+# Start the docs site (dev mode)
+pnpm --filter worma-docs dev
+```
+
+## Module development flow
+
+The repo contains multiple sub-packages. Here is how to develop and verify each module.
+
+### worma core package (wormajs)
+
+The core code lives in `packages/worma`. After each change, run unit tests to verify:
+
+```bash
+# Run only the core package's unit tests
+pnpm --filter wormajs test
+
+# Or run all unit tests at repo root (excluding e2e)
+pnpm test:unit
+
+# Build the core package
+pnpm --filter wormajs build
+```
+
+> Note: `pnpm test` at repo root runs e2e, unit tests, and coverage (including build) in sequence. For daily dev verification, use the lighter `pnpm test:unit`.
+
+### vscode-extension (worma-vscode)
+
+The extension code lives in `packages/vscode-extension`. Open that directory in VS Code and press **F5** to launch the Extension Development Host for debugging, or start a dev build with:
+
+```bash
+pnpm --filter worma-vscode dev
+```
+
+## Commit conventions
+
+We follow [Conventional Commits](https://www.conventionalcommits.org/) and use commitlint to validate messages. Common types:
+
+- `feat`: new feature
+- `fix`: bug fix
+- `docs`: documentation change
+- `refactor`: refactor (no behavior change)
+- `test`: test-related
+- `chore`: build / toolchain change
+
+Example:
+
+```bash
+git commit -m "feat(core): support oneOf union type generation"
+```
+
+## Pull Request flow
+
+1. Fork the repo and create a feature branch from `main`: `feat/your-feature`.
+2. Make sure `pnpm test:unit` and lint checks pass.
+3. In the PR, clearly describe the motivation, scope, and how you verified.
+4. Wait for maintainer review and adjust based on feedback.
+
+## Docs contribution
+
+Docs live in `docs/content/docs`, written in MDX. You can:
+
+- Fix typos, add sample code
+- Translate or improve multi-language content
+- Add use cases and best practices
+
+## Code of conduct
+
+Keep communication friendly and inclusive, and respect every contributor. We are committed to a welcoming open-source community for everyone.
+
+---
+
+_worma is better because of the community — we look forward to your participation._

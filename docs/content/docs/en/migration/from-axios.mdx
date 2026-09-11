@@ -1,0 +1,105 @@
+---
+title: Migrate from Axios
+description: Move from hand-written axios calls to worma's type-safe generated calls
+---
+
+If your project currently calls APIs by hand with axios (concatenating URLs, maintaining request/response types manually), you can use worma to generate type-safe calls from the OpenAPI spec. **The generated code is still standard axios under the hood, so compatibility is excellent — your existing axios calls can stay as-is, and you don't have to migrate everything at once.**
+
+## Before: hand-written axios calls
+
+```typescript
+import axios from 'axios';
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+const res = await axios.get<User>('/api/users', {
+  params: { page: 1, size: 10 },
+});
+const users = res.data;
+
+const created = await axios
+  .post<User>('/api/users', { name: 'Alice', email: 'alice@example.com' })
+  .then((r) => r.data);
+```
+
+## Migration steps
+
+### 1. Create the config with init
+
+```bash
+npx wormajs init --template axios
+```
+
+This generates `worma.config.ts` (or `.js`) in the project root, with the axios template selected by default. You can also skip `--template` and pick axios in the interactive menu.
+
+### 2. Generate the calls with gen
+
+```bash
+npx wormajs gen
+```
+
+The output lives under `src/api/axios/`, with each API exported as a standalone function, supporting tree-shaking:
+
+<Files>
+  <Folder name="axios" defaultOpen>
+    <File name="index.ts" />
+    <File name="helper.ts" />
+    <File name="components.d.ts" />
+    <Folder name="services" defaultOpen>
+      <File name="user.ts" />
+    </Folder>
+  </Folder>
+</Files>
+
+`index.ts` creates a default `axiosInstance`:
+
+```typescript
+// src/api/axios/index.ts
+import axios from 'axios';
+
+export const axiosInstance = axios.create({
+  baseURL: 'https://api.example.com',
+});
+```
+
+### 3. Swap the instance (the only part you need to change)
+
+Migration is very simple: **just import your existing axios instance file and re-export it under the same name in the generated `index.ts`; no other files need changes.**
+
+```typescript
+// src/api/axios/index.ts
+// Import from your existing axios instance file and re-export it as axiosInstance
+export { myAxios as axiosInstance } from '@/lib/request';
+```
+
+> `@/lib/request` is your project's axios instance file, already configured with interceptors, baseURL, etc. `myAxios` is its export name. This way, the `axiosInstance` referenced in `services` points directly at your instance, with no other files touched.
+
+## Compatibility notes
+
+The generated calls are still standard axios, so **compatibility is excellent — your existing axios calls can stay, and you can migrate gradually**, replacing hand-written calls with generated type-safe functions in parallel with the original `axios.get/post` calls without conflict.
+
+## Replace hand-written calls
+
+```typescript
+// After migration: function name, params, and return type are all inferred from OpenAPI
+import { getUserList, createUser } from './api/axios/services/user';
+
+const users = await getUserList({ params: { page: 1, size: 10 } });
+
+const created = await createUser({
+  data: { name: 'Alice', email: 'alice@example.com' },
+});
+```
+
+`data` maps to the request body, `params` to query params, and `pathParams` to path params — same semantics as native axios options. The generated functions also accept native axios request options (`timeout`, `headers`, `signal`, etc.).
+
+## Migration checklist
+
+1. Run `worma init --template axios` to generate the config
+2. Run `worma gen` to generate `src/api/axios/`
+3. Replace the default `axiosInstance` in `index.ts` with your existing instance and re-export it (no other files need changes)
+4. Replace hand-written `axios.get/post` calls with the generated type-safe functions as needed

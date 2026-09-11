@@ -1,0 +1,268 @@
+---
+title: Payload Modifier
+description: Flexibly modify an API's request and response parameters — add, remove, or change field types, with tag/path filtering and response unwrapping
+---
+
+# Payload Modifier
+
+`payloadModifier` modifies an API's request parameters and response structure: add fields, remove fields, change types, change requiredness, change comments, and unwrap the `data` wrapper layer.
+
+## Quick start
+
+```javascript
+import { defineConfig } from 'wormajs';
+import { payloadModifier } from 'wormajs/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      // ...
+      plugins: [
+        payloadModifier([
+          // All APIs: unwrap response data
+          { scope: 'response', unwrap: 'data' },
+          // A tag: unwrap then drop a debug field
+          { scope: 'response', tag: 'Coverage Analysis', unwrap: 'data', patch: { debugInfo: null } },
+          // All APIs: fields ending in id → string (keep original comment)
+          { scope: 'response', match: /[Ii]d$/, patch: 'string' },
+          { scope: 'params', match: /[Ii]d$/, patch: 'string' },
+          // Change only requiredness
+          { scope: 'data', match: 'email', patch: { required: false } },
+        ]),
+      ],
+    },
+  ],
+});
+```
+
+## Execution order
+
+Each config item runs in this order:
+
+```txt
+Filter APIs (path / tag) → Replace root (unwrap) → Select fields (match) → Modify fields (patch) → Custom handler
+```
+
+| Step | Config key | Effect |
+| --- | --- | --- |
+| Filter APIs | `path` / `tag` | Decide whether this config applies to the current API |
+| Replace root | `unwrap` | Replace the root node with one of its children; later steps run on the new node |
+| Select fields | `match` | Omitted = modify the root itself; provided = modify all top-level fields under the root that match |
+| Modify fields | `patch` | Declarative add / remove / change |
+| Custom handler | `handler` | Handle the raw schema yourself |
+
+Multiple configs run in array order; a later config sees the result of the earlier ones.
+
+## Config
+
+```typescript
+interface ModifierConfig {
+  /** Scope (required) */
+  scope: 'params' | 'pathParams' | 'data' | 'response';
+
+  /** Filter by API path: string = substring match; omitted = all APIs; array = OR */
+  path?: Matcher | Matcher[];
+  /** Filter by tag: applies when any of the API's tags matches */
+  tag?: Matcher | Matcher[];
+
+  /** Replace root with a child node, dot-separated, only descends through properties */
+  unwrap?: string;
+
+  /** Field name to change: omitted = change the root itself; provided = change matching top-level fields */
+  match?: Matcher;
+
+  /** What to change: add / remove / change type / change required / change comment */
+  patch?: FieldValue;
+
+  /** Custom handler: receives and returns a raw SchemaObject; null / undefined means delete */
+  handler?: (schema: SchemaObject, key?: string) => SchemaObject | null | undefined;
+}
+
+type Matcher = string | RegExp | ((value: string) => boolean);
+```
+
+## Filter APIs
+
+Omitting both `path` and `tag` applies to all APIs; providing both is an AND relationship; an array on a single key is an OR relationship.
+
+```javascript
+// Path starts with /api/admin AND has tag 'Coverage Analysis'
+{ path: /^\/api\/admin/, tag: 'Coverage Analysis', scope: 'response', patch: { debugInfo: null } }
+// Path contains /pets or /orders
+{ path: ['/pets', '/orders'], scope: 'data', match: 'userId', patch: 'string' }
+```
+
+When an API has no tags, the `tag` filter won't match.
+
+## Replace root (unwrap)
+
+Replace the root node with one of its children before subsequent operations. Commonly used to unwrap `data` out of a response.
+
+```javascript
+{ scope: 'response', unwrap: 'data' }       // unwrap one level
+{ scope: 'response', unwrap: 'data.list' }  // unwrap multiple levels
+```
+
+- Only descends through `properties`; a wrong path prints a warning and skips this config, without affecting other APIs or configs.
+- Doesn't enter array elements (paths like `list.items` aren't supported); use `handler` to get array elements.
+- This step only swaps the node — no type conversion; field comments like `description` are kept as-is.
+
+## Select fields
+
+| Form | Which fields |
+| --- | --- |
+| No `match` | The root node itself (add/remove/change as a whole) |
+| `match` provided | All **top-level fields** under the root that match (can be more than one) |
+| `match` provided but none match | Nothing happens |
+
+Only the current node's top-level field names match; it won't go deeper, nor into `oneOf` / `anyOf` / `allOf` branches.
+
+```javascript
+{ scope: 'response', match: /[Ii]d$/, patch: 'string' }               // regex
+{ scope: 'data', match: 'email', patch: { required: false } }         // substring
+{ scope: 'data', match: key => key.startsWith('user'), patch: 'string' } // function
+```
+
+## Modify fields
+
+The top-level `patch` form follows the same rules as each field inside it, and can nest deeper:
+
+| Value form | Meaning |
+| --- | --- |
+| `null` | Delete (on a field = delete that field; at the top level = delete the field selected by `match`) |
+| string / array | Equivalent to `{ type: value }` — replace the type, keeping `description` etc. |
+| object without keywords | Equivalent to `properties` — **merge** changes into the field list |
+| object with keywords | **partial** change to this field itself — only the written keys are changed; unwritten keys stay |
+
+"Keywords" here are: `type`, `required`, `description`, `properties`, `items`, `enum`, `oneOf`, `anyOf`, `allOf`, `format`, `example`, `default`, `deprecated`, `nullable`, `title`.
+
+### How to write a type
+
+Appears in the type-value positions `type` / `items` / `oneOf` to describe a type:
+
+```typescript
+type SchemaDSL
+  = 'number' | 'string' | 'boolean' | 'undefined' | 'null' | 'unknown' | 'any' | 'never'
+  | SchemaDSL[]                                 // ['string'] is string[]; ['string','number'] is a tuple
+  | { oneOf: SchemaDSL[] } | { anyOf: SchemaDSL[] } | { allOf: SchemaDSL[] }
+  | { enum: Array<string | number | boolean | null>, type?: SchemaPrimitive }
+  | { [field: string]: SchemaDSL };             // object shorthand; listed fields are required
+```
+
+`unknown` / `any` / `never` are written into `type` as-is, producing the corresponding TS type.
+
+### What gets cleared when changing a type
+
+When writing `type` (or `oneOf` / `anyOf` / `allOf`), these keys describing the old type are cleared to avoid leftovers:
+
+```txt
+type, properties, items, enum, oneOf, anyOf, allOf, format, required
+```
+
+All other keys (`description`, `title`, `example`, `deprecated`, `nullable`, …) are kept.
+
+```javascript
+// Original field: { type: 'integer', format: 'int64', description: 'pet id' }
+{ scope: 'data', match: 'id', patch: 'string' }
+// Result: { type: 'string', description: 'pet id' }
+```
+
+### Behavior of other keywords
+
+| Key | Behavior |
+| --- | --- |
+| `required` | Not written into the schema; instead adds/removes the parent's `required` array; for `params` / `pathParams` it modifies `ParameterObject.required` |
+| `description` / `title` / `format` / `example` / `default` / `deprecated` / `nullable` | Override directly |
+| `enum` | Override the enum values; when `type` is omitted and the field had no `type` either, infer from the values (all ints → `integer`, has decimals → `number`, all strings → `string`, all booleans → `boolean`) |
+| `items` | Override the array element type; adds `type: 'array'` if the field wasn't an array |
+| `properties` | Explicitly declare which fields to change (also the form when a field name collides with a keyword) |
+
+When `required` is written at the top level (changing the root node), there's no parent, so it has no effect.
+
+### requiredness
+
+- New fields are **required by default**; to make one optional you must write `required: false` explicitly.
+- Existing fields without `required` keep their original requiredness.
+- Writing `required: true / false` explicitly adds/removes the parent's `required` array.
+
+```javascript
+{ scope: 'data', match: 'email', patch: { required: false } }            // make an existing field optional
+{ scope: 'data', patch: { note: { type: 'string', required: false } } }  // declare a new optional field
+```
+
+### When a field name collides with a keyword
+
+When a field name is exactly a keyword like `description` or `type`, declare it explicitly with `properties`:
+
+```javascript
+// Meaning: change the field named description in the target (not the target's description)
+{ scope: 'data', patch: { properties: { description: { type: 'string' } } } }
+```
+
+### Merge vs. whole replace
+
+```javascript
+{ scope: 'data', match: 'user', patch: { name: 'string' } }           // merge: other user fields kept
+{ scope: 'data', match: 'user', patch: { type: { name: 'string' } } } // whole replace: rebuild user's type
+```
+
+Both forms keep the target's own `description` etc.
+
+### Quick reference
+
+```javascript
+// Add: new field with a comment, required by default
+{ scope: 'data', patch: { operatorId: { type: 'string', description: 'Operator code, 0 if none' } } }
+// Remove a field
+{ scope: 'response', unwrap: 'data', patch: { debugInfo: null } }
+// Remove the whole scope (data becomes empty; params clears only query params)
+{ scope: 'data', patch: null }
+// Change type
+{ scope: 'data', match: 'tags', patch: ['string'] }                // string[]
+{ scope: 'data', match: 'id', patch: { oneOf: ['string', 'number'] } }
+// Change comment
+{ scope: 'data', match: 'totalCount', patch: { description: 'Total count' } }
+// Change requiredness
+{ scope: 'params', match: 'page', patch: { required: true } }
+```
+
+## Custom handler
+
+When `patch` can't express it, use `handler` to get the raw schema and handle it yourself:
+
+```javascript
+{
+  scope: 'response',
+  path: '/special',
+  handler: schema => schema.properties.data,   // unwrap manually
+}
+```
+
+- With `match`: called once per matching field, second arg is the field name.
+- Without `match`: called once on the root node, second arg is `undefined`.
+- Return `null` / `undefined` to **delete**; return `schema` to keep it as-is.
+- When `patch` and `handler` are both written, `patch` runs first, and `handler` receives the patched result.
+- Keep comments by spreading the original: `schema => ({ ...schema, type: 'string' })`.
+- Rename a field here too: copy a key, then delete the old one.
+
+## Where the four scopes apply
+
+| scope | Location |
+| --- | --- |
+| `data` | `apiDescriptor.requestBody` |
+| `response` | `apiDescriptor.responses` |
+| `params` | query params: synthesized into an object schema first, then written back to the param array |
+| `pathParams` | path params, same as above |
+
+New fields added in `params` / `pathParams` generate new params placed after same-type params; `required` is written back to the param's `required`.
+
+## Edge cases
+
+| Case | Behavior |
+| --- | --- |
+| `unwrap` path not found | Print a warning and skip this config, without affecting other configs or APIs |
+| `match` matches nothing | Nothing happens |
+| Field-list change used on a non-object field | Print a warning and skip this field |
+| Delete with `match` | Remove the field and also drop it from `required` |
+| Delete without `match` | Clear this scope: `data` / `response` emptied; `params` / `pathParams` remove only the params at that position |
+| Re-run | The same plugin instance processes the same API only once |

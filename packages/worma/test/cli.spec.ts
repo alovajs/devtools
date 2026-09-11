@@ -108,15 +108,15 @@ describe('cli', () => {
     // generate() is called once per project
     expect(mockGenerate).toHaveBeenCalledTimes(2)
     expect(mockGenerate).toHaveBeenNthCalledWith(1, generatingConfig, expect.objectContaining({
-      force: undefined,
       projectPath: './packages/test-pkg-1',
       onProgress: expect.any(Function),
     }))
     expect(mockGenerate).toHaveBeenNthCalledWith(2, generatingConfig, expect.objectContaining({
-      force: undefined,
       projectPath: './packages/test-pkg-2',
       onProgress: expect.any(Function),
     }))
+    // `force` was removed — the option must no longer be forwarded anywhere
+    expect(mockGenerate.mock.calls[0][1]).not.toHaveProperty('force')
   })
 
   it('should route progress events per project in multi-project mode', async () => {
@@ -156,7 +156,7 @@ describe('cli', () => {
 
   it('should delegate to generate() in single project mode (-p)', async () => {
     resetMocks()
-    await actionGen({ project: '/mock_path', force: true })
+    await actionGen({ project: '/mock_path' })
 
     expect(resolveWorkspaces).not.toHaveBeenCalled()
     expect(readConfig).toHaveBeenCalledTimes(1)
@@ -168,7 +168,6 @@ describe('cli', () => {
 
     expect(mockGenerate).toHaveBeenCalledTimes(1)
     expect(mockGenerate).toHaveBeenNthCalledWith(1, generatingConfig, expect.objectContaining({
-      force: true,
       projectPath: '/mock_path',
       onProgress: expect.any(Function),
     }))

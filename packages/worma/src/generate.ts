@@ -1,5 +1,7 @@
+import type { ChangeItem } from '@/functions/changeReport'
 import type { Config, GenerateApiOptions, GeneratorProgressEvent } from '@/type/lib'
 import { PoolManager } from '@/core/workerPool/poolManager'
+import { captureChange, countChanges } from '@/functions/changeReport'
 import { ConfigHelper, logger, TemplateHelper } from '@/helper'
 import { GeneratorHelper } from '@/helper/config/GeneratorHelper'
 import { ProgressTracker } from '@/helper/progress'
@@ -11,7 +13,7 @@ import { ProgressTracker } from '@/helper/progress'
  * its lifecycle via {@link GeneratorProgressEvent} discriminated union events.
  *
  * @param config generating config
- * @param options config rules that contains `force`, `projectPath`, `onProgress`
+ * @param options config rules that contains `projectPath`, `onProgress`
  * @returns An array that contains the result of `generator` items in configuration whether generation is successful.
  */
 async function generate(config: Config, options?: GenerateApiOptions): Promise<boolean[]> {
@@ -26,6 +28,10 @@ async function generate(config: Config, options?: GenerateApiOptions): Promise<b
   const helper = new ConfigHelper()
   await helper.load(config, projectPath)
   const generators = helper.getConfig().generator
+
+  // Requirement B: one change record per `generate()` run, aggregating every
+  // generator that actually changed something.
+  const changeItems: ChangeItem[] = []
 
   // Run all generators in parallel, each with its own ProgressTracker
   const results = await Promise.all(
@@ -52,10 +58,11 @@ async function generate(config: Config, options?: GenerateApiOptions): Promise<b
 
       try {
         const result = await GeneratorHelper.generate(gen, {
-          force: options?.force,
           projectPath,
           tracker,
         })
+        if (result.change)
+          changeItems.push(result.change)
         emit?.({
           index: i,
           phase: result.success ? 'done' : 'skipped',
@@ -82,6 +89,24 @@ async function generate(config: Config, options?: GenerateApiOptions): Promise<b
       }
     }),
   )
+
+  // Requirement B: one record per run, written only when at least one generator
+  // observed a source-document change (keeps the history meaningful).
+  if (changeItems.length > 0) {
+    try {
+      const id = await captureChange(projectPath, {
+        schemaVersion: 1,
+        createdAt: Date.now(),
+        projectPath,
+        generators: changeItems,
+      })
+      options?.onChangeRecorded?.({ id, ...countChanges(changeItems) })
+    }
+    catch (error: any) {
+      // A failure to record history must never fail the generation itself.
+      logger.debug('Failed to capture change record', { error: error?.message })
+    }
+  }
 
   logger.debug('Flushing template data cache', { projectPath })
   await TemplateHelper.flushAllData(projectPath)

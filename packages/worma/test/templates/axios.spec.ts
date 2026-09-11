@@ -77,4 +77,32 @@ describe('axios template (per-tag, tree-shaking)', () => {
     expect(content).toContain('axiosInstance')
     expect(content).toMatch(/export\s+function\s+\w+/)
   })
+
+  it('should export named type aliases and let ExtraConfig reference them', async () => {
+    const outputDir = resolve(__dirname, `../mock_output/axios_named_types`)
+    vol.mkdirSync(outputDir, { recursive: true })
+    await generate({
+      generator: [
+        {
+          input: resolve(__dirname, '../openapis/openapi_300.yaml'),
+          output: outputDir,
+          plugins: [(await import('@/template')).axios()],
+          type: 'ts',
+        },
+      ],
+    })
+
+    const content = vol.readFileSync(resolve(outputDir, 'services', 'pet.ts'), 'utf-8') as string
+    const flat = content.replace(/\s+/g, ' ')
+    expect(flat).toContain('export type findPetsByStatusResponse = ComponentTypes.Pet[];')
+    expect(flat).toContain('export type findPetsByStatusParams = {')
+    expect(flat).toContain('export type getPetByIdPathParams = {')
+    expect(flat).toContain('export type updatePetData = ComponentTypes.Pet;')
+    expect(flat).toContain(
+      `export type findPetsByStatusExtraConfig = Omit<AxiosRequestConfig, 'data' | 'params'> & { params: findPetsByStatusParams; };`,
+    )
+    expect(flat).toContain(
+      `export type updatePetExtraConfig = Omit<AxiosRequestConfig, 'data' | 'params'> & { data: updatePetData; };`,
+    )
+  })
 })

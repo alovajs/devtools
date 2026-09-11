@@ -1,0 +1,92 @@
+---
+title: Type Replacer
+description: Reuse external types, exclude them from auto-generation, support import type
+---
+
+# Type Replacer
+
+This plugin injects external types into the generated code so worma doesn't auto-generate them again.
+
+## Key features
+
+- Import custom types to replace auto-generated ones
+- Support `import type` syntax (via the `|type` suffix)
+- Target a specific file (default `globals.d`)
+- Built on `beforeCodeGenerate` + `beforeFileWrite`, compatible with streaming render
+
+## Basic usage
+
+```javascript
+import { defineConfig } from 'wormajs';
+import { importType } from 'wormajs/plugin';
+
+export default defineConfig({
+  generator: [
+    {
+      plugins: [
+        importType(
+          {
+            'my-types|type': ['Pagination', 'BaseResponse'],  // import type
+            '@/shared': ['File', 'FormData'],                 // import
+          },
+          { files: ['globals.d', 'types'] }                   // target files
+        ),
+      ],
+    },
+  ],
+});
+```
+
+The above generates:
+
+```typescript
+import type { Pagination, BaseResponse } from "my-types";
+import { File, FormData } from "@/shared";
+```
+
+and excludes `Pagination`, `BaseResponse`, `File`, `FormData` from auto-generation.
+
+## Config
+
+```typescript
+function importType(
+  imports: Record<string, string[]>,
+  options?: { files?: string[] }
+): ApiPlugin;
+```
+
+### Parameters
+
+- `imports`: a map from module path to type names
+  - When the key has a `|type` suffix (e.g. `'module-name|type'`), it generates an `import type { ... }` statement
+  - Otherwise it generates a normal `import { ... }` statement
+- `options.files`: a list of target file names to match, default `['globals.d']`
+
+### Multiple modules
+
+```javascript
+importType({
+  'my-types|type': ['Pagination', 'BaseResponse'],
+  '@/shared': ['File', 'FormData'],
+  'vue|type': ['Vue'],
+});
+```
+
+Generated result:
+
+```typescript
+import type { Pagination, BaseResponse } from "my-types";
+import { File, FormData } from "@/shared";
+import type { Vue } from "vue";
+```
+
+### Custom target files
+
+By default it injects into `globals.d`; you can also target other files via `files`:
+
+```javascript
+importType(
+  { 'my-types|type': ['Pagination'] },
+  { files: ['globals.d', 'types', 'index'] }
+);
+```

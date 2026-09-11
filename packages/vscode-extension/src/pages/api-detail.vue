@@ -33,7 +33,7 @@ onVscodeType(MType.refreshDocs, () => {
   >
     <template v-if="!api">
       <n-empty
-        class="h-full flex items-center justify-center"
+        class="h-full flex items-start justify-center pt-[120px]"
         :description="$t('api-info.empty')"
       />
     </template>

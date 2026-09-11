@@ -1,0 +1,135 @@
+---
+title: AI Skills Integration
+description: Let AI tools understand your API endpoints precisely
+---
+
+An AI Skill is a structured API description that worma generates for AI coding tools. It lets Cursor, Copilot, Continue, and similar AIs understand each of your endpoints precisely.
+
+## Core idea
+
+> **Humans and AI share the same API context.**
+
+Without a Skill doc, the AI knows nothing about your endpoints:
+
+```text
+You: Help me call the "get user info" endpoint
+AI:
+  import axios from 'axios'
+  axios.get('/user?id=1')
+  // Wrong parameter shape, wrong import path, missing response types
+```
+
+With a Skill doc:
+
+```text
+You: Help me call the "get user info" endpoint
+AI (reads the Skill):
+  Knows the function name getUserInfo, its parameter shape, and the import path
+  import { getUserInfo } from './api/user'
+  getUserInfo({ pathParams: { id: 'U001' } })
+  // Correct on the first try, runs as-is
+```
+
+## Enable AI Skills
+
+Add the [aiDoc](/docs/plugin-system/builtin-plugins/aiDoc) plugin to `worma.config`. See the plugin docs for detailed configuration.
+
+## Generated output
+
+After running `worma gen`, the `aidocs/` directory contains:
+
+```text
+aidocs/
+├── SKILL.md              # Main doc: API index + usage conventions + file locations
+└── references/           # One doc per endpoint
+    ├── user.info.md
+    ├── user.login.md
+    ├── admin.permissions.md
+    └── ...
+```
+
+## Usage examples
+
+### Single endpoint call
+
+After generating the Skill docs, describe your need directly in the AI chat — the AI matches the endpoint and generates code automatically.
+
+<Steps>
+  <Step>
+    **Describe your need**
+
+    Tell the AI what you want to do in the chat:
+
+    ```text
+    You: Get the user list, paginated, 20 per page
+    ```
+  </Step>
+  <Step>
+    **AI reads the skill doc**
+
+    The AI loads `SKILL.md` and the endpoint docs under `references/`, and matches the `listUsers` endpoint with its `page` and `pageSize` parameters.
+  </Step>
+  <Step>
+    **Generates the call code**
+
+    The AI outputs runnable code:
+
+    ```ts
+    import { listUsers } from './api/user';
+
+    const res = await listUsers({
+      params: { page: 1, pageSize: 20 },
+    });
+    ```
+  </Step>
+</Steps>
+
+### Combining multiple endpoints
+
+When multiple endpoints need to work together, the AI chains the steps automatically.
+
+<Steps>
+  <Step>
+    **Describe a composite need**
+
+    ```text
+    You: First create an article, then add a comment to it
+    ```
+  </Step>
+  <Step>
+    **Call the first endpoint**
+
+    The AI calls the create-article endpoint and keeps the `articleId` from the response:
+
+    ```ts
+    import { createArticle } from './api/article';
+    const article = await createArticle({
+      data: { title: 'Hello', content: '...' },
+    });
+    // article.data.id will be used in the next step
+    ```
+  </Step>
+  <Step>
+    **Chain the second endpoint**
+
+    The AI uses the ID returned from the previous step and calls the comment endpoint:
+
+    ```ts
+    import { createComment } from './api/comment';
+    await createComment({
+      data: {
+        articleId: article.data.id,
+        content: 'Great article!',
+      },
+    });
+    ```
+  </Step>
+</Steps>
+
+### Usage conventions
+
+Before generating code, the AI recites the usage conventions to ensure it follows the rules. The Skill doc's usage conventions include:
+
+1. **Import on demand** — import each API function from its tag file
+2. **Correct request client** — use alova / axios / fetch / ky (depending on the template)
+3. **Correct parameter passing** — `pathParams` / `params` / `data` go in the right place
