@@ -191,7 +191,7 @@ describe('checkUpdates()', () => {
 
   it('populates `input` via a plugin `config` hook (e.g. swagger platform plugin)', async () => {
     vol.writeFileSync('/project/openapi.json', SPEC_V1)
-    // Mimics how platform plugins (swagger/knife4j/fastapi/yapi) inject the
+    // Mimics how platform plugins (swagger/knife4j/yapi) inject the
     // OpenAPI source: the source is NOT in `config.input` directly, but is
     // written there by the plugin's `config` hook.
     const platformPlugin = {

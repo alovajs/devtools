@@ -166,18 +166,14 @@ describe('incremental generation', () => {
     expect(cached!.apis.map(a => a.tag)).toEqual(['pets'])
   })
 
-  it('writes a change record when (and only when) something changed', async () => {
+  it('writes a source change record when (and only when) the spec changed', async () => {
+    // First run only establishes the snapshot baseline → nothing recorded.
     await run()
-    expect((await listChanges(PROJECT))[0].summary).toEqual({
-      generators: 1,
-      added: 2,
-      removed: 0,
-      modified: 0,
-    })
+    expect(await listChanges(PROJECT)).toHaveLength(0)
 
-    // nothing changed → no new record
+    // nothing changed → still no record
     await run()
-    expect(await listChanges(PROJECT)).toHaveLength(1)
+    expect(await listChanges(PROJECT)).toHaveLength(0)
 
     vol.writeFileSync(`${PROJECT}/spec.json`, makeSpec({
       '/admins': { get: { tags: ['admins'], summary: 'list admins', responses: { 200: { description: 'ok' } } } },
@@ -185,14 +181,17 @@ describe('incremental generation', () => {
     await run()
 
     const list = await listChanges(PROJECT)
-    expect(list).toHaveLength(2)
+    expect(list).toHaveLength(1)
     expect(list[0].summary).toEqual({ generators: 1, added: 1, removed: 0, modified: 0 })
 
     const change = await getChange(PROJECT, 'latest')
-    expect(change!.generators[0].added[0].path).toBe('/admins')
+    expect(change!.schemaVersion).toBe(2)
+    expect(change!.generators[0].changes).toContainEqual(
+      expect.objectContaining({ op: '+', kind: 'api', target: 'GET /admins', level: 'additive' }),
+    )
   })
 
-  it('records removed and modified APIs in the change record', async () => {
+  it('records removed and added operations in the change record', async () => {
     await run()
     vol.writeFileSync(`${PROJECT}/spec.json`, JSON.stringify({
       openapi: '3.0.0',
@@ -206,12 +205,11 @@ describe('incremental generation', () => {
     await run()
 
     const change = await getChange(PROJECT, 'latest')
-    const [gen] = change!.generators
+    const targets = change!.generators[0].changes.map(row => `${row.op} ${row.target}`)
     // `get /pets` was replaced by `post /pets`, and `/users` disappeared
-    expect(gen.removed.map(r => r.path)).toEqual(['/pets', '/users'])
-    expect(gen.removed[0].method).toBe('GET')
-    expect(gen.added.map(a => a.path)).toEqual(['/pets'])
-    expect(gen.added[0].method).toBe('POST')
+    expect(targets).toContain('- GET /pets')
+    expect(targets).toContain('- GET /users')
+    expect(targets).toContain('+ POST /pets')
   })
 
   it('refreshes the source baseline after a successful generation', async () => {

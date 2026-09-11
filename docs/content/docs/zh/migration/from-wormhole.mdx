@@ -71,7 +71,7 @@ worma 还新增了 `alova`（按需引入）、`axios`、`fetch`、`ky` 等多�
 
 ## platform 配置 → 插件
 
-`@alova/wormhole` 的 `platform` 配置项在 worma 中改为按平台拆分的独立插件（`swagger` / `knife4j` / `fastapi` / `yapi`），且基础地址通过插件参数传入，无需再写 `input`：
+`@alova/wormhole` 的 `platform` 配置项在 worma 中改为按平台拆分的独立插件（`swagger` / `knife4j` / `yapi`），且基础地址通过插件参数传入，无需再写 `input`。FastAPI 项目直接使用 `swagger` 插件即可（`/openapi.json` 是它的首个候选地址）：
 
 ```javascript
 // @alova/wormhole
@@ -103,7 +103,7 @@ defineConfig({
 | ---------------------- | ------------------------------ |
 | `fileNameCase`         | 已移除，无替代方案             |
 | `autoUpdate`（根配置） | 已移除，由 VSCode 扩展自行管理 |
-| `platform` 参数        | 改为 `swagger` / `knife4j` / `fastapi` / `yapi` 插件（基础地址作为插件参数传入） |
+| `platform` 参数        | 改为 `swagger` / `knife4j` / `yapi` 插件（基础地址作为插件参数传入） |
 
 ## 其他变更
 
@@ -115,7 +115,7 @@ defineConfig({
 2. 重命名配置文件：`alova.config.{js,ts}` → `worma.config.{js,ts}`
 3. 更新 import 路径：`@alova/wormhole` → `wormajs`，`@alova/wormhole/plugin` → `wormajs/plugin`
 4. 添加模板插件到 `plugins` 数组（如 `alovaGlobals()`）
-5. `platform` 参数改为 `swagger` / `knife4j` / `fastapi` / `yapi` 插件（基础地址作为插件参数传入）
+5. `platform` 参数改为 `swagger` / `knife4j` / `yapi` 插件（基础地址作为插件参数传入）
 6. CLI 参数 `-c, --cwd` → `-p, --project`
 
 ## 其他来源迁移

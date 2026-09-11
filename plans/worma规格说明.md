@@ -599,7 +599,7 @@ defineConfig({
 
 `platform` 插件通过 `config` hook 修改 `config.input`：
 
-1. 接收用户传入的平台类型字符串（`'swagger' | 'knife4j' | 'fastapi' | 'yapi'`）
+1. 接收用户传入的平台类型字符串（`'swagger' | 'knife4j' | 'yapi'`）
 2. 从 `config.input` 读取 API 文档项目 URL
 3. 根据平台类型自动拼接生成 OpenAPI 文件 URL 数组
 4. 将数组赋值给 `config.input`
@@ -608,7 +608,6 @@ defineConfig({
 | ----------- | ------------------------------------------------------------------------------------ |
 | `'swagger'` | `['<input>/api/v3/openapi.json', '<input>/v2/swagger.json', '<input>/openapi.json']` |
 | `'knife4j'` | `['<input>/v3/api-docs', '<input>/v2/api-docs']`                                     |
-| `'fastapi'` | `['<input>/openapi.json']`                                                           |
 | `'yapi'`    | `['<input>']`（需包含 pid/token 参数）                                               |
 
 ### 8.7.3 内部实现 ✅
@@ -730,18 +729,18 @@ workspace 模式下若 `resolveWorkspaces()` 返回空数组，打印错误信�
 
 ## 11. 迁移 & 不兼容变更（Breaking）
 
-| 变更                                                                         | 等级                                        | 迁移指引                                                                                                                                                    |
-| ---------------------------------------------------------------------------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 缓存路径迁移                                                                 | minor（自动迁移）                           | 首次 generate 自动迁移并提示加入版本控制                                                                                                                    |
-| 移除 alova v2 支持                                                           | **breaking**                                | 仍需 v2 的用户停留在 worma@1                                                                                                                                |
-| 移除 `fileNameCase` 字段（若用户曾使用）                                     | **breaking**                                | 配置中删除即可，校验时仅 warning                                                                                                                            |
-| 移除 `autoUpdate` 字段（`Config` 根配置项）                                  | **breaking**                                | 从 `worma.config.*` 中删除 `autoUpdate` 配置；自动更新逻辑由 VSCode 扩展接管                                                                                |
-| 移除 `getAutoUpdateConfig` 导出函数                                          | **breaking**                                | 若调用方依赖此函数，改由 VSCode 扩展内部实现或不再使用                                                                                                      |
-| `template` 由字符串/枚举改为函数返回 `TemplateConfig`                        | **breaking**                                | 提供 codemod 或文档指引：`template: 'globals'` → `template: alovaGlobals()`                                                                                 |
-| 全局对象 `Apis` 不再默认存在                                                 | **breaking**（仅当切换到非 globals 模板时） | 文档说明并提供 `alovaGlobals` 兼容路径                                                                                                                      |
-| CLI 参数 `-c/--cwd` → `-p/--project`，移除 `-w`                              | **breaking**                                | 更新脚本中的 `alova gen -c` → `alova gen -p`；`-w` 已为默认行为，直接删除即可                                                                               |
-| 移除 `platform` 参数，拆分为 `swagger` / `knife4j` / `fastapi` / `yapi` 插件 | **breaking**                                | 将 `platform: 'swagger'` 替换为 `plugins: [swagger('<url>'), ...]`；YApi 改用 `plugins: [yapi({ url, pid, cookie }), ...]`，`url`、`pid`、`cookie` 均为必填 |
-| `input` 类型从 `string` 改为 `string \| string[]`                            | **breaking**（源码类型）                    | 对绝大多数用户无影响（string 仍然可用）；数组中 URL 依次尝试返回首个成功结果                                                                                |
+| 变更                                                             | 等级                                        | 迁移指引                                                                                                                                                    |
+| ---------------------------------------------------------------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 缓存路径迁移                                                     | minor（自动迁移）                           | 首次 generate 自动迁移并提示加入版本控制                                                                                                                    |
+| 移除 alova v2 支持                                               | **breaking**                                | 仍需 v2 的用户停留在 worma@1                                                                                                                                |
+| 移除 `fileNameCase` 字段（若用户曾使用）                         | **breaking**                                | 配置中删除即可，校验时仅 warning                                                                                                                            |
+| 移除 `autoUpdate` 字段（`Config` 根配置项）                      | **breaking**                                | 从 `worma.config.*` 中删除 `autoUpdate` 配置；自动更新逻辑由 VSCode 扩展接管                                                                                |
+| 移除 `getAutoUpdateConfig` 导出函数                              | **breaking**                                | 若调用方依赖此函数，改由 VSCode 扩展内部实现或不再使用                                                                                                      |
+| `template` 由字符串/枚举改为函数返回 `TemplateConfig`            | **breaking**                                | 提供 codemod 或文档指引：`template: 'globals'` → `template: alovaGlobals()`                                                                                 |
+| 全局对象 `Apis` 不再默认存在                                     | **breaking**（仅当切换到非 globals 模板时） | 文档说明并提供 `alovaGlobals` 兼容路径                                                                                                                      |
+| CLI 参数 `-c/--cwd` → `-p/--project`，移除 `-w`                  | **breaking**                                | 更新脚本中的 `alova gen -c` → `alova gen -p`；`-w` 已为默认行为，直接删除即可                                                                               |
+| 移除 `platform` 参数，拆分为 `swagger` / `knife4j` / `yapi` 插件 | **breaking**                                | 将 `platform: 'swagger'` 替换为 `plugins: [swagger('<url>'), ...]`；YApi 改用 `plugins: [yapi({ url, pid, cookie }), ...]`，`url`、`pid`、`cookie` 均为必填 |
+| `input` 类型从 `string` 改为 `string \| string[]`                | **breaking**（源码类型）                    | 对绝大多数用户无影响（string 仍然可用）；数组中 URL 依次尝试返回首个成功结果                                                                                |
 
 需要在 `CHANGELOG.md` + `.changeset/` 增加 major bump。
 

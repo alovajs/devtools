@@ -15,8 +15,10 @@ import {
 
 const PROJECT = '/workspace/fixture'
 
+/** Current (v2) record shape: flat source-document rows. */
 function makeRecord(id: string, createdAt: number) {
   return {
+    schemaVersion: 2,
     id,
     createdAt,
     projectPath: PROJECT,
@@ -24,9 +26,14 @@ function makeRecord(id: string, createdAt: number) {
       {
         output: 'src/api',
         serverName: 'Demo',
-        added: [{ method: 'GET', path: '/pets', name: 'listPets', tag: 'pets' }],
-        removed: [{ method: 'GET', path: '/legacy', name: 'legacyApi', tag: 'misc' }],
-        modified: [{ method: 'POST', path: '/pets', name: 'createPet', tag: 'pets', changedFields: ['response'] }],
+        resolvedInput: 'api.json',
+        changes: [
+          { op: '+', kind: 'api', target: 'GET /pets', detail: 'listPets', level: 'additive' },
+          { op: '-', kind: 'api', target: 'GET /legacy', detail: 'legacyApi', level: 'breaking' },
+          { op: '~', kind: 'param', target: 'POST /pets', item: 'query.status.required', detail: 'false -> true', level: 'breaking' },
+          // component rows carry their affected operations in `affects`
+          { op: '~', kind: 'comp', target: '#/components/schemas/Pet', item: 'properties.status.enum', detail: '+"sold"', level: 'additive', affects: ['GET /pets', 'POST /pets'] },
+        ],
       },
     ],
   }
@@ -54,9 +61,22 @@ setupTest('api-changes (requirement B)', () => {
     // html is a getter on the real Webview; fall back to the property if needed
     const html: string = (panel as any).webview?.html ?? (panel as any).html
     expect(html).to.contain('0001')
-    expect(html).to.contain('/pets')
-    expect(html).to.contain('/legacy')
-    expect(html).to.contain('response')
+    expect(html).to.contain('GET /pets')
+    expect(html).to.contain('GET /legacy')
+    expect(html).to.contain('query.status.required')
+    expect(html).to.contain('Level')
+    // a component change keeps the component as its target and lists the APIs
+    expect(html).to.contain('#/components/schemas/Pet')
+    expect(html).to.contain('properties.status.enum')
+    expect(html).to.contain('affects')
+    // full grid borders, and the severity colour lives on the level cell only
+    expect(html).to.contain('border-collapse')
+    expect(html).to.contain('.level.breaking')
+    expect(html).to.contain('level breaking')
+    expect(html).to.not.contain('.row.add td')
+    // column headers, and no divider line between the group title and the table
+    expect(html).to.contain('<th>Type</th>')
+    expect(html).to.not.contain('border-bottom')
   })
 
   it('renders a specific change record by id', async () => {
@@ -73,21 +93,21 @@ setupTest('api-changes (requirement B)', () => {
 })
 
 setupTest('generate → View Changes toast (requirement B)', () => {
-  it('surfaces a "View Changes" notification when an API change is recorded', async () => {
-    sinon.stub(MockWorma, 'generate').returns(Promise.resolve([true]))
-    const createdAt = Date.now()
-    sinon.stub(MockWorma, 'listChanges').returns(
-      Promise.resolve([makeSummary('0007', createdAt)]),
-    )
+  it('surfaces the change id and a "View Changes" action when a change is recorded', async () => {
+    // `generate()` reports the record it persisted through `onChangeRecorded`.
+    sinon.stub(MockWorma, 'generate').callsFake(async (_config: any, options: any) => {
+      options?.onChangeRecorded?.({ id: '0007', added: 1, removed: 1, modified: 1 })
+      return [true]
+    })
 
     const spy = sinon.stub(window, 'showInformationMessage').resolves(undefined)
 
     await executeCommand(Commands.refresh)
 
-    // One of the information messages must offer to review the changes.
+    // One of the information messages must show the record id and offer to review it.
     const offered = spy.getCalls().some(call =>
       typeof call.args[0] === 'string'
-      && call.args[0].includes('API changed')
+      && call.args[0].includes('Changes 0007')
       && (call.args[1] as unknown as string) === 'View Changes',
     )
     expect(offered).to.equals(true)

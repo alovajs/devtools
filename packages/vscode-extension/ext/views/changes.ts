@@ -23,9 +23,14 @@ export function formatChangeSummary(change: Change): string {
   let removed = 0
   let modified = 0
   for (const gen of change.generators) {
-    added += gen.added.length
-    removed += gen.removed.length
-    modified += gen.modified.length
+    for (const row of gen.changes) {
+      if (row.op === '+')
+        added++
+      else if (row.op === '-')
+        removed++
+      else
+        modified++
+    }
   }
   const parts: string[] = []
   if (added)
@@ -35,6 +40,29 @@ export function formatChangeSummary(change: Change): string {
   if (modified)
     parts.push(`${modified} modified`)
   return parts.length ? parts.join(', ') : 'no changes'
+}
+
+/** CSS class of a row, derived from its symbol. */
+function rowClass(op: string): string {
+  if (op === '+')
+    return 'add'
+  if (op === '-')
+    return 'del'
+  return 'mod'
+}
+
+/**
+ * Colour of the `Level` cell.
+ *
+ * Mirrors `worma diff`: breaking is red, additive green, everything else dim —
+ * the rest of the row keeps the default foreground.
+ */
+function levelClass(level: string): string {
+  if (level === 'breaking')
+    return 'breaking'
+  if (level === 'additive')
+    return 'additive'
+  return 'doc'
 }
 
 function renderRows(change: Change | undefined, summaries: ChangeSummary[]): string {
@@ -47,18 +75,33 @@ function renderRows(change: Change | undefined, summaries: ChangeSummary[]): str
     .join('')
 
   const groups = change.generators.map((gen) => {
-    const rows = [
-      ...gen.added.map(a => `<tr class="row add" data-search="${escapeHtml(`${a.tag} ${a.method} ${a.path} ${a.name} added`)}"><td class="badge add">+</td><td>${escapeHtml(a.method)}</td><td>${escapeHtml(a.path)}</td><td>${escapeHtml(a.name)}</td><td></td></tr>`),
-      ...gen.removed.map(a => `<tr class="row del" data-search="${escapeHtml(`${a.tag} ${a.method} ${a.path} ${a.name} removed`)}"><td class="badge del">-</td><td>${escapeHtml(a.method)}</td><td>${escapeHtml(a.path)}</td><td>${escapeHtml(a.name)}</td><td></td></tr>`),
-      ...gen.modified.map(a => `<tr class="row mod" data-search="${escapeHtml(`${a.tag} ${a.method} ${a.path} ${a.name} modified ${a.changedFields.join(' ')}`)}"><td class="badge mod">~</td><td>${escapeHtml(a.method)}</td><td>${escapeHtml(a.path)}</td><td>${escapeHtml(a.name)}</td><td>${escapeHtml(a.changedFields.join(', '))}</td></tr>`),
-    ].join('')
+    const rows = gen.changes.map((row) => {
+      const cls = rowClass(row.op)
+      // The affected operations of a component change are listed under the
+      // change itself, one per line — the same shape the CLI prints.
+      const affects = row.affects ?? []
+      const changeHtml = [row.detail ? escapeHtml(row.detail) : '', ...affects.map(api => `<span class="affects">${escapeHtml(api)}</span>`)]
+        .filter(Boolean)
+        .join('<br>')
+      const search = [row.op, row.kind, row.target, row.item, row.detail, row.level, ...affects].filter(Boolean).join(' ')
+      // Only the symbol (per op) and the level (per severity) are coloured —
+      // the other cells keep the default foreground, exactly like the CLI table.
+      return `<tr class="row ${cls}" data-search="${escapeHtml(search)}">`
+        + `<td class="badge ${cls}">${escapeHtml(row.op)}</td>`
+        + `<td class="type">${escapeHtml(row.kind)}</td>`
+        + `<td>${escapeHtml(row.target)}</td>`
+        + `<td>${escapeHtml(row.item ?? '')}</td>`
+        + `<td>${changeHtml}</td>`
+        + `<td class="level ${levelClass(row.level)}">${escapeHtml(row.level)}</td>`
+        + `</tr>`
+    }).join('')
 
     return `
       <section class="group">
         <h3>${escapeHtml(gen.output)}${gen.serverName ? ` <span class="dim">(${escapeHtml(gen.serverName)})</span>` : ''}</h3>
         <table>
-          <thead><tr><th></th><th>Method</th><th>Path</th><th>Name</th><th>Changed fields</th></tr></thead>
-          <tbody>${rows || '<tr><td colspan="5" class="dim">no changes</td></tr>'}</tbody>
+          <thead><tr><th></th><th>Type</th><th>Target</th><th>Item</th><th>Change</th><th>Level</th></tr></thead>
+          <tbody>${rows || '<tr><td colspan="6" class="dim">no changes</td></tr>'}</tbody>
         </table>
       </section>`
   }).join('')
@@ -66,7 +109,7 @@ function renderRows(change: Change | undefined, summaries: ChangeSummary[]): str
   return `
     <div class="toolbar">
       <select id="record">${options}</select>
-      <input id="search" type="text" placeholder="Search by tag / field / path ..." />
+      <input id="search" type="text" placeholder="Search by type / target / item / change ..." />
       <span id="count" class="dim"></span>
     </div>
     <h2>${escapeHtml(change.id)} <span class="dim">${escapeHtml(formatTime(change.createdAt))}</span></h2>
@@ -81,19 +124,27 @@ function html(body: string): string {
 <meta charset="UTF-8" />
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline';" />
 <style>
+  :root { --worma-border: var(--vscode-widget-border, var(--vscode-panel-border, rgba(128, 128, 128, 0.45))); }
   body { font-family: var(--vscode-font-family); font-size: var(--vscode-font-size); color: var(--vscode-foreground); padding: 12px 16px; }
   h2 { font-size: 14px; margin: 8px 0 2px; }
-  h3 { font-size: 13px; margin: 16px 0 6px; border-bottom: 1px solid var(--vscode-panel-border); padding-bottom: 4px; }
-  table { width: 100%; border-collapse: collapse; }
-  th, td { text-align: left; padding: 3px 8px; font-size: 12px; }
-  th { color: var(--vscode-descriptionForeground); font-weight: 600; }
+  h3 { font-size: 13px; margin: 16px 0 6px; }
+  /* full grid: every cell carries a border, so the table is wrapped on all sides */
+  table { width: 100%; border-collapse: collapse; border: 1px solid var(--worma-border); }
+  th, td { text-align: left; vertical-align: top; padding: 3px 8px; font-size: 12px; border: 1px solid var(--worma-border); }
+  th { font-weight: 600; }
   tr.row:hover { background: var(--vscode-list-hoverBackground); }
   .dim { color: var(--vscode-descriptionForeground); }
   .empty { color: var(--vscode-descriptionForeground); }
   .badge { width: 16px; font-weight: 700; }
-  .badge.add, .row.add td { color: var(--vscode-gitDecoration-addedResourceForeground, #81b88b); }
-  .badge.del, .row.del td { color: var(--vscode-gitDecoration-deletedResourceForeground, #c74e39); }
-  .badge.mod, .row.mod td { color: var(--vscode-gitDecoration-modifiedResourceForeground, #e2c08d); }
+  /* Only the symbol (per op) and the level (per severity) are coloured, matching
+     the worma diff table; every other cell stays on the default foreground. */
+  .badge.add { color: var(--vscode-gitDecoration-addedResourceForeground, #81b88b); }
+  .badge.del { color: var(--vscode-gitDecoration-deletedResourceForeground, #c74e39); }
+  .badge.mod { color: var(--vscode-gitDecoration-modifiedResourceForeground, #e2c08d); }
+  .type, .level.doc { color: var(--vscode-descriptionForeground); }
+  .level.breaking { color: var(--vscode-gitDecoration-deletedResourceForeground, #c74e39); }
+  .level.additive { color: var(--vscode-gitDecoration-addedResourceForeground, #81b88b); }
+  .affects { padding-left: 10px; }
   .toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
   select, input { background: var(--vscode-input-background); color: var(--vscode-input-foreground); border: 1px solid var(--vscode-input-border, transparent); padding: 3px 6px; }
   input { flex: 1; }
@@ -139,6 +190,8 @@ function html(body: string): string {
  */
 export class ChangesView {
   private static panel: import('vscode').WebviewPanel | undefined
+  /** Project the panel is currently showing; re-pointed by every `open()`. */
+  private static projectPath: string | undefined
 
   /** The currently open panel (used by tests). */
   static get current() {
@@ -146,7 +199,7 @@ export class ChangesView {
   }
 
   static async open(changeId = 'latest', projectPath?: string) {
-    const target = projectPath ?? getWorkspacePaths()[0]
+    ChangesView.projectPath = projectPath ?? getWorkspacePaths()[0]
     if (!ChangesView.panel) {
       ChangesView.panel = window.createWebviewPanel(
         'worma.apiChanges',
@@ -157,18 +210,19 @@ export class ChangesView {
       ChangesView.panel.onDidDispose(() => {
         ChangesView.panel = undefined
       })
+      // Registered once per panel: re-registering on every `open()` would stack
+      // listeners and re-render the panel once per previous open.
+      ChangesView.panel.webview.onDidReceiveMessage(async (message) => {
+        if (message?.type === 'select') {
+          await ChangesView.render(String(message.id), ChangesView.projectPath)
+        }
+      })
     }
     else {
       ChangesView.panel.reveal()
     }
 
-    ChangesView.panel.webview.onDidReceiveMessage(async (message) => {
-      if (message?.type === 'select') {
-        await ChangesView.render(String(message.id), target)
-      }
-    })
-
-    await ChangesView.render(changeId, target)
+    await ChangesView.render(changeId, ChangesView.projectPath)
     return ChangesView.panel
   }
 

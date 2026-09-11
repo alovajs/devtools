@@ -7,15 +7,15 @@ import { fromError } from 'zod-validation-error'
 import { ConfigTypeEnum, TemplateTypeEnum } from '@/constant'
 import { openApiParser, TemplateParser } from '@/core/parser'
 import { getOpenApiDataWithUrl } from '@/core/parser/openApiParser/helper'
-import { diffApis, hasApiChanges } from '@/functions/diffApis'
 import getAutoTemplateType from '@/functions/getAutoTemplateType'
+import { collectSourceChanges } from '@/functions/sourceSnapshot'
 import {
   computePerTagHashes,
   computeSpecHash,
   diffChangedTags,
   getCacheEntry,
   hasGenerationBaseline,
-  readCacheApis,
+  stableStringify,
   updateSourceBaseline,
 } from '@/functions/wormaJson'
 import { logger, PluginDriver, TemplateHelper } from '@/helper'
@@ -231,6 +231,12 @@ export class GeneratorHelper {
       return { success: false, resolvedInput }
     }
 
+    // Requirement: the change baseline is the **source** document — the one
+    // parsed from the `beforeSpecParse` output, taken before the `specParsed`
+    // hooks run. `document` is the very object those hooks receive and they may
+    // mutate it in place, so the snapshot has to be taken right here.
+    const sourceDocumentText = stableStringify(document)
+
     logger.debug('OpenAPI document parsed successfully', {
       resolvedUrl: resolvedInput,
       version: (document as any)?.info?.version,
@@ -334,19 +340,6 @@ export class GeneratorHelper {
       logger.debug('No render baseline — rendering every tag')
     }
 
-    // Requirement B: snapshot the API-level diff BEFORE the cache is rewritten.
-    const oldCache = await readCacheApis(projectPath, config.output!)
-    const apiDiff = diffApis(oldCache?.apis ?? [], newApis)
-    const change: ChangeItem | undefined = hasApiChanges(apiDiff)
-      ? {
-          output: config.output!,
-          serverName: config.serverName || templateData.title || oldCache?.serverName || '',
-          added: apiDiff.added,
-          removed: apiDiff.removed,
-          modified: apiDiff.modified,
-        }
-      : undefined
-
     reportCore(70, 'beforeCodeGenerate')
     logger.debug('Running beforeCodeGenerate hook')
     await pluginDriver.hookParallelEach('beforeCodeGenerate', () => ({
@@ -445,6 +438,31 @@ export class GeneratorHelper {
         rawHash: computeSpecHash(openApiResult.rawText),
         updatedAt: Date.now(),
       }, config.serverName ?? '')
+    }
+
+    // Requirement B: the source-document diff runs only **after** a successful
+    // generation, so a failed run never pays for the comparison nor advances the
+    // baseline the next run diffs against.
+    let change: ChangeItem | undefined
+    try {
+      const sourceChanges = await collectSourceChanges({
+        projectRoot: projectPath,
+        outputPath: config.output!,
+        documentText: sourceDocumentText,
+        resolvedInput,
+      })
+      if (sourceChanges) {
+        change = {
+          output: config.output!,
+          serverName: config.serverName || templateData.title || '',
+          resolvedInput,
+          changes: sourceChanges,
+        }
+      }
+    }
+    catch (error: any) {
+      // Recording change history must never fail the generation itself.
+      logger.debug('Failed to detect source changes', { error: error?.message })
     }
 
     return { success: true, resolvedInput, change }

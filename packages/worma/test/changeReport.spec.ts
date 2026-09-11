@@ -11,9 +11,7 @@ function item(partial: Partial<ChangeItem> = {}): ChangeItem {
   return {
     output: 'src/api',
     serverName: 'Demo',
-    added: [{ method: 'GET', path: '/a' }],
-    removed: [],
-    modified: [],
+    changes: [{ op: '+', kind: 'api', target: 'GET /a', level: 'additive' }],
     ...partial,
   }
 }
@@ -47,20 +45,32 @@ describe('change records (requirement B)', () => {
     await captureChange('/project', {
       createdAt: 10,
       projectPath: '/project',
-      generators: [item({ added: [{ method: 'GET', path: '/a' }] })],
+      generators: [item({ changes: [{ op: '+', kind: 'api', target: 'GET /a', level: 'additive' }] })],
     })
     await captureChange('/project', {
       createdAt: 20,
       projectPath: '/project',
       generators: [
-        item({ output: 'src/a', added: [{ method: 'GET', path: '/a' }, { method: 'POST', path: '/b' }] }),
-        item({ output: 'src/b', added: [], removed: [{ method: 'GET', path: '/c' }], modified: [] }),
+        item({
+          output: 'src/a',
+          changes: [
+            { op: '+', kind: 'api', target: 'GET /a', level: 'additive' },
+            { op: '+', kind: 'api', target: 'POST /b', level: 'additive' },
+          ],
+        }),
+        item({
+          output: 'src/b',
+          changes: [
+            { op: '-', kind: 'api', target: 'GET /c', level: 'breaking' },
+            { op: '~', kind: 'param', target: 'GET /c', item: 'query.limit.required', level: 'breaking' },
+          ],
+        }),
       ],
     })
 
     const list = await listChanges('/project')
     expect(list.map(s => s.id)).toEqual(['0002', '0001'])
-    expect(list[0].summary).toEqual({ generators: 2, added: 2, removed: 1, modified: 0 })
+    expect(list[0].summary).toEqual({ generators: 2, added: 2, removed: 1, modified: 1 })
     expect(list[0].outputs).toEqual(['src/a', 'src/b'])
     expect(list[0].createdAt).toBe(20)
   })

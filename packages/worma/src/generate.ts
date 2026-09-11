@@ -1,7 +1,7 @@
 import type { ChangeItem } from '@/functions/changeReport'
 import type { Config, GenerateApiOptions, GeneratorProgressEvent } from '@/type/lib'
 import { PoolManager } from '@/core/workerPool/poolManager'
-import { captureChange } from '@/functions/changeReport'
+import { captureChange, countChanges } from '@/functions/changeReport'
 import { ConfigHelper, logger, TemplateHelper } from '@/helper'
 import { GeneratorHelper } from '@/helper/config/GeneratorHelper'
 import { ProgressTracker } from '@/helper/progress'
@@ -90,15 +90,17 @@ async function generate(config: Config, options?: GenerateApiOptions): Promise<b
     }),
   )
 
-  // Requirement B: persist the change record BEFORE the cache is overwritten.
-  // No change at all → no record is written (keeps history meaningful).
+  // Requirement B: one record per run, written only when at least one generator
+  // observed a source-document change (keeps the history meaningful).
   if (changeItems.length > 0) {
     try {
-      await captureChange(projectPath, {
+      const id = await captureChange(projectPath, {
+        schemaVersion: 2,
         createdAt: Date.now(),
         projectPath,
         generators: changeItems,
       })
+      options?.onChangeRecorded?.({ id, ...countChanges(changeItems) })
     }
     catch (error: any) {
       // A failure to record history must never fail the generation itself.

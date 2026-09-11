@@ -21,6 +21,16 @@ const SPEC = JSON.stringify({
   paths: { '/pets': { get: { tags: ['pets'], summary: 'list pets', responses: { 200: { description: 'ok' } } } } },
 })
 
+/** Same document plus one operation — used to trigger a real source change. */
+const SPEC_WITH_ADMINS = JSON.stringify({
+  openapi: '3.0.0',
+  info: { title: 'Demo', version: '1.0.0' },
+  paths: {
+    '/pets': { get: { tags: ['pets'], summary: 'list pets', responses: { 200: { description: 'ok' } } } },
+    '/admins': { get: { tags: ['admins'], summary: 'list admins', responses: { 200: { description: 'ok' } } } },
+  },
+})
+
 const FIXTURES = resolve(__dirname, './incremental/__fixtures__/presets')
 
 function api(partial: Partial<Api> & { method: string, path: string }): Api {
@@ -100,22 +110,20 @@ describe('edge cases', () => {
         await captureChange('/project', { createdAt: i, projectPath: '/project', generators: [{
           output: 'src/api',
           serverName: 'Demo',
-          added: [{ method: 'GET', path: `/a${i}` }],
-          removed: [],
-          modified: [],
+          changes: [{ op: '+', kind: 'api', target: `GET /a${i}`, level: 'additive' }],
         }] })
       }
       const files = await fs.readdir('/project/.worma-cache/changes')
       expect(files).toEqual(['0004.json'])
       const latest = await getChange('/project', LATEST_CHANGE_ID)
-      expect(latest?.generators[0].added[0].path).toBe('/a4')
+      expect(latest?.generators[0].changes[0].target).toBe('GET /a4')
     })
 
     it('writes a record even when the diff is entirely empty (summary all zeros)', async () => {
       await captureChange('/project', {
         createdAt: 1,
         projectPath: '/project',
-        generators: [{ output: 'src/api', serverName: 'Demo', added: [], removed: [], modified: [] }],
+        generators: [{ output: 'src/api', serverName: 'Demo', changes: [] }],
       })
       const list = await listChanges('/project')
       expect(list).toHaveLength(1)
@@ -127,13 +135,39 @@ describe('edge cases', () => {
         createdAt: 1,
         projectPath: '/project',
         generators: [
-          { output: 'src/a', serverName: 'A', added: [{ method: 'GET', path: '/a' }], removed: [], modified: [] },
-          { output: 'src/b', serverName: 'B', added: [], removed: [{ method: 'GET', path: '/b' }], modified: [] },
+          { output: 'src/a', serverName: 'A', changes: [{ op: '+', kind: 'api', target: 'GET /a', level: 'additive' }] },
+          { output: 'src/b', serverName: 'B', changes: [{ op: '-', kind: 'api', target: 'GET /b', level: 'breaking' }] },
         ],
       })
       const list = await listChanges('/project')
       expect(list[0].summary).toEqual({ generators: 2, added: 1, removed: 1, modified: 0 })
       expect(list[0].outputs).toEqual(['src/a', 'src/b'])
+    })
+
+    it('reads legacy (api-level) records through the same row model', async () => {
+      vol.mkdirSync('/project/.worma-cache/changes', { recursive: true })
+      vol.writeFileSync('/project/.worma-cache/changes/0001.json', JSON.stringify({
+        id: '0001',
+        createdAt: 1,
+        projectPath: '/project',
+        generators: [{
+          output: 'src/api',
+          serverName: 'Demo',
+          added: [{ method: 'GET', path: '/new', name: 'getNew' }],
+          removed: [{ method: 'GET', path: '/old' }],
+          modified: [{ method: 'POST', path: '/pet', changedFields: ['queryParameters'] }],
+        }],
+      }))
+
+      const list = await listChanges('/project')
+      expect(list[0].summary).toEqual({ generators: 1, added: 1, removed: 1, modified: 1 })
+
+      const change = await getChange('/project', '0001')
+      expect(change!.generators[0].changes).toEqual([
+        { op: '+', kind: 'api', target: 'GET /new', detail: 'getNew', level: 'additive' },
+        { op: '-', kind: 'api', target: 'GET /old', level: 'breaking' },
+        { op: '~', kind: 'api', target: 'POST /pet', detail: 'queryParameters', level: 'breaking' },
+      ])
     })
   })
 
@@ -171,28 +205,64 @@ describe('edge cases', () => {
       expect(phases.some(p => p === 'done' || p === 'skipped')).toBe(true)
     })
 
-    it('aggregates API-level changes across multiple generators into one record', async () => {
+    it('aggregates source changes across multiple generators into one record', async () => {
       const twoGen = {
         generator: [
           { input: 'spec.json', output: 'src/a', type: 'ts' as const, plugins: [{ name: 't1', getTemplate: () => ({ path: `${FIXTURES}/flat` }) } as ApiPlugin] },
           { input: 'spec.json', output: 'src/b', type: 'ts' as const, plugins: [{ name: 't2', getTemplate: () => ({ path: `${FIXTURES}/flat` }) } as ApiPlugin] },
         ],
       }
+      // First run only establishes each generator's snapshot baseline.
+      await generate(twoGen, { projectPath: PROJECT })
+      expect(await listChanges(PROJECT)).toHaveLength(0)
+
+      vol.writeFileSync(`${PROJECT}/spec.json`, SPEC_WITH_ADMINS)
       await generate(twoGen, { projectPath: PROJECT })
 
       const list = await listChanges(PROJECT)
       expect(list).toHaveLength(1)
       expect(list[0].summary.generators).toBe(2)
+      // one added operation per generator
       expect(list[0].summary.added).toBe(2)
     })
 
     it('does not write a change record on a no-op re-run after a stable first run', async () => {
+      // Baseline run: no record yet.
+      await generate(makeConfig(), { projectPath: PROJECT })
+      expect(await listChanges(PROJECT)).toHaveLength(0)
+
+      vol.writeFileSync(`${PROJECT}/spec.json`, SPEC_WITH_ADMINS)
       await generate(makeConfig(), { projectPath: PROJECT })
       expect(await listChanges(PROJECT)).toHaveLength(1)
 
       // Second run with identical spec → nothing changed → no new record.
       await generate(makeConfig(), { projectPath: PROJECT })
       expect(await listChanges(PROJECT)).toHaveLength(1)
+    })
+
+    it('emits the recorded change id through onChangeRecorded', async () => {
+      await generate(makeConfig(), { projectPath: PROJECT })
+
+      const recorded: Array<{ id: string, added: number }> = []
+      vol.writeFileSync(`${PROJECT}/spec.json`, SPEC_WITH_ADMINS)
+      await generate(makeConfig(), {
+        projectPath: PROJECT,
+        onChangeRecorded: change => recorded.push(change),
+      })
+
+      expect(recorded).toEqual([{ id: '0001', added: 1, removed: 0, modified: 0 }])
+    })
+
+    it('does not emit a change id when the spec is unchanged', async () => {
+      await generate(makeConfig(), { projectPath: PROJECT })
+
+      const recorded: string[] = []
+      await generate(makeConfig(), {
+        projectPath: PROJECT,
+        onChangeRecorded: change => recorded.push(change.id),
+      })
+
+      expect(recorded).toEqual([])
     })
   })
 })

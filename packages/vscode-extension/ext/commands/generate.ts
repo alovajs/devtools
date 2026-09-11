@@ -45,9 +45,9 @@ export const refresh: CommandType = {
   },
 }
 
-export const generateApi: CommandType<[string, boolean?]> = {
+export const generateApi: CommandType<[string]> = {
   commandId: Commands.generate_api,
-  handler: () => (projectPath: string, isAuto?: boolean) => callGenerateApi(projectPath, isAuto),
+  handler: () => (projectPath: string) => callGenerateApi(projectPath),
 }
 
 export const generateApiForce: CommandType<[string]> = {
@@ -55,10 +55,10 @@ export const generateApiForce: CommandType<[string]> = {
   handler: () => (projectPath: string) => callGenerateApi(projectPath),
 }
 
-async function callGenerateApi(projectPath: string, isAuto?: boolean) {
+async function callGenerateApi(projectPath: string) {
   try {
     await ApiGenerate.readConfig(projectPath)
-    await ApiGenerate.generate({ projectPath, isAuto })
+    await ApiGenerate.generate({ projectPath })
     await ApiGenerate.showError()
     // Generation succeeded → clear the persistent "update available" state.
     setUpdateIndicator(0)

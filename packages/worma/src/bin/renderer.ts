@@ -209,9 +209,6 @@ export class MultiGeneratorRenderer {
       else if (st.status === 'failed') {
         row += `\n      ${theme.error(`✖ ${st.error || 'failed'}`)}`
       }
-      else if (st.status === 'skipped') {
-        row += `  ${theme.dim('up-to-date')}`
-      }
 
       // Add blank line between rows for readability
       lines.push(row)
@@ -479,9 +476,6 @@ export class MultiProjectRenderer {
           }
           else if (st.status === 'failed') {
             row += `\n      ${theme.error(`✖ ${st.error || 'failed'}`)}`
-          }
-          else if (st.status === 'skipped') {
-            row += `  ${theme.dim('up-to-date')}`
           }
 
           lines.push(row)

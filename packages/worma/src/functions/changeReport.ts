@@ -1,4 +1,4 @@
-import type { ApiChange, ApiFieldChange } from '@/functions/diffApis'
+import type { SourceChange } from '@/functions/diffDocument'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { getGlobalConfig } from '@/config'
@@ -11,30 +11,84 @@ export const LATEST_CHANGE_ID = 'latest'
 export interface ChangeItem {
   output: string
   serverName?: string
-  added: ApiChange[]
-  removed: ApiChange[]
-  modified: ApiFieldChange[]
+  /** URL / file that served the spec this record was built from */
+  resolvedInput?: string
+  /** Flattened source-document changes (see `diffSourceDocument`) */
+  changes: SourceChange[]
+}
+
+/** Aggregated row counts of a change record. */
+export interface ChangeCounts {
+  added: number
+  removed: number
+  modified: number
 }
 
 /** Lightweight list entry returned by {@link listChanges}. */
 export interface ChangeSummary {
   id: string
   createdAt: number
-  summary: {
-    generators: number
-    added: number
-    removed: number
-    modified: number
-  }
+  summary: { generators: number } & ChangeCounts
   outputs: string[]
 }
 
 /** A full change record — one `generate()` run aggregated. */
 export interface Change {
+  /** Record schema; `2` for the source-document view (absent on legacy records) */
+  schemaVersion?: number
   id: string
   createdAt: number
   projectPath: string
   generators: ChangeItem[]
+}
+
+/** Aggregate the change rows of every generator into flat counts. */
+export function countChanges(generators: ChangeItem[]): ChangeCounts {
+  let added = 0
+  let removed = 0
+  let modified = 0
+  for (const generator of generators) {
+    for (const change of generator.changes) {
+      if (change.op === '+')
+        added++
+      else if (change.op === '-')
+        removed++
+      else
+        modified++
+    }
+  }
+  return { added, removed, modified }
+}
+
+/**
+ * Read one generator entry, upgrading legacy (v1) api-level entries on the fly.
+ *
+ * v1 stored `added` / `removed` / `modified` api lists with `changedFields`;
+ * normalising both shapes into flat rows means every consumer only ever handles
+ * the source-document model.
+ */
+function normalizeItem(raw: any): ChangeItem {
+  const output = String(raw?.output ?? '')
+  const serverName = raw?.serverName || undefined
+  if (Array.isArray(raw?.changes))
+    return { output, serverName, resolvedInput: raw?.resolvedInput || undefined, changes: raw.changes }
+
+  const targetOf = (entry: any) => `${String(entry?.method ?? '').toUpperCase()} ${entry?.path ?? ''}`.trim()
+  const changes: SourceChange[] = []
+  for (const entry of raw?.added ?? [])
+    changes.push({ op: '+', kind: 'api', target: targetOf(entry), detail: entry?.name || undefined, level: 'additive' })
+  for (const entry of raw?.removed ?? [])
+    changes.push({ op: '-', kind: 'api', target: targetOf(entry), detail: entry?.name || undefined, level: 'breaking' })
+  for (const entry of raw?.modified ?? []) {
+    changes.push({
+      op: '~',
+      kind: 'api',
+      target: targetOf(entry),
+      detail: (entry?.changedFields ?? []).join(', ') || undefined,
+      level: 'breaking',
+    })
+  }
+  return { output, serverName, changes }
 }
 
 /** `<cacheRoot>/changes/` — change records live next to the cache index. */
@@ -51,22 +105,12 @@ function padId(seq: number): string {
 }
 
 function toSummary(change: Change): ChangeSummary {
-  let added = 0
-  let removed = 0
-  let modified = 0
-  for (const gen of change.generators) {
-    added += gen.added.length
-    removed += gen.removed.length
-    modified += gen.modified.length
-  }
   return {
     id: change.id,
     createdAt: change.createdAt,
     summary: {
       generators: change.generators.length,
-      added,
-      removed,
-      modified,
+      ...countChanges(change.generators),
     },
     outputs: change.generators.map(g => g.output),
   }
@@ -104,7 +148,8 @@ async function readRecord(projectRoot: string, id: string): Promise<Change | nul
     const content = JSON.parse(await fs.readFile(recordFile(projectRoot, id), 'utf-8'))
     if (!content || typeof content !== 'object')
       return null
-    return content as Change
+    const record = content as Change
+    return { ...record, generators: (record.generators ?? []).map(normalizeItem) }
   }
   catch {
     return null

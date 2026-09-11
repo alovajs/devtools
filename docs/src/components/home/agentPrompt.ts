@@ -25,7 +25,7 @@ Check \`package.json\` for an already installed HTTP client among: ${PREDEFINED_
 Before configuring, ask:
 - What is the OpenAPI data source URL?
 - Which platform or source type are they using?
-  - Swagger / Knife4j / FastAPI → use the \`swagger()\` / \`knife4j()\` / \`fastapi()\` plugin
+  - Swagger / Knife4j → use the \`swagger()\` / \`knife4j()\` plugin
   - Apifox → use the \`apifox()\` plugin (needs projectId and apifoxToken)
   - Direct OpenAPI file URL → use \`input\` directly
 

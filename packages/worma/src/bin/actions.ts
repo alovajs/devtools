@@ -1,7 +1,8 @@
 /* eslint-disable no-console */
 import type { ProjectInfo } from './renderer'
 import type { TemplatePreset } from '@/createConfig'
-import type { Config, GeneratorConfig, TemplateType } from '@/type/lib'
+import type { ChangeLevel, ChangeOp, SourceChange } from '@/functions/diffDocument'
+import type { Config, GeneratorConfig, RecordedChangeInfo, TemplateType } from '@/type/lib'
 import path from 'node:path'
 import * as readline from 'node:readline/promises'
 import { setGlobalConfig } from '@/config'
@@ -187,6 +188,7 @@ export async function actionGen({
     const renderer = new MultiProjectRenderer(projectInfos, pkg.version)
 
     const allResults: boolean[][] = []
+    const recorded: RecordedChangeInfo[] = []
     for (let pi = 0; pi < projects.length; pi++) {
       const proj = projects[pi]
       try {
@@ -194,6 +196,9 @@ export async function actionGen({
           projectPath: proj.dir,
           onProgress(event) {
             renderer.onProjectEvent(pi, event)
+          },
+          onChangeRecorded(change) {
+            recorded.push(change)
           },
         })
         allResults.push(results)
@@ -210,6 +215,7 @@ export async function actionGen({
     }
 
     renderer.finalize(allResults)
+    printRecordedChanges(recorded)
   }
 }
 
@@ -257,7 +263,7 @@ export async function actionDiff(
   // sub-packages share one unified cache root.
   setGlobalConfig({ cacheRoot: process.cwd() })
 
-  const { getChange, listChanges } = await import('@/functions/changeReport')
+  const { countChanges, getChange, listChanges } = await import('@/functions/changeReport')
 
   if (!id || list) {
     const summaries = await listChanges(projectPath)
@@ -294,38 +300,91 @@ export async function actionDiff(
   console.log(`  ${theme.label(`Change ${change.id}`)}  ${theme.dim(formatTime(change.createdAt))}`)
   console.log('')
 
-  let totalAdded = 0
-  let totalRemoved = 0
-  let totalModified = 0
+  const totals = countChanges(change.generators)
 
   for (const gen of change.generators) {
-    totalAdded += gen.added.length
-    totalRemoved += gen.removed.length
-    totalModified += gen.modified.length
-
     console.log(`  ${theme.header(gen.serverName ? `${gen.output}  (${gen.serverName})` : gen.output)}`)
+    if (gen.changes.length === 0) {
+      console.log(`    ${theme.dim('no changes')}`)
+      console.log('')
+      continue
+    }
+
+    // Every change is one row: component changes carry their affected
+    // operations in `affects`, listed under the change itself (one per line).
     const table = createTable([
       '',
-      theme.label('METHOD'),
-      theme.label('PATH'),
-      theme.label('NAME'),
-      theme.label('CHANGED FIELDS'),
+      theme.label('TYPE'),
+      theme.label('TARGET'),
+      theme.label('ITEM'),
+      theme.label('CHANGE'),
+      theme.label('LEVEL'),
     ])
-    gen.added.forEach(a => table.push([theme.success('+'), a.method, a.path, a.name ?? '-', '']))
-    gen.removed.forEach(a => table.push([theme.error('-'), a.method, a.path, a.name ?? '-', '']))
-    gen.modified.forEach(a => table.push([theme.warning('~'), a.method, a.path, a.name ?? '-', a.changedFields.join(', ')]))
-
-    if (gen.added.length + gen.removed.length + gen.modified.length === 0) {
-      console.log(`    ${theme.dim('no changes')}`)
+    for (const row of gen.changes) {
+      table.push([
+        opText(row.op),
+        theme.dim(row.kind),
+        row.target,
+        row.item ?? '',
+        changeCell(row),
+        levelText(row.level),
+      ])
     }
-    else {
-      console.log(table.toString())
-    }
+    console.log(table.toString())
     console.log('')
   }
 
-  console.log(`  ${theme.label('Total:')} ${theme.success(`+${totalAdded} added`)}, ${theme.error(`-${totalRemoved} removed`)}, ${theme.warning(`~${totalModified} modified`)}`)
+  console.log(`  ${theme.label('Total:')} ${theme.success(`+${totals.added} added`)}, ${theme.error(`-${totals.removed} removed`)}, ${theme.warning(`~${totals.modified} modified`)}`)
   console.log('')
+}
+
+/**
+ * `CHANGE` cell of one row: the change itself plus, for a component change, the
+ * operations it affects — one per line, so nothing is folded away.
+ */
+function changeCell(row: SourceChange): string {
+  return [row.detail, ...(row.affects ?? [])].filter(Boolean).join('\n')
+}
+
+/** `+` / `-` / `~` cell with the matching palette colour. */
+function opText(op: ChangeOp): string {
+  if (op === '+')
+    return theme.success(op)
+  if (op === '-')
+    return theme.error(op)
+  return theme.warning(op)
+}
+
+/** Severity cell with the matching palette colour. */
+function levelText(level: ChangeLevel): string {
+  if (level === 'breaking')
+    return theme.error(level)
+  if (level === 'additive')
+    return theme.success(level)
+  return theme.dim(level)
+}
+
+/**
+ * Close a `worma gen` run with the change-record pointer: the id(s) written by
+ * this run plus the command showing their details.
+ *
+ * A run that recorded nothing (the source document did not change) prints no
+ * closing line at all.
+ */
+export function printRecordedChanges(recorded: RecordedChangeInfo[]): void {
+  if (recorded.length === 0)
+    return
+  const totals = recorded.reduce(
+    (acc, change) => ({
+      added: acc.added + change.added,
+      removed: acc.removed + change.removed,
+      modified: acc.modified + change.modified,
+    }),
+    { added: 0, removed: 0, modified: 0 },
+  )
+  const ids = recorded.map(change => change.id).join(', ')
+  console.log(`\n  ${theme.success('✔')} Changes recorded: ${theme.label(ids)} ${theme.dim(`(+${totals.added}/-${totals.removed}/~${totals.modified})`)}`)
+  console.log(`  ${theme.dim('Run `worma diff latest` to view the details.')}\n`)
 }
 
 async function generateForProject(entry: ProjectEntry): Promise<void> {
@@ -344,6 +403,7 @@ async function generateForProject(entry: ProjectEntry): Promise<void> {
   }
 
   // Unified entry — generate() creates per-gen trackers internally
+  const recorded: RecordedChangeInfo[] = []
   const results = await generate(config, {
     projectPath: dir,
     onProgress(event) {
@@ -365,9 +425,13 @@ async function generateForProject(entry: ProjectEntry): Promise<void> {
           break
       }
     },
+    onChangeRecorded(change) {
+      recorded.push(change)
+    },
   })
 
   // Finalize — Phase 3: stop live-update, show concise ✔/✖ summary
   const failedCount = results.filter(r => !r).length
   renderer.finalize(failedCount)
+  printRecordedChanges(recorded)
 }

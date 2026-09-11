@@ -1,4 +1,4 @@
-import type { GenerateOption, ProjectStats } from '@/functions/generate'
+import type { GenerateChangeSummary, GenerateOption, ProjectStats } from '@/functions/generate'
 import { window } from 'vscode'
 import Error from '@/components/error'
 import { showError } from '@/components/event'
@@ -8,8 +8,14 @@ import readConfig from '@/functions/readConfig'
 import { displayName } from '@/meta'
 import { getFileNameByPath, Log } from '@/utils'
 import { getCurrentDirectory, getWorkspacePaths } from '@/utils/vscode'
+import { ChangesView } from '@/views/changes'
 import Global from './Global'
 import VscodeClient from './VscodeClient'
+
+/** Action shown on the success toast when the run recorded an API diff. */
+const VIEW_CHANGES = 'View Changes'
+/** Alias accepted by `ChangesView.open`, resolved to the newest record. */
+const LATEST_CHANGE_ID = 'latest'
 
 export default class ApiGenerate {
   private static readErrorArr: Error[] = []
@@ -47,23 +53,14 @@ export default class ApiGenerate {
     const generateInfo = await generate(optins)
 
     // ── Build Output Channel summary ──
-    this.writeSummary(generateInfo.resultArr, generateInfo.projectStats)
+    this.writeSummary(generateInfo.resultArr, generateInfo.projectStats, generateInfo.changeSummary)
 
     // ── Popup notification ──
     let totalDone = 0
-    let totalSkipped = 0
     let totalFailed = 0
     for (const stats of generateInfo.projectStats.values()) {
       totalDone += stats.done
-      totalSkipped += stats.skipped
       totalFailed += stats.failed
-    }
-
-    // Auto-update triggered: when everything is up to date, stay silent.
-    if (optins?.isAuto && totalDone === 0 && totalFailed === 0 && totalSkipped > 0) {
-      VscodeClient.refreshDocs()
-      this.generateErrorArr.push(...generateInfo.errorArr)
-      return
     }
 
     // Never mask a real failure with a success / empty-state toast: the errors are
@@ -74,63 +71,42 @@ export default class ApiGenerate {
       return
     }
 
-    // Build per-project detail lines
-    const lines: string[] = []
-    for (const [workspaceRootDir] of generateInfo.resultArr) {
-      const projectName = getFileNameByPath(workspaceRootDir)
-      const stats = generateInfo.projectStats.get(workspaceRootDir)
-      if (!stats || stats.done + stats.skipped + stats.failed === 0)
-        continue
+    // Single-line summary (VSCode only shows first line in notifications).
+    // Every non-failure path reaching here has `totalFailed === 0`.
+    let summary = totalDone > 0
+      ? `🎉 Done! ${totalDone} module${totalDone > 1 ? 's' : ''} updated`
+      : '👌 Nothing to generate'
 
-      const parts: string[] = []
-      if (stats.done > 0)
-        parts.push(`${stats.done} module${stats.done > 1 ? 's' : ''} updated`)
-      if (stats.skipped > 0)
-        parts.push(`${stats.skipped} up to date`)
-      if (stats.failed > 0)
-        parts.push(`${stats.failed} failed`)
+    // Requirement B: when this run recorded an API diff, mention it and offer a
+    // shortcut that opens the API Changes view on the record just written.
+    const changed = Object.values(generateInfo.changeSummary)
+      .reduce((acc, item) => ({
+        added: acc.added + item.added,
+        removed: acc.removed + item.removed,
+        modified: acc.modified + item.modified,
+      }), { added: 0, removed: 0, modified: 0 })
+    const changeTarget = Object.entries(generateInfo.changeSummary)
+      .find(([, item]) => item.added + item.removed + item.modified > 0)
 
-      lines.push(`${projectName}: ${parts.join(', ')}`)
-    }
-
-    // Single-line summary (VSCode only shows first line in notifications)
-    let summary: string
-
-    if (lines.length === 0) {
-      summary = '👌 Nothing to generate'
-    }
-    else if (totalDone > 0 && totalFailed === 0) {
-      const parts: string[] = []
-      if (totalDone > 0)
-        parts.push(`${totalDone} module${totalDone > 1 ? 's' : ''} updated`)
-      if (totalSkipped > 0)
-        parts.push(`${totalSkipped} up to date`)
-      summary = `🎉 Done! ${parts.join(', ')}`
-    }
-    else if (totalDone > 0 && totalFailed > 0) {
-      const parts: string[] = []
-      if (totalDone > 0)
-        parts.push(`${totalDone} updated`)
-      if (totalSkipped > 0)
-        parts.push(`${totalSkipped} up to date`)
-      if (totalFailed > 0)
-        parts.push(`${totalFailed} failed`)
-      summary = `⚠ Done, with errors: ${parts.join(', ')}`
-    }
-    else if (totalDone === 0 && totalFailed > 0) {
-      summary = `❌ Generation failed: ${totalFailed} module${totalFailed > 1 ? 's' : ''} failed`
-    }
-    else if (totalSkipped > 0) {
-      summary = `👌 Already up to date (${totalSkipped} module${totalSkipped > 1 ? 's' : ''})`
-    }
-    else {
-      summary = '👌 Nothing to generate'
+    if (changeTarget) {
+      // The record id is part of the toast so the user can find it later; the
+      // `View Changes` action below deep-links to it.
+      summary += ` · Changes ${changeTarget[1].id} (+${changed.added}/-${changed.removed}/~${changed.modified})`
     }
 
     // no config could be loaded at all — an empty result then means "nothing
     // configured", not "nothing to do"
     if (this.configNum === 0) {
       window.showWarningMessage(`⚠ ${displayName}: No worma config found`)
+    }
+    else if (changeTarget) {
+      const [projectPath, record] = changeTarget
+      // intentionally not awaited: the popup lives until the user dismisses it
+      void window.showInformationMessage(summary, VIEW_CHANGES).then((picked) => {
+        if (picked === VIEW_CHANGES) {
+          void ChangesView.open(record.id || LATEST_CHANGE_ID, projectPath)
+        }
+      })
     }
     else {
       window.showInformationMessage(summary)
@@ -189,6 +165,7 @@ export default class ApiGenerate {
   private static writeSummary(
     resultArr: Array<[string, boolean]>,
     projectStats: Map<string, ProjectStats>,
+    changeSummary: Record<string, GenerateChangeSummary> = {},
   ) {
     Log.divider()
     Log.raw('  ██╗    ██╗ ██████╗ ██████╗ ███╗   ███╗ █████╗')
@@ -214,7 +191,7 @@ export default class ApiGenerate {
         ? '⚠ partial'
         : stats.done > 0
           ? '✅ success'
-          : '📋 up to date'
+          : '📋 skipped'
 
       Log.info(`📦 ${projectName}  [${statusTag}]`)
 
@@ -264,6 +241,22 @@ export default class ApiGenerate {
     if (totalFailed > 0)
       summaryParts.push(`${totalFailed} failed`)
     Log.info(`📊 ${summaryParts.join(', ')}`)
+
+    // Change-record pointer, mirroring the CLI: the id(s) written by this run.
+    // A run that recorded nothing (the sources did not change) stays silent.
+    const records = Object.values(changeSummary)
+    if (records.length > 0) {
+      const totals = records.reduce(
+        (acc, record) => ({
+          added: acc.added + record.added,
+          removed: acc.removed + record.removed,
+          modified: acc.modified + record.modified,
+        }),
+        { added: 0, removed: 0, modified: 0 },
+      )
+      Log.info(`✔ Changes recorded: ${records.map(record => record.id).join(', ')} (+${totals.added}/-${totals.removed}/~${totals.modified})`)
+      Log.info('Run "Worma: Review API Changes" to view the details.')
+    }
     Log.divider()
 
     // Auto-show output panel only on failure

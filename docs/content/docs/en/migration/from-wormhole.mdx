@@ -71,7 +71,7 @@ worma also adds `alova` (on-demand import), `axios`, `fetch`, `ky`, and more tem
 
 ## platform config → plugins
 
-`@alova/wormhole`'s `platform` config becomes per-platform plugins in worma (`swagger` / `knife4j` / `fastapi` / `yapi`), and the base URL is passed as a plugin argument, so no `input` is needed:
+`@alova/wormhole`'s `platform` config becomes per-platform plugins in worma (`swagger` / `knife4j` / `yapi`), and the base URL is passed as a plugin argument, so no `input` is needed. FastAPI projects can simply use the `swagger` plugin (`/openapi.json` is its first candidate URL):
 
 ```javascript
 // @alova/wormhole
@@ -103,7 +103,7 @@ defineConfig({
 | ---------------------- | ------------------------------ |
 | `fileNameCase` | Removed, no replacement |
 | `autoUpdate` (root config) | Removed; managed by the VSCode extension instead |
-| `platform` option | Becomes `swagger` / `knife4j` / `fastapi` / `yapi` plugins (base URL passed as plugin argument) |
+| `platform` option | Becomes `swagger` / `knife4j` / `yapi` plugins (base URL passed as plugin argument) |
 
 ## Other changes
 
@@ -115,7 +115,7 @@ defineConfig({
 2. Rename the config file: `alova.config.{js,ts}` → `worma.config.{js,ts}`
 3. Update import paths: `@alova/wormhole` → `wormajs`, `@alova/wormhole/plugin` → `wormajs/plugin`
 4. Add the template plugin to the `plugins` array (e.g. `alovaGlobals()`)
-5. Change the `platform` option to `swagger` / `knife4j` / `fastapi` / `yapi` plugins (base URL passed as plugin argument)
+5. Change the `platform` option to `swagger` / `knife4j` / `yapi` plugins (base URL passed as plugin argument)
 6. CLI arg `-c, --cwd` → `-p, --project`
 
 ## Migrating from other sources

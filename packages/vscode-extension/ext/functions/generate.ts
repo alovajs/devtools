@@ -10,13 +10,13 @@ export interface GenerateChangeSummary {
   added: number
   removed: number
   modified: number
+  /** Id of the newest change record written by this run — used to deep-link into the API Changes view. */
+  id: string
 }
 
 export interface GenerateOption {
   projectPath?: string
   showError?: boolean
-  /** Suppresses the "up to date" popup when triggered non-interactively. */
-  isAuto?: boolean
   onProgress?: (event: GeneratorProgressEvent) => void
 }
 
@@ -34,8 +34,9 @@ export default async (option?: GenerateOption) => {
   const resultArr: Array<[string, boolean]> = []
   const errorArr: Array<Error> = []
   const projectStatsMap = new Map<string, ProjectStats>()
+  /** Change record written by this run, per project — reported by `generate()`. */
+  const changeSummary: Record<string, GenerateChangeSummary> = {}
   const { projectPath: projectPathValue, showError = false, onProgress } = option ?? {}
-  const startedAt = Date.now()
 
   const allEntries = Global.getConfigs()
 
@@ -111,6 +112,16 @@ export default async (option?: GenerateOption) => {
           onProgress?.(event)
           mergeAndReport()
         },
+        onChangeRecorded(change) {
+          // Reported by `generate()` itself once the record is persisted, so no
+          // post-run scan (and no `createdAt` heuristic) is needed.
+          changeSummary[projectPath] = {
+            id: change.id,
+            added: change.added,
+            removed: change.removed,
+            modified: change.modified,
+          }
+        },
       }))
       resultArr.push([projectPath, generateResult?.some(item => !!item)])
     }
@@ -126,34 +137,9 @@ export default async (option?: GenerateOption) => {
     })
   }
 
-  // Requirement B: read back the change records written during this run so the
-  // caller can surface a "View Changes" affordance. Only records created within
-  // this run (createdAt >= startedAt) are counted.
-  const changeSummary: Record<string, GenerateChangeSummary> = {}
-  for (const projectPath of projectStatsMap.keys()) {
-    try {
-      const list = await (worma as any).listChanges(projectPath)
-      if (!Array.isArray(list))
-        continue
-      let added = 0
-      let removed = 0
-      let modified = 0
-      for (const record of list) {
-        if ((record?.createdAt ?? 0) >= startedAt) {
-          added += record.summary?.added ?? 0
-          removed += record.summary?.removed ?? 0
-          modified += record.summary?.modified ?? 0
-        }
-      }
-      if (added || removed || modified) {
-        changeSummary[projectPath] = { added, removed, modified }
-      }
-    }
-    catch {
-      // change records are optional — never fail the run on this
-    }
-  }
-
+  // `changeSummary` is filled by the `onChangeRecorded` callback above: a record
+  // only exists when the source document actually changed, which is exactly the
+  // signal the caller needs to offer a "View Changes" affordance.
   return {
     resultArr,
     errorArr,

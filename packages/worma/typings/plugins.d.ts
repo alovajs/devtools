@@ -582,63 +582,6 @@ export interface ImportTypeOptions {
 export declare function importType(imports: Record<string, string[]>, options?: {
 	files?: string[];
 }): ApiPlugin;
-export interface PostmanOptions {
-	/** Postman API Key, generated from Postman → Settings → API keys */
-	apiKey: string;
-	/** The uid of the Postman collection */
-	collectionId: string;
-}
-/**
- * Unwraps the OpenAPI definition returned by the Postman collection
- * transformation endpoint, which responds with `{ output: "<stringified spec>" }`
- * instead of the specification itself.
- *
- * The response is parsed exactly once. Anything that is not a transformation
- * envelope (an error payload, an HTML page, a malformed body, …) throws instead
- * of being silently passed through, so the real problem surfaces immediately.
- * The unwrapped spec is then validated by the generator's parser, like any other
- * input — this function does not re-parse or validate it.
- */
-export declare function unwrapTransformationOutput(spec: string): string;
-/**
- * Postman platform plugin.
- *
- * Postman collections are not OpenAPI documents, so the plugin points `input` to
- * the collection transformation endpoint, which converts the collection into an
- * OpenAPI definition:
- *
- * ```
- * https://api.getpostman.com/collections/<collectionId>/transformations
- * ```
- *
- * The `x-api-key` header is injected through `fetchOptions`. The endpoint responds
- * with `{ output: "<spec>" }`, so the plugin unwraps that envelope in its
- * `beforeSpecParse` hook.
- *
- * `apiKey` and `collectionId` are both required — the plugin throws a clear error
- * when either is missing.
- *
- * @param options - `{ apiKey, collectionId }`
- *
- * @example
- * ```ts
- * import { postman, alovaGlobals } from 'wormajs/plugin';
- *
- * defineConfig({
- *   generator: [{
- *     plugins: [
- *       postman({
- *         apiKey: 'PMAK-xxx',
- *         collectionId: '12345678-a1b2-c3d4-e5f6-7890abcdef12',
- *       }),
- *       alovaGlobals(),
- *     ],
- *     output: './src/api',
- *   }]
- * });
- * ```
- */
-export declare function postman({ apiKey, collectionId }: PostmanOptions): ApiPlugin;
 /**
  * The part of the API the modification applies to.
  * - `params` — query parameters
@@ -763,20 +706,6 @@ export type PayloadModifierConfig = ModifierConfig;
  */
 export declare function payloadModifier(configs: PayloadModifierConfig[]): ApiPlugin;
 /**
- * FastAPI platform plugin.
- *
- * Pass the base URL of your FastAPI app; the plugin will try `/openapi.json`
- * first, then fall back to the bare base URL.
- *
- * @param input - base URL string, or an array of base URLs
- *
- * @example
- * ```ts
- * plugins: [fastapi('http://fastapi-example.dokkuapp.com'), alovaGlobals()]
- * ```
- */
-export declare const fastapi: (input: string | string[]) => ApiPlugin;
-/**
  * Knife4j platform plugin.
  *
  * Pass the base URL of your Knife4j instance; the plugin will try the OAS3
@@ -863,6 +792,65 @@ export interface YapiOptions {
  * ```
  */
 export declare function yapi(options: YapiOptions): ApiPlugin;
+export interface PostmanOptions {
+	/** Postman API Key, generated from Postman → Settings → API keys */
+	apiKey: string;
+	/** The uid of the Postman collection */
+	collectionId: string;
+}
+/**
+ * Unwraps the OpenAPI definition returned by the Postman collection
+ * transformation endpoint, which responds with `{ output: "<stringified spec>" }`
+ * instead of the specification itself.
+ *
+ * The response is parsed exactly once. Anything that is not a transformation
+ * envelope (an error payload, an HTML page, a malformed body, …) throws instead
+ * of being silently passed through, so the real problem surfaces immediately.
+ * The unwrapped spec is then validated by the generator's parser, like any other
+ * input — this function does not re-parse or validate it.
+ */
+export declare function unwrapTransformationOutput(spec: string): string;
+/**
+ * Postman platform plugin.
+ *
+ * Postman collections are not OpenAPI documents, so the plugin points `input` to
+ * the collection transformation endpoint, which converts the collection into an
+ * OpenAPI definition:
+ *
+ * ```
+ * https://api.getpostman.com/collections/<collectionId>/transformations
+ * ```
+ *
+ * The `x-api-key` header is injected through `fetchOptions`. The endpoint responds
+ * with `{ output: "<spec>" }`, so the plugin unwraps that envelope in its
+ * `beforeSpecParse` hook.
+ *
+ * `apiKey` and `collectionId` are both required — the plugin throws a clear error
+ * when either is missing.
+ *
+ * @param options - `{ apiKey, collectionId }`
+ * @param options.apiKey - Postman API key used to read the collection
+ * @param options.collectionId - The uid of the Postman collection
+ *
+ * @example
+ * ```ts
+ * import { postman, alovaGlobals } from 'wormajs/plugin';
+ *
+ * defineConfig({
+ *   generator: [{
+ *     plugins: [
+ *       postman({
+ *         apiKey: 'PMAK-xxx',
+ *         collectionId: '12345678-a1b2-c3d4-e5f6-7890abcdef12',
+ *       }),
+ *       alovaGlobals(),
+ *     ],
+ *     output: './src/api',
+ *   }]
+ * });
+ * ```
+ */
+export declare function postman({ apiKey, collectionId }: PostmanOptions): ApiPlugin;
 /**
  * Rename style options
  */

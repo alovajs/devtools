@@ -1,11 +1,11 @@
 ---
 title: Platform Fetchers
-description: Auto-build the OpenAPI file URL for Swagger / Knife4j / FastAPI / YApi / Apifox / Postman
+description: Auto-build the OpenAPI file URL for Swagger / Knife4j / YApi / Apifox / Postman
 ---
 
 # Platform Fetchers
 
-worma ships six platform fetcher plugins: `swagger`, `knife4j`, `fastapi`, `yapi`, `apifox`, `postman`. Their purpose is unified — pass the platform's base address (or project credentials) as a **plugin argument**, and the plugin assembles candidate OpenAPI file URLs in its `config` hook and writes them to `config.input`, so you don't have to look up and concatenate URLs manually.
+worma ships five platform fetcher plugins: `swagger`, `knife4j`, `yapi`, `apifox`, `postman`. Their purpose is unified — pass the platform's base address (or project credentials) as a **plugin argument**, and the plugin assembles candidate OpenAPI file URLs in its `config` hook and writes them to `config.input`, so you don't have to look up and concatenate URLs manually.
 
 > Note: `input` is **no longer** set separately on `config`; it's written by the platform plugin instead.
 
@@ -31,7 +31,6 @@ export default defineConfig({
 |------|------|------|
 | `swagger(input)` | Swagger UI / server | Base address string, or an array of strings |
 | `knife4j(input)` | Knife4j (springdoc / springfox) | Base address string, or an array of strings |
-| `fastapi(input)` | FastAPI app | Base address string, or an array of strings |
 | `yapi(options)` | YApi project (private, needs login cookie) | `{ url, pid, cookie?, type?, status?, isWiki?, timeout? }` |
 | `apifox(options)` | Apifox project (needs projectId and access token) | `{ projectId, apifoxToken, ... }` |
 | `postman(options)` | Postman collection (needs apiKey and collectionId) | `{ apiKey, collectionId }` |
@@ -39,12 +38,11 @@ export default defineConfig({
 ### Type signatures
 
 ```typescript
-import { swagger, knife4j, fastapi, yapi, apifox, postman } from 'wormajs/plugin';
+import { swagger, knife4j, yapi, apifox, postman } from 'wormajs/plugin';
 
 // URL-based platforms: base address (single or array) as the plugin argument
 function swagger(input: string | string[]): ApiPlugin;
 function knife4j(input: string | string[]): ApiPlugin;
-function fastapi(input: string | string[]): ApiPlugin;
 
 // YApi: pass the service address and project ID to assemble the export endpoint URL
 interface YapiOptions {
@@ -102,13 +100,12 @@ function postman(options: PostmanOptions): ApiPlugin;
 
 ## Platform rules (URL-based)
 
-The URL-based platforms (`swagger` / `knife4j` / `fastapi`) take one or more base addresses and generate a candidate URL array for each:
+The URL-based platforms (`swagger` / `knife4j`) take one or more base addresses and generate a candidate URL array for each:
 
 | Plugin | Generated input candidates (using `<base>`) |
 |------|----------------------------------------|
 | `swagger` | `<base>/openapi.json`, `<base>/v2/swagger.json`, `<base>/api/v3/openapi.json`, `<base>` |
 | `knife4j` | `<base>/v3/api-docs`, `<base>/v2/api-docs`, `<base>` |
-| `fastapi` | `<base>/openapi.json`, `<base>` |
 
 The framework tries each candidate URL in order and returns the first successful one (see `getOpenApiData`).
 
@@ -286,7 +283,7 @@ export default defineConfig({
 
 These platform plugins all modify `config.input` via their `config` hook:
 
-1. The plugin argument is the platform address (`swagger` / `knife4j` / `fastapi`), `yapi`'s `{ url, pid, cookie, ... }`, `apifox`'s `{ projectId, apifoxToken, ... }`, or `postman`'s `{ apiKey, collectionId }`;
+1. The plugin argument is the platform address (`swagger` / `knife4j`), `yapi`'s `{ url, pid, cookie, ... }`, `apifox`'s `{ projectId, apifoxToken, ... }`, or `postman`'s `{ apiKey, collectionId }`;
 2. URL-based plugins auto-assemble the OpenAPI file URL array by platform type; `yapi` assembles the `exportSwagger` export URL from `url` + `pid` and injects `cookie`; `apifox` assembles the Apifox export endpoint URL and injects the Bearer token and export params; `postman` writes the collection transformation endpoint URL and injects `x-api-key`, then unwraps the response envelope in `beforeSpecParse`;
 3. The result is assigned to `config.input`.
 

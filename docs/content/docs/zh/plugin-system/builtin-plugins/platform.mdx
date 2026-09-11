@@ -1,11 +1,11 @@
 ---
 title: 平台拉取器
-description: 自动拼接 Swagger / Knife4j / FastAPI / YApi / Apifox / Postman 的 OpenAPI 文件地址
+description: 自动拼接 Swagger / Knife4j / YApi / Apifox / Postman 的 OpenAPI 文件地址
 ---
 
 # 平台拉取器
 
-worma 内置六个平台拉取器插件：`swagger`、`knife4j`、`fastapi`、`yapi`、`apifox`、`postman`。
+worma 内置五个平台拉取器插件：`swagger`、`knife4j`、`yapi`、`apifox`、`postman`。
 它们的用途是统一的——把平台的基础地址（或项目凭证）作为**插件参数**传入，由插件在
 `config` hook 中拼装出候选 OpenAPI 文件地址并写入 `config.input`，从而无需手动查找和拼接 URL。
 
@@ -33,7 +33,6 @@ export default defineConfig({
 |------|------|------|
 | `swagger(input)` | Swagger UI / 服务端 | 基础地址字符串，或字符串数组 |
 | `knife4j(input)` | Knife4j（springdoc / springfox） | 基础地址字符串，或字符串数组 |
-| `fastapi(input)` | FastAPI 应用 | 基础地址字符串，或字符串数组 |
 | `yapi(options)` | YApi 项目（私有，需登录 cookie） | `{ url, pid, cookie?, type?, status?, isWiki?, timeout? }` |
 | `apifox(options)` | Apifox 项目（需 projectId 与访问令牌） | `{ projectId, apifoxToken, ... }` |
 | `postman(options)` | Postman 集合（需 apiKey 与 collectionId） | `{ apiKey, collectionId }` |
@@ -41,12 +40,11 @@ export default defineConfig({
 ### 类型签名
 
 ```typescript
-import { swagger, knife4j, fastapi, yapi, apifox, postman } from 'wormajs/plugin';
+import { swagger, knife4j, yapi, apifox, postman } from 'wormajs/plugin';
 
 // URL 型平台：基础地址（单个或数组）作为插件参数
 function swagger(input: string | string[]): ApiPlugin;
 function knife4j(input: string | string[]): ApiPlugin;
-function fastapi(input: string | string[]): ApiPlugin;
 
 // YApi：传入服务地址与项目 ID，拼装导出接口地址
 interface YapiOptions {
@@ -104,13 +102,12 @@ function postman(options: PostmanOptions): ApiPlugin;
 
 ## 平台规则（URL 型）
 
-URL 型平台（`swagger` / `knife4j` / `fastapi`）接收一个或多个基础地址，对每个地址生成候选 URL 数组：
+URL 型平台（`swagger` / `knife4j`）接收一个或多个基础地址，对每个地址生成候选 URL 数组：
 
 | 插件 | 生成的 input 候选（以 `<base>` 为例） |
 |------|----------------------------------------|
 | `swagger` | `<base>/openapi.json`、`<base>/v2/swagger.json`、`<base>/api/v3/openapi.json`、`<base>` |
 | `knife4j` | `<base>/v3/api-docs`、`<base>/v2/api-docs`、`<base>` |
-| `fastapi` | `<base>/openapi.json`、`<base>` |
 
 框架会依次尝试每个候选 URL，返回第一个成功的结果（详见 `getOpenApiData`）。
 
@@ -290,7 +287,7 @@ export default defineConfig({
 
 这些平台插件都通过 `config` hook 修改 `config.input`：
 
-1. 插件参数为平台地址（`swagger` / `knife4j` / `fastapi`）、`yapi` 的 `{ url, pid, cookie, ... }`、`apifox` 的 `{ projectId, apifoxToken, ... }`，或 `postman` 的 `{ apiKey, collectionId }`；
+1. 插件参数为平台地址（`swagger` / `knife4j`）、`yapi` 的 `{ url, pid, cookie, ... }`、`apifox` 的 `{ projectId, apifoxToken, ... }`，或 `postman` 的 `{ apiKey, collectionId }`；
 2. URL 型插件根据平台类型自动拼装生成 OpenAPI 文件 URL 数组；`yapi` 根据 `url` + `pid` 拼装 `exportSwagger` 导出地址并注入 `cookie`；`apifox` 则拼装 Apifox 导出接口地址并注入 Bearer 令牌与导出参数；`postman` 则写入集合转换接口地址并注入 `x-api-key`，再在 `beforeSpecParse` 中解开返回的外壳；
 3. 将结果赋值给 `config.input`。
 

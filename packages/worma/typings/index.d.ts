@@ -7,67 +7,6 @@ export type OpenAPIDocument = OpenAPIV3_1.Document;
 export type SchemaObject = OpenAPIV3_1.SchemaObject;
 export type Parameter = OpenAPIV3_1.ParameterObject;
 export type OperationObject = OpenAPIV3_1.OperationObject;
-export interface Api {
-	tag: string;
-	method: string;
-	summary: string;
-	path: string;
-	pathParameters: string;
-	queryParameters: string;
-	pathParametersComment?: string;
-	queryParametersComment?: string;
-	responseComment?: string;
-	requestBodyComment?: string;
-	name: string;
-	response: string;
-	requestBody?: string;
-	callingCode?: string;
-}
-export interface ApiDoc {
-	apis: Api[];
-	tag: string;
-}
-export type ApiDescriptor = Omit<OperationObject, "requestBody" | "parameters" | "responses"> & {
-	url: string;
-	method: string;
-	parameters?: Parameter[];
-	refNameMap?: Record<string, string>;
-	requestBody?: SchemaObject;
-	responses?: SchemaObject;
-};
-export interface TemplateData {
-	title: OpenAPIDocument["info"]["title"];
-	openapi: OpenAPIDocument["openapi"];
-	version: OpenAPIDocument["info"]["version"];
-	description: OpenAPIDocument["info"]["description"];
-	contact: OpenAPIDocument["info"]["contact"];
-	/** Framework tag: vue | react | svelte | solid-js | nuxt */
-	framework?: string;
-	defaultKey?: boolean;
-	baseUrl: string;
-	/** Schema/Component definitions */
-	components: string[];
-	/** Names of all generated component schemas (keys of schemasMap) */
-	componentNames: string[];
-	/** All apis array */
-	allApis: Api[];
-	/** Apis grouped by tag */
-	tagedApis: ApiDoc[];
-	type: TemplateType;
-	/** Config passed from template configuration */
-	config: Record<string, any>;
-}
-/**
- * Standardized cache data for VSCode extension
- * Used for rendering sidebar API tree and quick search
- */
-export interface CacheData {
-	path: string;
-	/** Server name displayed in sidebar */
-	serverName?: string;
-	/** All APIs as a flat array */
-	apis: Api[];
-}
 export interface FetchOptions {
 	headers?: Record<string, string>;
 	/** timeout in milliseconds */
@@ -257,7 +196,11 @@ export interface PerformanceConfig {
 	transformConcurrency?: number;
 	/** Max parallelism for file writes. Default 32 */
 	writeConcurrency?: number;
-	/** Sort tags/APIs/components alphabetically for deterministic output. Default true */
+	/**
+	 * Sort the collected component types alphabetically so the output order stays
+	 * stable regardless of worker scheduling. `false` keeps collection order.
+	 * Default true
+	 */
 	deterministicSort?: boolean;
 }
 /**
@@ -414,21 +357,67 @@ export type UserConfigFnObject = () => UserConfig;
 export type UserConfigFnPromise = () => Promise<UserConfig>;
 export type UserConfigFn = () => UserConfig | Promise<UserConfig>;
 export type UserConfigExport = UserConfig | Promise<UserConfig> | UserConfigFnObject | UserConfigFnPromise | UserConfigFn;
-declare const DEFAULT_CONFIG: {
-	cacheDir: string;
-	/** Overrides cacheDir's parent directory for monorepo unified cache. */
-	cacheRoot: string | undefined;
-	/**
-	 * Maximum number of `changes/<NNNN>.json` records to keep.
-	 * `0` (or any non-positive value) keeps every record.
-	 */
-	changeHistoryLimit: number;
-	/** 用户自定义的产物格式化配置，未设置时使用内置默认值 */
-	format: FormatOptions | undefined;
-	Error: ErrorConstructor;
-	templateData: Map<string, any>;
+export interface Api {
+	tag: string;
+	method: string;
+	summary: string;
+	path: string;
+	pathParameters: string;
+	queryParameters: string;
+	pathParametersComment?: string;
+	queryParametersComment?: string;
+	responseComment?: string;
+	requestBodyComment?: string;
+	name: string;
+	response: string;
+	requestBody?: string;
+	callingCode?: string;
+}
+export interface ApiDoc {
+	apis: Api[];
+	tag: string;
+}
+export type ApiDescriptor = Omit<OperationObject, "requestBody" | "parameters" | "responses"> & {
+	url: string;
+	method: string;
+	parameters?: Parameter[];
+	refNameMap?: Record<string, string>;
+	requestBody?: SchemaObject;
+	responses?: SchemaObject;
 };
-export declare function setGlobalConfig(config: Partial<typeof DEFAULT_CONFIG>): void;
+export interface TemplateData {
+	title: OpenAPIDocument["info"]["title"];
+	openapi: OpenAPIDocument["openapi"];
+	version: OpenAPIDocument["info"]["version"];
+	description: OpenAPIDocument["info"]["description"];
+	contact: OpenAPIDocument["info"]["contact"];
+	/** Framework tag: vue | react | svelte | solid-js | nuxt */
+	framework?: string;
+	defaultKey?: boolean;
+	baseUrl: string;
+	/** Schema/Component definitions */
+	components: string[];
+	/** Names of all generated component schemas (keys of schemasMap) */
+	componentNames: string[];
+	/** All apis array */
+	allApis: Api[];
+	/** Apis grouped by tag */
+	tagedApis: ApiDoc[];
+	type: TemplateType;
+	/** Config passed from template configuration */
+	config: Record<string, any>;
+}
+/**
+ * Standardized cache data for VSCode extension
+ * Used for rendering sidebar API tree and quick search
+ */
+export interface CacheData {
+	path: string;
+	/** Server name displayed in sidebar */
+	serverName?: string;
+	/** All APIs as a flat array */
+	apis: Api[];
+}
 /**
  * Per-generator progress event.
  *
@@ -475,10 +464,24 @@ export type GeneratorProgressEvent = {
 	phase: "failed";
 	error: string;
 });
+/** Id and aggregated row counts of a change record persisted by one `generate()` run. */
+export interface RecordedChangeInfo {
+	/** Zero-padded record id, e.g. `"0007"` */
+	id: string;
+	added: number;
+	removed: number;
+	modified: number;
+}
 export interface GenerateApiOptions {
 	projectPath?: string;
 	/** Per-generator lifecycle callback. Receives a discriminated union of {@link GeneratorProgressEvent}. */
 	onProgress?: (event: GeneratorProgressEvent) => void;
+	/**
+	 * Called once when this run persisted a change record, with its id and
+	 * aggregated counts. Never called when the source document did not change,
+	 * so callers can tell "source updated" apart from "nothing to record".
+	 */
+	onChangeRecorded?: (change: RecordedChangeInfo) => void;
 }
 export type SourceStatus = "unchanged" | "changed" | "new" | "error";
 export interface SourceUpdateInfo {
@@ -523,6 +526,21 @@ export interface CheckUpdatesResult {
 export declare function checkUpdates(config: Config, options?: {
 	projectPath?: string;
 }): Promise<CheckUpdatesResult>;
+declare const DEFAULT_CONFIG: {
+	cacheDir: string;
+	/** Overrides cacheDir's parent directory for monorepo unified cache. */
+	cacheRoot: string | undefined;
+	/**
+	 * Maximum number of `changes/<NNNN>.json` records to keep.
+	 * `0` (or any non-positive value) keeps every record.
+	 */
+	changeHistoryLimit: number;
+	/** 用户自定义的产物格式化配置，未设置时使用内置默认值 */
+	format: FormatOptions | undefined;
+	Error: ErrorConstructor;
+	templateData: Map<string, any>;
+};
+export declare function setGlobalConfig(config: Partial<typeof DEFAULT_CONFIG>): void;
 export type TemplatePreset = "alova" | "alovaGlobals" | "axios" | "fetch" | "ky";
 export interface ConfigCreationOptions {
 	projectPath?: string;
@@ -540,6 +558,106 @@ export declare function defineConfig(config: UserConfigFnObject): UserConfigFnOb
 export declare function defineConfig(config: UserConfigFnPromise): UserConfigFnPromise;
 export declare function defineConfig(config: UserConfigFn): UserConfigFn;
 export declare function defineConfig(config: UserConfigExport): UserConfigExport;
+/**
+ * Structural diff of the **source** OpenAPI document.
+ *
+ * The baseline is the document parsed from the `beforeSpecParse` output, i.e.
+ * taken *before* the `specParsed` hooks run: it is the source file as authored,
+ * not the plugin-normalised document that generation consumes. Every difference
+ * is reported as a flat {@link SourceChange} row so a caller (the CLI table, the
+ * editor webview, a CI script) can render it without any further shaping.
+ *
+ * Design notes:
+ * - `$ref`s are deliberately **not** inlined: the record is a source view, so a
+ *   component change is reported once under `#/components/...`, with the
+ *   affected operations attached as `affects` (resolved through the reverse
+ *   `$ref` index, including transitive references) so the impact stays visible
+ *   without duplicating the row.
+ * - Description-ish keys are still recorded (they are source changes) but get
+ *   the `doc` level so callers can de-emphasise them.
+ */
+/** Category of a change row. */
+export type ChangeKind = "api" | "param" | "body" | "resp" | "comp" | "meta";
+/** `+` added, `-` removed, `~` modified. */
+export type ChangeOp = "+" | "-" | "~";
+/** Coarse severity, used for ordering and colour only. */
+export type ChangeLevel = "breaking" | "additive" | "doc";
+/** One flattened source-document change. */
+export interface SourceChange {
+	op: ChangeOp;
+	kind: ChangeKind;
+	/** `GET /pets`, `#/components/schemas/Pet` or `#/info` */
+	target: string;
+	/** Location inside the target, e.g. `query.status.schema.enum` */
+	item?: string;
+	/** Short description, e.g. `createPet -> addPet` or `+"sold"` */
+	detail?: string;
+	level: ChangeLevel;
+	/**
+	 * Operations affected by a `comp` change, rendered as a list next to the
+	 * change (one per line). Always absent for non-component kinds.
+	 */
+	affects?: string[];
+}
+/**
+ * Diff two source documents and return the flattened change rows.
+ *
+ * Returns an empty array when the documents are structurally identical, so the
+ * caller can decide not to write a change record at all.
+ */
+export declare function diffSourceDocument(before: unknown, after: unknown): SourceChange[];
+/** Alias accepted by {@link getChange} — resolves to the newest record. */
+export declare const LATEST_CHANGE_ID = "latest";
+/** One generator's (output's) contribution to a change record. */
+export interface ChangeItem {
+	output: string;
+	serverName?: string;
+	/** URL / file that served the spec this record was built from */
+	resolvedInput?: string;
+	/** Flattened source-document changes (see `diffSourceDocument`) */
+	changes: SourceChange[];
+}
+/** Aggregated row counts of a change record. */
+export interface ChangeCounts {
+	added: number;
+	removed: number;
+	modified: number;
+}
+/** Lightweight list entry returned by {@link listChanges}. */
+export interface ChangeSummary {
+	id: string;
+	createdAt: number;
+	summary: {
+		generators: number;
+	} & ChangeCounts;
+	outputs: string[];
+}
+/** A full change record — one `generate()` run aggregated. */
+export interface Change {
+	/** Record schema; `2` for the source-document view (absent on legacy records) */
+	schemaVersion?: number;
+	id: string;
+	createdAt: number;
+	projectPath: string;
+	generators: ChangeItem[];
+}
+/** Aggregate the change rows of every generator into flat counts. */
+export declare function countChanges(generators: ChangeItem[]): ChangeCounts;
+/**
+ * List recorded changes, newest first.
+ *
+ * Sorted by `createdAt` (id as tie-breaker) rather than by file name: an id is
+ * only chronological as long as `index.json#changeSeq` never resets, and a
+ * reset would otherwise make a brand-new record show up last.
+ */
+export declare function listChanges(projectPath: string): Promise<ChangeSummary[]>;
+/**
+ * Read a single change record.
+ *
+ * @param projectPath absolute path of the project root
+ * @param id `"0007"` or the alias `"latest"` (newest record)
+ */
+export declare function getChange(projectPath: string, id: string): Promise<Change | undefined>;
 /** A newly added or removed API (identified by `method` + `path`). */
 export interface ApiChange {
 	method: string;
@@ -572,45 +690,29 @@ export declare function apiDiffKey(api: Pick<Api, "method" | "path">): string;
  * @param newApis API list parsed from the current spec
  */
 export declare function diffApis(oldApis?: Api[], newApis?: Api[]): ApiDiffResult;
-/** Alias accepted by {@link getChange} — resolves to the newest record. */
-export declare const LATEST_CHANGE_ID = "latest";
-/** One generator's (output's) contribution to a change record. */
-export interface ChangeItem {
-	output: string;
-	serverName?: string;
-	added: ApiChange[];
-	removed: ApiChange[];
-	modified: ApiFieldChange[];
-}
-/** Lightweight list entry returned by {@link listChanges}. */
-export interface ChangeSummary {
-	id: string;
-	createdAt: number;
-	summary: {
-		generators: number;
-		added: number;
-		removed: number;
-		modified: number;
-	};
-	outputs: string[];
-}
-/** A full change record — one `generate()` run aggregated. */
-export interface Change {
-	id: string;
-	createdAt: number;
-	projectPath: string;
-	generators: ChangeItem[];
-}
 /**
- * List recorded changes, newest first.
- */
-export declare function listChanges(projectPath: string): Promise<ChangeSummary[]>;
-/**
- * Read a single change record.
+ * The source document as of the last successful generation.
  *
- * @param id `"0007"` or the alias `"latest"` (newest record)
+ * It is captured **before** the `specParsed` hooks run, so the snapshot is the
+ * source file the user authored (after `beforeSpecParse`), not the document the
+ * plugin pipeline turns it into.
  */
-export declare function getChange(projectPath: string, id: string): Promise<Change | undefined>;
+export interface SourceSnapshot {
+	version: number;
+	/** URL / file that served the spec */
+	resolvedInput?: string;
+	/** Hash of the stable-stringified document */
+	hash: string;
+	updatedAt: number;
+	/** The stable-stringified document, parsed back into a plain value */
+	doc: unknown;
+}
+/** Stable hash of a stable-stringified source document. */
+export declare function sourceDocumentHash(documentText: string): string;
+/** Read one generator's last source snapshot. */
+export declare function readSourceSnapshot(projectRoot: string, outputPath: string): Promise<SourceSnapshot | null>;
+/** Persist one generator's source snapshot. */
+export declare function writeSourceSnapshot(projectRoot: string, outputPath: string, snapshot: SourceSnapshot): Promise<void>;
 /**
  * Generate relevant API information based on the configuration object.
  *
