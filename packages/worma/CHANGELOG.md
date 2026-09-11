@@ -1,5 +1,104 @@
 # worma
 
+## 1.0.0-beta.0
+
+### Major Changes
+
+- [#195](https://github.com/alovajs/devtools/pull/195) [`0ffe097`](https://github.com/alovajs/devtools/commit/0ffe0976c81baf72cab60365e216f0e02880bd12) Thanks [@JOU-amjs](https://github.com/JOU-amjs)! - Redesign the `payloadModifier` plugin around raw OpenAPI schemas.
+
+  The old implementation round-tripped every field through a private spec DSL (`SchemaObject` → `Schema` → `SchemaObject`), which dropped documentation fields such as `description` whenever a handler returned a node that was not the one it received (the `schema.data` unwrap case being the common one). The plugin now works on raw `SchemaObject` values end to end, so comment preservation is a structural guarantee instead of a best-effort lookup.
+
+  Highlights:
+
+  - **New declarative pipeline** for every config: interface filter (`path` / `tag`) → redirect (`unwrap`) → locate (`match`) → patch (`patch`) → custom (`handler`).
+  - **`unwrap`** replaces the scope root with a nested node (e.g. `unwrap: 'data'`), replacing the old `handler: s => s.data` trick.
+  - **`tag` filter** in addition to `path`, combinable with it.
+  - **`patch`** covers add / delete / modify with one recursive syntax: `null` deletes, a string or array is a `{ type }` shorthand, an object without reserved keys is a `properties` shorthand, and an object with reserved keys is a partial patch.
+  - **`handler`** now takes and returns raw OpenAPI schema objects.
+  - `params` / `pathParams` patches can add brand new parameters.
+
+  Breaking changes:
+
+  - The private spec DSL is gone: `Schema`, `SchemaReference`, `SchemaEnum`, `SchemaOneOf` / `AnyOf` / `AllOf` and the `SchemaOptional` (`{ required, type }`) wrapper are replaced by `SchemaDSL` / `FieldValue` / `FieldPatchObject`, which only appear in type value positions.
+  - `handler` receives a raw `SchemaObject` instead of the DSL representation, and returning `undefined` now deletes the target (previously it did the same, but the input shape changed).
+  - `match` no longer recurses into `oneOf` / `anyOf` / `allOf` branches; it only matches the top-level field names of the current node.
+  - Array element extraction via `unwrap` is not supported, use `handler` instead.
+
+  Migration:
+
+  ```diff
+  - { scope: 'response', handler: s => s.data }
+  + { scope: 'response', unwrap: 'data' }
+
+  - { scope, match: 'id', handler: () => 'string' }
+  + { scope, match: 'id', patch: 'string' }
+
+  - { scope, match: 'f', handler: () => undefined }
+  + { scope, match: 'f', patch: null }
+
+  - { scope, match: 'f', handler: () => ({ required: false, type: 'string' }) }
+  + { scope, match: 'f', patch: { type: 'string', required: false } }
+  ```
+
+- [#195](https://github.com/alovajs/devtools/pull/195) [`0ffe097`](https://github.com/alovajs/devtools/commit/0ffe0976c81baf72cab60365e216f0e02880bd12) Thanks [@JOU-amjs](https://github.com/JOU-amjs)! - remove the `fastapi` platform plugin — it was a strict subset of `swagger` (both resolve `<base>/openapi.json` first). Use `swagger('<base-url>')` for FastAPI projects instead
+
+### Minor Changes
+
+- [#195](https://github.com/alovajs/devtools/pull/195) [`0ffe097`](https://github.com/alovajs/devtools/commit/0ffe0976c81baf72cab60365e216f0e02880bd12) Thanks [@JOU-amjs](https://github.com/JOU-amjs)! - Rename the `aiDoc` plugin's exported `parseEnvFile` to `parseAgentFile` (now falls back to `.wormaagent.local` in the project root when no path is given), and replace the `installSkill` config option with `agent`. The `agent` option accepts a `SkillAgent`, an array of `SkillAgent`, or a comma-separated string; omitting it no longer installs the skill.
+
+- [#195](https://github.com/alovajs/devtools/pull/195) [`0ffe097`](https://github.com/alovajs/devtools/commit/0ffe0976c81baf72cab60365e216f0e02880bd12) Thanks [@JOU-amjs](https://github.com/JOU-amjs)! - Export the request/response types of every generated API.
+
+  The alova/axios/fetch/ky templates only exposed the inline, non-exported `XxxExtraConfig` type, so the query-parameter type of an operation could not be referenced from user code (e.g. when annotating the form parameter of alova's `useForm`, which cannot infer it from the handler return value).
+
+  Every generated API now also emits exported named aliases, prefixed with the generated function name and only when the corresponding parameter exists:
+
+  - `xxxPathParams` – path parameters (`pathParams`)
+  - `xxxParams` – query parameters (`params`, `searchParams` for ky)
+  - `xxxData` – request body (`data`, `body` for fetch, `json` for ky)
+  - `xxxResponse` – response data type
+  - `xxxExtraConfig` – the full config accepted by the generated function
+
+  `xxxExtraConfig` now references these aliases instead of repeating the inline types, so the resolved types are unchanged. The `alova` template also exports `xxxResponse` (previously inlined in the method signature) and reuses it there. The `alova-globals` template is untouched.
+
+  ```ts
+  import { useForm } from "alova/client";
+  import { findPetsByStatus } from "./api/services/pet";
+  import type { findPetsByStatusParams } from "./api/services/pet";
+
+  const { send } = useForm((params: findPetsByStatusParams) =>
+    findPetsByStatus({ params }),
+  );
+  ```
+
+- [#195](https://github.com/alovajs/devtools/pull/195) [`0ffe097`](https://github.com/alovajs/devtools/commit/0ffe0976c81baf72cab60365e216f0e02880bd12) Thanks [@JOU-amjs](https://github.com/JOU-amjs)! - add the `postman` platform plugin, which pulls a Postman collection through the collection transformation endpoint and generates apis from the resulting OpenAPI document
+
+- [#195](https://github.com/alovajs/devtools/pull/195) [`0ffe097`](https://github.com/alovajs/devtools/commit/0ffe0976c81baf72cab60365e216f0e02880bd12) Thanks [@JOU-amjs](https://github.com/JOU-amjs)! - Record **source-document** changes instead of api-level diffs.
+
+  `worma diff` used to compare the generated `Api` objects (method + path + a handful of generated type strings), which hid everything that did not survive into a type string: parameter descriptions leaked into unrelated "modified" fields, operation `summary`/`description` were invisible, and `default` / `format` changes could not be seen at all.
+
+  The baseline is now the **source** OpenAPI document — the one parsed from the `beforeSpecParse` output, captured _before_ the `specParsed` hooks mutate it. That makes the record a faithful log of the source file rather than a lossy projection of it:
+
+  - **Parameter level**: additions, removals and value-definition changes (`type`, `format`, `enum`, `default`, `required`, nullable, nested schemas) are reported per parameter, keyed by `in` + `name`; path-item level parameters are folded into the effective parameter set.
+  - **Request body / responses**: schema changes are reported as pointers (`requestBody.application/json.properties.name.type`, `responses.200.…`), plus added/removed status codes and media types.
+  - **Components**: a change under `#/components/…` is repeated once per affected operation (one change per row), resolved through the reverse-`$ref` index including transitive references; unreferenced components use the component ref as target.
+  - **Document globals**: `info`, `servers`, `tags`, … are reported as `meta` rows.
+  - Every row carries a `kind` (`api` / `param` / `body` / `resp` / `comp` / `meta`) and a coarse `level` (`breaking` / `additive` / `doc`), where documentation-only edits are labelled `doc` instead of being silently dropped.
+
+  Other changes:
+
+  - Snapshots live in `<cache>/.worma-cache/snapshots/<output>.json`, one per generator output (never shared between generators, which are not necessarily generated together). The diff runs **after** a successful generation, so a failed run neither computes nor advances the baseline.
+  - The first run of a project only establishes the baseline, so an existing project no longer reports "everything was added".
+  - `worma generate` prints the recorded change id(s) and points at `worma diff latest`; a run that recorded nothing (the sources did not change) closes silently.
+  - `worma diff` renders a single English table (kind / target / item / change / level); the VS Code extension shows the record id in its toast next to `View Changes`, and its "API Changes" webview renders the same columns as a fully bordered grid with the same colour coding (symbol per op, level per severity, everything else default).
+  - `generate()` accepts a new `onChangeRecorded` option and `listChanges` summaries keep their `added` / `removed` / `modified` fields, so existing callers keep working.
+  - Legacy change records are read through the same row model, so an existing `.worma-cache/changes` history stays browsable.
+
+  Note for consumers reading records programmatically: `ChangeItem` now exposes a flat `changes: SourceChange[]` array instead of the `added` / `removed` / `modified` api lists.
+
+### Patch Changes
+
+- [#195](https://github.com/alovajs/devtools/pull/195) [`0ffe097`](https://github.com/alovajs/devtools/commit/0ffe0976c81baf72cab60365e216f0e02880bd12) Thanks [@JOU-amjs](https://github.com/JOU-amjs)! - fix that error adding tag file when regenerate codes
+
 ## 0.4.0
 
 ### Minor Changes
