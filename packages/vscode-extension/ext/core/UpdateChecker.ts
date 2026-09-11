@@ -51,9 +51,18 @@ export default class UpdateChecker {
   private static notified = new Map<string, string>()
   private static lastCheckAt = 0
   private static inFlight = false
+  /** Deferred activation check, kept so it can be cancelled before it fires. */
+  private static activationTimer: ReturnType<typeof setTimeout> | undefined
+  /** Focus listener armed by the live registration, if any. */
+  private static focusListener: Disposable | undefined
 
-  /** Register the focus listener. Returns the disposables to push into `ctx.subscriptions`. */
+  /** Register the auto-update triggers. Returns the disposables to push into `ctx.subscriptions`. */
   static init(): Disposable[] {
+    // `init()` replaces whatever a previous call armed: without this a stale
+    // focus listener or a still-pending deferred check would keep firing even
+    // though the current configuration disabled every trigger.
+    this.unregisterTriggers()
+
     const disposables: Disposable[] = [
       workspace.onDidChangeConfiguration((event) => {
         if (event.affectsConfiguration('worma.autoUpdate')) {
@@ -62,26 +71,50 @@ export default class UpdateChecker {
           if (!cfg.checkOnActivation && !cfg.checkOnWindowFocus) {
             this.clear()
           }
+          // Triggers may have been turned on or off → re-apply the config.
+          this.unregisterTriggers()
+          this.registerTriggers()
         }
       }),
+      { dispose: () => this.unregisterTriggers() },
     ]
 
-    if (getAutoUpdateConfig().checkOnWindowFocus) {
-      disposables.push(
-        window.onDidChangeWindowState((state) => {
-          if (state.focused) {
-            void this.check({ silent: true })
-          }
-        }),
-      )
-    }
-
-    if (getAutoUpdateConfig().checkOnActivation) {
-      // Deferred so activation is not blocked by the initial (silent) check.
-      setTimeout(() => void this.check({ silent: true }), 1500)
-    }
+    this.registerTriggers()
 
     return disposables
+  }
+
+  /** Arm the triggers allowed by the current configuration. */
+  private static registerTriggers() {
+    const cfg = getAutoUpdateConfig()
+
+    if (cfg.checkOnWindowFocus) {
+      this.focusListener = window.onDidChangeWindowState((state) => {
+        if (state.focused) {
+          void this.check({ silent: true })
+        }
+      })
+    }
+
+    if (cfg.checkOnActivation) {
+      // Deferred so activation is not blocked by the initial (silent) check.
+      this.activationTimer = setTimeout(() => {
+        this.activationTimer = undefined
+        void this.check({ silent: true })
+      }, 1500)
+    }
+  }
+
+  /** Cancel every trigger armed by `registerTriggers()`. */
+  private static unregisterTriggers() {
+    if (this.focusListener) {
+      this.focusListener.dispose()
+      this.focusListener = undefined
+    }
+    if (this.activationTimer !== undefined) {
+      clearTimeout(this.activationTimer)
+      this.activationTimer = undefined
+    }
   }
 
   /** Forget every pending notification and clear the status-bar dot. */
