@@ -75,6 +75,27 @@ export interface HomeDict {
     viewAll: string
     items: { name: string, desc: string }[]
   }
+  changeLog: {
+    sectionLabel: string
+    label: string
+    title: string
+    punch: string
+    desc: string
+    what: string
+    why: string
+    docLink: string
+    genCommand: string
+    recordedLine: string
+    hint: string
+    diffCommand: string
+    changeId: string
+    timestamp: string
+    groupTitle: string
+    latest: string
+    columns: { type: string, target: string, change: string, level: string }
+    affectsLabel: string
+    totals: { label: string, added: string, removed: string, modified: string }
+  }
   cta: {
     title: string
     agentInstall: string
@@ -149,7 +170,7 @@ const en: HomeDict = {
     artifacts: { code: 'Code', types: 'Types', docs: 'Docs', skill: 'AI Skill' },
   },
   ideEditor: {
-    sectionLabel: '05 // INTEGRATION',
+    sectionLabel: '07 // INTEGRATION',
     title: 'Deep IDE Integration',
     desc: 'Get a full overview of your APIs right inside your editor. Strong type inference and hover docs make every API call unambiguous.',
     docLink: 'View Docs',
@@ -198,9 +219,34 @@ const en: HomeDict = {
       { name: 'aiDoc', desc: 'AI-generated docs and prompts.' },
       { name: 'rename', desc: 'Smart renaming for APIs, fields, and params.' },
       { name: 'apiFilter', desc: 'Filter APIs by tag and generate on demand.' },
+      { name: 'swagger', desc: 'Auto-assemble OpenAPI URLs from Swagger UI.' },
+      { name: 'knife4j', desc: 'Auto-assemble OpenAPI URLs from Knife4j.' },
+      { name: 'yapi', desc: 'Import projects from YApi (cookie required).' },
+      { name: 'postman', desc: 'Import collections from Postman (API Key required).' },
       { name: 'apifox', desc: 'Auto-import projects from Apifox' },
       { name: 'payloadModifier', desc: 'Add, remove, and modify API parameter types' },
     ],
+  },
+  changeLog: {
+    sectionLabel: 'CHANGE_LOG_V1',
+    label: '06 // CHANGE_TRACKING',
+    title: 'Change Records',
+    punch: 'See what changed, the moment you generate.',
+    desc: 'Every run diffs your OpenAPI source and lists what was added, removed or modified — down to operations, parameters and schema fields — so you can judge the impact at a glance and keep frontend code in step with the API.',
+    what: 'Diffed on every generate, listed line by line',
+    why: 'Impact up front, clients always in sync',
+    docLink: 'View change record docs',
+    genCommand: '$ worma gen',
+    recordedLine: '✔ Changes recorded: 0007 (+1/-1/~3)',
+    hint: 'Run `worma diff latest` to view the details.',
+    diffCommand: '$ worma diff latest',
+    changeId: 'Change 0007',
+    timestamp: '2026-09-11 14:32:08',
+    groupTitle: 'src/api  (petstore)',
+    latest: 'latest',
+    columns: { type: 'TYPE', target: 'TARGET', change: 'CHANGE', level: 'LEVEL' },
+    affectsLabel: 'affects',
+    totals: { label: 'Total', added: 'added', removed: 'removed', modified: 'modified' },
   },
   cta: {
     title: 'Get Started',
@@ -275,7 +321,7 @@ const zh: HomeDict = {
     artifacts: { code: '代码', types: '类型', docs: '文档', skill: 'AI Skill' },
   },
   ideEditor: {
-    sectionLabel: '05 // INTEGRATION',
+    sectionLabel: '07 // INTEGRATION',
     title: 'IDE 级深度集成',
     desc: '在你的开发环境中直接获得上帝视角。强大的类型推导与悬浮文档，让 API 调用不再盲目。',
     docLink: '前往文档中心',
@@ -324,9 +370,34 @@ const zh: HomeDict = {
       { name: 'aiDoc', desc: 'AI 提供文档和提示词。' },
       { name: 'rename', desc: '为 API、字段和参数提供最佳重命名。' },
       { name: 'apiFilter', desc: '按标签筛选 API，按需生成。' },
+      { name: 'swagger', desc: '从 Swagger UI 自动拼装 OpenAPI 地址。' },
+      { name: 'knife4j', desc: '从 Knife4j 服务自动拼装 OpenAPI 地址。' },
+      { name: 'yapi', desc: '导入 YApi 项目（需登录 cookie）。' },
+      { name: 'postman', desc: '导入 Postman 集合（需 API Key）。' },
       { name: 'apifox', desc: '自动导入 Apifox 中的项目' },
       { name: 'payloadModifier', desc: '增加、删除和修改 API 的参数类型' },
     ],
+  },
+  changeLog: {
+    sectionLabel: 'CHANGE_LOG_V1',
+    label: '06 // CHANGE_TRACKING',
+    title: '更新记录',
+    punch: '接口变了什么，生成时就知道。',
+    desc: '每次生成自动比对 OpenAPI，逐条列出新增、删除与修改的接口、参数和字段；变更影响一屏看清，前端代码与接口不再脱节。',
+    what: '生成即比对，变更逐条列清',
+    why: '影响早知道，同步不掉队',
+    docLink: '查看变更记录文档',
+    genCommand: '$ worma gen',
+    recordedLine: '✔ Changes recorded: 0007 (+1/-1/~3)',
+    hint: 'Run `worma diff latest` to view the details.',
+    diffCommand: '$ worma diff latest',
+    changeId: 'Change 0007',
+    timestamp: '2026-09-11 14:32:08',
+    groupTitle: 'src/api  (petstore)',
+    latest: 'latest',
+    columns: { type: '类型', target: '目标', change: '变更', level: '级别' },
+    affectsLabel: 'affects',
+    totals: { label: '合计', added: '新增', removed: '删除', modified: '修改' },
   },
   cta: {
     title: '「开始使用」',

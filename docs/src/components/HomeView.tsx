@@ -1,4 +1,5 @@
 import type { Locale } from '@/lib/i18n'
+import ChangeLog from '@/components/home/ChangeLog'
 import Cta from '@/components/home/Cta'
 import Features from '@/components/home/Features'
 import Footer from '@/components/home/Footer'
@@ -20,9 +21,10 @@ export function HomeView({ locale }: { locale: Locale }) {
         <Hero lang={locale} />
         <Features lang={locale} />
         <ProcessFlow lang={locale} />
-        <IdeEditor lang={locale} />
         <Matrix lang={locale} />
         <Plugins lang={locale} />
+        <ChangeLog lang={locale} />
+        <IdeEditor lang={locale} />
         <Cta lang={locale} />
       </main>
       <Footer lang={locale} />

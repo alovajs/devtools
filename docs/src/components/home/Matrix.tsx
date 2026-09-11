@@ -27,7 +27,7 @@ export default function Matrix({ lang }: { lang: Locale }) {
       <SectionLabel>ADAPTATION_MATRIX_V1</SectionLabel>
       <div className="grid grid-cols-1 lg:grid-cols-12">
         <div className="lg:col-span-4 p-8 lg:p-12 lg:tech-border-r flex flex-col justify-center relative">
-          <SectionHeader label="06 // COMPATIBILITY" title={t.matrix.title} />
+          <SectionHeader label="05 // COMPATIBILITY" title={t.matrix.title} />
           <p className="font-body-md text-sm text-on-surface-variant leading-relaxed mt-6">
             {t.matrix.desc}
           </p>
