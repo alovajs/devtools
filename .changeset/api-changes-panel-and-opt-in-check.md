@@ -1,5 +1,5 @@
 ---
-"misolaxi3-vscode": minor
+"worma-vscode": minor
 ---
 
 Rebuild the "API Changes" panel on the shared Vue webview and make update detection opt-in.

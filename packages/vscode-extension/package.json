@@ -1,7 +1,7 @@
 {
-  "publisher": "misolaxi3",
-  "name": "misolaxi3-vscode",
-  "displayName": "misolaxi3",
+  "publisher": "worma",
+  "name": "worma-vscode",
+  "displayName": "worma",
   "version": "0.6.0",
   "private": true,
   "packageManager": "pnpm@10.13.1",
@@ -9,13 +9,13 @@
   "author": "czhlin",
   "license": "MIT",
   "funding": "https://github.com/sponsors/czhlin",
-  "homepage": "https://github.com/alovajs/misolaxi3#readme",
+  "homepage": "https://github.com/alovajs/devtools#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/alovajs/misolaxi3.git"
+    "url": "https://github.com/alovajs/devtools.git"
   },
   "bugs": {
-    "url": "https://github.com/alovajs/misolaxi3/issues"
+    "url": "https://github.com/alovajs/devtools/issues"
   },
   "sponsor": {
     "url": "https://github.com/sponsors/czhlin"
