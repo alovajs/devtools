@@ -30,7 +30,8 @@ export default class Setup {
 
     if (getWorma()) {
       await ApiGenerate.onlyReadConfig()
-      // Requirement A: begin background update detection (silent).
+      // Update detection is opt-in (`worma.checkOnWindowFocus`, off by default)
+      // and only listens for window focus — no check runs at activation.
       UpdateChecker.init().forEach(d => ctx.subscriptions.push(d))
     }
     Log.info('🚀 Setup end')

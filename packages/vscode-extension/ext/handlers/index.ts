@@ -3,13 +3,14 @@ import type { ExtensionContext, TextDocument } from 'vscode'
 import { asBehaviorSubject, asNotify, asSubject } from '@jsonrpc-rx/server'
 import { commands, env, window, workspace } from 'vscode'
 import { getApiDocs } from '@/functions/getApis'
+import worma from '@/helper/worma'
 import { messageService } from '@/utils/message'
 import { toPromise } from '@/utils/to-promise'
 import { getSyntaxHighlightCss } from '@/webview/theme-colors'
 
 export type HandlersType = ReturnType<typeof getHandlers>
 export type { DataType, MessageType } from '@/utils/message'
-export type { Api, ApiDoc, CacheData } from 'wormajs'
+export type { Api, ApiDoc, CacheData, Change, ChangeSummary } from 'wormajs'
 export type ApiProject = Awaited<ReturnType<typeof getApiDocs>>[number]
 
 export function getHandlers(context: ExtensionContext) {
@@ -73,5 +74,21 @@ export function getHandlers(context: ExtensionContext) {
       const disposable = workspace.onDidOpenTextDocument(file => next(file))
       return disposable.dispose.bind(disposable)
     }),
+
+    listChanges: (projectPath: string) => worma.listChanges(projectPath),
+    getChange: (projectPath: string, id: string) => worma.getChange(projectPath, id),
+    removeChange: async (projectPath: string, id: string) => {
+      const picked = await window.showWarningMessage(
+        `Delete change record ${id}?`,
+        { modal: true, detail: 'The record is removed from the change history. This cannot be undone.' },
+        'Delete',
+      )
+      if (picked !== 'Delete')
+        return undefined
+      const removedId = await worma.removeChange(projectPath, id)
+      if (!removedId)
+        void window.showWarningMessage(`Change record ${id} was not found — it may have been deleted already.`)
+      return removedId
+    },
   }
 }

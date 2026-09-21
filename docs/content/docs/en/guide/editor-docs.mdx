@@ -161,30 +161,27 @@ const user = await getUserInfo({ pathParams: { id: "123" } });
 
 The extension supports the following VSCode settings (all configured in VSCode's `settings.json` — the **User** or **Workspace** settings in the Settings panel; the workspace file is `.vscode/settings.json` at the project root):
 
-### Auto-update APIs
+### Auto-detect API updates (opt-in)
 
-After **extension activation** and on **window refocus**, the extension silently checks whether your configured OpenAPI source changed; it only prompts when a change is detected, and **regenerates only after your confirmation** — it never rewrites code silently.
+Once enabled, the extension checks on **window refocus** whether your configured OpenAPI source changed — and only on window refocus. It prompts only when a change is detected, and **regenerates only after your confirmation** — it never rewrites code silently.
 
-Control when auto-detection runs with the `worma.autoUpdate` setting (all optional, on by default):
+The feature is **off by default**, and it only runs when the current project has `wormajs` installed:
 
 ```json
 // .vscode/settings.json
 {
-  "worma.autoUpdate": {
-    "checkOnActivation": true,
-    "checkOnWindowFocus": true,
-    "minInterval": 300000
-  }
+  "worma.checkOnWindowFocus": true,
+  "worma.minInterval": 300000
 }
 ```
 
 | Setting | Type | Default | Description |
 | ------- | ---- | ------- | ----------- |
-| `checkOnActivation` | `boolean` | `true` | Run a silent check ~1.5s after activation |
-| `checkOnWindowFocus` | `boolean` | `true` | Check each time the VS Code window regains focus |
-| `minInterval` | `number` | `300000` | Minimum interval between two checks (ms), default 5 minutes |
+| `worma.checkOnWindowFocus` | `boolean` | `false` | Check each time the VS Code window regains focus |
+| `worma.minInterval` | `number` | `300000` | Minimum interval between two checks (ms), default 5 minutes |
 
-- Both switches default to `true`; if both are `false`, no auto-detection runs.
+- The extension **never checks on activation**.
+- It stays idle when `wormajs` is not found in the project, even if `checkOnWindowFocus` is `true`.
 
 ### Review API changes
 
@@ -196,6 +193,8 @@ How to view:
 - Command palette → `Worma: Review API Changes` (runs `worma.openChanges`, defaults to the latest record)
 
 The Webview groups `added / removed / modified` and specific changed fields by generator (output), supports search by tag / field name, and clicking an entry jumps to the generated source file.
+
+**Deleting a record**: click `Delete` in the toolbar and confirm with `Delete` in the dialog — the currently selected record is removed (equivalent to `worma diff --remove <id>`) and the page switches to the newest remaining record. Dismissing the dialog changes nothing. If the record was already deleted, a notice tells you it no longer exists.
 
 > When `added / removed / modified` are all 0 (no API change at all), no record is written and no prompt shows.
 

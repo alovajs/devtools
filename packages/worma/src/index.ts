@@ -3,7 +3,7 @@ export type { CheckUpdatesResult, SourceStatus, SourceUpdateInfo } from './check
 export { setGlobalConfig } from './config'
 export { default as createConfig } from './createConfig'
 export { defineConfig } from './defineConfig'
-export { countChanges, getChange, LATEST_CHANGE_ID, listChanges } from './functions/changeReport'
+export { countChanges, getChange, LATEST_CHANGE_ID, listChanges, removeChange } from './functions/changeReport'
 export type { Change, ChangeCounts, ChangeItem, ChangeSummary } from './functions/changeReport'
 export { apiDiffKey, diffApis } from './functions/diffApis'
 export type { ApiChange, ApiDiffResult, ApiFieldChange } from './functions/diffApis'

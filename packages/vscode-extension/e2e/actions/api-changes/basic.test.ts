@@ -5,6 +5,7 @@ import {
   Commands,
   executeCommand,
   expect,
+  getHandlers,
   getUpdateCount,
   Global,
   MockWorma,
@@ -59,8 +60,77 @@ function mockWorma(name: string) {
   return sinon.stub(MockWorma as any, name)
 }
 
-setupTest('api-changes (requirement B)', () => {
-  it('opens the API Changes webview and renders the latest record', async () => {
+setupTest('api-changes handlers (requirement B)', () => {
+  /** Handlers used by the Vue page; they do not depend on `context`. */
+  function handlers() {
+    return getHandlers({ subscriptions: [] } as any)
+  }
+
+  it('listChanges returns the change summaries', async () => {
+    const createdAt = Date.now()
+    mockWorma('listChanges').returns(Promise.resolve([makeSummary('0001', createdAt)]))
+
+    const result = await handlers().listChanges(PROJECT)
+    expect(result.length).to.equal(1)
+    expect(result[0].id).to.equal('0001')
+  })
+
+  it('getChange returns the selected record', async () => {
+    const createdAt = Date.now()
+    mockWorma('listChanges').returns(Promise.resolve([makeSummary('0001', createdAt)]))
+    mockWorma('getChange').returns(Promise.resolve(makeRecord('0001', createdAt)))
+
+    const record = await handlers().getChange(PROJECT, '0001')
+    expect(record?.id).to.equal('0001')
+    expect(record?.generators[0].changes[0].target).to.equal('GET /pets')
+  })
+
+  it('getChange returns undefined for an unknown record', async () => {
+    mockWorma('getChange').returns(Promise.resolve(undefined))
+    const record = await handlers().getChange(PROJECT, 'nope')
+    expect(record).to.equal(undefined)
+  })
+
+  it('removeChange deletes the confirmed record and returns its id', async () => {
+    const removeChange = mockWorma('removeChange').returns(Promise.resolve('0001'))
+    const confirm = sinon.stub(window, 'showWarningMessage').resolves('Delete' as any)
+
+    const removed = await handlers().removeChange(PROJECT, '0001')
+
+    expect(confirm.calledOnce).to.equals(true)
+    expect(String(confirm.firstCall.args[0])).to.contain('0001')
+    expect(removeChange.calledWith(PROJECT, '0001')).to.equals(true)
+    expect(removed).to.equal('0001')
+    confirm.restore()
+  })
+
+  it('removeChange keeps the record when the confirmation is dismissed', async () => {
+    const removeChange = mockWorma('removeChange').returns(Promise.resolve('0001'))
+    const confirm = sinon.stub(window, 'showWarningMessage').resolves(undefined)
+
+    const removed = await handlers().removeChange(PROJECT, '0001')
+
+    expect(removeChange.called).to.equals(false)
+    expect(removed).to.equal(undefined)
+    confirm.restore()
+  })
+
+  it('removeChange reports a record that was already deleted', async () => {
+    mockWorma('removeChange').returns(Promise.resolve(undefined))
+    const confirm = sinon.stub(window, 'showWarningMessage').resolves('Delete' as any)
+
+    const removed = await handlers().removeChange(PROJECT, '0001')
+
+    expect(removed).to.equal(undefined)
+    // The missing-record warning is surfaced by the handler.
+    const warned = confirm.getCalls().some(call => String(call.args[0]).includes('was not found'))
+    expect(warned).to.equals(true)
+    confirm.restore()
+  })
+})
+
+setupTest('api-changes webview shell (requirement B)', () => {
+  it('opens the API Changes webview and injects the Vue SPA', async () => {
     const createdAt = Date.now()
     mockWorma('listChanges').returns(Promise.resolve([makeSummary('0001', createdAt)]))
     mockWorma('getChange').returns(Promise.resolve(makeRecord('0001', createdAt)))
@@ -69,37 +139,22 @@ setupTest('api-changes (requirement B)', () => {
 
     const panel = ChangesView.current
     expect(panel).to.not.equals(undefined)
-    // html is a getter on the real Webview; fall back to the property if needed
+    // The host now serves the built SPA shell (the data is fetched by the page
+    // over RPC), so the html no longer embeds the record text.
     const html: string = (panel as any).webview?.html ?? (panel as any).html
-    expect(html).to.contain('0001')
-    expect(html).to.contain('GET /pets')
-    expect(html).to.contain('GET /legacy')
-    expect(html).to.contain('query.status.required')
-    expect(html).to.contain('Level')
-    // a component change keeps the component as its target and lists the APIs
-    expect(html).to.contain('#/components/schemas/Pet')
-    expect(html).to.contain('properties.status.enum')
-    expect(html).to.contain('affects')
-    // full grid borders, and the severity colour lives on the level cell only
-    expect(html).to.contain('border-collapse')
-    expect(html).to.contain('.level.breaking')
-    expect(html).to.contain('level breaking')
-    expect(html).to.not.contain('.row.add td')
-    // column headers, and no divider line between the group title and the table
-    expect(html).to.contain('<th>Type</th>')
-    expect(html).to.not.contain('border-bottom')
+    expect(html).to.contain('id="app"')
   })
 
-  it('renders a specific change record by id', async () => {
-    const createdAt = Date.now()
-    mockWorma('listChanges').returns(Promise.resolve([makeSummary('0001', createdAt)]))
-    mockWorma('getChange').returns(Promise.resolve(makeRecord('0001', createdAt)))
+  it('opens with an empty state when there are no records', async () => {
+    mockWorma('listChanges').returns(Promise.resolve([]))
+    mockWorma('getChange').returns(Promise.resolve(undefined))
 
-    await executeCommand(Commands.open_changes, '0001', PROJECT)
+    await executeCommand(Commands.open_changes, 'latest', PROJECT)
 
     const panel = ChangesView.current
+    expect(panel).to.not.equals(undefined)
     const html: string = (panel as any).webview?.html ?? (panel as any).html
-    expect(html).to.contain('0001')
+    expect(html).to.contain('id="app"')
   })
 })
 
@@ -127,10 +182,10 @@ setupTest('generate → View Changes toast (requirement B)', () => {
 
 setupTest('update detection dot (requirement A)', () => {
   it('lights the status-bar dot when a source changed', async () => {
-    // `init()` already ran one silent check on activation, which filled the
-    // throttle window (`minInterval` defaults to 5 min). Force this one so the
-    // assertion does not depend on wall-clock timing; throttling itself is
-    // covered by the debounce test below.
+    // Automatic detection is opt-in and off by default, and the throttle window
+    // (`minInterval`, 5 min by default) would otherwise swallow this check.
+    // Force it so the assertion does not depend on wall-clock timing;
+    // throttling itself is covered by the debounce test below.
     UpdateChecker.clear()
     ;(UpdateChecker as any).inFlight = false
 
@@ -176,18 +231,6 @@ setupTest('edge cases (requirement A/B)', () => {
     expect(offered).to.equals(false)
   })
 
-  it('openChanges renders an empty state when there are no records', async () => {
-    mockWorma('listChanges').returns(Promise.resolve([]))
-    mockWorma('getChange').returns(Promise.resolve(undefined))
-
-    await executeCommand(Commands.open_changes, 'latest', PROJECT)
-
-    const panel = ChangesView.current
-    expect(panel).to.not.equals(undefined)
-    const html: string = (panel as any).webview?.html ?? (panel as any).html
-    expect(html).to.contain('No change records yet')
-  })
-
   it('debounces a rapid repeat check (forced then unforced)', async () => {
     sinon.stub(Global as any, 'getConfigs').returns([[PROJECT, { generator: [] } as any]])
     mockWorma('checkUpdates').returns(Promise.resolve({
@@ -205,16 +248,15 @@ setupTest('edge cases (requirement A/B)', () => {
     expect(second).to.deep.equal([])
   })
 
-  it('does not run any check when every autoUpdate trigger is disabled', async () => {
+  it('does not run any check when the focus trigger is disabled', async () => {
     UpdateChecker.clear()
     ;(UpdateChecker as any).inFlight = false
 
-    // Both triggers off: `init()` must neither register the focus listener nor
-    // schedule the deferred activation check.
+    // Trigger off: `init()` must not register the focus listener at all.
     const onFocusStub = sinon.stub(window, 'onDidChangeWindowState').returns({ dispose() {} } as any)
     const cfgStub = sinon.stub(workspace, 'getConfiguration').returns({
       get: (key: string, def?: any) => {
-        if (key === 'checkOnActivation' || key === 'checkOnWindowFocus')
+        if (key === 'checkOnWindowFocus')
           return false
         if (key === 'minInterval')
           return 0
@@ -229,8 +271,8 @@ setupTest('edge cases (requirement A/B)', () => {
     const prompt = sinon.stub(window, 'showInformationMessage').resolves(undefined)
 
     const disposables = UpdateChecker.init() as { dispose: () => void }[]
-    // Long enough to outlive the deferred (~1500ms) activation check.
-    await timeout(1800)
+    // Give any (unexpected) deferred work a chance to run before asserting.
+    await timeout(300)
 
     expect(onFocusStub.called).to.equals(false)
     expect(checkUpdates.called).to.equals(false)
@@ -256,13 +298,11 @@ setupTest('update detection triggers (requirement A)', () => {
       focusHandlers.push(cb)
       return { dispose() {} } as any
     })
-    // Focus-driven check only: disable the activation timer and the debounce interval.
+    // Focus-driven check only: enable the trigger and disable the debounce interval.
     const cfgStub = sinon.stub(workspace, 'getConfiguration').returns({
       get: (key: string, def?: any) => {
         if (key === 'minInterval')
           return 0
-        if (key === 'checkOnActivation')
-          return false
         if (key === 'checkOnWindowFocus')
           return true
         return def
@@ -294,26 +334,24 @@ setupTest('update detection triggers (requirement A)', () => {
     prompt.restore()
   })
 
-  it('runs a silent check shortly after activation', async () => {
+  it('never runs a check at activation, even with the trigger enabled', async () => {
     UpdateChecker.clear()
     ;(UpdateChecker as any).inFlight = false
 
-    // Activation-driven check only: disable the focus listener and the debounce interval.
+    // Trigger on, but no focus event: arming the listener must not start a check.
     const onFocusStub = sinon.stub(window, 'onDidChangeWindowState').returns({ dispose() {} } as any)
     const cfgStub = sinon.stub(workspace, 'getConfiguration').returns({
       get: (key: string, def?: any) => {
         if (key === 'minInterval')
           return 0
-        if (key === 'checkOnActivation')
-          return true
         if (key === 'checkOnWindowFocus')
-          return false
+          return true
         return def
       },
     } as any)
 
     sinon.stub(Global as any, 'getConfigs').returns([[PROJECT, { generator: [] } as any]])
-    mockWorma('checkUpdates').returns(Promise.resolve({
+    const checkUpdates = mockWorma('checkUpdates').returns(Promise.resolve({
       projectPath: PROJECT,
       updates: [{ status: 'changed', output: 'src/api', resolvedInput: 'api.json', hash: 'abc' }],
       hasGenerationBaseline: false,
@@ -321,10 +359,12 @@ setupTest('update detection triggers (requirement A)', () => {
     const prompt = sinon.stub(window, 'showInformationMessage').resolves(undefined)
 
     const disposables = UpdateChecker.init() as { dispose: () => void }[]
-    // The activation check is deferred ~1500ms; wait it out.
+    // Long enough to outlive the removed ~1500ms activation timer.
     await timeout(1800)
 
-    expect(getUpdateCount()).to.be.greaterThan(0)
+    expect(checkUpdates.called).to.equals(false)
+    expect(prompt.called).to.equals(false)
+    expect(getUpdateCount()).to.equals(0)
 
     UpdateChecker.clear()
     disposables.forEach(d => d.dispose())

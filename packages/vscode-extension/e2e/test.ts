@@ -18,3 +18,4 @@ export const Log = extension.Log
 export const ChangesView = extension.ChangesView
 export const UpdateChecker = extension.UpdateChecker
 export const getUpdateCount = extension.getUpdateCount
+export const getHandlers = extension.getHandlers

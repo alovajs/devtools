@@ -250,10 +250,10 @@ function createTable(head: string[]): any {
   })
 }
 
-/** `worma diff` / `worma diff <id>` / `worma diff latest` */
+/** `worma diff` / `worma diff <id>` / `worma diff latest` / `worma diff --remove <id>` */
 export async function actionDiff(
   id: string | undefined,
-  { list, project }: { list?: boolean, project?: string },
+  { list, remove, project }: { list?: boolean, remove?: string | boolean, project?: string },
 ): Promise<void> {
   const projectPath = project
     ? (path.isAbsolute(project) ? project : path.resolve(process.cwd(), project))
@@ -263,7 +263,30 @@ export async function actionDiff(
   // sub-packages share one unified cache root.
   setGlobalConfig({ cacheRoot: process.cwd() })
 
-  const { countChanges, getChange, listChanges } = await import('@/functions/changeReport')
+  const { countChanges, getChange, listChanges, removeChange } = await import('@/functions/changeReport')
+
+  // `worma diff --remove 0007` (also `worma diff 0007 --remove` / `--remove latest`)
+  if (remove) {
+    // `--remove` accepts the id itself; fall back to the positional argument so
+    // both `--remove 0007` and `0007 --remove` work.
+    const targetId = typeof remove === 'string' ? remove : id
+    if (!targetId) {
+      console.log(`\n  ${theme.warning('?')} Nothing to remove: pass a change id, e.g. ${theme.label('worma diff --remove 0007')}.\n`)
+      process.exitCode = 1
+      return
+    }
+
+    const removedId = await removeChange(projectPath, targetId)
+    if (!removedId) {
+      console.log(`\n  ${theme.warning('?')} No change record found for "${targetId}".\n`)
+      process.exitCode = 1
+      return
+    }
+
+    console.log(`\n  ${theme.success('✔')} Removed change record ${theme.label(removedId)}.`)
+    console.log(`  ${theme.dim('Run `worma diff` to list the remaining records.')}\n`)
+    return
+  }
 
   if (!id || list) {
     const summaries = await listChanges(projectPath)

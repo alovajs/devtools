@@ -71,6 +71,19 @@ jobs:
       - name: Create Release Pull Request or Publish
         id: changesets
         uses: changesets/action@v1.4.7
+        # ⚠ TODO(RESTORE-REQUIRED)：VS Code 扩展（VS Code Marketplace）发布链路暂不可用，
+        # 这里「临时」去掉 `vsce publish`，只保留 Open VSX（ovsx）发布 —— 后续必须加回来！
+        #
+        # `pnpm run release`（scripts/release.ts）会为 vscode-extension 触发
+        # `ovsx publish`（Open VSX）与 `vsce publish`（VS Code Marketplace）。
+        #
+        # 【当前生效，已删除 vsce】packages/vscode-extension/package.json：
+        #   "release:pre": "ovsx publish --no-dependencies --pre-release",
+        #   "release": "ovsx publish --no-dependencies"
+        #
+        # 【TODO 恢复成下面这版，把 `&& vsce publish ...` 追加回去即可】：
+        #   "release:pre": "ovsx publish --no-dependencies --pre-release && vsce publish --no-dependencies --pre-release",
+        #   "release": "ovsx publish --no-dependencies && vsce publish --no-dependencies"
         with:
           version: pnpm run changeset:version
           publish: pnpm run release
