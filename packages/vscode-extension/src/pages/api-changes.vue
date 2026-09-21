@@ -104,15 +104,21 @@ function formatSummary(c: Change): string {
 }
 
 async function loadSummaries() {
-  summaries.value = (await handlers.listChanges(projectPath)) as ChangeSummary[]
+  // Spread into a fresh array so the `recordOptions` computed always sees a new
+  // reference and re-evaluates, even if the handler returns the same (mutated)
+  // array instance across calls (e.g. in tests or cached responses).
+  summaries.value = [...(await handlers.listChanges(projectPath))] as ChangeSummary[]
 }
 async function loadChange(id: string) {
   loading.value = true
   try {
     change.value = (await handlers.getChange(projectPath, id)) as Change | undefined
     // When the host asked for "latest", pin the dropdown to the concrete record
-    // so that subsequent deletions use a real id instead of the alias.
-    if (id === 'latest' && change.value?.id)
+    // so that subsequent deletions use a real id instead of the alias. Only do
+    // this while there are still records to show — when falling back to "latest"
+    // after the last record was deleted, keep the alias so the UI shows the
+    // empty state instead of re-pinning to a (stale) concrete id.
+    if (id === 'latest' && change.value?.id && summaries.value.length > 0)
       selectedId.value = change.value.id
   }
   finally {
