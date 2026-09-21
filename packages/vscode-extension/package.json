@@ -1,8 +1,8 @@
 {
   "publisher": "worma",
   "name": "worma-vscode",
-  "displayName": "Worma",
-  "version": "0.6.0-beta.0",
+  "displayName": "worma",
+  "version": "0.6.0",
   "private": true,
   "packageManager": "pnpm@10.13.1",
   "description": "Generate and search APIs without API documentation any more",
@@ -48,20 +48,15 @@
           "default": true,
           "markdownDescription": "Whether to show the `📖 View Api` CodeLens above matched API function calls. Set to `false` to hide it."
         },
-        "worma.autoUpdate.checkOnActivation": {
+        "worma.checkOnWindowFocus": {
           "type": "boolean",
-          "default": true,
-          "markdownDescription": "Run one silent update check shortly after the extension activates."
+          "default": false,
+          "markdownDescription": "Check whether the configured API sources changed whenever the VS Code window regains focus. Disabled by default — nothing is checked until you turn this on. Detection is read-only: APIs are only regenerated after you confirm."
         },
-        "worma.autoUpdate.checkOnWindowFocus": {
-          "type": "boolean",
-          "default": true,
-          "markdownDescription": "Re-check for source updates whenever the VS Code window regains focus."
-        },
-        "worma.autoUpdate.minInterval": {
+        "worma.minInterval": {
           "type": "number",
           "default": 300000,
-          "markdownDescription": "Minimum interval in milliseconds between two automatic update checks."
+          "markdownDescription": "Minimum interval in milliseconds between two automatic update checks (default 300000 = 5 minutes)."
         }
       }
     },
@@ -188,8 +183,8 @@
     "test:unit": "vitest",
     "typecheck": "vue-tsc --noEmit",
     "sizecheck": "npx vite-bundle-visualizer",
-    "release:pre": "ovsx publish --no-dependencies --pre-release && vsce publish --no-dependencies --pre-release",
-    "release": "ovsx publish --no-dependencies && vsce publish --no-dependencies"
+    "release:pre": "ovsx publish --no-dependencies --pre-release",
+    "release": "ovsx publish --no-dependencies"
   },
   "dependencies": {
     "@unhead/vue": "catalog:frontend",

@@ -13,6 +13,7 @@ This plugin auto-generates API knowledge docs that follow the Skills spec, so co
 - Support custom template paths and output directories
 - Support auto-installing the Skill into mainstream coding agents (Cursor, Claude Code, Windsurf, etc.)
 - Support specifying one or more coding agents via `agent`, installing to multiple agents in one generation (auto-deduplicated)
+- Drop the generated copy under the output directory once the install succeeded, so the Skill is never stored twice
 
 ## Basic usage
 
@@ -142,3 +143,5 @@ worma gen
 ```
 
 worma installs the generated Skill into the corresponding agents per the config above. For the list of supported coding agents, see the [skills docs](https://www.npmjs.com/package/skills#supported-agents).
+
+> **The source directory is cleaned up after a successful install**: `skills add` copies the whole `aidocs` directory into the agent's own skills folder, so once *every* target agent installed successfully worma deletes the `aidocs` directory under the output directory (e.g. `src/api/aidocs`) to avoid storing the same Skill twice. If the install fails, or no `agent` is configured / resolves to nothing, the source directory is kept as is.

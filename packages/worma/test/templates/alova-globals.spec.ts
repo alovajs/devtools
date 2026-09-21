@@ -4,7 +4,7 @@ import { resolve } from 'node:path'
 import { vol } from 'memfs'
 import { createConfig, generate } from '@/index'
 import { alovaGlobals, swagger } from '@/plugins'
-import { createStrReg } from '../util'
+import { createStrReg, getSalt } from '../util'
 
 vi.mock('node:fs')
 vi.mock('node:fs/promises')
@@ -14,7 +14,6 @@ beforeEach(() => {
   vol.mkdirSync(process.cwd(), { recursive: true })
 })
 
-const getSalt = () => `_${Math.random().toString(36).slice(2)}`
 describe('generate API', () => {
   it('should return false when generating from a file that does not exist (runtime error caught)', async () => {
     const result = await generate({
@@ -51,7 +50,7 @@ describe('generate API', () => {
 
     const outputDir2 = resolve(__dirname, './mock_output/swagger_2')
     vol.mkdirSync(outputDir2, { recursive: true })
-    await generate({
+    const results2 = await generate({
       generator: [
         {
           plugins: [alovaGlobals()],
@@ -61,6 +60,7 @@ describe('generate API', () => {
         },
       ],
     })
+    expect(results2).toStrictEqual([true])
     expect(await fs.readFile(resolve(outputDir2, 'apiDefinitions.ts'), 'utf-8')).toMatchSnapshot()
     expect(await fs.readFile(resolve(outputDir2, 'index.ts'), 'utf-8')).toMatchSnapshot()
     expect(await fs.readFile(resolve(outputDir2, 'createApis.ts'), 'utf-8')).toMatchSnapshot()
@@ -68,7 +68,7 @@ describe('generate API', () => {
 
     const outputDir3 = resolve(__dirname, './mock_output/openapi_300')
     vol.mkdirSync(outputDir3, { recursive: true })
-    await generate({
+    const results3 = await generate({
       generator: [
         {
           plugins: [alovaGlobals()],
@@ -78,6 +78,7 @@ describe('generate API', () => {
         },
       ],
     })
+    expect(results3).toStrictEqual([true])
     expect(await fs.readFile(resolve(outputDir3, 'apiDefinitions.ts'), 'utf-8')).toMatchSnapshot()
     expect(await fs.readFile(resolve(outputDir3, 'index.ts'), 'utf-8')).toMatchSnapshot()
     expect(await fs.readFile(resolve(outputDir3, 'createApis.ts'), 'utf-8')).toMatchSnapshot()
@@ -293,10 +294,7 @@ describe('generate API', () => {
     )
   })
 
-  // Skipped: module/commonjs template generation fails in vitest fs mock environment.
-  // The auto-detect (ESM/CJS) steps require generate() with inferred 'module'/'commonjs' type, which
-  // returns false due to template loading failure. This is a test infrastructure limitation.
-  it.skip('should auto detect generating module codes if not set `type`', {
+  it('should auto detect generating module codes if not set `type`', {
     timeout: 10 * 1000,
   }, async () => {
     // default type: auto
@@ -364,14 +362,11 @@ describe('generate API', () => {
         projectPath: autoDirCjs,
       },
     )
-    const fileContentCjs = await fs.readFile(resolve(outputDir3, 'createApis.js'), 'utf-8')
-    expect(fileContentCjs).toMatch(
-      createStrReg(`module.exports = {
-  createApis,
-  withConfigType,
-  mountApis
-};`),
-    )
+    // `commonjs` templates render with the `.cjs` extension
+    const fileContentCjs = await fs.readFile(resolve(outputDir3, 'createApis.cjs'), 'utf-8')
+    expect(fileContentCjs).toMatch('exports.createApis = createApis;')
+    expect(fileContentCjs).toMatch('exports.mountApis = mountApis;')
+    expect(fileContentCjs).toMatch('exports.withConfigType = withConfigType;')
   })
 
   it('should generate typescript module codes', async () => {
@@ -404,10 +399,7 @@ describe('generate API', () => {
     await expect(fs.readFile(resolve(outputDirTs, 'createApis.ts'), 'utf-8')).resolves.not.toBeUndefined()
   })
 
-  // Skipped: 'module' type template generation fails in vitest fs mock environment.
-  // generate() returns false because template loading via the mocked fs cannot properly
-  // resolve the 'module' subdirectory templates. This is a test infrastructure limitation.
-  it.skip('should generate esm module codes', async () => {
+  it('should generate esm module codes', async () => {
     const outputDir2 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`)
     vol.mkdirSync(outputDir2, { recursive: true })
     await generate({
@@ -424,9 +416,7 @@ describe('generate API', () => {
     expect(fileContentEsm).toMatch('export const createApis')
   })
 
-  // Skipped: 'commonjs' type template generation fails in vitest fs mock environment.
-  // Same root cause as the esm test above.
-  it.skip('should generate commonjs module codes', async () => {
+  it('should generate commonjs module codes', async () => {
     const outputDir3 = resolve(__dirname, `./mock_output/openapi_301${getSalt()}`)
     vol.mkdirSync(outputDir3, { recursive: true })
     await generate({
@@ -439,14 +429,11 @@ describe('generate API', () => {
         },
       ],
     })
-    const fileContentCjs = await fs.readFile(resolve(outputDir3, 'createApis.js'), 'utf-8')
-    expect(fileContentCjs).toMatch(
-      createStrReg(`module.exports = {
-  createApis,
-  withConfigType,
-  mountApis
-};`),
-    )
+    // `commonjs` templates render with the `.cjs` extension
+    const fileContentCjs = await fs.readFile(resolve(outputDir3, 'createApis.cjs'), 'utf-8')
+    expect(fileContentCjs).toMatch('exports.createApis = createApis;')
+    expect(fileContentCjs).toMatch('exports.mountApis = mountApis;')
+    expect(fileContentCjs).toMatch('exports.withConfigType = withConfigType;')
   })
 
   it('should set the right global variable name', async () => {

@@ -658,6 +658,19 @@ export declare function listChanges(projectPath: string): Promise<ChangeSummary[
  * @param id `"0007"` or the alias `"latest"` (newest record)
  */
 export declare function getChange(projectPath: string, id: string): Promise<Change | undefined>;
+/**
+ * Delete a single recorded change.
+ *
+ * @param projectPath absolute path of the project root
+ * @param id `"0007"` or the alias `"latest"` (newest record)
+ *
+ * `index.json#changeSeq` is deliberately left untouched: it only ever allocates
+ * *new* ids, so keeping it monotonic guarantees the deleted id is never handed
+ * out again for a different record.
+ *
+ * @returns the id that was deleted, or `undefined` when nothing matched
+ */
+export declare function removeChange(projectPath: string, id: string): Promise<string | undefined>;
 /** A newly added or removed API (identified by `method` + `path`). */
 export interface ApiChange {
 	method: string;

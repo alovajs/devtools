@@ -93,6 +93,52 @@ describe('incremental generation', () => {
     expect(await read(path.join(OUTPUT_DIR, 'users.ts'))).toContain('get_users_id')
   })
 
+  it('re-renders an unchanged tag whose artifact was deleted, while other tags stay skipped', async () => {
+    await run()
+    const petsFile = path.join(OUTPUT_DIR, 'pets.ts')
+    const usersFile = path.join(OUTPUT_DIR, 'users.ts')
+    expect(await read(petsFile)).toContain('get_pets')
+
+    // Simulate a manual deletion of one generated file: the cache keeps its
+    // baseline, so no tag hash changes on the next run.
+    vol.unlinkSync(petsFile)
+    await fs.writeFile(usersFile, 'USERS-MODIFIED')
+
+    await run()
+
+    // The wiped tag self-heals …
+    expect(await exists(petsFile)).toBe(true)
+    expect(await read(petsFile)).toContain('get_pets')
+    // … and the untouched tag is still skipped.
+    expect(await read(usersFile)).toBe('USERS-MODIFIED')
+  })
+
+  it('restores every tag when the whole output directory was wiped but the cache survived', async () => {
+    await run()
+
+    vol.rmSync(OUTPUT_DIR, { recursive: true, force: true })
+    expect(await exists(path.join(OUTPUT_DIR, 'pets.ts'))).toBe(false)
+
+    await run()
+
+    expect(await read(path.join(OUTPUT_DIR, 'pets.ts'))).toContain('get_pets')
+    expect(await read(path.join(OUTPUT_DIR, 'users.ts'))).toContain('get_users')
+    // global templates are re-rendered by Phase 2 anyway
+    expect(await read(path.join(OUTPUT_DIR, 'index.ts'))).toContain('Demo')
+  })
+
+  it('re-renders a tag whose `[tag]` directory was deleted', async () => {
+    await runWith('tagdir')
+    await fs.writeFile(path.join(OUTPUT_DIR, 'pets', 'index.ts'), 'PETS-MODIFIED')
+
+    vol.rmSync(path.join(OUTPUT_DIR, 'users'), { recursive: true, force: true })
+    await runWith('tagdir')
+
+    expect(await read(path.join(OUTPUT_DIR, 'users', 'index.ts'))).toContain('users')
+    // the untouched tag keeps its skip
+    expect(await read(path.join(OUTPUT_DIR, 'pets', 'index.ts'))).toBe('PETS-MODIFIED')
+  })
+
   it('renders every tag when there is no generation baseline', async () => {
     // A detection-only baseline (no `tags`) must NOT count as "already rendered".
     const { updateSourceBaseline } = await import('@/functions/wormaJson')

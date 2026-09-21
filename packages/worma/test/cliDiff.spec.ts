@@ -215,6 +215,96 @@ describe('`worma diff` command', () => {
       expect(logs.join('\n')).toContain('+3 / -1 / ~4')
     })
   })
+
+  describe('`--remove`', () => {
+    beforeEach(() => {
+      vol.fromJSON({
+        [`${CACHE}/0001.json`]: JSON.stringify(record1),
+        [`${CACHE}/0002.json`]: JSON.stringify(record2),
+      })
+    })
+
+    it('deletes the record named by the option value', async () => {
+      await actionDiff(undefined, { remove: '0002' })
+
+      expect(vol.existsSync(`${CACHE}/0002.json`)).toBe(false)
+      expect(vol.existsSync(`${CACHE}/0001.json`)).toBe(true)
+      expect(logs.join('\n')).toContain('Removed change record 0002')
+    })
+
+    it('accepts the id as the positional argument (`worma diff 0001 --remove`)', async () => {
+      await actionDiff('0001', { remove: true })
+
+      expect(vol.existsSync(`${CACHE}/0001.json`)).toBe(false)
+      expect(vol.existsSync(`${CACHE}/0002.json`)).toBe(true)
+      expect(logs.join('\n')).toContain('Removed change record 0001')
+    })
+
+    it('resolves the `latest` alias and prints the id it deleted', async () => {
+      await actionDiff(undefined, { remove: 'latest' })
+
+      // 0002 is the newest by createdAt
+      expect(vol.existsSync(`${CACHE}/0002.json`)).toBe(false)
+      expect(vol.existsSync(`${CACHE}/0001.json`)).toBe(true)
+      expect(logs.join('\n')).toContain('Removed change record 0002')
+    })
+
+    it('reports an unknown id and deletes nothing', async () => {
+      await actionDiff(undefined, { remove: '0099' })
+
+      expect(vol.existsSync(`${CACHE}/0001.json`)).toBe(true)
+      expect(vol.existsSync(`${CACHE}/0002.json`)).toBe(true)
+      expect(logs.join('\n')).toContain('No change record found for "0099"')
+    })
+
+    it('asks for an id when `--remove` is given without one', async () => {
+      await actionDiff(undefined, { remove: true })
+
+      expect(logs.join('\n')).toContain('Nothing to remove')
+      expect(vol.existsSync(`${CACHE}/0001.json`)).toBe(true)
+      expect(vol.existsSync(`${CACHE}/0002.json`)).toBe(true)
+    })
+
+    it('leaves the other records readable after a deletion', async () => {
+      await actionDiff(undefined, { remove: '0001' })
+
+      await actionDiff(undefined, {})
+
+      const output = logs.join('\n')
+      expect(output).toContain('0002')
+      expect(output).not.toContain('0001  1')
+    })
+
+    it('empties the history when every record is removed', async () => {
+      await actionDiff(undefined, { remove: '0001' })
+      await actionDiff(undefined, { remove: '0002' })
+      await actionDiff(undefined, {})
+
+      expect(logs.join('\n')).toContain('No change records found')
+    })
+
+    it('never unlinks a file outside the changes directory', async () => {
+      const indexPath = `${process.cwd()}/.worma-cache/index.json`
+      vol.fromJSON({ [indexPath]: JSON.stringify({ schemaVersion: 1, entries: [], changeSeq: 2 }) })
+
+      await actionDiff(undefined, { remove: '../index' })
+
+      expect(vol.existsSync(indexPath)).toBe(true)
+      expect(logs.join('\n')).toContain('No change record found')
+    })
+
+    it('does not lower index.json#changeSeq, so a deleted id is never reused', async () => {
+      const indexPath = `${process.cwd()}/.worma-cache/index.json`
+      vol.fromJSON({
+        [indexPath]: JSON.stringify({ schemaVersion: 1, entries: [], changeSeq: 5 }),
+      })
+
+      await actionDiff(undefined, { remove: '0002' })
+
+      const index = JSON.parse(vol.readFileSync(indexPath, 'utf-8') as string)
+      expect(index.changeSeq).toBe(5)
+    })
+  })
 })
 
 describe('`worma gen` change pointer', () => {

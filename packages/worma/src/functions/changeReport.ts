@@ -265,6 +265,44 @@ export async function getChange(projectPath: string, id: string): Promise<Change
   return record ?? undefined
 }
 
+/** Ids are always the zero-padded sequence written by {@link captureChange}. */
+const CHANGE_ID_RE = /^\d+$/
+
+/**
+ * Delete a single recorded change.
+ *
+ * @param projectPath absolute path of the project root
+ * @param id `"0007"` or the alias `"latest"` (newest record)
+ *
+ * `index.json#changeSeq` is deliberately left untouched: it only ever allocates
+ * new* ids, so keeping it monotonic guarantees the deleted id is never handed
+ * out again for a different record.
+ *
+ * @returns the id that was deleted, or `undefined` when nothing matched
+ */
+export async function removeChange(projectPath: string, id: string): Promise<string | undefined> {
+  let resolvedId = id
+  if (!id || id === LATEST_CHANGE_ID) {
+    const latestId = await resolveLatestId(projectPath)
+    if (!latestId)
+      return undefined
+    resolvedId = latestId
+  }
+
+  // Guards against deleting anything outside the changes directory
+  // (`--remove ../../some-file` would otherwise unlink an arbitrary file).
+  if (!CHANGE_ID_RE.test(resolvedId))
+    return undefined
+
+  try {
+    await fs.unlink(recordFile(projectPath, resolvedId))
+    return resolvedId
+  }
+  catch {
+    return undefined
+  }
+}
+
 /**
  * Return the newest change-record id.
  *

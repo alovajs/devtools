@@ -618,6 +618,38 @@ describe('plugins/aiDoc', () => {
       await runInstallTest('，', 'src/api-skill-empty-string')
 
       expect(execSync).not.toHaveBeenCalled()
+      // Nothing was installed, so the generated skill must stay where it is.
+      expect(
+        testVol.existsSync(resolve(process.cwd(), 'src/api-skill-empty-string', 'aidocs', 'SKILL.md')),
+      ).toBe(true)
+    })
+
+    it('should remove the generated skill directory after a successful install', async () => {
+      const outputPath = 'src/api-skill-cleanup'
+      await runInstallTest('cursor', outputPath)
+
+      // `skills add` copied the whole directory into the agent's skills folder,
+      // so the generated copy under the output directory is dropped.
+      expect(testVol.existsSync(resolve(process.cwd(), outputPath, 'aidocs'))).toBe(false)
+    })
+
+    it('should keep the source directory until every agent has been installed', async () => {
+      const outputPath = 'src/api-skill-cleanup-multi'
+      const { execSync } = await import('node:child_process')
+      const aidocsDir = resolve(process.cwd(), outputPath, 'aidocs')
+      const installs: string[] = []
+      ;(execSync as ReturnType<typeof vi.fn>).mockImplementation((cmd: string) => {
+        installs.push(cmd)
+        // Still on disk while `skills add` runs — deleting it earlier would break
+        // the installs that follow.
+        expect(testVol.existsSync(aidocsDir)).toBe(true)
+        return ''
+      })
+
+      await runInstallTest('cursor, claude-code', outputPath)
+
+      expect(installs).toHaveLength(2)
+      expect(testVol.existsSync(aidocsDir)).toBe(false)
     })
 
     it('should throw via logger when skills CLI fails', async () => {
@@ -634,6 +666,11 @@ describe('plugins/aiDoc', () => {
       expect(throwErrorSpy).toHaveBeenCalledWith(
         expect.objectContaining({ message: 'skills add failed' }),
       )
+
+      // A failed install must never drop the source directory.
+      expect(
+        testVol.existsSync(resolve(process.cwd(), 'src/api-skill-install-fail', 'aidocs')),
+      ).toBe(true)
 
       throwErrorSpy.mockRestore()
     })

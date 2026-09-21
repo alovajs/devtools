@@ -13,6 +13,7 @@ description: 生成 AI 可读的接口知识文档，让编码助手准确感知
 - 支持自定义模板路径和输出目录
 - 支持自动安装 Skill 到主流编码助手（Cursor、Claude Code、Windsurf 等）
 - 支持通过 `agent` 指定单个或多个编码助手，一次生成可同时安装到多个助手（自动去重）
+- 安装成功后自动清理输出目录中生成的 Skill 副本，避免同一份 Skill 被重复存储
 
 ## 基本使用
 
@@ -141,3 +142,5 @@ worma gen
 ```
 
 worma 会按上述配置把生成的 Skill 安装到对应助手中。支持的主流编码助手列表请参考 [skills 文档](https://www.npmjs.com/package/skills#supported-agents)。
+
+> **安装成功后会清理源目录**：`skills add` 会把整个 `aidocs` 目录复制到助手自己的技能目录，为避免同一份 Skill 存两份，安装到**全部**目标助手成功后，worma 会自动删除输出目录下的 `aidocs`（如 `src/api/aidocs`）。若安装失败，或未配置 / 未解析出任何 `agent`，源目录会原样保留。

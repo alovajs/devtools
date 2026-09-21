@@ -62,6 +62,9 @@ export declare function getHandlers(context: ExtensionContext): {
   rmMessageListener: (channel: string, listenerNumber: number) => boolean
   execCommand: (command: string, ...rest: any[]) => Promise<unknown>
   onDidOpenTextDocument: import('@jsonrpc-rx/server').Observable<({ next }: Publisher<TextDocument>) => () => any>
+  listChanges: (projectPath: string) => Promise<import('wormajs').ChangeSummary[]>
+  getChange: (projectPath: string, id: string) => Promise<import('wormajs').Change | undefined>
+  removeChange: (projectPath: string, id: string) => Promise<string | undefined>
 }
 
 export {}
