@@ -8,6 +8,8 @@
   },
   "changesets": [
     "aidoc-rename-installskill-to-agent",
+    "api-changes-panel-and-opt-in-check",
+    "change-record-removal-and-self-heal",
     "export-request-type-aliases",
     "payload-modifier-redesign",
     "postman-platform-plugin",
