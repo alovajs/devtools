@@ -30,6 +30,7 @@ program
   .description('browse recorded API changes')
   .argument('[id]', 'change id (e.g. 0007) or `latest`; omit to list all')
   .option('-l, --list', 'list all recorded changes')
+  .option('-r, --remove [id]', 'delete a recorded change (e.g. `worma diff --remove 0007`)')
   .option('-p, --project <path>', 'project directory')
   .action(actionDiff)
 

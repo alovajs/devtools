@@ -510,7 +510,26 @@ export class TemplateHelper {
     const nonDirTagTpls = tpls.filter(f => !f.insideTagDir && f.templateType === 'tag')
     const dirTpls = tpls.filter(f => f.insideTagDir)
 
-    const effectiveTags = changedTags ? tags.filter(t => changedTags.has(t)) : tags
+    // Incremental rendering normally skips a tag whose hash is unchanged, which
+    // assumes its previously generated files are still on disk. If those files
+    // were deleted manually while the cache survived, the unchanged tag would
+    // never be emitted again. So an unchanged tag is also re-rendered whenever
+    // any of its expected artifacts is missing from the output directory.
+    let effectiveTags: string[]
+    if (changedTags) {
+      const unchangedTags = tags.filter(t => !changedTags.has(t))
+      const missingTags = await this.collectTagsWithMissingArtifacts(
+        unchangedTags,
+        nonDirTagTpls,
+        dirTpls,
+        tagApisMap,
+        outputDir,
+      )
+      effectiveTags = tags.filter(t => changedTags.has(t) || missingTags.has(t))
+    }
+    else {
+      effectiveTags = tags
+    }
     let tagFilesWritten = 0
     logger.debug('Phase 1: Per-tag streaming', {
       totalTags: tags.length,
@@ -594,6 +613,59 @@ export class TemplateHelper {
     logger.debug('Phase 2 complete', { globalFilesWritten: Object.keys(globalFiles).length })
     logger.debug('Generation summary', { totalOutputFiles: allFilePaths.length })
     return { filePaths: allFilePaths }
+  }
+
+  /**
+   * Detect tags whose previously generated artifacts are missing from disk.
+   *
+   * Mirrors the path derivation used by `renderOne` / `expandByApi` to compute
+   * the expected output path of every per-tag file without rendering anything,
+   * then returns the tags that must be re-rendered because at least one of
+   * their files is gone.
+   */
+  private async collectTagsWithMissingArtifacts(
+    candidateTags: string[],
+    nonDirTagTpls: TemplateFileInfo[],
+    dirTpls: TemplateFileInfo[],
+    tagApisMap: Map<string, TemplateData['tagedApis'][number]>,
+    outputDir: string,
+  ): Promise<Set<string>> {
+    const missingTags = new Set<string>()
+
+    for (const tag of candidateTags) {
+      const tagApis = tagApisMap.get(tag)
+      const expectedPaths: string[] = []
+
+      // Flat `[tag]`-named templates, e.g. `services/[tag].ts.handlebars`
+      for (const tf of nonDirTagTpls) {
+        expectedPaths.push(stripExt(normalizeSlashes(tf.relativePath.replace(TemplatePlaceholder.TAG, tag))))
+      }
+
+      // Tag-dir templates, e.g. `[tag]/index.ts` and `[tag]/[api].ts`
+      for (const tf of dirTpls) {
+        if (tf.templateType === 'api') {
+          for (const api of tagApis?.apis || []) {
+            expectedPaths.push(stripExt(normalizeSlashes(
+              tf.relativePath
+                .replace(TemplatePlaceholder.TAG, tag)
+                .replace(TemplatePlaceholder.API, api.name),
+            )))
+          }
+        }
+        else {
+          expectedPaths.push(stripExt(normalizeSlashes(tf.relativePath.replace(TemplatePlaceholder.TAG, tag))))
+        }
+      }
+
+      for (const relPath of expectedPaths) {
+        if (!(await existsPromise(path.join(outputDir, relPath)))) {
+          missingTags.add(tag)
+          break
+        }
+      }
+    }
+
+    return missingTags
   }
 
   /**

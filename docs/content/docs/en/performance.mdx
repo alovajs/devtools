@@ -52,7 +52,8 @@ Tag-level incremental rendering via hash comparison makes the second generation 
   - The legacy `data/<slug>.json` single-file layout is still readable
 - Incremental checks only need to read `index.json`, no need to load the full API data
 - Only re-render tags whose hash changed; global templates (index.ts, types.ts, etc.) are always rendered
-- No "full rebuild" switch: `generate()` always renders incrementally (only re-renders tags with changed hashes, while global templates are always rendered)
+- Unchanged tags also get an artifact-existence check: if a tag's expected files are missing from disk (e.g. deleted by hand, or wiped by a clean script while the cache survived), that tag is re-rendered to self-heal. The check stats the expected paths and short-circuits on the first missing file, so its cost is negligible
+- No "full rebuild" switch: `generate()` always renders incrementally (only re-renders tags with a changed hash **or** missing artifacts, while global templates are always rendered)
 
 ## Concurrency throttling
 

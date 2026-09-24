@@ -3,31 +3,32 @@ import type { CheckUpdatesResult, SourceUpdateInfo } from 'wormajs'
 import { commands, window, workspace } from 'vscode'
 import { Commands } from '@/commands/commands'
 import { setUpdateIndicator } from '@/commands/statusBar'
+import { getWorma } from '@/functions/getWorma'
 import worma from '@/helper/worma'
 import { displayName } from '@/meta'
 import { Log } from '@/utils'
 import Global from './Global'
 
-export interface AutoUpdateConfig {
-  checkOnActivation: boolean
+export interface UpdateCheckConfig {
+  /** Opt-in: re-check the sources whenever the window regains focus. */
   checkOnWindowFocus: boolean
+  /** Throttle between two automatic checks, in milliseconds. */
   minInterval: number
 }
 
-const DEFAULTS: AutoUpdateConfig = {
-  checkOnActivation: true,
-  checkOnWindowFocus: true,
+const DEFAULTS: UpdateCheckConfig = {
+  // Off by default: nothing is ever requested until the user opts in.
+  checkOnWindowFocus: false,
   minInterval: 300_000, // 5 minutes
 }
 
-export function getAutoUpdateConfig(): AutoUpdateConfig {
-  const section = workspace.getConfiguration('worma.autoUpdate')
-  const read = <K extends keyof AutoUpdateConfig>(key: K): AutoUpdateConfig[K] =>
-    section.get<AutoUpdateConfig[K]>(key) ?? DEFAULTS[key]
+export function getUpdateCheckConfig(): UpdateCheckConfig {
+  const section = workspace.getConfiguration('worma')
+  const read = <K extends keyof UpdateCheckConfig>(key: K): UpdateCheckConfig[K] =>
+    section.get<UpdateCheckConfig[K]>(key) ?? DEFAULTS[key]
 
   const minIntervalRaw = read('minInterval')
   return {
-    checkOnActivation: read('checkOnActivation'),
     checkOnWindowFocus: read('checkOnWindowFocus'),
     minInterval: Number.isFinite(minIntervalRaw) ? Number(minIntervalRaw) : DEFAULTS.minInterval,
   }
@@ -39,39 +40,36 @@ function sourceKey(projectPath: string, update: Pick<SourceUpdateInfo, 'output' 
 }
 
 /**
- * Periodically (and on window focus) asks `worma.checkUpdates()` whether the
- * configured OpenAPI sources changed and — only then — asks the user whether
- * to regenerate.
+ * On window focus, asks `worma.checkUpdates()` whether the configured OpenAPI
+ * sources changed and — only then — asks the user whether to regenerate.
  *
- * Detection is read-only: it never rewrites the user's code. Nothing is
- * generated until the user confirms.
+ * Opt-in: nothing runs at activation, and the trigger is disabled by default
+ * (`worma.checkOnWindowFocus`). Detection is read-only: it never rewrites the
+ * user's code, and nothing is generated until the user confirms.
  */
 export default class UpdateChecker {
   /** hash already offered to the user, per source — avoids nagging twice */
   private static notified = new Map<string, string>()
   private static lastCheckAt = 0
   private static inFlight = false
-  /** Deferred activation check, kept so it can be cancelled before it fires. */
-  private static activationTimer: ReturnType<typeof setTimeout> | undefined
   /** Focus listener armed by the live registration, if any. */
   private static focusListener: Disposable | undefined
 
-  /** Register the auto-update triggers. Returns the disposables to push into `ctx.subscriptions`. */
+  /** Register the update-detection trigger. Returns the disposables to push into `ctx.subscriptions`. */
   static init(): Disposable[] {
     // `init()` replaces whatever a previous call armed: without this a stale
-    // focus listener or a still-pending deferred check would keep firing even
-    // though the current configuration disabled every trigger.
+    // focus listener would keep firing even though the current configuration
+    // disabled the trigger.
     this.unregisterTriggers()
 
     const disposables: Disposable[] = [
       workspace.onDidChangeConfiguration((event) => {
-        if (event.affectsConfiguration('worma.autoUpdate')) {
-          const cfg = getAutoUpdateConfig()
-          // No active trigger left → nothing will ever refresh the dot, clear it.
-          if (!cfg.checkOnActivation && !cfg.checkOnWindowFocus) {
+        if (event.affectsConfiguration('worma.checkOnWindowFocus') || event.affectsConfiguration('worma.minInterval')) {
+          // The only trigger is gone → nothing will ever refresh the dot, clear it.
+          if (!getUpdateCheckConfig().checkOnWindowFocus) {
             this.clear()
           }
-          // Triggers may have been turned on or off → re-apply the config.
+          // The trigger may have been turned on or off → re-apply the config.
           this.unregisterTriggers()
           this.registerTriggers()
         }
@@ -84,25 +82,22 @@ export default class UpdateChecker {
     return disposables
   }
 
-  /** Arm the triggers allowed by the current configuration. */
+  /**
+   * Arm the focus trigger when the user enabled it *and* the project actually
+   * has `wormajs` installed. Without that guard a focus check in a project that
+   * does not use worma could only fail: the lazy `worma` proxy throws
+   * "module `wormajs` is not found" on any access.
+   */
   private static registerTriggers() {
-    const cfg = getAutoUpdateConfig()
-
-    if (cfg.checkOnWindowFocus) {
-      this.focusListener = window.onDidChangeWindowState((state) => {
-        if (state.focused) {
-          void this.check({ silent: true })
-        }
-      })
+    if (!getUpdateCheckConfig().checkOnWindowFocus || !getWorma()) {
+      return
     }
 
-    if (cfg.checkOnActivation) {
-      // Deferred so activation is not blocked by the initial (silent) check.
-      this.activationTimer = setTimeout(() => {
-        this.activationTimer = undefined
+    this.focusListener = window.onDidChangeWindowState((state) => {
+      if (state.focused) {
         void this.check({ silent: true })
-      }, 1500)
-    }
+      }
+    })
   }
 
   /** Cancel every trigger armed by `registerTriggers()`. */
@@ -110,10 +105,6 @@ export default class UpdateChecker {
     if (this.focusListener) {
       this.focusListener.dispose()
       this.focusListener = undefined
-    }
-    if (this.activationTimer !== undefined) {
-      clearTimeout(this.activationTimer)
-      this.activationTimer = undefined
     }
   }
 
@@ -132,7 +123,7 @@ export default class UpdateChecker {
    * @param options.force bypasses the throttle interval.
    */
   static async check(options?: { silent?: boolean, force?: boolean }): Promise<CheckUpdatesResult[]> {
-    const config = getAutoUpdateConfig()
+    const config = getUpdateCheckConfig()
 
     // Never interfere with a running generation, nor run twice concurrently.
     if (Global.loading || this.inFlight)

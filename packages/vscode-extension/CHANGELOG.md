@@ -1,5 +1,14 @@
 # Change Log
 
+## 0.7.0-beta.0
+
+### Minor Changes
+
+- [#197](https://github.com/alovajs/devtools/pull/197) [`18480c9`](https://github.com/alovajs/devtools/commit/18480c9145076239954968c47ff1f3ba43d4795d) Thanks [@JOU-amjs](https://github.com/JOU-amjs)! - Rebuild the "API Changes" panel on the shared Vue webview and make update detection opt-in.
+
+  - "API Changes" renders through the shared Vue webview (`api-changes` page) instead of the hand-written HTML string. The extension and the webview now exchange the same `handlers` contract as the other views, and the panel reuses one provider instead of re-registering an `onDidReceiveMessage` listener on every open.
+  - `worma.autoUpdate.checkOnActivation`, `worma.autoUpdate.checkOnWindowFocus` and `worma.autoUpdate.minInterval` are replaced by `worma.checkOnWindowFocus` (default `false`, i.e. off) and `worma.minInterval`. No check runs on activation any more: detection is opt-in, only triggered when the window regains focus, and still never regenerates anything without confirmation.
+
 ## 0.6.0-beta.0
 
 ### Minor Changes

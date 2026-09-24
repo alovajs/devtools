@@ -184,8 +184,15 @@ export function aiDoc(config?: AiDocConfig): ApiPlugin {
 
       if (agentValue) {
         const agentsToInstall = resolveInstallAgents(agentValue)
-        for (const agent of agentsToInstall) {
-          installSkill(aidocsDir, agent, projectPath)
+        if (agentsToInstall.length) {
+          for (const agent of agentsToInstall) {
+            installSkill(aidocsDir, agent, projectPath)
+          }
+          // The skill now lives in each agent's own skills directory. Keeping the
+          // generated copy under the output directory would store the same files
+          // twice, so it is dropped — but only after *every* install succeeded:
+          // a failing install throws above and leaves the source in place.
+          removeSkillSourceDir(aidocsDir)
         }
       }
     },
@@ -263,6 +270,25 @@ function installSkill(skillPath: string, agent: string, projectPath: string) {
   catch (error: any) {
     console.error(`${prefix}Failed to install skill to "${agent}". Make sure the skill is valid and the target agent is supported.`, error.stack)
     throw logger.throwError(error)
+  }
+}
+
+/**
+ * Delete the generated skill directory once it has been installed.
+ *
+ * `skills add` copies the whole directory into the agent's own skills folder,
+ * so the copy under the generator output is pure duplication.
+ *
+ * A removal failure is reported but never thrown: the install already
+ * succeeded, and failing the whole generation over a leftover directory would
+ * be worse than keeping it.
+ */
+function removeSkillSourceDir(skillPath: string) {
+  try {
+    fs.rmSync(skillPath, { recursive: true, force: true })
+  }
+  catch (error: any) {
+    console.error(`${prefix}Failed to remove the generated skill directory "${skillPath}".`, error?.stack ?? error)
   }
 }
 

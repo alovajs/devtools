@@ -97,6 +97,9 @@ function main() {
       normalizeMarketplaceVersion(name)
     }
     console.log(`🚀 custom publish：${name}${isPre ? '（prerelease）' : ''}`)
+    // ⚠ TODO(RESTORE-REQUIRED)：vscode-extension 的 `release` / `release:pre` 目前只发布到
+    // Open VSX（ovsx），VS Code Marketplace 的 `vsce publish` 因发布链路暂不可用被临时去掉，
+    // 后续需要加回来（改 packages/vscode-extension/package.json 的这两个脚本即可）。
     run(`pnpm -w --filter "${name}" run ${isPre ? 'release:pre' : 'release'}`)
   }
   // 删除文件

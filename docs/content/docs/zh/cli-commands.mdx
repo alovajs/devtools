@@ -34,7 +34,7 @@ worma init -p ./packages/app
 
 ## worma gen
 
-根据配置生成 API 代码，命中缓存时仅增量渲染变更的 tag，无变化则不重写文件。
+根据配置生成 API 代码。命中缓存时仅增量渲染变更的 tag，未变化且产物仍完整时不会重写文件；若产物被手动删除（而缓存仍在），再次生成会自动补渲缺失的产物。
 
 ```bash
 # 基本用法（默认 workspace 模式，扫描所有子项目）
@@ -71,7 +71,10 @@ worma diff              # 列出全部变更记录
 worma diff --list       # 同上，显式列出
 worma diff latest       # 查看最新一条记录的明细
 worma diff 0007         # 按序号查看某条记录
-worma diff -p ./packages/app   # 指定项目目录
+worma diff --remove 0007      # 删除 0007 这条记录
+worma diff 0007 --remove      # 同上，id 也可作为位置参数传入
+worma diff --remove latest    # 删除最新一条记录
+worma diff -p ./packages/app  # 指定项目目录
 ```
 
 ### 参数详解
@@ -80,5 +83,8 @@ worma diff -p ./packages/app   # 指定项目目录
 |------|------|
 | `[id]` | 变更记录序号（如 `0007`）或别名 `latest`；省略则列出全部 |
 | `-l, --list` | 列出全部变更记录 |
+| `-r, --remove [id]` | 删除指定的变更记录，例如 `worma diff --remove 0007`；省略 id 时也可用位置参数（`worma diff 0007 --remove`），两者都没有则只提示补全 |
 | `-p, --project <path>` | 指定项目目录 |
+
+> `--remove` 仅删除 `changes/` 目录下的这一条记录文件（找不到记录时会提示并不做任何改动），不会回退序号计数器，因此已删除的序号通常不会被重新分配。VS Code 扩展的 API Changes 页面同样提供删除按钮。
 

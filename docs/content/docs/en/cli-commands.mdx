@@ -33,7 +33,7 @@ worma init -p ./packages/app
 
 ## worma gen
 
-Generate API code based on the config. When the cache hits, only changed tags are rendered incrementally; unchanged files are not rewritten.
+Generate API code based on the config. When the cache hits, only changed tags are rendered incrementally; files that are unchanged **and still present** are not rewritten — if generated files were deleted manually (while the cache survives), the next run re-renders the missing ones automatically.
 
 ```bash
 # Basic usage (workspace mode by default, scans all sub-projects)
@@ -70,7 +70,10 @@ worma diff              # list all change records
 worma diff --list       # same as above, explicit list
 worma diff latest       # view the latest record's details
 worma diff 0007         # view a record by sequence number
-worma diff -p ./packages/app   # specify the project directory
+worma diff --remove 0007      # delete record 0007
+worma diff 0007 --remove      # same, the id may also be the positional argument
+worma diff --remove latest    # delete the latest record
+worma diff -p ./packages/app  # specify the project directory
 ```
 
 ### Parameters
@@ -79,4 +82,7 @@ worma diff -p ./packages/app   # specify the project directory
 |-----------|-------------|
 | `[id]` | Change record sequence number (e.g. `0007`) or the alias `latest`; omit to list all |
 | `-l, --list` | List all change records |
+| `-r, --remove [id]` | Delete the given change record, e.g. `worma diff --remove 0007`. The id may also come from the positional argument (`worma diff 0007 --remove`); with neither, it just asks for one |
 | `-p, --project <path>` | Specify the project directory |
+
+> `--remove` only deletes that single record file under `changes/` (an unknown id prints a hint and changes nothing). The sequence counter is not rewound, so a deleted sequence number is normally never reused. The VS Code extension's API Changes page offers the same delete action.

@@ -391,4 +391,52 @@ describe('templateHelper rendering', () => {
       expect(content.length).toBeGreaterThan(0)
     })
   })
+
+  describe('incremental rendering self-heals missing artifacts', () => {
+    it('re-renders an unchanged tag whose flat {tag} artifact was deleted', async () => {
+      const templatePath = resolve(FIXTURES_DIR, 'custom-typed')
+      const helper = TemplateHelper.load({ type: 'typescript', templatePath })
+      const outputDir = '/output-stale-flat'
+      const data = makeData() as any
+      const { vol } = await import('memfs')
+
+      await helper.generateFromTemplateDir(templatePath, outputDir, data)
+
+      // Wipe one generated artifact and hand-edit the other tag's file.
+      vol.unlinkSync(`${outputDir}/pets.ts`)
+      vol.writeFileSync(`${outputDir}/users.ts`, 'MODIFIED')
+
+      const result = await helper.generateFromTemplateDir(templatePath, outputDir, data, { changedTags: new Set<string>() })
+
+      expect(vol.readFileSync(`${outputDir}/pets.ts`, 'utf-8')).toContain('listPets')
+      // The tag whose file is still on disk keeps its skip.
+      expect(vol.readFileSync(`${outputDir}/users.ts`, 'utf-8')).toBe('MODIFIED')
+      expect(result.filePaths.some(p => p.endsWith('pets.ts'))).toBe(true)
+      expect(result.filePaths.some(p => p.endsWith('users.ts'))).toBe(false)
+    })
+
+    it('re-renders an unchanged tag when a per-api file inside its {tag} directory was deleted', async () => {
+      const templatePath = resolve(FIXTURES_DIR, 'custom-tagdir')
+      const helper = TemplateHelper.load({ type: 'typescript', templatePath })
+      const outputDir = '/output-stale-tagdir'
+      const data = makeData() as any
+      const { vol } = await import('memfs')
+
+      await helper.generateFromTemplateDir(templatePath, outputDir, data)
+
+      // `users` loses one of its per-api artifacts, `pets` is hand-edited.
+      vol.unlinkSync(`${outputDir}/references/users/createUser.md`)
+      vol.writeFileSync(`${outputDir}/references/pets/tag-doc.md`, 'MODIFIED-PETS-DOC')
+      vol.writeFileSync(`${outputDir}/references/pets/listPets.md`, 'MODIFIED-PETS-API')
+
+      await helper.generateFromTemplateDir(templatePath, outputDir, data, { changedTags: new Set<string>() })
+
+      // The tag with a missing file is fully re-rendered ({api} + tag-dir files).
+      expect(vol.readFileSync(`${outputDir}/references/users/createUser.md`, 'utf-8')).toContain('createUser')
+      expect(vol.readFileSync(`${outputDir}/references/users/tag-doc.md`, 'utf-8')).toContain('users Documentation')
+      // The untouched tag keeps its skip.
+      expect(vol.readFileSync(`${outputDir}/references/pets/tag-doc.md`, 'utf-8')).toBe('MODIFIED-PETS-DOC')
+      expect(vol.readFileSync(`${outputDir}/references/pets/listPets.md`, 'utf-8')).toBe('MODIFIED-PETS-API')
+    })
+  })
 })
