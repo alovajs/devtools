@@ -21,7 +21,7 @@ tsc_out.txt
 .DS_Store
 # testing
 /coverage
-alova_tmp_*
+worma_tmp_*
 .worma-cache
 .idea/
 *.log
