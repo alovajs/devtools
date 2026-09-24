@@ -135,6 +135,13 @@ export default defineConfig(({ mode }) => {
         },
       }),
     ],
+    // Bundle all CSS into the entry's index.css instead of emitting a per-route
+    // chunk. Vite's runtime CSS preload resolves route chunks with a root-relative
+    // URL that the vscode webview cannot map to dist/webview/assets (403), but the
+    // HTML-linked index.css is rewritten to an absolute asWebviewUri and loads fine.
+    build: {
+      cssCodeSplit: false,
+    },
     // https://github.com/vitest-dev/vitest
     test: {
       include: ['test/**/*.test.ts'],
