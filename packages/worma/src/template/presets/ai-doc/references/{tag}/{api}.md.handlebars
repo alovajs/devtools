@@ -27,6 +27,16 @@ Pass the required parameters in `pathParams`:
 ```
 {{/if}}
 
+{{#if currentApi.queryParametersComment}}
+## Query Parameters
+
+Pass the required query parameters in `params`:
+
+```typescript
+{{{stripStarPrefix currentApi.queryParametersComment}}}
+```
+{{/if}}
+
 {{#if currentApi.requestBodyComment}}
 ## Request Body
 

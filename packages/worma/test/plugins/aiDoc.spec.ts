@@ -247,6 +247,9 @@ describe('plugins/aiDoc', () => {
       expect(listPetsContent).toContain('/pets')
       // Should show file location, not import statement
       expect(listPetsContent).toContain('is located at')
+      // Query parameters should be documented in their own section
+      expect(listPetsContent).toContain('Query Parameters')
+      expect(listPetsContent).toContain('limit: number of items')
 
       const createPetContent = readVolFile(
         resolve(aidocsDir, 'references', 'pets', 'createPet.md'),
@@ -254,6 +257,8 @@ describe('plugins/aiDoc', () => {
       )
       expect(createPetContent).toContain('Create a pet')
       expect(createPetContent).toContain('[POST]')
+      // APIs without query parameters must not render the section
+      expect(createPetContent).not.toContain('Query Parameters')
     })
 
     it('should respect custom outputDir option', async () => {
